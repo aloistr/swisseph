@@ -1,5 +1,5 @@
 /* SWISSEPH
-   $Header: swemplan.c,v 1.31 2000/05/23 10:14:29 dieter Exp $
+   $Header: swemplan.c,v 1.65 2003/06/14 13:01:59 alois Exp $
    Moshier planet routines
 
    modified for SWISSEPH by Dieter Koch
@@ -55,6 +55,10 @@
 
 #define mods3600(x) ((x) - 1.296e6 * floor ((x)/1.296e6))
 
+#define FICT_GEO 1
+#define KGAUSS_GEO 0.0000298122353216 /* Earth only */
+/* #define KGAUSS_GEO 0.00002999502129737  Earth + Moon */
+
 static void embofs_mosh(double J, double *xemb);
 static int check_t_terms(double t, char *sinp, double *doutp);
 
@@ -62,7 +66,7 @@ static int read_elements_file(int32 ipl, double tjd,
   double *tjd0, double *tequ, 
   double *mano, double *sema, double *ecce, 
   double *parg, double *node, double *incl,
-  char *pname, char *serr);
+  char *pname, int32 *fict_ifl, char *serr);
 
 static int pnoint2msh[]   = {2, 2, 0, 1, 3, 4, 5, 6, 7, 8, };
 
@@ -498,7 +502,7 @@ char *swi_get_fict_name(int32 ipl, char *snam)
 {
   if (read_elements_file(ipl, 0, NULL, NULL, 
        NULL, NULL, NULL, NULL, NULL, NULL, 
-       snam, NULL) == ERR)
+       snam, NULL, NULL) == ERR)
     strcpy(snam, "name not found");
   return snam;
 }
@@ -560,7 +564,7 @@ static double plan_oscu_elem[SE_NFICT_ELEM][8] = {
  * ipli 	body number in planetary data structure
  * iflag	flags
  */
-int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, char *serr)
+int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, double *xsun, char *serr)
 {
   double pqr[9], x[6];
   double eps, K, fac, rho, cose, sine;
@@ -570,14 +574,18 @@ int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, char *serr)
   double M, E;
   struct plan_data *pedp = &swed.pldat[SEI_EARTH];
   struct plan_data *pdp = &swed.pldat[ipli];
+  int32 fict_ifl = 0;
+  int i;
   /* orbital elements, either from file or, if file not found,
    * from above built-in set  
    */
   if (read_elements_file(ipl, tjd, &tjd0, &tequ, 
        &mano, &sema, &ecce, &parg, &node, &incl, 
-       NULL, serr) == ERR)
+       NULL, &fict_ifl, serr) == ERR)
     return ERR;
   dmot = 0.9856076686 * DEGTORAD / sema / sqrt(sema);	/* daily motion */
+  if (fict_ifl & FICT_GEO)
+    dmot /= sqrt(SUN_EARTH_MRAT);
   cosnode = cos(node);
   sinnode = sin(node);
   cosincl = cos(incl);
@@ -624,7 +632,10 @@ int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, char *serr)
   }
   E = swi_kepler(E, M, ecce);
   /* position and speed, referred to orbital plane */
-  K = KGAUSS / sqrt(sema);
+  if (fict_ifl & FICT_GEO)
+    K = KGAUSS_GEO / sqrt(sema);
+  else
+    K = KGAUSS / sqrt(sema);
   cose = cos(E);
   sine = sin(E);
   fac = sqrt((1 - ecce) * (1 + ecce));
@@ -649,6 +660,16 @@ int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, char *serr)
     swi_precess(xp, tequ, J_TO_J2000);
     swi_precess(xp+3, tequ, J_TO_J2000);
   }
+  /* to solar system barycentre */
+  if (fict_ifl & FICT_GEO) {
+    for (i = 0; i <= 5; i++) {
+      xp[i] += xearth[i];
+    }
+  } else {
+	for (i = 0; i <= 5; i++) {
+	  xp[i] += xsun[i];
+	}
+  }
   if (pdp->x == xp) {
     pdp->teval = tjd;	/* for precession! */
     pdp->iephe = pedp->iephe;
@@ -662,9 +683,9 @@ static int read_elements_file(int32 ipl, double tjd,
   double *tjd0, double *tequ, 
   double *mano, double *sema, double *ecce, 
   double *parg, double *node, double *incl,
-  char *pname, char *serr)
+  char *pname, int32 *fict_ifl, char *serr)
 {
-  int i, iline, iplan, retc;
+  int i, iline, iplan, retc, ncpos;
   FILE *fp = NULL;
   char s[AS_MAXCH], *sp;
   char *cpos[20], serri[AS_MAXCH];
@@ -719,10 +740,10 @@ static int read_elements_file(int32 ipl, double tjd,
       continue;
     if ((sp = strchr(s, '#')) != NULL)
       *sp = '\0';
-    i = swi_cutstr(s, ",", cpos, 20);
+    ncpos = swi_cutstr(s, ",", cpos, 20);
     sprintf(serri, "error in file %s, line %7.0f:",
               SE_FICTFILE, (double) iline);
-    if (i < 9) {
+    if (ncpos < 9) {
       if (serr != NULL) 
         sprintf(serr, "%s nine elements required", serri);
       return ERR;
@@ -849,11 +870,18 @@ static int read_elements_file(int32 ipl, double tjd,
       swi_right_trim(sp);
       strcpy(pname, sp);
     }
+    /* geocentric */
+    if (fict_ifl != NULL && ncpos > 9) {
+      for (sp = cpos[9]; *sp != '\0'; sp++)
+        *sp = tolower(*sp);
+      if (strstr(cpos[9], "geo") != NULL)
+        *fict_ifl |= FICT_GEO;
+    }
     break;
   }
   if (!elem_found) {
     if (serr != NULL)
-      sprintf(serr, "%s elements for planet %7.0f not found", serri, ipl);
+      sprintf(serr, "%s elements for planet %7.0f not found", serri, (double) ipl);
     goto return_err;
   }
   fclose(fp);

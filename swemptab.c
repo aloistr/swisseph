@@ -1,6 +1,8 @@
 /* SWISSEPH
    $Header: swemptab.c,v 1.26 98/11/29 21:08:19 dieter Exp $
 
+   ATTENTION: this source file is not to be compiled separately,
+   as it is #included by swemplan
  */
 /* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
   

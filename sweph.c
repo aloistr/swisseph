@@ -1,14 +1,13 @@
-
-
 /* SWISSEPH
-   $Header: sweph.c,v 1.44 98/12/02 19:17:53 dieter Exp $
+   $Header: sweph.c,v 1.48 2000/01/17 09:12:50 dieter Exp $
 
    Ephemeris computations
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 
  */
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+/* Copyright (C) 1997 - 2000 Astrodienst AG, Switzerland.  
+   All rights reserved.
   
   This file is part of Swiss Ephemeris Free Edition.
   
@@ -65,17 +64,26 @@
 
 #define SEFLG_EPHMASK	(SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH)
 
-struct swe_data FAR swed = {SE_EPHE_PATH, SE_FNAME_DFT};
-
 struct meff_ele {double r,m;};
 
-static FILE *fixfp;	/* fixed stars */
+/****************
+ * global stuff *
+ ****************/
+struct swe_data FAR swed = {FALSE,	/* ephe_path_is_set = FALSE */
+                            FALSE,	/* jpl_file_is_open = FALSE */
+                            NULL,	/* fixed stars file pointer */
+			    SE_EPHE_PATH,		/* ephe path */
+			    SE_FNAME_DFT,	/* JPL file name, default */
+			    FALSE,	/* geopos is set, for topocentric */
+			    FALSE,	/* ayanamsa is set */
+			    };
 
-static int FAR pnoint2jpl[]   = PNOINT2JPL;
+/*************
+ * constants *
+ *************/
+static const int FAR pnoint2jpl[]   = PNOINT2JPL;
 
-static int pnoext2int[] = {SEI_SUN, SEI_MOON, SEI_MERCURY, SEI_VENUS, SEI_MARS, SEI_JUPITER, SEI_SATURN, SEI_URANUS, SEI_NEPTUNE, SEI_PLUTO, 0, 0, 0, 0, SEI_EARTH, SEI_CHIRON, SEI_PHOLUS, SEI_CERES, SEI_PALLAS, SEI_JUNO, SEI_VESTA, };
-
-static AS_BOOL ephe_path_is_set = FALSE;
+static const int pnoext2int[] = {SEI_SUN, SEI_MOON, SEI_MERCURY, SEI_VENUS, SEI_MARS, SEI_JUPITER, SEI_SATURN, SEI_URANUS, SEI_NEPTUNE, SEI_PLUTO, 0, 0, 0, 0, SEI_EARTH, SEI_CHIRON, SEI_PHOLUS, SEI_CERES, SEI_PALLAS, SEI_JUNO, SEI_VESTA, };
 
 static int do_fread(void *targ, int size, int count, int corrsize, 
 		    FILE *fp, long fpos, int freord, int fendian, int ifno, 
@@ -83,9 +91,10 @@ static int do_fread(void *targ, int size, int count, int corrsize,
 static int get_new_segment(double tjd, int ipli, int ifno, char *serr);
 static int main_planet(double tjd, int ipli, long epheflag, long iflag,
 		       char *serr);
-static int main_planet_bary(double tjd, int ipli, long epheflag, long iflag, AS_BOOL do_save,
-		       double *xp, double *xe, double *xs, double *xm, 
-		       char *serr);
+static int main_planet_bary(double tjd, int ipli, long epheflag, long iflag, 
+		AS_BOOL do_save, 
+		double *xp, double *xe, double *xs, double *xm, 
+		char *serr);
 static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr);
 static int sweplan(double tjd, int ipli, int ifno, long iflag, AS_BOOL do_save, 
 		   double *xp, double *xpe, double *xps, double *xpm,
@@ -98,28 +107,23 @@ static int jplplan(double tjd, int ipli, long iflag, AS_BOOL do_save,
 static void rot_back(int ipl);
 static int read_const(int ifno, char *serr);
 static void embofs(double *xemb, double *xmoon);
-static void check_ecliptic(double tjd);
-static void check_nutation(double tjd, long iflag);
 static int app_pos_etc_plan(int ipli, long iflag, char *serr);
 static int app_pos_etc_plan_osc(int ipl, int ipli, long iflag, char *serr);
 static int app_pos_etc_sun(long iflag, char *serr);
-static int app_pos_etc_moon(long iflag);
-static int app_pos_etc_sbar(long iflag);
-static int moon_for_osc_elem(long iflag, double tjd, double *xx);
-static int app_pos_etc_mean(int ipl, long iflag);
-static void deflect_light(double *xx, double dt, long iflag);
-static void aberr_light(double *xx, double *xe, long iflag);
-static void precess_speed(double *xx, double t, int direction);
-static void nut_matrix(struct nut *, struct epsilon *oec); 
-static void nutate(double *xx, long iflag, AS_BOOL backward);
+static int app_pos_etc_moon(long iflag, char *serr);
+static int app_pos_etc_sbar(long iflag, char *serr);
+extern int swi_plan_for_osc_elem(long iflag, double tjd, double *xx);
+static int app_pos_etc_mean(int ipl, long iflag, char *serr);
+static void nut_matrix(struct nut *nu, struct epsilon *oec); 
 static void calc_epsilon(double tjd, struct epsilon *e);
 static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr);
 static double meff(double r);
 static void denormalize_positions(double *x0, double *x1, double *x2);
 static void calc_speed(double *x0, double *x1, double *x2, double dt);
 static long plaus_iflag(long iflag);
-static int get_observer(double tjd, long iflag, 
-	double *xearth, AS_BOOL do_save, double *xobs, char *serr);
+void FAR PASCAL_CONV swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0);
+static int app_pos_rest(struct plan_data *pdp, long iflag, 
+    double *xx, double *x2000, struct epsilon *oe, char *serr);
 
 #ifdef TRACE
 static void trace_swe_calc(int param, double tjd, int ipl, long iflag, double *xx, char *serr);
@@ -153,13 +157,27 @@ long FAR PASCAL_CONV swe_calc(double tjd, int ipl, long iflag,
   double dt;
 #ifdef TRACE
 #ifdef FORCE_IFLAG
+  /*
+   * If this source file is compiled with /DFORCE_IFLAG or -DFORCE_IFLAG
+   * and also with TRACE, then the actual value of iflag used in swe_calc()
+   * can be manipulated from the outside of an application:
+   * Create a text file 'force.flg' and put one text line into it
+   * containing a number, e.g. 1024
+   * This number will be or'ed into the iflag used by the caller of swe_calc()
+   *
+   * See the code below for the details.
+   * This is not an important mechanism. We used it to debug an application
+   * which showed strange behaviour, by compiling a special DLL with TRACE and
+   * FORCE_IFLAG and then running the application with this DLL (we had no
+   * source code of the application itself).
+   */
   static int force_flag = 0;
   static long iflag_forced = 0;
   static int force_flag_checked = 0;
   FILE *fp;
   char s[AS_MAXCH], *sp;
   memset(x, 0, sizeof(double) * 6);
-  /* if the following file exists, the speed flag must be set */
+  /* if the following file exists, flag is read from it and or'ed into iflag */
   if (!force_flag_checked) {
     if ((fp = fopen(fname_force_flg, BFILE_R_ACCESS)) != NULL) {
       force_flag = 1;
@@ -321,6 +339,12 @@ return_error:
   return ERR; 
 }
 
+int32 FAR PASCAL_CONV swe_calc_ut(double tjd_ut, int32 ipl, int32 iflag, 
+	double *xx, char *serr) 
+{
+  return swe_calc(tjd_ut + swe_deltat(tjd_ut), ipl, iflag, xx, serr);
+}
+
 static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr) 
 {
   int i;
@@ -330,7 +354,11 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
   struct plan_data *pdp;
   struct plan_data *pedp = &swed.pldat[SEI_EARTH];
   struct plan_data *psdp = &swed.pldat[SEI_SUNBARY];
+#if 0
   struct node_data *ndp;
+#else
+  struct plan_data *ndp;
+#endif
   double *xp, *xp2;
   double ss[3];
   char serr2[AS_MAXCH];
@@ -373,16 +401,18 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
       strcpy(serr, "barycentric Moshier positions are not supported.");
     return ERR;
   }
-  if (epheflag != SEFLG_MOSEPH && !ephe_path_is_set)
+  if (epheflag != SEFLG_MOSEPH && !swed.ephe_path_is_set)
     swe_set_ephe_path(NULL);
+  if ((iflag & SEFLG_SIDEREAL) && !swed.ayana_is_set)
+    swe_set_sid_mode(SE_SIDM_FAGAN_BRADLEY, 0, 0);
   /****************************************** 
    * obliquity of ecliptic 2000 and of date * 
    ******************************************/
-  check_ecliptic(tjd);
+  swi_check_ecliptic(tjd);
   /******************************************
    * nutation                               * 
    ******************************************/
-  check_nutation(tjd, iflag);
+  swi_check_nutation(tjd, iflag);
   /****************************************** 
    * select planet and ephemeris            * 
    *                                        * 
@@ -420,24 +450,32 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
 	    strcat(serr, " \ntrying Swiss Eph; ");
 	  goto sweph_moon;
 	} else if (retc == BEYOND_EPH_LIMITS) {
+#ifndef NO_MOSHIER
 	  if (tjd > MOSHLUEPH_START && tjd < MOSHLUEPH_END) {
 	    iflag = (iflag & ~SEFLG_JPLEPH) | SEFLG_MOSEPH;
 	    if (serr != NULL && strlen(serr) + 30 < AS_MAXCH)
 	      strcat(serr, " \nusing Moshier Eph; ");
 	    goto moshier_moon;
 	  } else
+#endif
 	    goto return_error;
 	}
 	break;
 #endif
       case SEFLG_SWIEPH:
 	sweph_moon:
-	/* for hel. or bary. position, we need earth and sun as well */
-        if ((iflag & SEFLG_HELCTR) || (iflag & SEFLG_BARYCTR)) 
+#if 0
+	/* for hel. or bary. position, we need earth and sun as well;
+         * this is done by sweplan(), but not by swemoon() */
+        if (iflag & (SEFLG_HELCTR | SEFLG_BARYCTR | SEFLG_NOABERR)) 
 	  retc = sweplan(tjd, ipli, SEI_FILE_MOON, iflag, DO_SAVE,
 			NULL, NULL, NULL, NULL, serr);
 	else
 	  retc = swemoon(tjd, iflag, DO_SAVE, pdp->x, serr);/**/
+#else
+	retc = sweplan(tjd, ipli, SEI_FILE_MOON, iflag, DO_SAVE,
+			NULL, NULL, NULL, NULL, serr);
+#endif
 	if (retc == ERR)
 	  goto return_error;
 	/* if sweph file not found, switch to moshier */
@@ -469,8 +507,9 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
 	break;
     } 
     /* heliocentric, lighttime etc. */
-    retc = app_pos_etc_moon(iflag); /* retc is always ok */
-  /*********************i************************ 
+    if ((retc = app_pos_etc_moon(iflag, serr)) != OK)
+      goto return_error; /* retc may be wrong with sidereal calculation */
+  /********************************************** 
    * barycentric sun                            * 
    * (only JPL and SWISSEPH ephemerises)        *
    **********************************************/
@@ -551,7 +590,8 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
 	break;
     }
     /* flags */
-    retc = app_pos_etc_sbar(iflag); /* retc is always ok */
+    if ((retc = app_pos_etc_sbar(iflag, serr)) != OK)
+      goto return_error; 
     /* iflag has possibly changed */
     iflag = pedp->xflgs;
     /* barycentric sun is now in save area of barycentric earth.
@@ -627,14 +667,17 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
     ndp->teval = tjd;
     ndp->xflgs = -1; 	
     /* lighttime etc. */
-    retc = app_pos_etc_mean(SEI_MEAN_NODE, iflag);
+    if ((retc = app_pos_etc_mean(SEI_MEAN_NODE, iflag, serr)) != OK)
+      goto return_error;
     /* to avoid infinitesimal deviations from latitude = 0 
      * that result from conversions */
-    ndp->xreturn[1] = 0.0;	/* ecl. latitude       */
-    ndp->xreturn[4] = 0.0;	/*               speed */
-    ndp->xreturn[5] = 0.0;	/*      radial   speed */
-    ndp->xreturn[8] = 0.0;	/* z coordinate        */
-    ndp->xreturn[11] = 0.0;	/*               speed */
+    if (!(iflag & SEFLG_SIDEREAL) && !(iflag & SEFLG_J2000)) {
+      ndp->xreturn[1] = 0.0;	/* ecl. latitude       */
+      ndp->xreturn[4] = 0.0;	/*               speed */
+      ndp->xreturn[5] = 0.0;	/*      radial   speed */
+      ndp->xreturn[8] = 0.0;	/* z coordinate        */
+      ndp->xreturn[11] = 0.0;	/*               speed */
+    }
     if (retc == ERR)
       goto return_error;
   /********************************************** 
@@ -664,7 +707,8 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
     ndp->teval = tjd;
     ndp->xflgs = -1; 	
     /* lighttime etc. */
-    retc = app_pos_etc_mean(SEI_MEAN_APOG, iflag);
+    if ((retc = app_pos_etc_mean(SEI_MEAN_APOG, iflag, serr)) != OK)
+      goto return_error;
     /* to avoid infinitesimal deviations from r-speed = 0 
      * that result from conversions */
     ndp->xreturn[5] = 0.0;	/*               speed */
@@ -686,10 +730,12 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
     iflag = ndp->xflgs;
     /* to avoid infinitesimal deviations from latitude = 0 
      * that result from conversions */
-    ndp->xreturn[1] = 0.0;	/* ecl. latitude       */
-    ndp->xreturn[4] = 0.0;	/*               speed */
-    ndp->xreturn[8] = 0.0;	/* z coordinate        */
-    ndp->xreturn[11] = 0.0;	/*               speed */
+    if (!(iflag & SEFLG_SIDEREAL) && !(iflag & SEFLG_J2000)) {
+      ndp->xreturn[1] = 0.0;	/* ecl. latitude       */
+      ndp->xreturn[4] = 0.0;	/*               speed */
+      ndp->xreturn[8] = 0.0;	/* z coordinate        */
+      ndp->xreturn[11] = 0.0;	/*               speed */
+    }
     if (retc == ERR)
       goto return_error;
   /*********************************************** 
@@ -744,6 +790,19 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
       ifno = SEI_FILE_ANY_AST;
     else
       ifno = SEI_FILE_MAIN_AST;
+    if (ipli == SEI_CHIRON && (tjd < CHIRON_START || tjd > CHIRON_END)) {
+      if (serr != NULL)
+	sprintf(serr, "Chiron's ephemeris is restricted to JD %8.1f - JD %8.1f",
+		CHIRON_START, CHIRON_END);
+      return ERR;
+    }
+    if (ipli == SEI_PHOLUS && tjd < PHOLUS_START) {
+      if (serr != NULL)
+	sprintf(serr, 
+		"Pholus's ephemeris is restricted to the time after JD %8.1f",
+		PHOLUS_START);
+      return ERR;
+    }
   do_asteroid:
     /* earth and sun are also needed */
     retc = main_planet(tjd, SEI_EARTH, epheflag, iflag, serr);
@@ -785,7 +844,7 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
       strcat(serr, serr2);
     }
   /*********************************************** 
-   * ficticious planets                          *    
+   * fictitious planets                          *    
    * (Isis-Transpluto and Uranian planets)       *
    ***********************************************/
   } else if (ipl >= SE_FICT_OFFSET && ipl <= SE_FICT_OFFSET + SE_NFICT_ELEM) {
@@ -808,7 +867,8 @@ static long swecalc(double tjd, int ipl, long iflag, double *x, char *serr)
     xp = pdp->xreturn;
   do_fict_plan:
     /* planet from osculating elements */
-    swi_osc_el_plan(tjd, pdp->x, ipl-SE_FICT_OFFSET, ipli);
+    if (swi_osc_el_plan(tjd, pdp->x, ipl-SE_FICT_OFFSET, ipli, serr) != OK)
+      goto return_error;
     /* the earth for geocentric position */
     retc = main_planet(tjd, SEI_EARTH, epheflag, iflag, serr);
     /* iflag (ephemeris bit) has possibly changed in main_planet() */
@@ -876,9 +936,15 @@ void FAR PASCAL_CONV swe_close(void)
     }
     memset((void *) &swed.pldat[i], 0, sizeof(struct plan_data));
   }
+  for (i = 0; i <= SE_NPLANETS; i++) /* "<=" is correct! see decl. */
+    memset((void *) &swed.savedat[i], 0, sizeof(struct save_positions));
   /* clear node data space */
   for (i = 0; i < SEI_NNODE_ETC; i++) {
+#if 0
     memset((void *) &swed.nddat[i], 0, sizeof(struct node_data));
+#else
+    memset((void *) &swed.nddat[i], 0, sizeof(struct plan_data));
+#endif
   }
   memset((void *) &swed.oec, 0, sizeof(struct epsilon));
   memset((void *) &swed.oec2000, 0, sizeof(struct epsilon));
@@ -891,25 +957,27 @@ void FAR PASCAL_CONV swe_close(void)
 #endif
   swed.jpl_file_is_open = FALSE;
   /* close fixed stars */
-  if (fixfp != NULL) {
-    fclose(fixfp);
-    fixfp = NULL;
+  if (swed.fixfp != NULL) {
+    fclose(swed.fixfp);
+    swed.fixfp = NULL;
   }
 #ifdef TRACE
+#define TRACE_CLOSE FALSE
   swi_open_trace(NULL);
   if (swi_fp_trace_c != NULL) {
     if (swi_trace_count < TRACE_COUNT_MAX) {
       fputs("\n/*SWE_CLOSE*/\n", swi_fp_trace_c);
       fputs("  swe_close();\n", swi_fp_trace_c);
-#if 0
+#if TRACE_CLOSE
       fputs("}\n", swi_fp_trace_c);
 #endif
+      fflush(swi_fp_trace_c);
     }
-#if 0
+#if TRACE_CLOSE
     fclose(swi_fp_trace_c);
 #endif
   }
-#if 0
+#if TRACE_CLOSE
   if (swi_fp_trace_out != NULL)
     fclose(swi_fp_trace_out);
   swi_fp_trace_c = NULL;
@@ -928,7 +996,7 @@ void FAR PASCAL_CONV swe_set_ephe_path(char *path)
   int i;
   char s[AS_MAXCH];
   char *sp;
-  ephe_path_is_set = TRUE;
+  swed.ephe_path_is_set = TRUE;
   /* close all open files and delete all planetary data */
   swe_close();
   /* environment variable SE_EPHE_PATH has priority */
@@ -959,6 +1027,7 @@ void FAR PASCAL_CONV swe_set_ephe_path(char *path)
       fputs("  printf(\"swe_set_ephe_path: path_in = \");", swi_fp_trace_c);
       fputs("  printf(s);\n", swi_fp_trace_c);
       fputs("  \tprintf(\"\\tpath_set = unknown to swetrace\\n\"); /* unknown to swetrace */\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
     if (swi_fp_trace_out != NULL) {
       fputs("swe_set_ephe_path: path_in = ", swi_fp_trace_out);
@@ -967,6 +1036,7 @@ void FAR PASCAL_CONV swe_set_ephe_path(char *path)
       fputs("\tpath_set = ", swi_fp_trace_out);
       fputs(s, swi_fp_trace_out);
       fputs("\n", swi_fp_trace_out);
+      fflush(swi_fp_trace_out);
     }
   }
 #endif
@@ -1001,6 +1071,7 @@ void FAR PASCAL_CONV swe_set_jpl_file(char *fname)
       fputs("  printf(\"swe_set_jpl_file: fname_in = \");", swi_fp_trace_c);
       fputs("  printf(s);\n", swi_fp_trace_c);
       fputs("  printf(\"\\tfname_set = unknown to swetrace\\n\");  /* unknown to swetrace */\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
     if (swi_fp_trace_out != NULL) {
       fputs("swe_set_jpl_file: fname_in = ", swi_fp_trace_out);
@@ -1008,6 +1079,7 @@ void FAR PASCAL_CONV swe_set_jpl_file(char *fname)
       fputs("\tfname_set = ", swi_fp_trace_out);
       fputs(sp, swi_fp_trace_out);
       fputs("\n", swi_fp_trace_out);
+      fflush(swi_fp_trace_out);
     }
   }
 #endif
@@ -1084,12 +1156,14 @@ static int main_planet(double tjd, int ipli, long epheflag, long iflag,
 	  strcat(serr, " \ntrying Swiss Eph; ");
 	goto sweph_planet;
       } else if (retc == BEYOND_EPH_LIMITS) {
+#ifndef NO_MOSHIER
 	if (tjd > MOSHPLEPH_START && tjd < MOSHPLEPH_END) {
 	  iflag = (iflag & ~SEFLG_JPLEPH) | SEFLG_MOSEPH;
 	  if (serr != NULL && strlen(serr) + 30 < AS_MAXCH)
 	    strcat(serr, " \nusing Moshier Eph; ");
 	  goto moshier_planet;
 	} else
+#endif
 	  return ERR;
       }
       break;
@@ -1329,10 +1403,15 @@ static int sweplan(double tjd, int ipli, int ifno, long iflag, AS_BOOL do_save,
   if (do_save || ipli == SEI_EARTH || xperet != NULL)
     do_earth = TRUE;
   if (ipli == SEI_MOON) { 
-    if (iflag & (SEFLG_HELCTR | SEFLG_BARYCTR)) 
+#if 0
+  if (iflag & (SEFLG_HELCTR | SEFLG_BARYCTR | SEFLG_NOABERR)) 
       do_earth = TRUE;
-    if (iflag & SEFLG_HELCTR)
+  if (iflag & (SEFLG_HELCTR | SEFLG_NOABERR))
       do_sunbary = TRUE;
+#else
+    do_earth = TRUE;
+    do_sunbary = TRUE;
+#endif
   }
   if (do_save || ipli == SEI_MOON || ipli == SEI_EARTH || xperet != NULL || xpmret != NULL)
     do_moon = TRUE;
@@ -1504,10 +1583,10 @@ static int jplplan(double tjd, int ipli, long iflag, AS_BOOL do_save,
     xps = xxs;
   }
   if (do_save || ipli == SEI_EARTH || xperet != NULL 
-    || (ipli == SEI_MOON && (iflag & (SEFLG_HELCTR | SEFLG_BARYCTR))))
+    || (ipli == SEI_MOON)) /* && (iflag & (SEFLG_HELCTR | SEFLG_BARYCTR | SEFLG_NOABERR)))) */
     do_earth = TRUE;
   if (do_save || ipli == SEI_SUNBARY || xpsret != NULL 
-    || (ipli == SEI_MOON && (iflag & SEFLG_HELCTR))) 
+    || (ipli == SEI_MOON)) /* && (iflag & (SEFLG_HELCTR | SEFLG_NOABERR)))) */
     do_sunbary = TRUE;
   if (ipli == SEI_MOON)
     ictr = J_EARTH;
@@ -1667,7 +1746,7 @@ static int sweph(double tjd, int ipli, int ifno, long iflag, double *xsunb, AS_B
   if (fdp->fptr == NULL) {
     swi_gen_filename(tjd, ipli, fname); 
     strcpy(subdirnam, fname);
-    sp = strrchr(subdirnam, *DIR_GLUE);
+    sp = strrchr(subdirnam, (int) *DIR_GLUE);
     if (sp != NULL) {
       *sp = '\0';
       subdirlen = strlen(subdirnam);
@@ -1697,7 +1776,7 @@ again:
 	 */
         spp--;	/* point to the character before '.' which must be a 's' */
 	strcpy(spp, spp + 1);	/* remove the s */
-	if (subdirlen > 0 && strncmp(s, subdirnam, subdirlen) == 0) {
+	if (subdirlen > 0 && strncmp(s, subdirnam, (size_t) subdirlen) == 0) {
 	  strcpy(s, s + subdirlen + 1);	/* remove "ast0/" etc. */
 	  goto again;
 	}
@@ -1769,7 +1848,7 @@ again:
    * have to compute barycentric earth and subtract heliocentric
    * earth from it. this may be necessary with calls from 
    * sweplan() and from app_pos_etc_sun() (light-time). */
-  if (ipl == SEI_SUNBARY && pdp->iflg & SEI_FLG_EMBHEL) {
+  if (ipl == SEI_SUNBARY && (pdp->iflg & SEI_FLG_EMBHEL)) {
     /* sweph() calls sweph() !!! for EMB.
      * Attention: a new calculation must be forced in any case.
      * Otherwise EARTH (instead of EMB) will possibly taken from 
@@ -1779,7 +1858,7 @@ again:
      */
     tsv = pedp->teval;
     pedp->teval = 0;
-    retc = sweph(tjd, SEI_EMB, ifno, iflag, NULL, NO_SAVE, xemb, serr);
+    retc = sweph(tjd, SEI_EMB, ifno, iflag | SEFLG_SPEED, NULL, NO_SAVE, xemb, serr);
     if (retc != OK) 
       return(retc);
     pedp->teval = tsv;
@@ -1823,9 +1902,14 @@ FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr)
 {
   int np, i, j;
   FILE *fp = NULL;
-  struct file_data *fdp = &swed.fidat[ifno];
+  char *fnamp, fn[AS_MAXCH];
   char *cpos[20];
   char s[2 * AS_MAXCH], *s1 = s + AS_MAXCH;	/* a little trick */
+  if (ifno >= 0) {
+    fnamp = swed.fidat[ifno].fnam;
+  } else {
+    fnamp = fn; 
+  }
   strcpy(s1, ephepath);
   np = swi_cutstr(s1, PATH_SEPARATOR, cpos, 20);
   for (i = 0; i < np; i++) {
@@ -1837,15 +1921,15 @@ FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr)
       if (*(s + j - 1) != *DIR_GLUE && *s != '\0')
 	strcat(s, DIR_GLUE);
     }
-    strcpy(fdp->fnam, s);
-    if (strlen(fdp->fnam) + strlen(fname) < AS_MAXCH)
-      strcat(fdp->fnam, fname);
+    strcpy(fnamp, s);
+    if (strlen(fnamp) + strlen(fname) < AS_MAXCH)
+      strcat(fnamp, fname);
     else {
       if (serr != NULL)
 	sprintf(serr, "error: file path and name must be shorter than %d.", AS_MAXCH);
       return NULL;
     }
-    fp = fopen(fdp->fnam, BFILE_R_ACCESS);
+    fp = fopen(fnamp, BFILE_R_ACCESS);
     if (fp != NULL) 
       return fp;
   }
@@ -1921,8 +2005,8 @@ static int app_pos_etc_plan(int ipli, long iflag, char *serr)
   /* if topocentric position is wanted  */
   if (iflag & SEFLG_TOPOCTR) { 
     if (swed.topd.teval != pedp->teval
-      && pedp->teval != 0) {
-      if (get_observer(pedp->teval, iflag, pedp->x, DO_SAVE, xobs, serr) != OK)
+      || swed.topd.teval == 0) {
+      if (swi_get_observer(pedp->teval, iflag, DO_SAVE, xobs, serr) != OK)
         return ERR;
     } else {
       for (i = 0; i <= 5; i++)
@@ -2018,7 +2102,7 @@ static int app_pos_etc_plan(int ipli, long iflag, char *serr)
 	  return(retc);
         /* for accuracy in speed, we need earth as well */
 	if ((iflag & SEFLG_SPEED)
-	  && !(iflag & SEFLG_HELCTR) & !(iflag & SEFLG_BARYCTR)) { 	
+	  && !(iflag & SEFLG_HELCTR) && !(iflag & SEFLG_BARYCTR)) { 	
 	  retc = swi_pleph(t, J_EARTH, J_SBARY, xearth, serr);
 	  if (retc != OK) {
 	    swi_close_jpl_file();
@@ -2087,7 +2171,7 @@ static int app_pos_etc_plan(int ipli, long iflag, char *serr)
     if (iflag & SEFLG_SPEED) {
       /* observer position for t(light-time) */
       if (iflag & SEFLG_TOPOCTR) {
-        if (get_observer(t, iflag, xearth, NO_SAVE, xobs2, serr) != OK)
+        if (swi_get_observer(t, iflag, NO_SAVE, xobs2, serr) != OK)
           return ERR;
         for (i = 0; i <= 5; i++)
           xobs2[i] += xearth[i];
@@ -2131,13 +2215,13 @@ static int app_pos_etc_plan(int ipli, long iflag, char *serr)
    ************************************/
   if (!(iflag & SEFLG_TRUEPOS) && !(iflag & SEFLG_NOGDEFL))
 		/* SEFLG_NOGDEFL is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
-    deflect_light(xx, dtsave_for_defl, iflag);
+    swi_deflect_light(xx, dtsave_for_defl, iflag);
   /**********************************
    * 'annual' aberration of light   *
    **********************************/
   if (!(iflag & SEFLG_TRUEPOS) && !(iflag & SEFLG_NOABERR)) {
 		/* SEFLG_NOABERR is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
-    aberr_light(xx, xobs, iflag);
+    swi_aberr_light(xx, xobs, iflag);
     /* 
      * Apparent speed is also influenced by
      * the difference of speed of the earth between t and t-dt. 
@@ -2147,27 +2231,39 @@ static int app_pos_etc_plan(int ipli, long iflag, char *serr)
       for (i = 3; i <= 5; i++) 
 	xx[i] += xobs[i] - xobs2[i];
   }
+  /* save J2000 coordinates; required for sidereal positions */
+  for (i = 0; i <= 5; i++)
+    xxsv[i] = xx[i];
   /************************************************
    * precession, equator 2000 -> equator of date *
    ************************************************/
   if (!(iflag & SEFLG_J2000)) {
     swi_precess(xx, pdp->teval, J2000_TO_J);
     if (iflag & SEFLG_SPEED)
-      precess_speed(xx, pdp->teval, J2000_TO_J);
+      swi_precess_speed(xx, pdp->teval, J2000_TO_J);
     oe = &swed.oec;
   } else
     oe = &swed.oec2000;
+  return app_pos_rest(pdp, iflag, xx, xxsv, oe, serr);
+}
+
+static int app_pos_rest(struct plan_data *pdp, long iflag, 
+                        double *xx, double *x2000, 
+                        struct epsilon *oe, char *serr) 
+{
+  int i;
   /************************************************
    * nutation                                     *
    ************************************************/
-  if (!(iflag & SEFLG_NONUT)) {
-    nutate(xx, iflag, FALSE);
-  }
-  /* now we have equatorial cartesian coordinates */
+  if (!(iflag & SEFLG_NONUT))
+    swi_nutate(xx, iflag, FALSE);
+  /* now we have equatorial cartesian coordinates; save them */
   for (i = 0; i <= 5; i++)
     pdp->xreturn[18+i] = xx[i];
   /************************************************
-   * transformation to ecliptic                   *
+   * transformation to ecliptic.                  *
+   * with sidereal calc. this will be overwritten *
+   * afterwards.                                  *
    ************************************************/
   swi_coortrf2(xx, xx, oe->seps, oe->ceps);
   if (iflag & SEFLG_SPEED)
@@ -2180,6 +2276,25 @@ static int app_pos_etc_plan(int ipli, long iflag, char *serr)
   /* now we have ecliptic cartesian coordinates */
   for (i = 0; i <= 5; i++)
     pdp->xreturn[6+i] = xx[i];
+  /************************************
+   * sidereal positions               *
+   ************************************/
+  if (iflag & SEFLG_SIDEREAL) {
+    /* project onto ecliptic t0 */
+    if (swed.sidd.sid_mode & SE_SIDBIT_ECL_T0) {
+      if (swi_trop_ra2sid_lon(x2000, pdp->xreturn+6, pdp->xreturn+18, iflag, serr) != OK)
+	return ERR;
+    /* project onto solar system equator */
+    } else if (swed.sidd.sid_mode & SE_SIDBIT_SSY_PLANE) {
+      if (swi_trop_ra2sid_lon_sosy(x2000, pdp->xreturn+6, pdp->xreturn+18, iflag, serr) != OK)
+	return ERR;
+    } else {
+    /* traditional algorithm */
+      swi_cartpol_sp(pdp->xreturn+6, pdp->xreturn); 
+      pdp->xreturn[0] -= swe_get_ayanamsa(pdp->teval) * DEGTORAD;
+      swi_polcart_sp(pdp->xreturn, pdp->xreturn+6); 
+    }
+  } 
   /************************************************
    * transformation to polar coordinates          *
    ************************************************/
@@ -2197,7 +2312,152 @@ static int app_pos_etc_plan(int ipli, long iflag, char *serr)
   /* save, what has been done */
   pdp->xflgs = iflag;
   pdp->iephe = iflag & SEFLG_EPHMASK;
-  return(OK);
+  return OK;
+}
+
+void FAR PASCAL_CONV swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
+{
+  struct sid_data *sip = &swed.sidd;
+  sip->sid_mode = sid_mode;
+  if (sid_mode >= SE_SIDBITS)
+    sid_mode %= SE_SIDBITS;
+  /* standard equinoxes: positions always referred to ecliptic of t0 */
+  if (sid_mode == SE_SIDM_J2000 
+	  || sid_mode == SE_SIDM_J1900 
+	  || sid_mode == SE_SIDM_B1950) {
+    sip->sid_mode |= SE_SIDBIT_ECL_T0;
+  }
+  if (sid_mode >= SE_NSIDM_PREDEF && sid_mode != SE_SIDM_USER) {
+    sip->sid_mode = sid_mode = SE_SIDM_FAGAN_BRADLEY;
+  }
+  swed.ayana_is_set = TRUE;
+  if (sid_mode == SE_SIDM_USER) {
+    sip->t0 = t0;
+    sip->ayan_t0 = ayan_t0;
+  } else {
+    sip->t0 = ayanamsa[sid_mode].t0;
+    sip->ayan_t0 = ayanamsa[sid_mode].ayan_t0;
+  }
+  swi_force_app_pos_etc();
+}
+
+/* the ayanamsa (precession in longitude) 
+ * according to Newcomb's definition: 360 -
+ * longitude of the vernal point of t referred to the
+ * ecliptic of t0.
+ */
+double FAR PASCAL_CONV swe_get_ayanamsa(double tjd_et)
+{
+  double x[6], eps;
+  struct sid_data *sip = &swed.sidd;
+  if (!swed.ayana_is_set)
+    swe_set_sid_mode(SE_SIDM_FAGAN_BRADLEY, 0, 0);
+  /* vernal point (tjd), cartesian */
+  x[0] = 1; 
+  x[1] = x[2] = 0;
+  /* to J2000 */
+  if (tjd_et != J2000)
+    swi_precess(x, tjd_et, J_TO_J2000);
+  /* to t0 */
+  swi_precess(x, sip->t0, J2000_TO_J);
+  /* to ecliptic */
+  eps = swi_epsiln(sip->t0);
+  swi_coortrf(x, x, eps);
+  /* to polar */
+  swi_cartpol(x, x);
+  /* subtract initial value of ayanamsa */
+  x[0] = x[0] * RADTODEG - sip->ayan_t0;
+  /* get ayanamsa */
+  return swe_degnorm(-x[0]);
+}
+
+double FAR PASCAL_CONV swe_get_ayanamsa_ut(double tjd_ut)
+{
+  return swe_get_ayanamsa(tjd_ut + swe_deltat(tjd_ut));
+}
+
+/* 
+ * input coordinates are J2000, cartesian.
+ * xout 	ecliptical sidereal position
+ * xoutr 	equatorial sidereal position
+ */
+int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, long iflag, char *serr)
+{
+  double x[6];
+  int i;
+  struct sid_data *sip = &swed.sidd;
+  struct epsilon oectmp;
+  for (i = 0; i <= 5; i++)
+    x[i] = xin[i];
+  if (sip->t0 != J2000) {
+    swi_precess(x, sip->t0, J2000_TO_J);
+    swi_precess(x+3, sip->t0, J2000_TO_J);	/* speed */
+  }
+  for (i = 0; i <= 5; i++)
+    xoutr[i] = x[i];
+  calc_epsilon(swed.sidd.t0, &oectmp);
+  swi_coortrf2(x, x, oectmp.seps, oectmp.ceps);
+  if (iflag & SEFLG_SPEED)
+    swi_coortrf2(x+3, x+3, oectmp.seps, oectmp.ceps);
+  /* to polar coordinates */
+  swi_cartpol_sp(x, x); 
+  /* subtract ayan_t0 */
+  x[0] -= sip->ayan_t0 * DEGTORAD;
+  /* back to cartesian */
+  swi_polcart_sp(x, xout); 
+  return OK;
+}
+
+/* 
+ * input coordinates are J2000, cartesian.
+ * xout 	ecliptical sidereal position
+ * xoutr 	equatorial sidereal position
+ */
+int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, double *xoutr, long iflag, char *serr)
+{
+  double x[6], x0[6];
+  int i;
+  struct sid_data *sip = &swed.sidd;
+  struct epsilon *oe = &swed.oec2000;
+  double plane_node = SSY_PLANE_NODE_E2000;
+  double plane_incl = SSY_PLANE_INCL;
+  for (i = 0; i <= 5; i++)
+    x[i] = xin[i];
+  /* planet to ecliptic 2000 */
+  swi_coortrf2(x, x, oe->seps, oe->ceps);
+  if (iflag & SEFLG_SPEED)
+    swi_coortrf2(x+3, x+3, oe->seps, oe->ceps);
+  /* to polar coordinates */
+  swi_cartpol_sp(x, x); 
+  /* to solar system equator */
+  x[0] -= plane_node;
+  swi_polcart_sp(x, x);
+  swi_coortrf(x, x, plane_incl);
+  swi_coortrf(x+3, x+3, plane_incl);
+  swi_cartpol_sp(x, x); 
+  /* zero point of t0 in J2000 system */
+  x0[0] = 1; 
+  x0[1] = x0[2] = 0;
+  if (sip->t0 != J2000)
+    swi_precess(x0, sip->t0, J_TO_J2000);
+  /* zero point to ecliptic 2000 */
+  swi_coortrf2(x0, x0, oe->seps, oe->ceps);
+  /* to polar coordinates */
+  swi_cartpol(x0, x0); 
+  /* to solar system equator */
+  x0[0] -= plane_node;
+  swi_polcart(x0, x0);
+  swi_coortrf(x0, x0, plane_incl);
+  swi_cartpol(x0, x0); 
+  /* measure planet from zero point */
+  x[0] -= x0[0];
+  x[0] *= RADTODEG;
+  /* subtract ayan_t0 */
+  x[0] -= sip->ayan_t0;
+  x[0] = swe_degnorm(x[0]) * DEGTORAD;
+  /* back to cartesian */
+  swi_polcart_sp(x, xout); 
+  return OK;
 }
 
 /* converts planets from barycentric to geocentric,
@@ -2243,8 +2503,8 @@ static int app_pos_etc_plan_osc(int ipl, int ipli, long iflag, char *serr)
   /* if topocentric position is wanted  */
   if (iflag & SEFLG_TOPOCTR) { 
     if (swed.topd.teval != pedp->teval
-      && pedp->teval != 0) {
-      if (get_observer(pedp->teval, iflag, pedp->x, DO_SAVE, xobs, serr) != OK)
+      || swed.topd.teval == 0) {
+      if (swi_get_observer(pedp->teval, iflag, DO_SAVE, xobs, serr) != OK)
         return ERR;
     } else {
       for (i = 0; i <= 5; i++)
@@ -2312,13 +2572,14 @@ static int app_pos_etc_plan_osc(int ipl, int ipli, long iflag, char *serr)
       for (i = 0; i <= 2; i++) 
 	xxsp[i] = pdp->x[i] - xx[i] - xxsp[i];
       t = pdp->teval - dt;
-      swi_osc_el_plan(t, xx, ipl-SE_FICT_OFFSET, ipli);
+      if (swi_osc_el_plan(t, xx, ipl-SE_FICT_OFFSET, ipli, serr) != OK)
+	return ERR;
       /* for accuracy in speed, we will need earth as well */
       retc = main_planet_bary(t, SEI_EARTH, epheflag, iflag, NO_SAVE, xearth, xearth, xsun, xmoon, serr);
       if (retc != OK)
 	return(retc);
       if (iflag & SEFLG_TOPOCTR) {
-        if (get_observer(t, iflag, xearth, NO_SAVE, xobs2, serr) != OK)
+        if (swi_get_observer(t, iflag, NO_SAVE, xobs2, serr) != OK)
           return ERR;
         for (i = 0; i <= 5; i++)
           xobs2[i] += xearth[i];
@@ -2358,13 +2619,13 @@ static int app_pos_etc_plan_osc(int ipl, int ipli, long iflag, char *serr)
    ************************************/
   if (!(iflag & SEFLG_TRUEPOS) && !(iflag & SEFLG_NOGDEFL)) 
 		/* SEFLG_NOGDEFL is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
-    deflect_light(xx, dtsave_for_defl, iflag);
+    swi_deflect_light(xx, dtsave_for_defl, iflag);
   /**********************************
    * 'annual' aberration of light   *
    **********************************/
   if (!(iflag & SEFLG_TRUEPOS) && !(iflag & SEFLG_NOABERR)) {
 		/* SEFLG_NOABERR is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
-    aberr_light(xx, xobs, iflag);
+    swi_aberr_light(xx, xobs, iflag);
     /* 
      * Apparent speed is also influenced by
      * the difference of speed of the earth between t and t-dt. 
@@ -2374,63 +2635,26 @@ static int app_pos_etc_plan_osc(int ipl, int ipli, long iflag, char *serr)
       for (i = 3; i <= 5; i++) 
 	xx[i] += xobs[i] - xobs2[i];
   }
+  /* save J2000 coordinates; required for sidereal positions */
+  for (i = 0; i <= 5; i++)
+    xxsv[i] = xx[i];
   /************************************************
    * precession, equator 2000 -> equator of date *
    ************************************************/
   if (!(iflag & SEFLG_J2000)) {
     swi_precess(xx, pdp->teval, J2000_TO_J);
     if (iflag & SEFLG_SPEED)
-      precess_speed(xx, pdp->teval, J2000_TO_J);
+      swi_precess_speed(xx, pdp->teval, J2000_TO_J);
     oe = &swed.oec;
   } else
     oe = &swed.oec2000;
-  /************************************************
-   * nutation                                     *
-   ************************************************/
-  if (!(iflag & SEFLG_NONUT)) {
-    nutate(xx, iflag, FALSE);
-  }
-  /* now we have equatorial cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pdp->xreturn[18+i] = xx[i];
-  /************************************************
-   * transformation to ecliptic                   *
-   ************************************************/
-  swi_coortrf2(xx, xx, oe->seps, oe->ceps);
-  if (iflag & SEFLG_SPEED)
-    swi_coortrf2(xx+3, xx+3, oe->seps, oe->ceps);
-  if ((iflag & SEFLG_NONUT) == 0) {
-    swi_coortrf2(xx, xx, swed.nut.snut, swed.nut.cnut);
-    if (iflag & SEFLG_SPEED)
-      swi_coortrf2(xx+3, xx+3, swed.nut.snut, swed.nut.cnut);
-  }
-  /* now we have ecliptic cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pdp->xreturn[6+i] = xx[i];
-  /************************************************
-   * transformation to polar coordinates          *
-   ************************************************/
-  swi_cartpol_sp(pdp->xreturn+18, pdp->xreturn+12); 
-  swi_cartpol_sp(pdp->xreturn+6, pdp->xreturn); 
-  /********************** 
-   * radians to degrees *
-   **********************/
-  for (i = 0; i < 2; i++) {
-    pdp->xreturn[i] *= RADTODEG;		/* ecliptic */
-    pdp->xreturn[i+3] *= RADTODEG;
-    pdp->xreturn[i+12] *= RADTODEG;	/* equator */
-    pdp->xreturn[i+15] *= RADTODEG;
-  }
-  /* save, what has been done */
-  pdp->xflgs = iflag;
-  pdp->iephe = iflag & SEFLG_EPHMASK;
-  return OK;
+  return app_pos_rest(pdp, iflag, xx, xxsv, oe, serr);
 }
 
 /* influence of precession on speed 
  * xx		position and speed of planet in equatorial cartesian
  *		coordinates */
-static void precess_speed(double *xx, double t, int direction) 
+void swi_precess_speed(double *xx, double t, int direction) 
 {
   struct epsilon *oe;
   double fac;
@@ -2460,7 +2684,7 @@ static void precess_speed(double *xx, double t, int direction)
 /* multiplies cartesian equatorial coordinates with previously
  * calculated nutation matrix. also corrects speed. 
  */
-static void nutate(double *xx, long iflag, AS_BOOL backward)
+void swi_nutate(double *xx, long iflag, AS_BOOL backward)
 {
   int i;
   double x[6], xv[6];
@@ -2512,7 +2736,7 @@ static void nutate(double *xx, long iflag, AS_BOOL backward)
  *              and gravitational light deflection
  * xe    	earth's position and speed
  */
-static void aberr_light(double *xx, double *xe, long iflag) {
+void swi_aberr_light(double *xx, double *xe, long iflag) {
   int i;
   double xxs[6], v[6], u[6], ru;
   double xx2[6], dx1, dx2;
@@ -2556,7 +2780,7 @@ static void aberr_light(double *xx, double *xe, long iflag) {
  * xx		planet's position accounted for light-time
  * dt		dt of light-time
  */
-static void deflect_light(double *xx, double dt, long iflag) 
+void swi_deflect_light(double *xx, double dt, long iflag) 
 {
   int i;
   double xx2[6];
@@ -2716,7 +2940,7 @@ static int app_pos_etc_sun(long iflag, char *serr)
 {
   int i, j, niter, retc = OK;
   long flg1, flg2;
-  double xx[6], dx[3], dt, t;
+  double xx[6], xxsv[6], dx[3], dt, t;
   double xearth[6], xsun[6], xobs[6];
   struct plan_data *pedp = &swed.pldat[SEI_EARTH];
   struct plan_data *psdp = &swed.pldat[SEI_SUNBARY];
@@ -2736,8 +2960,8 @@ static int app_pos_etc_sun(long iflag, char *serr)
   /* if topocentric position is wanted  */
   if (iflag & SEFLG_TOPOCTR) { 
     if (swed.topd.teval != pedp->teval
-      && pedp->teval != 0) {
-      if (get_observer(pedp->teval, iflag, pedp->x, DO_SAVE, xobs, serr) != OK)
+      || swed.topd.teval == 0) {
+      if (swi_get_observer(pedp->teval, iflag, DO_SAVE, xobs, serr) != OK)
         return ERR;
     } else {
       for (i = 0; i <= 5; i++)
@@ -2859,79 +3083,50 @@ static int app_pos_etc_sun(long iflag, char *serr)
    **********************************/
   if (!(iflag & SEFLG_TRUEPOS) && !(iflag & SEFLG_NOABERR)) {
 		/* SEFLG_NOABERR is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
-    aberr_light(xx, xobs, iflag);
+    swi_aberr_light(xx, xobs, iflag);
   }
+  /* save J2000 coordinates; required for sidereal positions */
+  for (i = 0; i <= 5; i++)
+    xxsv[i] = xx[i];
   /************************************************
    * precession, equator 2000 -> equator of date *
    ************************************************/
   if (!(iflag & SEFLG_J2000)) {
     swi_precess(xx, pedp->teval, J2000_TO_J);/**/
     if (iflag & SEFLG_SPEED)
-      precess_speed(xx, pedp->teval, J2000_TO_J);/**/ 
+      swi_precess_speed(xx, pedp->teval, J2000_TO_J);/**/ 
     oe = &swed.oec;
   } else
     oe = &swed.oec2000;
-  /************************************************
-   * nutation                                     *
-   ************************************************/
-  if (!(iflag & SEFLG_NONUT)) {
-    nutate(xx, iflag, FALSE);
-  }
-  /* now we have equatorial cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pedp->xreturn[18+i] = xx[i];
-  /************************************************
-   * transformation to ecliptic                   *
-   ************************************************/
-  swi_coortrf2(xx, xx, oe->seps, oe->ceps);
-  if (iflag & SEFLG_SPEED)
-    swi_coortrf2(xx+3, xx+3, oe->seps, oe->ceps);
-  if ((iflag & SEFLG_NONUT) == 0) {
-    swi_coortrf2(xx, xx, swed.nut.snut, swed.nut.cnut);
-    if (iflag & SEFLG_SPEED)
-      swi_coortrf2(xx+3, xx+3, swed.nut.snut, swed.nut.cnut);
-  }
-  /* now we have ecliptic cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pedp->xreturn[6+i] = xx[i];
-  /************************************************
-   * transformation to polar coordinates          *
-   ************************************************/
-  swi_cartpol_sp(pedp->xreturn+18, pedp->xreturn+12); 
-  swi_cartpol_sp(pedp->xreturn+6, pedp->xreturn); 
-  /********************** 
-   * radians to degrees *
-   **********************/
-  for (i = 0; i < 2; i++) {
-    pedp->xreturn[i] *= RADTODEG;		/* ecliptic */
-    pedp->xreturn[i+3] *= RADTODEG;
-    pedp->xreturn[i+12] *= RADTODEG;	/* equator */
-    pedp->xreturn[i+15] *= RADTODEG;
-  }
-  /* save, what has been done */
-  pedp->xflgs = iflag;
-  pedp->iephe = iflag & SEFLG_EPHMASK;
-  return(OK);
+  return app_pos_rest(pedp, iflag, xx, xxsv, oe, serr);
 }
 
 
 /* transforms the position of the moon:
  * heliocentric position
- * light-time
+ * barycentric position
+ * astrometric position
+ * apparent position
  * precession and nutation
- * according to flags
- * iflag	flags
- * serr         error string
+ * 
+ * note: 
+ * for apparent positions, we consider the earth-moon
+ * system as independant.
+ * for astrometric positions (SEFLG_NOABERR), we 
+ * consider the motions of the earth and the moon 
+ * related to the solar system barycenter.
  */
-static int app_pos_etc_moon(long iflag)
+static int app_pos_etc_moon(long iflag, char *serr)
 {
   int i;
   long flg1, flg2;
-  double xx[6], xobs[6], dt;
+  double xx[6], xxsv[6], xobs[6], xxm[6], xs[6], xe[6], xobs2[6], dt;
   struct plan_data *pedp = &swed.pldat[SEI_EARTH];
   struct plan_data *psdp = &swed.pldat[SEI_SUNBARY];
   struct plan_data *pdp = &swed.pldat[SEI_MOON];
   struct epsilon *oe = &swed.oec;
+  double t; 
+  long retc; 
   /* if the same conversions have already been done for the same 
    * date, then return */
   flg1 = iflag & ~SEFLG_EQUATORIAL & ~SEFLG_XYZ;
@@ -2942,125 +3137,139 @@ static int app_pos_etc_moon(long iflag)
     return OK;
   }
   /* the conversions will be done with xx[]. */
-  for (i = 0; i <= 5; i++) 
+  for (i = 0; i <= 5; i++) {
     xx[i] = pdp->x[i];
-  /***********************************
-   * heliocentric position is wanted *
-   ***********************************/
-  if ((iflag & SEFLG_HELCTR) || (iflag & SEFLG_BARYCTR)) {
-    /* with moshier, this works only if moon is cartesian 2000 */
-    if (pedp->iephe == SEFLG_MOSEPH || (iflag & SEFLG_BARYCTR)) 
-      for (i = 0; i <= 5; i++) 
-	xx[i] = pdp->x[i] + pedp->x[i]; 
-    else
-      for (i = 0; i <= 5; i++) 
-	xx[i] = pdp->x[i] + pedp->x[i] - psdp->x[i];
+    xxm[i] = xx[i];
   }
+  /***********************************
+   * to solar system barycentric
+   ***********************************/
+  for (i = 0; i <= 5; i++)
+	xx[i] += pedp->x[i]; 
   /*******************************
-   * to topocenter, if required
+   * observer
    *******************************/
   if (iflag & SEFLG_TOPOCTR) {
-    if (swed.topd.teval != pedp->teval
-      && pedp->teval != 0) {
-      if (get_observer(pedp->teval, iflag, pedp->x, DO_SAVE, xobs, NULL) != OK)
+    if (swed.topd.teval != pdp->teval
+      || swed.topd.teval == 0) {
+      if (swi_get_observer(pdp->teval, iflag, DO_SAVE, xobs, NULL) != OK)
         return ERR;
     } else {
       for (i = 0; i <= 5; i++)
         xobs[i] = swed.topd.xobs[i];
     }
     for (i = 0; i <= 5; i++)
-      xx[i] -= xobs[i];
+      xxm[i] -= xobs[i];
+    for (i = 0; i <= 5; i++)
+      xobs[i] += pedp->x[i];
+  } else if (iflag & SEFLG_BARYCTR) { 
+    for (i = 0; i <= 5; i++)
+      xobs[i] = 0;
+    for (i = 0; i <= 5; i++)
+      xxm[i] += pedp->x[i];
+  } else if (iflag & SEFLG_HELCTR) {
+    for (i = 0; i <= 5; i++)
+      xobs[i] = psdp->x[i];
+    for (i = 0; i <= 5; i++)
+      xxm[i] += pedp->x[i] - psdp->x[i];
+  } else {
+    for (i = 0; i <= 5; i++)
+      xobs[i] = pedp->x[i];
   }
   /*******************************
    * light-time                  * 
    *******************************/
   if ((iflag & SEFLG_TRUEPOS) == 0) {
-    dt = sqrt(square_sum(xx)) * AUNIT / CLIGHT / 86400.0;     
-#if 0 
+    dt = sqrt(square_sum(xxm)) * AUNIT / CLIGHT / 86400.0;     
     t = pdp->teval - dt;
     switch(pdp->iephe) {
       case SEFLG_JPLEPH:
-	retc = swi_pleph(t, J_MOON, J_EARTH, xx, serr);
-	if (retc != OK) {
-	  swi_close_jpl_file();
-	  swed.jpl_file_is_open = FALSE;
-	} 
-	break;
+        retc = swi_pleph(t, J_MOON, J_EARTH, xx, serr);
+        if (retc == OK)
+          retc = swi_pleph(t, J_EARTH, J_SBARY, xe, serr);
+        if (retc == OK && (iflag & SEFLG_HELCTR))
+          retc = swi_pleph(t, J_SUN, J_SBARY, xs, serr);
+        if (retc != OK) {
+	      swi_close_jpl_file();
+	      swed.jpl_file_is_open = FALSE;
+        } 
+	for (i = 0; i <= 5; i++)
+	  xx[i] += xe[i];
+	    break;
       case SEFLG_SWIEPH:
-	retc = sweph(t, SEI_MOON, SEI_FILE_MOON, iflag, NULL, NO_SAVE, xx, serr);
+        retc = sweplan(t, SEI_MOON, SEI_FILE_MOON, iflag, NO_SAVE, xx, xe, xs, NULL, serr);
         if (retc != OK)
           return(retc);
-        if (iflag & SEFLG_TOPOCTR)
-          for (i = 0; i <= 5; i++)
-            xx[i] -= swed.topd.xobs[i];
-	break;
+	for (i = 0; i <= 5; i++)
+	  xx[i] += xe[i];
+	    break;
       case SEFLG_MOSEPH:
         /* this method results in an error of a milliarcsec in speed */
-	for (i = 0; i <= 2; i++)
-	  xx[i] -= dt * xx[i+3];
-	break;
+        for (i = 0; i <= 2; i++) {
+          xx[i] -= dt * xx[i+3];
+          xe[i] = pedp->x[i] - dt * pedp->x[i+3];
+		  xe[i+3] = pedp->x[i+3];
+	  xs[i] = 0;
+	  xs[i+3] = 0;
+        }
+        break;
     } 
-#else
-    /* this method results in an error of a milliarcsec in speed. */
-    for (i = 0; i <= 2; i++)
-      xx[i] -= dt * xx[i+3];
+    if (iflag & SEFLG_TOPOCTR) {
+      if (swi_get_observer(t, iflag, NO_SAVE, xobs2, NULL) != OK)
+	  return ERR;
+      for (i = 0; i <= 5; i++)
+	xobs2[i] += xe[i];
+    } else if (iflag & SEFLG_BARYCTR) {
+      for (i = 0; i <= 5; i++)
+	xobs2[i] = 0;
+    } else if (iflag & SEFLG_HELCTR) {
+      for (i = 0; i <= 5; i++)
+	xobs2[i] = xs[i];
+    } else {
+      for (i = 0; i <= 5; i++)
+	xobs2[i] = xe[i];
+    }
+  }
+  /*************************
+   * to correct center 
+   *************************/
+  for (i = 0; i <= 5; i++)
+    xx[i] -= xobs[i];
+  /**********************************
+   * 'annual' aberration of light   *
+   **********************************/
+  if (!(iflag & SEFLG_TRUEPOS) && !(iflag & SEFLG_NOABERR)) {
+		/* SEFLG_NOABERR is on, if SEFLG_HELCTR or SEFLG_BARYCTR */
+    swi_aberr_light(xx, xobs, iflag);
+    /* 
+     * Apparent speed is also influenced by
+     * the difference of speed of the earth between t and t-dt. 
+     * Neglecting this would lead to an error of several 0.1"
+     */
+#if 1
+    if (iflag & SEFLG_SPEED)
+      for (i = 3; i <= 5; i++) 
+        xx[i] += xobs[i] - xobs2[i];
 #endif
   }
   /* if !speedflag, speed = 0 */
   if (!(iflag & SEFLG_SPEED))
     for (i = 3; i <= 5; i++)
       xx[i] = 0;
+  /* save J2000 coordinates; required for sidereal positions */
+  for (i = 0; i <= 5; i++)
+    xxsv[i] = xx[i];
   /************************************************
    * precession, equator 2000 -> equator of date *
    ************************************************/
-  if ((iflag & SEFLG_J2000) == 0) {
+  if (!(iflag & SEFLG_J2000)) {
     swi_precess(xx, pdp->teval, J2000_TO_J);
     if (iflag & SEFLG_SPEED)
-      precess_speed(xx, pdp->teval, J2000_TO_J); 
+      swi_precess_speed(xx, pdp->teval, J2000_TO_J); 
     oe = &swed.oec;
   } else
     oe = &swed.oec2000;
-  /************************************************
-   * nutation                                     *
-   ************************************************/
-  if ((iflag & SEFLG_NONUT) == 0) {
-    nutate(xx, iflag, FALSE);
-  }
-  /* now we have equatorial cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pdp->xreturn[18+i] = xx[i];
-  /************************************************
-   * transformation to ecliptic                   *
-   ************************************************/
-  swi_coortrf2(xx, xx, oe->seps, oe->ceps);
-  if (iflag & SEFLG_SPEED)
-    swi_coortrf2(xx+3, xx+3, oe->seps, oe->ceps);
-  if ((iflag & SEFLG_NONUT) == 0) {
-    swi_coortrf2(xx, xx, swed.nut.snut, swed.nut.cnut);
-    if (iflag & SEFLG_SPEED)
-      swi_coortrf2(xx+3, xx+3, swed.nut.snut, swed.nut.cnut);
-  }
-  /* now we have ecliptic cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pdp->xreturn[6+i] = xx[i];
-  /************************************************
-   * transformation to polar coordinates          *
-   ************************************************/
-  swi_cartpol_sp(pdp->xreturn+18, pdp->xreturn+12); 
-  swi_cartpol_sp(pdp->xreturn+6, pdp->xreturn); 
-  /********************** 
-   * radians to degrees *
-   **********************/
-  for (i = 0; i < 2; i++) {
-    pdp->xreturn[i] *= RADTODEG;		/* ecliptic */
-    pdp->xreturn[i+3] *= RADTODEG;
-    pdp->xreturn[i+12] *= RADTODEG;	/* equator */
-    pdp->xreturn[i+15] *= RADTODEG;
-  }
-  /* save, what has been done */
-  pdp->xflgs = iflag;
-  pdp->iephe = iflag & SEFLG_EPHMASK;
-  return(OK);
+  return app_pos_rest(pdp, iflag, xx, xxsv, oe, serr);
 }
 
 /* transforms the position of the barycentric sun:
@@ -3069,10 +3278,10 @@ static int app_pos_etc_moon(long iflag)
  * iflag	flags
  * serr         error string
  */
-static int app_pos_etc_sbar(long iflag)
+static int app_pos_etc_sbar(long iflag, char *serr)
 {
   int i;
-  double xx[6], dt;
+  double xx[6], xxsv[6], dt;
   struct plan_data *psdp = &swed.pldat[SEI_EARTH];
   struct plan_data *psbdp = &swed.pldat[SEI_SUNBARY];
   struct epsilon *oe = &swed.oec;
@@ -3090,57 +3299,20 @@ static int app_pos_etc_sbar(long iflag)
   if (!(iflag & SEFLG_SPEED))
     for (i = 3; i <= 5; i++)
       xx[i] = 0;
+  /* save J2000 coordinates; required for sidereal positions */
+  for (i = 0; i <= 5; i++)
+    xxsv[i] = xx[i];
   /************************************************
    * precession, equator 2000 -> equator of date *
    ************************************************/
   if (!(iflag & SEFLG_J2000)) {
     swi_precess(xx, psbdp->teval, J2000_TO_J);
     if (iflag & SEFLG_SPEED)
-      precess_speed(xx, psbdp->teval, J2000_TO_J); 
+      swi_precess_speed(xx, psbdp->teval, J2000_TO_J); 
     oe = &swed.oec;
   } else
     oe = &swed.oec2000;
-  /************************************************
-   * nutation                                     *
-   ************************************************/
-  if (!(iflag & SEFLG_NONUT)) {
-    nutate(xx, iflag, FALSE);
-  }
-  /* now we have equatorial cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    psdp->xreturn[18+i] = xx[i];
-  /************************************************
-   * transformation to ecliptic                   *
-   ************************************************/
-  swi_coortrf2(xx, xx, oe->seps, oe->ceps);
-  if (iflag & SEFLG_SPEED)
-    swi_coortrf2(xx+3, xx+3, oe->seps, oe->ceps);
-  if ((iflag & SEFLG_NONUT) == 0) {
-    swi_coortrf2(xx, xx, swed.nut.snut, swed.nut.cnut);
-    if (iflag & SEFLG_SPEED)
-      swi_coortrf2(xx+3, xx+3, swed.nut.snut, swed.nut.cnut);
-  }
-  /* now we have ecliptic cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    psdp->xreturn[6+i] = xx[i];
-  /************************************************
-   * transformation to polar coordinates          *
-   ************************************************/
-  swi_cartpol_sp(psdp->xreturn+18, psdp->xreturn+12); 
-  swi_cartpol_sp(psdp->xreturn+6, psdp->xreturn); 
-  /********************** 
-   * radians to degrees *
-   **********************/
-  for (i = 0; i < 2; i++) {
-    psdp->xreturn[i] *= RADTODEG;		/* ecliptic */
-    psdp->xreturn[i+3] *= RADTODEG;
-    psdp->xreturn[i+12] *= RADTODEG;	/* equator */
-    psdp->xreturn[i+15] *= RADTODEG;
-  }
-  /* save, what has been done */
-  psdp->xflgs = iflag;
-  psdp->iephe = iflag & SEFLG_EPHMASK;
-  return(OK);
+  return app_pos_rest(psdp, iflag, xx, xxsv, oe, serr);
 }
 
 /* transforms position of mean lunar node or apogee:
@@ -3158,12 +3330,16 @@ static int app_pos_etc_sbar(long iflag)
  * iflag	flags
  * serr         error string
  */
-static int app_pos_etc_mean(int ipl, long iflag) 
+static int app_pos_etc_mean(int ipl, long iflag, char *serr) 
 {
   int i;
   long flg1, flg2;
-  double xx[6];
+  double xx[6], xxsv[6];
+#if 0
   struct node_data *pdp = &swed.nddat[ipl];
+#else
+  struct plan_data *pdp = &swed.nddat[ipl];
+#endif
   struct epsilon *oe;
   /* if the same conversions have already been done for the same 
    * date, then return */
@@ -3182,7 +3358,7 @@ static int app_pos_etc_mean(int ipl, long iflag)
   swi_coortrf2(xx+3, xx+3, -swed.oec.seps, swed.oec.ceps);
 #if 0 
   /****************************************************
-   * light-time, this is only several milliarcseconds * 
+   * light-time, this is only a few milliarcseconds * 
    ***************************************************/
   if ((iflag & SEFLG_TRUEPOS) == 0) { 
     dt = pdp->x[3] * AUNIT / CLIGHT / 86400;     
@@ -3193,57 +3369,30 @@ static int app_pos_etc_mean(int ipl, long iflag)
   if (!(iflag & SEFLG_SPEED))
     for (i = 3; i <= 5; i++)
       xx[i] = 0;
+  /* J2000 coordinates; required for sidereal positions */
+  if (((iflag & SEFLG_SIDEREAL) 
+    && (swed.sidd.sid_mode & SE_SIDBIT_ECL_T0))
+      || (swed.sidd.sid_mode & SE_SIDBIT_SSY_PLANE)) {
+    for (i = 0; i <= 5; i++)
+      xxsv[i] = xx[i];
+    /* xxsv is not J2000 yet! */
+    if (pdp->teval != J2000) {
+      swi_precess(xxsv, pdp->teval, J_TO_J2000);
+      if (iflag & SEFLG_SPEED)
+        swi_precess_speed(xxsv, pdp->teval, J_TO_J2000); 
+    }
+  }
   /*****************************************************
    * if no precession, equator of date -> equator 2000 *
    *****************************************************/
   if (iflag & SEFLG_J2000) {
     swi_precess(xx, pdp->teval, J_TO_J2000); 
     if (iflag & SEFLG_SPEED)
-      precess_speed(xx, pdp->teval, J_TO_J2000); 
+      swi_precess_speed(xx, pdp->teval, J_TO_J2000); 
     oe = &swed.oec2000;
   } else
     oe = &swed.oec;
-  /************************************************
-   * nutation                                     *
-   ************************************************/
-  if ((iflag & SEFLG_NONUT) == 0) {
-    nutate(xx, iflag, FALSE);	
-  }
-  /* now we have equatorial cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pdp->xreturn[18+i] = xx[i];
-  /************************************************
-   * transformation to ecliptic                   *
-   ************************************************/
-  swi_coortrf2(xx, xx, oe->seps, oe->ceps);
-  if (iflag & SEFLG_SPEED)
-    swi_coortrf2(xx+3, xx+3, oe->seps, oe->ceps);
-  if ((iflag & SEFLG_NONUT) == 0) {
-    swi_coortrf2(xx, xx, swed.nut.snut, swed.nut.cnut);
-    if (iflag & SEFLG_SPEED)
-      swi_coortrf2(xx+3, xx+3, swed.nut.snut, swed.nut.cnut);
-  }
-  /* now we have ecliptic cartesian coordinates */
-  for (i = 0; i <= 5; i++)
-    pdp->xreturn[6+i] = xx[i];
-  /************************************************
-   * transformation to polar coordinates          *
-   ************************************************/
-  swi_cartpol_sp(pdp->xreturn+18, pdp->xreturn+12); 
-  swi_cartpol_sp(pdp->xreturn+6, pdp->xreturn); 
-  /********************** 
-   * radians to degrees *
-   **********************/
-  for (i = 0; i < 2; i++) {
-    pdp->xreturn[i] *= RADTODEG;		/* ecliptic */
-    pdp->xreturn[i+3] *= RADTODEG;
-    pdp->xreturn[i+12] *= RADTODEG;	/* equator */
-    pdp->xreturn[i+15] *= RADTODEG;
-  }
-  /* save, what has been done */
-  pdp->xflgs = iflag;
-  pdp->iephe = iflag & SEFLG_EPHMASK;
-  return OK;
+  return app_pos_rest(pdp, iflag, xx, xxsv, oe, serr);
 }
 
 /* fetch chebyshew coefficients from sweph file for
@@ -3390,16 +3539,18 @@ static int get_new_segment(double tjd, int ipli, int ifno, char *serr)
 
 /* SWISSEPH
  * reads constants on ephemeris file
- * ifno		file #
- * serr		error string
+ * ifno         file #
+ * serr         error string
  */
 static int read_const(int ifno, char *serr) 
 { 
   char *c, c2, *sp;
   char s[AS_MAXCH*2], s2[AS_MAXCH];
+  char sastnam[41];
   int i, ipli, kpl;
   int retc;
   int fendian, freord;
+  int lastnam = 19;
   FILE *fp;
   long lng;
   unsigned long ulng;
@@ -3470,6 +3621,22 @@ static int read_const(int ifno, char *serr)
     sp = fgets(s, AS_MAXCH * 2, fp);
     if (sp == NULL || strstr(sp, "\r\n") == NULL)
       goto file_damage;
+    /* MPC number and name; will be analyzed below:
+     * search "asteroid name" */
+    i = 5;
+    if (*(sp+i) != ' ')
+      i++;
+    strncpy(sastnam, sp, lastnam+i);
+    *(sastnam+lastnam+i) = 0;
+    /* save elements, they are required for swe_plan_pheno() */
+    strcpy(swed.astelem, s);
+    /* required for magnitude */
+    swed.ast_G = atof(sp + 40);
+    swed.ast_H = atof(sp + 46);
+    /* diameter in kilometers, not always given: */
+    strncpy(s2, sp+56, 7);
+    *(s2 + 7) = '\0';
+    swed.ast_diam = atof(s2);
   }
   /************************************* 
    * one long for test of byte order   * 
@@ -3501,49 +3668,75 @@ static int read_const(int ifno, char *serr)
   /************************************* 
    * length of file correct?           * 
    *************************************/
-  retc = do_fread((void *) &lng, 4, 1, 4, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+  retc = do_fread((void *) &lng, 4, 1, 4, fp, SEI_CURR_FPOS, freord,
+fendian, ifno, serr);
   if (retc != OK)
     return (retc);
   fpos = ftell(fp);
-  if (fseek(fp, sizeof(char), SEEK_END) != 0)
+  if (fseek(fp, 0L, SEEK_END) != 0)
     goto file_damage;
-  flen = ftell(fp) - 1;
+  flen = ftell(fp);
   if (lng != flen)
     goto file_damage;
   /********************************************************** 
    * DE number of JPL ephemeris which this file is based on * 
    **********************************************************/
-  retc = do_fread((void *) &fdp->sweph_denum, 4, 1, 4, fp, fpos, freord, fendian, ifno, serr);
+  retc = do_fread((void *) &fdp->sweph_denum, 4, 1, 4, fp, fpos, freord,
+fendian, ifno, serr);
   if (retc != OK)
     return (retc);
   /************************************* 
    * start and end epoch of file       * 
    *************************************/
-  retc = do_fread((void *) &fdp->tfstart, 8, 1, 8, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+  retc = do_fread((void *) &fdp->tfstart, 8, 1, 8, fp, SEI_CURR_FPOS,
+freord, fendian, ifno, serr);
   if (retc != OK)
     return (retc);
-  retc = do_fread((void *) &fdp->tfend, 8, 1, 8, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+  retc = do_fread((void *) &fdp->tfend, 8, 1, 8, fp, SEI_CURR_FPOS, freord,
+fendian, ifno, serr);
   if (retc != OK)
     return (retc);
   /************************************* 
    * how many planets are in file?     * 
    *************************************/
-  retc = do_fread((void *) &nplan, 2, 1, 2, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+  retc = do_fread((void *) &nplan, 2, 1, 2, fp, SEI_CURR_FPOS, freord,
+fendian, ifno, serr);
   if (retc != OK)
     return (retc);
   if (nplan < 1 || nplan > 20)
     goto file_damage;
   fdp->npl = nplan;
   /* which ones?                       */
-  retc = do_fread((void *) fdp->ipl, 2, (int) nplan, 2, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+  retc = do_fread((void *) fdp->ipl, 2, (int) nplan, 2, fp, SEI_CURR_FPOS,
+freord, fendian, ifno, serr);
   if (retc != OK)
     return (retc);
   /************************************* 
    * asteroid name                     * 
    *************************************/
   if (ifno == SEI_FILE_ANY_AST) {
-    if (fread((void *) fdp->astnam, 30, 1, fp) != 1)
-      goto file_damage;
+    char sastno[5];
+    int j;
+    /* name of asteroid is taken from orbital elements record
+     * read above */
+    j = 4;	/* old astorb.dat had only 4 characters for MPC# */
+    if (sastnam[j] != ' ')	/* new astorb.dat has 5 */
+      j++;
+    strncpy(sastno, sastnam, j);
+    sastno[j] = '\0';
+    i = (int) atol(sastno);
+    if (i == fdp->ipl[0] - SE_AST_OFFSET) {
+      /* element record is from bowell database */
+      strncpy(fdp->astnam, sastnam+j+1, lastnam);
+      /* overread old ast. name field */
+      if (fread((void *) s, 30, 1, fp) != 1)
+        goto file_damage;
+    } else {
+      /* older elements record structure: the name
+       * is taken from old name field */
+      if (fread((void *) fdp->astnam, 30, 1, fp) != 1)
+        goto file_damage;
+    }
     /* in worst case strlen of not null terminated area! */
     i = strlen(fdp->astnam) - 1;
     if (i < 0) 
@@ -3559,11 +3752,12 @@ static int read_const(int ifno, char *serr)
    *************************************/
   fpos = ftell(fp);
   /* read CRC from file */
-  retc = do_fread((void *) &ulng, 4, 1, 4, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+  retc = do_fread((void *) &ulng, 4, 1, 4, fp, SEI_CURR_FPOS, freord,
+fendian, ifno, serr);
   if (retc != OK)
     return (retc);
   /* read check area from file */
-  fseek(fp, 0, SEEK_SET);
+  fseek(fp, 0L, SEEK_SET);
   /* must check that defined length of s is less than fpos */
   if (fpos - 1 > 2 * AS_MAXCH)
     goto file_damage;
@@ -3580,7 +3774,8 @@ static int read_const(int ifno, char *serr)
    *************************************/
   /* clight, aunit, helgravconst, ratme, sunradius 
    * these constants are currently not in use */
-  retc = do_fread((void *) &doubles[0], 8, 5, 8, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+  retc = do_fread((void *) &doubles[0], 8, 5, 8, fp, SEI_CURR_FPOS, freord,
+fendian, ifno, serr);
   if (retc != OK)
     return (retc);
   swed.gcdat.clight       = doubles[0];
@@ -3600,26 +3795,31 @@ static int read_const(int ifno, char *serr)
       pdp = &swed.pldat[ipli];
     pdp->ibdy = ipli;
     /* file position of planet's index */
-    retc = do_fread((void *) &pdp->lndx0, 4, 1, 4, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+    retc = do_fread((void *) &pdp->lndx0, 4, 1, 4, fp, SEI_CURR_FPOS,
+freord, fendian, ifno, serr);
     if (retc != OK)
       return (retc);
     /* flags: helio/geocentric, rotation, reference ellipse */
-    retc = do_fread((void *) &pdp->iflg, 1, 1, sizeof(long), fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+    retc = do_fread((void *) &pdp->iflg, 1, 1, sizeof(long), fp,
+SEI_CURR_FPOS, freord, fendian, ifno, serr);
     if (retc != OK)
       return (retc);
     /* number of chebyshew coefficients / segment  */
     /* = interpolation order +1                    */
-    retc = do_fread((void *) &pdp->ncoe, 1, 1, sizeof(int), fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+    retc = do_fread((void *) &pdp->ncoe, 1, 1, sizeof(int), fp,
+SEI_CURR_FPOS, freord, fendian, ifno, serr);
     if (retc != OK)
       return (retc);
     /* rmax = normalisation factor */
-    retc = do_fread((void *) &lng, 4, 1, 4, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+    retc = do_fread((void *) &lng, 4, 1, 4, fp, SEI_CURR_FPOS, freord,
+fendian, ifno, serr);
     if (retc != OK)
       return (retc);
     pdp->rmax = lng / 1000.0; 
     /* start and end epoch of planetary ephemeris,   */
     /* segment length, and orbital elements          */
-    retc = do_fread((void *) doubles, 8, 10, 8, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr);
+    retc = do_fread((void *) doubles, 8, 10, 8, fp, SEI_CURR_FPOS, freord,
+fendian, ifno, serr);
     if (retc != OK)
       return (retc);
     pdp->tfstart  = doubles[0];
@@ -3636,17 +3836,18 @@ static int read_const(int ifno, char *serr)
     /* alloc space for chebyshew coefficients */
     /* if reference ellipse is used, read its coefficients */
     if (pdp->iflg & SEI_FLG_ELLIPSE) {
-      if (pdp->refep != NULL) {	/* if switch to other eph. file */
-	free((void *) pdp->refep);
-	if (pdp->segp != NULL) {	
-	  free((void *) pdp->segp);	/* array of coefficients of */
-	  pdp->segp = NULL;	/* ephemeris segment        */	
+      if (pdp->refep != NULL) { /* if switch to other eph. file */
+        free((void *) pdp->refep);
+        if (pdp->segp != NULL) {        
+          free((void *) pdp->segp);     /* array of coefficients of */
+          pdp->segp = NULL;     /* ephemeris segment        */  
         }
       }
       pdp->refep = (double *) malloc((size_t) pdp->ncoe * 2 * 8); 
-      retc = do_fread((void *) pdp->refep, 8, 2*pdp->ncoe, 8, fp, SEI_CURR_FPOS, freord, fendian, ifno, serr); 
+      retc = do_fread((void *) pdp->refep, 8, 2*pdp->ncoe, 8, fp,
+SEI_CURR_FPOS, freord, fendian, ifno, serr); 
       if (retc != OK)
-	return (retc);
+        return (retc);
     }/**/
   }
   return(OK);
@@ -3930,6 +4131,12 @@ static void nut_matrix(struct nut *nu, struct epsilon *oe)
  * the nodes could also be computed by interpolation. the resulting
  * nodes would deviate from the so-called 'true node' by less than
  * 30 arc minutes.
+ *
+ * sidereal and j2000 true node are first computed for the ecliptic
+ * of epoch and then precessed to ecliptic of t0(ayanamsa) or J2000.
+ * there is another procedure that computes the node for the ecliptic
+ * of t0(ayanamsa) or J2000. it is excluded by
+ * #ifdef SID_TNODE_FROM_ECL_T0
  */ 
 static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr) 
 {
@@ -3938,7 +4145,11 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
   long epheflag = SEFLG_DEFAULTEPH; 
   int retc = ERR; 
   long flg1, flg2;
+#if 0
   struct node_data *ndp, *ndnp, *ndap;
+#else
+  struct plan_data *ndp, *ndnp, *ndap;
+#endif
   struct epsilon *oe;
   double speed_intv = NODE_CALC_INTV;	/* to silence gcc warning */
   double a, b;
@@ -3948,11 +4159,18 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
   double sinnode, cosnode, sinincl, cosincl, sinu, cosu, sinE, cosE;
   double uu, ny, sema, ecce, Gmsm, c2, v2, pp;
   long speedf1, speedf2;
-  ndp = &swed.nddat[ipl];
-  if (iflag & SEFLG_J2000)
+#ifdef SID_TNODE_FROM_ECL_T0
+  struct sid_data *sip = &swed.sidd;
+  struct epsilon oectmp;
+  if (iflag & SEFLG_SIDEREAL) {
+    calc_epsilon(sip->t0, &oectmp);
+    oe = &oectmp;
+  } else if (iflag & SEFLG_J2000)
     oe = &swed.oec2000;
   else 
+#endif
     oe = &swed.oec;
+  ndp = &swed.nddat[ipl];
   /* if elements have already been computed for this date, return 
    * if speed flag has been turned on, recompute */
   flg1 = iflag & ~SEFLG_EQUATORIAL & ~SEFLG_XYZ;
@@ -4050,7 +4268,7 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
 	    return ERR;
 	}
 	/* precession and nutation etc. */
-	retc = moon_for_osc_elem(iflag, t, xpos[i]); /* retc is always ok */
+	retc = swi_plan_for_osc_elem(iflag, t, xpos[i]); /* retc is always ok */
       }
       break;
 #endif	/* NO_JPL */
@@ -4069,7 +4287,6 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
 	retc = swemoon(t, iflag | SEFLG_SPEED, NO_SAVE, xpos[i], serr);/**/
 	if (retc == ERR)
 	  return(ERR);
-#if 1
 	/* light-time-corrected moon for apparent node (~ 0.006") */
 	if ((iflag & SEFLG_TRUEPOS) == 0 && retc >= OK) { 
 	  dt = sqrt(square_sum(xpos[i])) * AUNIT / CLIGHT / 86400.0;     
@@ -4077,7 +4294,6 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
 	  if (retc == ERR)
 	    return(ERR);
         }
-#endif
 	if (retc == NOT_AVAILABLE) {
 #ifndef NO_MOSHIER
 	  if (tjd > MOSHPLEPH_START && tjd < MOSHPLEPH_END) {
@@ -4091,7 +4307,7 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
 	    return ERR;
 	}
 	/* precession and nutation etc. */
-	retc = moon_for_osc_elem(iflag, t, xpos[i]); /* retc is always ok */
+	retc = swi_plan_for_osc_elem(iflag, t, xpos[i]); /* retc is always ok */
       }
       break;
 #ifndef NO_MOSHIER
@@ -4121,7 +4337,7 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
         }
 #endif
 	/* precession and nutation etc. */
-	retc = moon_for_osc_elem(iflag, t, xpos[i]); /* retc is always ok */
+	retc = swi_plan_for_osc_elem(iflag, t, xpos[i]); /* retc is always ok */
       }
       break;
 #endif	/* NO_MOSHIER */
@@ -4244,17 +4460,18 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
   /**********************************************************************
    * precession and nutation have already been taken into account
    * because the computation is on the basis of lunar positions
-   * that have gone through moon_for_osc_elem. 
+   * that have gone through swi_plan_for_osc_elem. 
    * light-time is already contained in lunar positions.
    * now compute polar and equatorial coordinates:
    **********************************************************************/
-  /* cartesian ecliptic */
   for (j = 0; j <= 1; j++) {
+    double x[6];
     if (j == 0) 
       ndp = &swed.nddat[SEI_TRUE_NODE];
     else
       ndp = &swed.nddat[SEI_OSCU_APOG];
     memset((void *) ndp->xreturn, 0, 24 * sizeof(double));
+    /* cartesian ecliptic */
     for (i = 0; i <= 5; i++) 
       ndp->xreturn[6+i] = ndp->x[i];
     /* polar ecliptic */
@@ -4263,7 +4480,23 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
     swi_coortrf2(ndp->xreturn+6, ndp->xreturn+18, -oe->seps, oe->ceps);
     if (iflag & SEFLG_SPEED)
       swi_coortrf2(ndp->xreturn+9, ndp->xreturn+21, -oe->seps, oe->ceps);
-    if ((iflag & SEFLG_NONUT) == 0) {
+#ifdef SID_TNODE_FROM_ECL_T0
+    /* sideral: we return NORMAL equatorial coordinates, there are no
+     * sidereal ones */
+    if (iflag & SEFLG_SIDEREAL) {
+      /* to J2000 */
+      swi_precess(ndp->xreturn+18, sip->t0, J_TO_J2000);
+      if (iflag & SEFLG_SPEED)
+	swi_precess_speed(ndp->xreturn+21, sip->t0, J_TO_J2000);
+      if (!(iflag & SEFLG_J2000)) {
+	/* to tjd */
+	swi_precess(ndp->xreturn+18, tjd, J2000_TO_J);
+	if (iflag & SEFLG_SPEED)
+	  swi_precess_speed(ndp->xreturn+21, tjd, J2000_TO_J);
+      }
+    }
+#endif
+    if (!(iflag & SEFLG_NONUT)) {
       swi_coortrf2(ndp->xreturn+18, ndp->xreturn+18, -swed.nut.snut, swed.nut.cnut);
       if (iflag & SEFLG_SPEED)
 	swi_coortrf2(ndp->xreturn+21, ndp->xreturn+21, -swed.nut.snut, swed.nut.cnut);
@@ -4272,6 +4505,59 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
     swi_cartpol_sp(ndp->xreturn+18, ndp->xreturn+12);
     ndp->xflgs = iflag;
     ndp->iephe = iflag & SEFLG_EPHMASK;
+#ifdef SID_TNODE_FROM_ECL_T0
+    /* node and apogee are already referred to t0; 
+     * nothing has to be done */
+#else
+    if (iflag & SEFLG_SIDEREAL) {
+      /* node and apogee are referred to t; 
+       * the ecliptic position must be transformed to t0 */
+      /* rigorous algorithm */
+      if ((swed.sidd.sid_mode & SE_SIDBIT_ECL_T0) 
+        || (swed.sidd.sid_mode & SE_SIDBIT_SSY_PLANE)) {
+	for (i = 0; i <= 5; i++)
+	  x[i] = ndp->xreturn[18+i];
+	/* remove nutation */
+	if (!(iflag & SEFLG_NONUT))
+	  swi_nutate(x, iflag, TRUE);
+	/* precess to J2000 */
+	swi_precess(x, tjd, J_TO_J2000);
+	if (iflag & SEFLG_SPEED)
+	  swi_precess_speed(x, tjd, J_TO_J2000);
+        if (swed.sidd.sid_mode & SE_SIDBIT_ECL_T0) 
+	  swi_trop_ra2sid_lon(x, ndp->xreturn+6, ndp->xreturn+18, iflag, NULL);
+        /* project onto solar system equator */
+        else if (swed.sidd.sid_mode & SE_SIDBIT_SSY_PLANE)
+          swi_trop_ra2sid_lon_sosy(x, ndp->xreturn+6, ndp->xreturn+18, iflag, NULL);
+	/* to polar */
+	swi_cartpol_sp(ndp->xreturn+6, ndp->xreturn);
+        swi_cartpol_sp(ndp->xreturn+18, ndp->xreturn+12);
+      /* traditional algorithm;
+       * this is a bit clumsy, but allows us to keep the
+       * sidereal code together */
+      } else {
+	swi_cartpol_sp(ndp->xreturn+6, ndp->xreturn); 
+	ndp->xreturn[0] -= swe_get_ayanamsa(ndp->teval) * DEGTORAD;
+	swi_polcart_sp(ndp->xreturn, ndp->xreturn+6); 
+      }
+    } else if (iflag & SEFLG_J2000) {
+      /* node and apogee are referred to t; 
+       * the ecliptic position must be transformed to J2000 */
+      for (i = 0; i <= 5; i++)
+        x[i] = ndp->xreturn[18+i];
+      /* precess to J2000 */
+      swi_precess(x, tjd, J_TO_J2000);
+      if (iflag & SEFLG_SPEED)
+        swi_precess_speed(x, tjd, J_TO_J2000);
+      for (i = 0; i <= 5; i++)
+        ndp->xreturn[18+i] = x[i];
+      swi_cartpol_sp(ndp->xreturn+18, ndp->xreturn+12);
+      swi_coortrf2(ndp->xreturn+18, ndp->xreturn+6, swed.oec2000.seps, swed.oec2000.ceps);
+      if (iflag & SEFLG_SPEED)
+        swi_coortrf2(ndp->xreturn+21, ndp->xreturn+9, swed.oec2000.seps, swed.oec2000.ceps);
+      swi_cartpol_sp(ndp->xreturn+6, ndp->xreturn);
+    }
+#endif
     /********************** 
      * radians to degrees *
      **********************/
@@ -4281,6 +4567,8 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
       ndp->xreturn[i+12] *= RADTODEG;	/* equator */
       ndp->xreturn[i+15] *= RADTODEG;
     }
+    ndp->xreturn[0] = swe_degnorm(ndp->xreturn[0]);
+    ndp->xreturn[12] = swe_degnorm(ndp->xreturn[12]);
   }
   return OK;
 }
@@ -4295,7 +4583,7 @@ static int lunar_osc_elem(double tjd, int ipl, long iflag, char *serr)
  * xx           array equatorial cartesian position and speed
  * serr         error string
  */
-static int moon_for_osc_elem(long iflag, double tjd, double *xx)
+int swi_plan_for_osc_elem(long iflag, double tjd, double *xx)
 {
   int i;
   double x[6];
@@ -4306,9 +4594,20 @@ static int moon_for_osc_elem(long iflag, double tjd, double *xx)
   /************************************************
    * precession, equator 2000 -> equator of date  *
    * attention: speed vector has to be rotated,   *
-   * but daily precession 0.137" may not be added!*
+   * but daily precession 0.137" may not be added!*/
+#ifdef SID_TNODE_FROM_ECL_T0
+  struct sid_data *sip = &swed.sidd;
+  /* For sidereal calculation we need node refered*
+   * to ecliptic of t0 of ayanamsa                *
    ************************************************/
-  if ((iflag & SEFLG_J2000) == 0) {
+  if (iflag & SEFLG_SIDEREAL) {
+    tjd = sip->t0;
+    swi_precess(xx, tjd, J2000_TO_J);
+    swi_precess(xx+3, tjd, J2000_TO_J); 
+    calc_epsilon(tjd, &oectmp);
+    oe = &oectmp;
+  } else if (!(iflag & SEFLG_J2000)) {
+#endif
     swi_precess(xx, tjd, J2000_TO_J);
     swi_precess(xx+3, tjd, J2000_TO_J); 
     /* epsilon */
@@ -4320,14 +4619,16 @@ static int moon_for_osc_elem(long iflag, double tjd, double *xx)
       calc_epsilon(tjd, &oectmp);
       oe = &oectmp;
     }
-  } else
+#ifdef SID_TNODE_FROM_ECL_T0
+  } else	/* if SEFLG_J2000 */
     oe = &swed.oec2000;
+#endif
   /************************************************
    * nutation                                     *
    * again: speed vector must be rotated, but not *
    * added 'speed' of nutation                    *
    ************************************************/
-  if ((iflag & SEFLG_NONUT) == 0) {
+  if (!(iflag & SEFLG_NONUT)) {
     if (tjd == swed.nut.tnut)
       nutp = &swed.nut;
     else if (tjd == J2000)
@@ -4360,14 +4661,22 @@ static int moon_for_osc_elem(long iflag, double tjd, double *xx)
    ************************************************/
   swi_coortrf2(xx, xx, oe->seps, oe->ceps);
   swi_coortrf2(xx+3, xx+3, oe->seps, oe->ceps);
-  if ((iflag & SEFLG_NONUT) == 0) {
+#ifdef SID_TNODE_FROM_ECL_T0
+  if (iflag & SEFLG_SIDEREAL) {
+    /* subtract ayan_t0 */
+    swi_cartpol_sp(xx, xx);
+    xx[0] -= sip->ayan_t0;
+    swi_polcart_sp(xx, xx);
+  } else 
+#endif
+  if (!(iflag & SEFLG_NONUT)) {
     swi_coortrf2(xx, xx, nutp->snut, nutp->cnut);
     swi_coortrf2(xx+3, xx+3, nutp->snut, nutp->cnut);
   }
   return(OK);
 }
 
-static struct meff_ele FAR eff_arr[] = {
+static const struct meff_ele FAR eff_arr[] = {
   /*
    * r , m_eff for photon passing the sun at min distance r (fraction of Rsun)
    * the values where computed with sun_model.c, which is a classic
@@ -4478,14 +4787,15 @@ static struct meff_ele FAR eff_arr[] = {
 };
 static double meff(double r)
 {
-double f, m;
-int i;
-if (r <= 0)
-  return 0.0;
-else if (r >= 1)
-  return 1.0;
-for (i = 0; eff_arr[i].r > r; i++);
-f = (r - eff_arr[i-1].r) / (eff_arr[i].r - eff_arr[i-1].r);
+  double f, m;
+  int i;
+  if (r <= 0)
+    return 0.0;
+  else if (r >= 1)
+    return 1.0;
+  for (i = 0; eff_arr[i].r > r; i++)
+    ;	/* empty body */
+  f = (r - eff_arr[i-1].r) / (eff_arr[i].r - eff_arr[i-1].r);
   m = eff_arr[i-1].m + f * (eff_arr[i].m - eff_arr[i-1].m);
   return m;
 }
@@ -4520,7 +4830,7 @@ static void calc_speed(double *x0, double *x1, double *x2, double dt)
   }
 }
 
-static void check_ecliptic(double tjd)
+void swi_check_ecliptic(double tjd)
 {
   if (swed.oec2000.teps != J2000) {
     calc_epsilon(J2000, &swed.oec2000);
@@ -4540,14 +4850,14 @@ static void check_ecliptic(double tjd)
 /* computes nutation, if it is wanted and has not yet been computed.
  * if speed flag has been turned on since last computation, 
  * nutation is recomputed */
-static void check_nutation(double tjd, long iflag)
+void swi_check_nutation(double tjd, long iflag)
 {
   long speedf1, speedf2;
   static long nutflag = 0;
   double t;
   speedf1 = nutflag & SEFLG_SPEED;
   speedf2 = iflag & SEFLG_SPEED;
-  if ((iflag & SEFLG_NONUT) == 0 
+  if (!(iflag & SEFLG_NONUT)
 	&& (tjd != swed.nut.tnut || tjd == 0
 	|| (!speedf1 && speedf2))) {
     swi_nutation(tjd, swed.nut.nutlo);
@@ -4584,6 +4894,9 @@ static long plaus_iflag(long iflag)
   /* if no_precession bit is set, set also no_nutation bit */
   if (iflag & SEFLG_J2000)
     iflag |= SEFLG_NONUT;
+  /* if sidereal bit is set, set also no_nutation bit */
+  if (iflag & SEFLG_SIDEREAL)
+    iflag |= SEFLG_NONUT;
   /* if truepos is set, turn off grav. defl. and aberration */
   if (iflag & SEFLG_TRUEPOS)
     iflag |= (SEFLG_NOGDEFL | SEFLG_NOABERR);
@@ -4595,8 +4908,17 @@ static long plaus_iflag(long iflag)
     epheflag = SEFLG_JPLEPH;
   if (epheflag == 0)
     epheflag = SEFLG_DEFAULTEPH;
+#ifdef NO_MOSHIER
+  if (epheflag == SEFLG_MOSEPH)
+    epheflag = SEFLG_SWIEPH;
+#endif
+#ifdef NO_JPL
+  if (epheflag == SEFLG_JPLEPH)
+    epheflag = SEFLG_SWIEPH;
+#endif
   /* delete wrong ephe bits from flag */
   iflag = (iflag & ~SEFLG_EPHMASK) | epheflag;
+
   return iflag;
 }
 
@@ -4620,7 +4942,7 @@ long FAR PASCAL_CONV swe_fixstar(char *star, double tjd, long iflag,
   int star_nr = 0;
   AS_BOOL  isnomclat = FALSE;
   size_t cmplen;
-  double x[6], xobs[6], *xpo = NULL;
+  double x[6], xxsv[6], xobs[6], *xpo = NULL;
   char *cpos[20];
   char sstar[SE_MAX_STNAME + 1];
   char fstar[SE_MAX_STNAME + 1];
@@ -4643,30 +4965,32 @@ long FAR PASCAL_CONV swe_fixstar(char *star, double tjd, long iflag,
   trace_swe_fixstar(1, star, tjd, iflag, xx, serr);
 #endif /* TRACE */
   iflag = plaus_iflag(iflag);
+  if (iflag & SEFLG_SIDEREAL && !swed.ayana_is_set)
+    swe_set_sid_mode(SE_SIDM_FAGAN_BRADLEY, 0, 0);
   epheflag = iflag & SEFLG_EPHMASK;
   /****************************************** 
    * obliquity of ecliptic 2000 and of date * 
    ******************************************/
-  check_ecliptic(tjd);
+  swi_check_ecliptic(tjd);
   /******************************************
    * nutation                               * 
    ******************************************/
-  check_nutation(tjd, iflag);
-  if (fixfp == NULL) {
-    if ((fixfp = swi_fopen(SEI_FILE_FIXSTAR, SE_STARFILE, swed.ephepath, serr)) == NULL) {
+  swi_check_nutation(tjd, iflag);
+  if (swed.fixfp == NULL) {
+    if ((swed.fixfp = swi_fopen(SEI_FILE_FIXSTAR, SE_STARFILE, swed.ephepath, serr)) == NULL) {
       retc = ERR;
       goto return_err;
     }
   }
   /******************************************************
    * Star file
-   * contains close to the beginning a few stars selected by Astrodienst.
+   * close to the beginning, a few stars selected by Astrodienst.
    * These can be accessed by giving their number instead of a name.
    * All other stars can be accessed by name.
    * Comment lines start with # and are ignored.
    ******************************************************/
-  rewind(fixfp);
-  strncpy(sstar, star, SE_MAX_STNAME),
+  rewind(swed.fixfp);
+  strncpy(sstar, star, SE_MAX_STNAME);
   sstar[SE_MAX_STNAME] = '\0';
   if (*sstar == ',') {
     isnomclat = TRUE;
@@ -4687,7 +5011,7 @@ long FAR PASCAL_CONV swe_fixstar(char *star, double tjd, long iflag,
     retc = ERR;
     goto return_err;
   }
-  while (fgets(s, AS_MAXCH, fixfp) != NULL) {
+  while (fgets(s, AS_MAXCH, swed.fixfp) != NULL) {
     fline++;	
     if (*s == '#') continue;
     line++;
@@ -4730,7 +5054,8 @@ long FAR PASCAL_CONV swe_fixstar(char *star, double tjd, long iflag,
   swi_right_trim(cpos[0]);
   swi_right_trim(cpos[1]);
   if (i < 13) {
-    sprintf("data of star '%s,%s' incomplete", cpos[0], cpos[1]);
+    if (serr != NULL)
+      sprintf(serr, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
     retc = ERR;
     goto return_err;
   }
@@ -4824,8 +5149,8 @@ long FAR PASCAL_CONV swe_fixstar(char *star, double tjd, long iflag,
   /* if topocentric position is wanted  */
   if (iflag & SEFLG_TOPOCTR) { 
     if (swed.topd.teval != pedp->teval
-      && pedp->teval != 0) {
-      if (get_observer(pedp->teval, iflag, pedp->x, DO_SAVE, xobs, serr) != OK)
+      || swed.topd.teval == 0) {
+      if (swi_get_observer(pedp->teval, iflag, DO_SAVE, xobs, serr) != OK)
         return ERR;
     } else {
       for (i = 0; i <= 5; i++)
@@ -4871,54 +5196,86 @@ long FAR PASCAL_CONV swe_fixstar(char *star, double tjd, long iflag,
     x[i] *= 10000;	/* great distance, to allow 
 			 * algorithm used with planets */
   if ((iflag & SEFLG_TRUEPOS) == 0 && (iflag & SEFLG_NOGDEFL) == 0) {
-    deflect_light(x, 0, iflag & SEFLG_SPEED);
+    swi_deflect_light(x, 0, iflag & SEFLG_SPEED);
   }
   /**********************************
    * 'annual' aberration of light   *
    * speed is incorrect !!!         *
    **********************************/
   if ((iflag & SEFLG_TRUEPOS) == 0 && (iflag & SEFLG_NOABERR) == 0)
-    aberr_light(x, xpo, iflag & SEFLG_SPEED);
+    swi_aberr_light(x, xpo, iflag & SEFLG_SPEED);
+  /* save J2000 coordinates; required for sidereal positions */
+  for (i = 0; i <= 5; i++)
+    xxsv[i] = x[i];
   /************************************************
    * precession, equator 2000 -> equator of date *
    ************************************************/
   if ((iflag & SEFLG_J2000) == 0) {
     swi_precess(x, tjd, J2000_TO_J);
     if (iflag & SEFLG_SPEED)
-      precess_speed(x, tjd, J2000_TO_J);
+      swi_precess_speed(x, tjd, J2000_TO_J);
     oe = &swed.oec;
   } else
     oe = &swed.oec2000;
   /************************************************
    * nutation                                     *
    ************************************************/
-  if ((iflag & SEFLG_NONUT) == 0) {
-    nutate(x, 0, FALSE);
-  }
+  if (!(iflag & SEFLG_NONUT))
+    swi_nutate(x, 0, FALSE);
   /************************************************
    * unit vector (distance = 1)                   *
    ************************************************/
   u = sqrt(square_sum(x));
   for (i = 0; i <= 5; i++)
     x[i] /= u;
+  u = sqrt(square_sum(xxsv));
+  for (i = 0; i <= 5; i++)
+    xxsv[i] /= u;
   /************************************************
    * set speed = 0, because not correct (aberration) 
    ************************************************/
   for (i = 3; i <= 5; i++)
-    x[i] = 0;
+    x[i] = xxsv[i] = 0;
   /************************************************
-   * transformation to ecliptic                   *
+   * transformation to ecliptic.                  *
+   * with sidereal calc. this will be overwritten *
+   * afterwards.                                  *
    ************************************************/
   if ((iflag & SEFLG_EQUATORIAL) == 0) {
     swi_coortrf2(x, x, oe->seps, oe->ceps);
     if (iflag & SEFLG_SPEED)
       swi_coortrf2(x+3, x+3, oe->seps, oe->ceps);
-    if ((iflag & SEFLG_NONUT) == 0) {
+    if (!(iflag & SEFLG_NONUT)) {
       swi_coortrf2(x, x, swed.nut.snut, swed.nut.cnut);
       if (iflag & SEFLG_SPEED)
 	swi_coortrf2(x+3, x+3, swed.nut.snut, swed.nut.cnut);
     }
   }
+  /************************************
+   * sidereal positions               *
+   ************************************/
+  if (iflag & SEFLG_SIDEREAL) {
+    /* rigorous algorithm */
+    if (swed.sidd.sid_mode & SE_SIDBIT_ECL_T0) {
+      if (swi_trop_ra2sid_lon(xxsv, x, xxsv, iflag, serr) != OK)
+	return ERR;
+      if (iflag & SEFLG_EQUATORIAL)
+        for (i = 0; i <= 5; i++)
+          x[i] = xxsv[i];
+    /* project onto solar system equator */
+    } else if (swed.sidd.sid_mode & SE_SIDBIT_SSY_PLANE) {
+      if (swi_trop_ra2sid_lon_sosy(xxsv, x, xxsv, iflag, serr) != OK)
+	return ERR;
+      if (iflag & SEFLG_EQUATORIAL)
+        for (i = 0; i <= 5; i++)
+          x[i] = xxsv[i];
+    /* traditional algorithm */
+    } else {
+      swi_cartpol_sp(x, x); 
+      x[0] -= swe_get_ayanamsa(tjd) * DEGTORAD;
+      swi_polcart_sp(x, x); 
+    }
+  } 
   /************************************************
    * transformation to polar coordinates          *
    ************************************************/
@@ -4949,6 +5306,12 @@ long FAR PASCAL_CONV swe_fixstar(char *star, double tjd, long iflag,
   trace_swe_fixstar(2, star, tjd, iflag, xx, serr);
 #endif
   return retc;
+}
+
+int32 FAR PASCAL_CONV swe_fixstar_ut(char *star, double tjd_ut, int32 iflag, 
+  double *xx, char *serr)
+{
+  return swe_fixstar(star, tjd_ut + swe_deltat(tjd_ut), iflag, xx, serr);
 }
 
 #if 0
@@ -5070,52 +5433,13 @@ char *FAR PASCAL_CONV swe_get_planet_name(int ipl, char *s)
     case SE_AST_OFFSET + MPC_VESTA: 
       strcpy(s, SE_NAME_VESTA);
       break;
-    case SE_CUPIDO: 
-      strcpy(s, SE_NAME_CUPIDO);
-      break;
-    case SE_HADES: 
-      strcpy(s, SE_NAME_HADES);
-      break;
-    case SE_ZEUS: 
-      strcpy(s, SE_NAME_ZEUS);
-      break;
-    case SE_KRONOS: 
-      strcpy(s, SE_NAME_KRONOS);
-      break;
-    case SE_APOLLON: 
-      strcpy(s, SE_NAME_APOLLON);
-      break;
-    case SE_ADMETOS: 
-      strcpy(s, SE_NAME_ADMETOS);
-      break;
-    case SE_VULKANUS: 
-      strcpy(s, SE_NAME_VULKANUS);
-      break;
-    case SE_POSEIDON: 
-      strcpy(s, SE_NAME_POSEIDON);
-      break;
-    case SE_ISIS: 
-      strcpy(s, SE_NAME_ISIS);
-      break;
-    case SE_NIBIRU: 
-      strcpy(s, SE_NAME_NIBIRU);
-      break;
-    case SE_HARRINGTON: 
-      strcpy(s, SE_NAME_HARRINGTON);
-      break;
-    case SE_NEPTUNE_LEVERRIER: 
-      strcpy(s, SE_NAME_NEPTUNE_LEVERRIER);
-      break;
-    case SE_NEPTUNE_ADAMS: 
-      strcpy(s, SE_NAME_NEPTUNE_ADAMS);
-      break;
-    case SE_PLUTO_LOWELL: 
-      strcpy(s, SE_NAME_PLUTO_LOWELL);
-      break;
-    case SE_PLUTO_PICKERING: 
-      strcpy(s, SE_NAME_PLUTO_PICKERING);
-      break;
     default: 
+      /* fictitious planets */
+      if (ipl >= SE_FICT_OFFSET && ipl <= SE_FICT_MAX) {
+        swi_get_fict_name(ipl - SE_FICT_OFFSET, s);
+        break;
+      }
+      /* asteroids */
       if (ipl > SE_AST_OFFSET) {
 	/* if name is already available */
 	if (ipl == swed.fidat[SEI_FILE_ANY_AST].ipl[0])
@@ -5128,6 +5452,52 @@ char *FAR PASCAL_CONV swe_get_planet_name(int ipl, char *s)
 	  else
 	    sprintf(s, "%d: not found", ipl - SE_AST_OFFSET);
 	}
+        /* If there is a provisional designation only in ephemeris file,
+         * we look for a name in seasnam.txt, which can be updated by
+         * the user.
+         * Some old ephemeris files return a '?' in the first position.
+         * There are still a couple of unnamed bodies that got their
+         * provisional designation before 1925, when the current method
+         * of provisional designations was introduced. They have an 'A'
+         * as the first character, e.g. A924 RC. 
+         * The file seasnam.txt may contain comments starting with '#'.
+         * There must be at least two columns: 
+         * 1. asteroid catalog number
+         * 2. asteroid name
+         * The asteroid number may or may not be in brackets
+         */
+        if (s[0] == '?' || isdigit((int) s[1])) {
+          int ipli = (int) (ipl - SE_AST_OFFSET), iplf = 0;
+          FILE *fp;
+          char si[AS_MAXCH], *sp, *sp2;
+          if ((fp = swi_fopen(-1, SE_ASTNAMFILE, swed.ephepath, NULL)) != NULL) {
+            while(ipli != iplf && (sp = fgets(si, AS_MAXCH, fp)) != NULL) {
+              while (*sp == ' ' || *sp == '\t' 
+                     || *sp == '(' || *sp == '[' || *sp == '{')
+                sp++;
+              if (*sp == '#' || *sp == '\r' || *sp == '\n' || *sp == '\0')
+                continue;
+              /* catalog number of body of current line */
+              iplf = atoi(sp);
+              if (ipli != iplf)
+                continue;
+              /* set pointer after catalog number */
+              sp = strpbrk(sp, " \t");
+              if (sp == NULL)
+                continue; /* there is no name */
+              while (*sp == ' ' || *sp == '\t')
+                sp++;
+              sp2 = strpbrk(sp, "#\r\n");
+              if (sp2 != NULL)
+                *sp2 = '\0'; 
+              if (*sp == '\0')
+                continue;
+              swi_right_trim(sp);
+              strcpy(s, sp);
+            }
+            fclose(fp);
+          }
+        }
       } else  {
 	i = ipl;
 	sprintf(s, "%d", i);
@@ -5155,6 +5525,7 @@ static void trace_swe_calc(int swtch, double tjd, int ipl, long iflag, double *x
 	fprintf(swi_fp_trace_c, " iflag = %d;\n", iflag);
 	fprintf(swi_fp_trace_c, "  iflgret = swe_calc(tjd, ipl, iflag, xx, serr);");
 	fprintf(swi_fp_trace_c, "	/* xx = %ld */\n", (long) xx);
+	fflush(swi_fp_trace_c);
       } 
       break;
     case 2:
@@ -5164,6 +5535,7 @@ static void trace_swe_calc(int swtch, double tjd, int ipl, long iflag, double *x
 	fputs("  if (*serr != '\\0')", swi_fp_trace_c);
 	fputs(" printf(serr);", swi_fp_trace_c);
 	fputs(" printf(\"\\n\");\n", swi_fp_trace_c);
+	fflush(swi_fp_trace_c);
       }
       if (swi_fp_trace_out != NULL) {
 	fprintf(swi_fp_trace_out, "swe_calc: %f\t%d\t%ld\t%f\t%f\t%f\t%f\t%f\t%f\t", 
@@ -5172,6 +5544,7 @@ static void trace_swe_calc(int swtch, double tjd, int ipl, long iflag, double *x
 	  fputs(serr, swi_fp_trace_out);
 	}
 	fputs("\n", swi_fp_trace_out);
+	fflush(swi_fp_trace_out);
       }
       break;
     default:
@@ -5192,6 +5565,7 @@ static void trace_swe_fixstar(int swtch, char *star, double tjd, long iflag, dou
       fprintf(swi_fp_trace_c, " iflag = %d;\n", iflag);
       fprintf(swi_fp_trace_c, "  iflgret = swe_fixstar(star, tjd, iflag, xx, serr);");
       fprintf(swi_fp_trace_c, "   /* xx = %ld */\n", (long) xx);
+      fflush(swi_fp_trace_c);
     } 
     break;
   case 2:
@@ -5201,6 +5575,7 @@ static void trace_swe_fixstar(int swtch, char *star, double tjd, long iflag, dou
       fputs("  if (*serr != '\\0')", swi_fp_trace_c);
       fputs(" printf(serr);", swi_fp_trace_c);
       fputs(" printf(\"\\n\");\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
     if (swi_fp_trace_out != NULL) {
       fprintf(swi_fp_trace_out, "swe_fixstar: %s\t%f\t%ld\t%f\t%f\t%f\t%f\t%f\t%f\t", 
@@ -5209,6 +5584,7 @@ static void trace_swe_fixstar(int swtch, char *star, double tjd, long iflag, dou
 	fputs(serr, swi_fp_trace_out);
       }
       fputs("\n", swi_fp_trace_out);
+      fflush(swi_fp_trace_out);
     }
     break;
   default:
@@ -5227,15 +5603,19 @@ static void trace_swe_get_planet_name(int swtch, int ipl, char *s)
 	fprintf(swi_fp_trace_c, "  ipl = %d;\n", ipl);
 	fprintf(swi_fp_trace_c, "  swe_get_planet_name(ipl, s);");
 	fprintf(swi_fp_trace_c, "   /* s = %ld */\n", (long) s);
+	fflush(swi_fp_trace_c);
       } 
       break;
     case 2:
       if (swi_fp_trace_c != NULL) {
 	fputs("  printf(\"swe_get_planet_name: %d\\t%s\\t\\n\", ", swi_fp_trace_c);
 	fputs("ipl, s);\n", swi_fp_trace_c);/**/
+	fflush(swi_fp_trace_c);
       }
-      if (swi_fp_trace_out != NULL)
+      if (swi_fp_trace_out != NULL) {
 	fprintf(swi_fp_trace_out, "swe_get_planet_name: %d\t%s\t\n", ipl, s);
+	fflush(swi_fp_trace_out);
+      }
       break;
     default:
       break;
@@ -5247,15 +5627,20 @@ static void trace_swe_get_planet_name(int swtch, int ipl, char *s)
 /* set geographic position and altitude of observer */
 void FAR PASCAL_CONV swe_set_topo(double geolon, double geolat, double geoalt)
 {
-  int i;
   swed.topd.geolon = geolon;
   swed.topd.geolat = geolat;
   swed.topd.geoalt = geoalt;
-  swed.topd.geopos_is_set = TRUE;
+  swed.geopos_is_set = TRUE;
   /* to force new calculation of observer position vector */
   swed.topd.teval = 0;
   /* to force new calculation of light-time etc. 
    */
+  swi_force_app_pos_etc();
+}
+
+void swi_force_app_pos_etc()
+{
+  int i;
   for (i = 0; i < SEI_NPLANETS; i++)
     swed.pldat[i].xflgs = -1;
   for (i = 0; i < SEI_NNODE_ETC; i++)
@@ -5266,12 +5651,15 @@ void FAR PASCAL_CONV swe_set_topo(double geolon, double geolat, double geoalt)
   }
 }
 
-static int get_observer(double tjd, long iflag, 
-	double *xearth, AS_BOOL do_save, double *xobs, char *serr)
+int swi_get_observer(double tjd, long iflag, 
+	AS_BOOL do_save, double *xobs, char *serr)
 {
   int i;
-  double sidt, delt, tjd_ut, r, eps, nut, nutlo[2];
-  if (!swed.topd.geopos_is_set) {
+  double sidt, delt, tjd_ut, eps, nut, nutlo[2];
+  double f = EARTH_OBLATENESS;
+  double re = EARTH_RADIUS; 
+  double cosfi, sinfi, cc, ss, cosl, sinl, h;
+  if (!swed.geopos_is_set) {
     if (serr != NULL)
       strcpy(serr, "geographic position has not been set");
     return ERR;
@@ -5298,15 +5686,10 @@ static int get_observer(double tjd, long iflag,
     eps += nutlo[1];
     nut = nutlo[0];
   }
+  /* mean or apparent sidereal time, depending on whether or
+   * not SEFLG_NONUT is set */
   sidt = swe_sidtime0(tjd_ut, eps, nut);
   sidt *= 15;	/* in degrees */
-  /* position of observer on a perfect sphere: */
-  xobs[2] = 1.0;				/* radius */
-  xobs[0] = (sidt + swed.topd.geolon) * DEGTORAD;/* rectasc. */
-  xobs[1] = swed.topd.geolat * DEGTORAD;	/* decl. */
-  xobs[3] = 360.98564733 * DEGTORAD;		/* speed */
-  xobs[4] = xobs[5] = 0;
-  swi_polcart_sp(xobs, xobs);	/* cartesian coordinates */
   /* length of position and speed vectors;
    * the height above sea level must be taken into account.
    * with the moon, an altitude of 3000 m makes a difference 
@@ -5317,26 +5700,36 @@ static int get_observer(double tjd, long iflag,
    * potential), is of irregular shape and cannot easily
    * be taken into account. therefore, we refer height to 
    * the surface of the ellipsoid. the resulting error 
-   * is below 100 m, i.e. a few 0.01 arc seconds with the moon.
+   * is below 500 m, i.e. 0.2 - 0.3 arc seconds with the moon.
    */
-  r = EARTH_RADIUS + swed.topd.geoalt;
-  /* length of position and speed vectors */
-  xobs[0] *= r;
-  xobs[1] *= r;
-  xobs[3] *= r;
-  xobs[4] *= r;
-  	/* with oblateness of earth in z coordinate */
-  xobs[2] *= (EARTH_RADIUS * (1 - EARTH_OBLATENESS) + swed.topd.geoalt);
+  cosfi = cos(swed.topd.geolat * DEGTORAD);
+  sinfi = sin(swed.topd.geolat * DEGTORAD);
+  cc= 1 / sqrt(cosfi * cosfi + (1-f) * (1-f) * sinfi * sinfi); 
+  ss= (1-f) * (1-f) * cc; 
+  cosl = cos((swed.topd.geolon + sidt) * DEGTORAD);
+  sinl = sin((swed.topd.geolon + sidt) * DEGTORAD);
+  h = swed.topd.geoalt;
+  xobs[0] = (re * cc + h) * cosfi * cosl;
+  xobs[1] = (re * cc + h) * cosfi * sinl;
+  xobs[2] = (re * ss + h) * sinfi;
+  swi_cartpol(xobs, xobs);
+  xobs[3] = EARTH_ROT_SPEED;		/* speed */
+  xobs[4] = xobs[5] = 0;
+  swi_polcart_sp(xobs, xobs);
   /* to AUNIT */
   for (i = 0; i <= 5; i++)
     xobs[i] /= AUNIT;
   /* subtract nutation, set backward flag */
-  if (!(iflag & SEFLG_NONUT))
-    nutate(xobs, iflag, TRUE);
+  if (!(iflag & SEFLG_NONUT)) {
+    swi_coortrf2(xobs, xobs, -swed.nut.snut, swed.nut.cnut);
+    if (iflag & SEFLG_SPEED)
+      swi_coortrf2(xobs+3, xobs+3, -swed.nut.snut, swed.nut.cnut);
+    swi_nutate(xobs, iflag, TRUE);
+  }
   /* precess to J2000 */
   swi_precess(xobs, tjd, J_TO_J2000);
   if (iflag & SEFLG_SPEED)
-    precess_speed(xobs, tjd, J_TO_J2000);
+    swi_precess_speed(xobs, tjd, J_TO_J2000);
   /* save */
   if (do_save) {
     for (i = 0; i <= 5; i++)
@@ -5347,7 +5740,6 @@ static int get_observer(double tjd, long iflag,
   return OK;
 }
 
-#if 1
 /* Equation of Time
  *
  * The function returns the difference between 
@@ -5380,4 +5772,3 @@ int FAR PASCAL_CONV swe_time_equ(double tjd, double *E, char *serr)
   *E *= 4 / 1440.0;
   return OK;
 }
-#endif

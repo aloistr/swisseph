@@ -1,5 +1,5 @@
 /* SWISSEPH
-   $Header: swemmoon.c,v 1.27 98/12/02 19:18:02 dieter Exp $
+   $Header: swemmoon.c,v 1.30 98/12/17 23:05:20 dieter Exp $
  *
  * Steve Moshier's analytical lunar ephemeris
  */
@@ -179,6 +179,88 @@ static void moon3(void);
 static void moon4(void);
 #endif
 
+
+#ifdef MOSH_MOON_200
+/* The following coefficients were calculated by a simultaneous least
+ * squares fit between the analytical theory and the continued DE200
+ * numerically integrated ephemeris from 9000 BC to 13000 AD.
+ * See references to the array z[] later on in the program.
+ * The 71 coefficients were estimated from 42,529 Lunar positions.
+ */
+static double z[] = {
+-1.225346551567e+001, /* F, t^2 */
+-1.096676093208e-003, /* F, t^3 */
+-2.165750777942e-006, /* F, t^4 */
+-2.790392351314e-009, /* F, t^5 */
+ 4.189032191814e-011, /* F, t^6 */
+ 4.474984866301e-013, /* F, t^7 */
+ 3.239398410335e+001, /* l, t^2 */
+ 5.185305877294e-002, /* l, t^3 */
+-2.536291235258e-004, /* l, t^4 */
+-2.506365935364e-008, /* l, t^5 */
+ 3.452144225877e-011, /* l, t^6 */
+-1.755312760154e-012, /* l, t^7 */
+-5.870522364514e+000, /* D, t^2 */
+ 6.493037519768e-003, /* D, t^3 */
+-3.702060118571e-005, /* D, t^4 */
+ 2.560078201452e-009, /* D, t^5 */
+ 2.555243317839e-011, /* D, t^6 */
+-3.207663637426e-013, /* D, t^7 */
+-4.776684245026e+000, /* L, t^2 */
+ 6.580112707824e-003, /* L, t^3 */
+-6.073960534117e-005, /* L, t^4 */
+-1.024222633731e-008, /* L, t^5 */
+ 2.235210987108e-010, /* L, t^6 */
+ 7.200592540556e-014, /* L, t^7 */
+-8.552017636339e+001, /* t^2 cos(18V - 16E - l) */
+-2.055794304596e+002, /* t^2 sin(18V - 16E - l) */
+-1.097555241866e+000, /* t^3 cos(18V - 16E - l) */
+ 5.219423171002e-001, /* t^3 sin(18V - 16E - l) */
+ 2.088802640755e-003, /* t^4 cos(18V - 16E - l) */
+ 4.616541527921e-003, /* t^4 sin(18V - 16E - l) */
+ 4.794930645807e+000, /* t^2 cos(10V - 3E - l) */
+-4.595134364283e+001, /* t^2 sin(10V - 3E - l) */
+-6.659812174691e-002, /* t^3 cos(10V - 3E - l) */
+-2.570048828246e-001, /* t^3 sin(10V - 3E - l) */
+ 6.229863046223e-004, /* t^4 cos(10V - 3E - l) */
+ 5.504368344700e-003, /* t^4 sin(10V - 3E - l) */
+-3.084830597278e+000, /* t^2 cos(8V - 13E) */
+-1.000471012253e+001, /* t^2 sin(8V - 13E) */
+ 6.590112074510e-002, /* t^3 cos(8V - 13E) */
+-3.212573348278e-003, /* t^3 sin(8V - 13E) */
+ 5.409038312567e-004, /* t^4 cos(8V - 13E) */
+ 1.293377988163e-003, /* t^4 sin(8V - 13E) */
+ 2.311794636111e+001, /* t^2 cos(4E - 8M + 3J) */
+-3.157036220040e+000, /* t^2 sin(4E - 8M + 3J) */
+-3.019293162417e+000, /* t^2 cos(18V - 16E) */
+-9.211526858975e+000, /* t^2 sin(18V - 16E) */
+-4.993704215784e-002, /* t^3 cos(18V - 16E) */
+ 2.991187525454e-002, /* t^3 sin(18V - 16E) */
+-3.827414182969e+000, /* t^2 cos(18V - 16E - 2l) */
+-9.891527703219e+000, /* t^2 sin(18V - 16E - 2l) */
+-5.322093802878e-002, /* t^3 cos(18V - 16E - 2l) */
+ 3.164702647371e-002, /* t^3 sin(18V - 16E - 2l) */
+ 7.713905234217e+000, /* t^2 cos(2J - 5S) */
+-6.077986950734e+000, /* t^3 sin(2J - 5S) */
+-1.278232501462e-001, /* t^2 cos(L - F) */
+ 4.760967236383e-001, /* t^2 sin(L - F) */
+-6.759005756460e-001, /* t^3 sin(l') */
+ 1.655727996357e-003, /* t^4 sin(l') */
+ 1.646526117252e-001, /* t^3 sin(2D - l') */
+-4.167078100233e-004, /* t^4 sin(2D - l') */
+ 2.067529538504e-001, /* t^3 sin(2D - l' - l) */
+-5.219127398748e-004, /* t^4 sin(2D - l' - l) */
+-1.526335222289e-001, /* t^3 sin(l' - l) */
+-1.120545131358e-001, /* t^3 sin(l' + l) */
+ 4.619472391553e-002, /* t^3 sin(2D - 2l') */
+ 4.863621236157e-004, /* t^4 sin(2D - 2l') */
+-4.280059182608e-002, /* t^3 sin(2l') */
+-4.328378207833e-004, /* t^4 sin(2l') */
+-8.371028286974e-003, /* t^3 sin(2D - l) */
+ 4.089447328174e-002, /* t^3 sin(2D - 2l' - l) */
+-1.238363006354e-002, /* t^3 sin(2D + 2l' - l) */
+};
+#else
 /* The following coefficients were calculated by a simultaneous least
  * squares fit between the analytical theory and DE404 on the finite
  * interval from -3000 to +3000.
@@ -214,6 +296,7 @@ static double FAR z[] = {
  1.381936399935e+01, /* t^2 sin(2J - 5S) */
 -1.999840061168e+00, /* t^3 sin(l') */
 };
+#endif	/* ! MOSH_MOON_200 */
 
 
 #ifndef NO_MOSHIER
@@ -345,6 +428,72 @@ static short FAR LR[8*NLR] = {
  4,-1,-3, 0,     0,  998,     0, 0,
 };
 
+
+#ifdef MOSH_MOON_200
+#define NMB 56
+static short FAR MB[6*NMB] = {
+/*
+               Latitude
+ D  l' l  F    1"  .0001" */
+
+ 0, 0, 0, 1,18461, 2387,
+ 0, 0, 1, 1, 1010, 1671,
+ 0, 0, 1,-1,  999, 6936,
+ 2, 0, 0,-1,  623, 6524,
+ 2, 0,-1, 1,  199, 4837,
+ 2, 0,-1,-1,  166, 5741,
+ 2, 0, 0, 1,  117, 2607,
+ 0, 0, 2, 1,   61, 9120,
+ 2, 0, 1,-1,   33, 3572,
+ 0, 0, 2,-1,   31, 7597,
+ 2,-1, 0,-1,   29, 5766,
+ 2, 0,-2,-1,   15, 5663,
+ 2, 0, 1, 1,   15, 1216,
+ 2, 1, 0,-1,  -12, -941,
+ 2,-1,-1, 1,    8, 8681,
+ 2,-1, 0, 1,    7, 9586,
+ 2,-1,-1,-1,    7, 4346,
+ 0, 1,-1,-1,   -6,-7314,
+ 4, 0,-1,-1,    6, 5796,
+ 0, 1, 0, 1,   -6,-4601,
+ 0, 0, 0, 3,   -6,-2965,
+ 0, 1,-1, 1,   -5,-6324,
+ 1, 0, 0, 1,   -5,-3684,
+ 0, 1, 1, 1,   -5,-3113,
+ 0, 1, 1,-1,   -5, -759,
+ 0, 1, 0,-1,   -4,-8396,
+ 1, 0, 0,-1,   -4,-8057,
+ 0, 0, 3, 1,    3, 9841,
+ 4, 0, 0,-1,    3, 6745,
+ 4, 0,-1, 1,    2, 9985,
+ 0, 0, 1,-3,    2, 7986,
+ 4, 0,-2, 1,    2, 4139,
+ 2, 0, 0,-3,    2, 1863,
+ 2, 0, 2,-1,    2, 1462,
+ 2,-1, 1,-1,    1, 7660,
+ 2, 0,-2, 1,   -1,-6244,
+ 0, 0, 3,-1,    1, 5813,
+ 2, 0, 2, 1,    1, 5198,
+ 2, 0,-3,-1,    1, 5156,
+ 2, 1,-1, 1,   -1,-3178,
+ 2, 1, 0, 1,   -1,-2643,
+ 4, 0, 0, 1,    1, 1919,
+ 2,-1, 1, 1,    1, 1346,
+ 2,-2, 0,-1,    1,  859,
+ 0, 0, 1, 3,   -1, -194,
+ 2, 1, 1,-1,    0,-8227,
+ 1, 1, 0,-1,    0, 8042,
+ 1, 1, 0, 1,    0, 8026,
+ 0, 1,-2,-1,    0,-7932,
+ 2, 1,-1,-1,    0,-7910,
+ 1, 0, 1, 1,    0,-6674,
+ 2,-1,-2,-1,    0, 6502,
+ 0, 1, 2, 1,    0,-6388,
+ 4, 0,-2,-1,    0, 6337,
+ 4,-1,-1,-1,    0, 5958,
+ 1, 0, 1,-1,    0,-5889,
+};
+#else
 #define NMB 77
 static short FAR MB[6*NMB] = {
 /*
@@ -429,6 +578,7 @@ static short FAR MB[6*NMB] = {
  3, 0,-1, 1,    0,-2059,
  4, 1,-1,-1,    0,-1719,
 };
+#endif	/* ! MOSH_MOON_200 */
 
 #define NLRT 38
 static short FAR LRT[8*NLRT] = {
@@ -631,9 +781,10 @@ int swi_moshmoon(double tjd, AS_BOOL do_save, double *xpmret, char *serr)
     xpm = pdp->x;
   else
     xpm = xx;
-  if (tjd < MOSHLUEPH_START || tjd > MOSHLUEPH_END) {
+  /* allow 0.2 day tolerance so that true node interval fits in */
+  if (tjd < MOSHLUEPH_START - 0.2 || tjd > MOSHLUEPH_END + 0.2) {
     if (serr != NULL) {
-      sprintf(s, "jd %f beyond Moshier eph. limits %f and %f ",
+      sprintf(s, "jd %f outside Moshier's Moon range %.2f .. %.2f ",
 		    tjd, MOSHLUEPH_START, MOSHLUEPH_END);
       if (strlen(serr) + strlen(s) < AS_MAXCH)
 	strcat(serr, s);
@@ -686,6 +837,282 @@ int swi_moshmoon(double tjd, AS_BOOL do_save, double *xpmret, char *serr)
   return(OK);
 }
 
+#ifdef MOSH_MOON_200
+static void  moon1()
+{
+double a;
+/* Mean longitudes of planets (Laskar, Bretagnon) */
+Ve = mods3600( 210664136.4335482 * T + 655127.283046 );
+Ve += ((((((((
+  -9.36e-023 * T
+ - 1.95e-20 ) * T
+ + 6.097e-18 ) * T
+ + 4.43201e-15 ) * T
+ + 2.509418e-13 ) * T
+ - 3.0622898e-10 ) * T
+ - 2.26602516e-9 ) * T
+ - 1.4244812531e-5 ) * T
+ + 0.005871373088 ) * T2;
+Ea = mods3600( 129597742.26669231  * T +  361679.214649 );
+Ea += (((((((( -1.16e-22 * T
+ + 2.976e-19 ) * T
+ + 2.8460e-17 ) * T
+ - 1.08402e-14 ) * T
+ - 1.226182e-12 ) * T
+ + 1.7228268e-10 ) * T
+ + 1.515912254e-7 ) * T
+ + 8.863982531e-6 ) * T
+ - 2.0199859001e-2 ) * T2;
+Ma = mods3600(  68905077.59284 * T + 1279559.78866 );
+Ma += (-1.043e-5*T + 9.38012e-3)*T2;
+
+Ju = mods3600( 10925660.428608 * T +  123665.342120 );
+Ju += (1.543273e-5*T - 3.06037836351e-1)*T2;
+
+Sa = mods3600( 4399609.65932 * T + 180278.89694 );
+Sa += (( 4.475946e-8*T - 6.874806E-5 ) * T + 7.56161437443E-1)*T2;
+
+sscc( 0, STR*D, 6 );
+sscc( 1, STR*M,  4 );
+sscc( 2, STR*MP, 4 );
+sscc( 3, STR*NF, 4 );
+
+moonpol[0] = 0.0;
+moonpol[1] = 0.0;
+moonpol[2] = 0.0;
+
+/* terms in T^2, scale 1.0 = 10^-5" */
+chewm( LRT2, NLRT2, 4, 2, moonpol );
+chewm( BT2, NBT2, 4, 4, moonpol );
+
+f = 18 * Ve - 16 * Ea;
+
+g = STR*(f - MP );  /* 18V - 16E - l */
+cg = cos(g);
+sg = sin(g);
+l = 6.367278 * cg + 12.747036 * sg;  /* t^0 */
+l1 = 23123.70 * cg - 10570.02 * sg;  /* t^1 */
+l2 = z[24] * cg + z[25] * sg;        /* t^2 */
+l3 = z[26] * cg + z[27] * sg;        /* t^3 */
+l4 = z[28] * cg + z[29] * sg;        /* t^4 */
+moonpol[2] += 5.01 * cg + 2.72 * sg;
+
+g = STR * (10.*Ve - 3.*Ea - MP);
+cg = cos(g);
+sg = sin(g);
+l += -0.253102 * cg + 0.503359 * sg;
+l1 += 1258.46 * cg + 707.29 * sg;
+l2 += z[30] * cg + z[31] * sg;
+l3 += z[32] * cg + z[33] * sg;
+l4 += z[34] * cg + z[35] * sg;
+
+g = STR*(8.*Ve - 13.*Ea);
+cg = cos(g);
+sg = sin(g);
+l += -0.187231 * cg - 0.127481 * sg;
+l1 += -319.87 * cg - 18.34 * sg;
+l2 += z[36] * cg + z[37] * sg;
+l3 += z[38] * cg + z[39] * sg;
+l4 += z[40] * cg + z[41] * sg;
+
+a = 4.0*Ea - 8.0*Ma + 3.0*Ju;
+g = STR * a;
+cg = cos(g);
+sg = sin(g);
+l += -0.866287 * cg + 0.248192 * sg;
+l1 += 41.87 * cg + 1053.97 * sg;
+l2 += z[42] * cg + z[43] * sg;
+
+g = STR*(a - MP);
+cg = cos(g);
+sg = sin(g);
+l += -0.165009 * cg + 0.044176 * sg;
+l1 += 4.67 * cg + 201.55 * sg;
+
+
+g = STR*f;  /* 18V - 16E */
+cg = cos(g);
+sg = sin(g);
+l += 0.330401 * cg + 0.661362 * sg;
+l1 += 1202.67 * cg - 555.59 * sg;
+l2 += z[44] * cg + z[45] * sg;
+l3 += z[46] * cg + z[47] * sg;
+
+g = STR*(f - 2.0*MP );  /* 18V - 16E - 2l */
+cg = cos(g);
+sg = sin(g);
+l += 0.352185 * cg + 0.705041 * sg;
+l1 += 1283.59 * cg - 586.43 * sg;
+l2 += z[48] * cg + z[49] * sg;
+l3 += z[50] * cg + z[51] * sg;
+
+g = STR * (2.0*Ju - 5.0*Sa);
+cg = cos(g);
+sg = sin(g);
+l += -0.034700 * cg + 0.160041 * sg;
+l2 += z[52] * cg + z[53] * sg;
+
+g = STR * (LP - NF);
+cg = cos(g);
+sg = sin(g);
+l += 0.000116 * cg + 7.063040 * sg;
+l1 +=  298.8 * sg;
+l2 += z[54] * cg + z[55] * sg;
+
+
+/* T^3 terms */
+sg = sin( STR * M );
+l3 +=  z[56] * sg;
+l4 +=  z[57] * sg;
+
+g = STR * (2.0*D - M);
+sg = sin(g);
+cg = cos(g);
+l3 +=  z[58] * sg;
+l4 +=  z[59] * sg;
+moonpol[2] +=  -0.2655 * cg * T;
+
+g = g - STR * MP;
+sg = sin(g);
+l3 +=  z[60] * sg;
+l4 +=  z[61] * sg;
+
+g = STR * (M - MP);
+l3 +=  z[62] * sin( g );
+moonpol[2] +=  -0.1568 * cos( g ) * T;
+
+g = STR * (M + MP);
+l3 +=  z[63] * sin( g );
+moonpol[2] +=  0.1309 * cos( g ) * T;
+
+g = STR * 2.0 * (D - M);
+sg = sin(g);
+l3 +=  z[64] * sg;
+l4 +=  z[65] * sg;
+
+g = STR * 2.0 * M;
+sg = sin(g);
+l3 +=  z[66] * sg;
+l4 +=  z[67] * sg;
+
+g = STR * (2.0*D - MP);
+sg = sin(g);
+l3 +=  z[68] * sg;
+
+g = STR * (2.0*(D - M) - MP);
+sg = sin(g);
+l3 +=  z[69] * sg;
+
+g = STR * (2.0*(D + M) - MP);
+sg = sin(g);
+cg = cos(g);
+l3 +=  z[70] * sg;
+moonpol[2] +=   0.5568 * cg * T;
+
+l2 += moonpol[0];
+
+g = STR*(2.0*D - M - MP);
+moonpol[2] +=  -0.1910 * cos( g ) * T;
+
+
+moonpol[1] *= T;
+moonpol[2] *= T;
+
+/* terms in T */
+moonpol[0] = 0.0;
+chewm( BT, NBT, 4, 4, moonpol );
+chewm( LRT, NLRT, 4, 1, moonpol );
+g = STR*(f - MP - NF - 2355767.6); /* 18V - 16E - l - F */
+moonpol[1] +=  -1127. * sin(g);
+g = STR*(f - MP + NF - 235353.6); /* 18V - 16E - l + F */
+moonpol[1] +=  -1123. * sin(g);
+g = STR*(Ea + D + 51987.6);
+moonpol[1] +=  1303. * sin(g);
+g = STR*LP;
+moonpol[1] +=  342. * sin(g);
+
+
+g = STR*(2.*Ve - 3.*Ea);
+cg = cos(g);
+sg = sin(g);
+l +=  -0.343550 * cg - 0.000276 * sg;
+l1 +=  105.90 * cg + 336.53 * sg;
+
+g = STR*(f - 2.*D); /* 18V - 16E - 2D */
+cg = cos(g);
+sg = sin(g);
+l += 0.074668 * cg + 0.149501 * sg;
+l1 += 271.77 * cg - 124.20 * sg;
+
+g = STR*(f - 2.*D - MP);
+cg = cos(g);
+sg = sin(g);
+l += 0.073444 * cg + 0.147094 * sg;
+l1 += 265.24 * cg - 121.16 * sg;
+
+g = STR*(f + 2.*D - MP);
+cg = cos(g);
+sg = sin(g);
+l += 0.072844 * cg + 0.145829 * sg;
+l1 += 265.18 * cg - 121.29 * sg;
+
+g = STR*(f + 2.*(D - MP));
+cg = cos(g);
+sg = sin(g);
+l += 0.070201 * cg + 0.140542 * sg;
+l1 += 255.36 * cg - 116.79 * sg;
+
+g = STR*(Ea + D - NF);
+cg = cos(g);
+sg = sin(g);
+l += 0.288209 * cg - 0.025901 * sg;
+l1 += -63.51 * cg - 240.14 * sg;
+
+g = STR*(2.*Ea - 3.*Ju + 2.*D - MP);
+cg = cos(g);
+sg = sin(g);
+l += 0.077865 * cg + 0.438460 * sg;
+l1 += 210.57 * cg + 124.84 * sg;
+
+g = STR*(Ea - 2.*Ma);
+cg = cos(g);
+sg = sin(g);
+l += -0.216579 * cg + 0.241702 * sg;
+l1 += 197.67 * cg + 125.23 * sg;
+
+g = STR*(a + MP);
+cg = cos(g);
+sg = sin(g);
+l += -0.165009 * cg + 0.044176 * sg;
+l1 += 4.67 * cg + 201.55 * sg;
+
+g = STR*(a + 2.*D - MP);
+cg = cos(g);
+sg = sin(g);
+l += -0.133533 * cg + 0.041116 * sg;
+l1 +=  6.95 * cg + 187.07 * sg;
+
+g = STR*(a - 2.*D + MP);
+cg = cos(g);
+sg = sin(g);
+l += -0.133430 * cg + 0.041079 * sg;
+l1 +=  6.28 * cg + 169.08 * sg;
+
+g = STR*(3.*Ve - 4.*Ea);
+cg = cos(g);
+sg = sin(g);
+l += -0.175074 * cg + 0.003035 * sg;
+l1 +=  49.17 * cg + 150.57 * sg;
+
+g = STR*(2.*(Ea + D - MP) - 3.*Ju + 213534.);
+l1 +=  158.4 * sin(g);
+l1 += moonpol[0];
+
+a = 0.1 * T; /* set amplitude scale of 1.0 = 10^-4 arcsec */
+moonpol[1] *= a;
+moonpol[2] *= a;
+}
+#else
 static void moon1()
 {
 double a;
@@ -881,6 +1308,7 @@ a = 0.1 * T; /* set amplitude scale of 1.0 = 10^-4 arcsec */
 moonpol[1] *= a;
 moonpol[2] *= a;
 }
+#endif	/* MOSH_MOON_200 */
 
 static void moon2()
 {
@@ -999,10 +1427,10 @@ int swi_mean_node(double J, double *pol, char *serr)
   T4 = T2*T2;
 #endif /* NO_MOSHIER */
   /* with elements from swi_moshmoon2(), which are fitted to jpl-ephemeris */
-  if (J < MOSHLUEPH_START || J > MOSHLUEPH_END) {
+  if (J < MOSHNDEPH_START || J > MOSHNDEPH_END) {
     if (serr != NULL) {
-      sprintf(s, "jd %f beyond Moshier eph. limits %f and %f ",
-		    J, MOSHLUEPH_START, MOSHLUEPH_END);
+      sprintf(s, "jd %f outside mean node range %.2f .. %.2f ",
+		    J, MOSHNDEPH_START, MOSHNDEPH_END);
       if (strlen(serr) + strlen(s) < AS_MAXCH)
 	strcat(serr, s);
     }
@@ -1051,10 +1479,10 @@ int swi_mean_apog(double J, double *pol, char *serr)
   T4 = T2*T2;
 #endif
   /* with elements from swi_moshmoon2(), which are fitted to jpl-ephemeris */
-  if (J < MOSHLUEPH_START || J > MOSHLUEPH_END) {
+  if (J < MOSHNDEPH_START || J > MOSHNDEPH_END) {
     if (serr != NULL) {
-      sprintf(s, "jd %f beyond Moshier eph. limits %f and %f ",
-		    J, MOSHLUEPH_START, MOSHLUEPH_END);
+      sprintf(s, "jd %f outside mean apogee range %.2f .. %.2f ",
+		    J, MOSHNDEPH_START, MOSHNDEPH_END);
       if (strlen(serr) + strlen(s) < AS_MAXCH)
 	strcat(serr, s);
     }
@@ -1245,6 +1673,21 @@ lx = lx - 1296000.0 * floor( lx/1296000.0 );
 return( lx );
 }
 
+void swi_mean_lunar_elements(double tjd, 
+							 double *node, double *dnode, 
+							 double *peri, double *dperi)
+{
+  T = (tjd - J2000) / 36525.0;
+  T2 = T*T;
+  mean_elements();
+  *node = swe_degnorm((LP - NF) * STR * RADTODEG);
+  *peri = swe_degnorm((LP - MP) * STR * RADTODEG);
+  T -= 1.0 / 36525;
+  mean_elements();
+  *dnode = swe_degnorm(*node - (LP - NF) * STR * RADTODEG);
+  *dnode -= 360;
+  *dperi = swe_degnorm(*peri - (LP - MP) * STR * RADTODEG);
+}
 
 static void mean_elements()
 {
@@ -1262,6 +1705,21 @@ M += ((((((((
 - 1.1297037031e-5 ) * T
 + 1.4732069041e-4 ) * T
 - 0.552891801772 ) * T2;
+#ifdef MOSH_MOON_200
+/* Mean distance of moon from its ascending node = F */
+NF = mods3600( 1739527263.0983 * T + 335779.55755 );
+/* Mean anomaly of moon = l */
+MP = mods3600( 1717915923.4728 * T +  485868.28096 );
+/* Mean elongation of moon = D */
+D = mods3600( 1602961601.4603 * T + 1072260.73512 );
+/* Mean longitude of moon */
+LP = mods3600( 1732564372.83264 * T +  785939.95571 );                      
+/* Higher degree secular terms found by least squares fit */
+NF += (((((z[5] *T+z[4] )*T + z[3] )*T + z[2] )*T + z[1] )*T + z[0] )*T2;
+MP += (((((z[11]*T+z[10])*T + z[9] )*T + z[8] )*T + z[7] )*T + z[6] )*T2;
+D  += (((((z[17]*T+z[16])*T + z[15])*T + z[14])*T + z[13])*T + z[12])*T2;
+LP += (((((z[23]*T+z[22])*T + z[21])*T + z[20])*T + z[19])*T + z[18])*T2;    
+#else
 /* Mean distance of moon from its ascending node = F */
 /*NF = mods3600((1739527263.0983 - 2.079419901760e-01) * T + 335779.55755);*/
 NF = mods3600(1739232000.0 * fracT + 295263.0983 * T - 2.079419901760e-01 * T + 335779.55755);
@@ -1279,6 +1737,7 @@ NF += ((z[2]*T + z[1])*T + z[0])*T2;
 MP += ((z[5]*T + z[4])*T + z[3])*T2;
 D  += ((z[8]*T + z[7])*T + z[6])*T2;
 LP += ((z[11]*T + z[10])*T + z[9])*T2;
+#endif	/* ! MOSH_MOON_200 */
 /* sensitivity of mean elements
  *    delta argument = scale factor times delta amplitude (arcsec)
  * cos l  9.0019 = mean eccentricity

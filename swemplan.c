@@ -1,5 +1,5 @@
 /* SWISSEPH
-   $Header: swemplan.c,v 1.27 98/12/02 19:18:03 dieter Exp $
+   $Header: swemplan.c,v 1.31 2000/05/23 10:14:29 dieter Exp $
    Moshier planet routines
 
    modified for SWISSEPH by Dieter Koch
@@ -56,8 +56,16 @@
 #define mods3600(x) ((x) - 1.296e6 * floor ((x)/1.296e6))
 
 static void embofs_mosh(double J, double *xemb);
+static int check_t_terms(double t, char *sinp, double *doutp);
+
+static int read_elements_file(int32 ipl, double tjd, 
+  double *tjd0, double *tequ, 
+  double *mano, double *sema, double *ecce, 
+  double *parg, double *node, double *incl,
+  char *pname, char *serr);
 
 static int pnoint2msh[]   = {2, 2, 0, 1, 3, 4, 5, 6, 7, 8, };
+
 
 /* From Simon et al (1994)  */
 static double freqs[] =
@@ -270,10 +278,10 @@ int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, double *x
   }
   if (do_save || ipli == SEI_EARTH || xeret != NULL) 
     do_earth = TRUE;
-  /* tjd beyond ephemeris limits */
-  if (tjd < MOSHPLEPH_START || tjd > MOSHPLEPH_END) {
+  /* tjd beyond ephemeris limits, give some margin for spped at edge */
+  if (tjd < MOSHPLEPH_START - 0.3 || tjd > MOSHPLEPH_END + 0.3) {
     if (serr != NULL) {
-      sprintf(s, "jd %f beyond Moshier eph. limits %f and %f ",
+      sprintf(s, "jd %f outside Moshier planet range %.2f .. %.2f ",
 		    tjd, MOSHPLEPH_START, MOSHPLEPH_END);
       if (strlen(serr) + strlen(s) < AS_MAXCH)
 	strcat(serr, s);
@@ -479,16 +487,32 @@ static void embofs_mosh(double tjd, double *xemb)
  */
 #define SE_NEELY                /* use James Neely's revised elements 
                                  *      of Uranian planets*/
+static char *plan_fict_nam[SE_NFICT_ELEM] =
+  {"Cupido", "Hades", "Zeus", "Kronos", 
+   "Apollon", "Admetos", "Vulkanus", "Poseidon",
+   "Isis-Transpluto", "Nibiru", "Harrington",
+   "Leverrier", "Adams",
+   "Lowell", "Pickering",};
+
+char *swi_get_fict_name(int32 ipl, char *snam) 
+{
+  if (read_elements_file(ipl, 0, NULL, NULL, 
+       NULL, NULL, NULL, NULL, NULL, NULL, 
+       snam, NULL) == ERR)
+    strcpy(snam, "name not found");
+  return snam;
+}
+
 static double plan_oscu_elem[SE_NFICT_ELEM][8] = {
 #ifdef SE_NEELY
-  {J1900, J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833},	/* Cupido Neely */ 
-  {J1900, J1900,  27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500},	/* Hades Neely */
-  {J1900, J1900, 165.1232, 59.21436, 0.00120, 299.0440,   0.0000, 0.0000},	/* Zeus Neely */
-  {J1900, J1900, 169.0193, 64.81960, 0.00305, 208.8801,   0.0000, 0.0000},	/* Kronos Neely */ 
-  {J1900, J1900, 138.0533, 70.29949, 0.00000,   0.0000,   0.0000, 0.0000},    /* Apollon Neely */
-  {J1900, J1900, 351.3350, 73.62765, 0.00000,   0.0000,   0.0000, 0.0000},	/* Admetos Neely */
-  {J1900, J1900,  55.8983, 77.25568, 0.00000,   0.0000,   0.0000, 0.0000},	/* Vulcanus Neely */
-  {J1900, J1900, 165.5163, 83.66907, 0.00000,   0.0000,   0.0000, 0.0000},	/* Poseidon Neely */
+  {J1900, J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833},/* Cupido Neely */ 
+  {J1900, J1900,  27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500},/* Hades Neely */
+  {J1900, J1900, 165.1232, 59.21436, 0.00120, 299.0440,   0.0000, 0.0000},/* Zeus Neely */
+  {J1900, J1900, 169.0193, 64.81960, 0.00305, 208.8801,   0.0000, 0.0000},/* Kronos Neely */ 
+  {J1900, J1900, 138.0533, 70.29949, 0.00000,   0.0000,   0.0000, 0.0000},/* Apollon Neely */
+  {J1900, J1900, 351.3350, 73.62765, 0.00000,   0.0000,   0.0000, 0.0000},/* Admetos Neely */
+  {J1900, J1900,  55.8983, 77.25568, 0.00000,   0.0000,   0.0000, 0.0000},/* Vulcanus Neely */
+  {J1900, J1900, 165.5163, 83.66907, 0.00000,   0.0000,   0.0000, 0.0000},/* Poseidon Neely */
 #else
   {J1900, J1900, 104.5959, 40.99837,  0, 0, 0, 0}, /* Cupido   */
   {J1900, J1900, 337.4517, 50.667443, 0, 0, 0, 0}, /* Hades    */
@@ -536,30 +560,30 @@ static double plan_oscu_elem[SE_NFICT_ELEM][8] = {
  * ipli 	body number in planetary data structure
  * iflag	flags
  */
-void swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli)
+int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, char *serr)
 {
   double pqr[9], x[6];
   double eps, K, fac, rho, cose, sine;
   double alpha, beta, zeta, sigma, M2, Msgn, M_180_or_0;
+  double tjd0, tequ, mano, sema, ecce, parg, node, incl, dmot;
+  double cosnode, sinnode, cosincl, sinincl, cosparg, sinparg;
   double M, E;
   struct plan_data *pedp = &swed.pldat[SEI_EARTH];
   struct plan_data *pdp = &swed.pldat[ipli];
-  /* orbital elements */
-  double tjd0 = plan_oscu_elem[ipl][0];			/* epoch */
-  double tequ = plan_oscu_elem[ipl][1];			/* equinox */
-  double mano = plan_oscu_elem[ipl][2] * DEGTORAD;	/* mean anomaly */
-  double sema = plan_oscu_elem[ipl][3];			/* semi-axis */
-  double ecce = plan_oscu_elem[ipl][4];			/* eccentricity */
-  double parg = plan_oscu_elem[ipl][5] * DEGTORAD;	/* arg. of peri. */
-  double node = plan_oscu_elem[ipl][6] * DEGTORAD;	/* asc. node */
-  double incl = plan_oscu_elem[ipl][7] * DEGTORAD;	/* inclination */
-  double dmot = 0.9856076686 * DEGTORAD / sema / sqrt(sema);	/* daily motion */
-  double cosnode = cos(node);
-  double sinnode = sin(node);
-  double cosincl = cos(incl);
-  double sinincl = sin(incl); 
-  double cosparg = cos(parg);
-  double sinparg = sin(parg);
+  /* orbital elements, either from file or, if file not found,
+   * from above built-in set  
+   */
+  if (read_elements_file(ipl, tjd, &tjd0, &tequ, 
+       &mano, &sema, &ecce, &parg, &node, &incl, 
+       NULL, serr) == ERR)
+    return ERR;
+  dmot = 0.9856076686 * DEGTORAD / sema / sqrt(sema);	/* daily motion */
+  cosnode = cos(node);
+  sinnode = sin(node);
+  cosincl = cos(incl);
+  sinincl = sin(incl); 
+  cosparg = cos(parg);
+  sinparg = sin(parg);
   /* Gaussian vector */
   pqr[0] = cosparg * cosnode - sinparg * cosincl * sinnode;
   pqr[1] = -sinparg * cosnode - cosparg * cosincl * sinnode;
@@ -620,10 +644,6 @@ void swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli)
   eps = swi_epsiln(tequ);
   swi_coortrf(xp, xp, -eps);
   swi_coortrf(xp+3, xp+3, -eps);
-  /* FK4 -> FK5; whenever elements are not J2000 */
-  if (tequ != J2000) {
-    swi_FK4_FK5(xp, tequ);
-  }
   /* precess to J2000 */
   if (tequ != J2000) {
     swi_precess(xp, tequ, J_TO_J2000);
@@ -633,4 +653,266 @@ void swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli)
     pdp->teval = tjd;	/* for precession! */
     pdp->iephe = pedp->iephe;
   }
+  return OK;
+}
+
+#if 1
+/* note: input parameter tjd is required for T terms in elements */
+static int read_elements_file(int32 ipl, double tjd, 
+  double *tjd0, double *tequ, 
+  double *mano, double *sema, double *ecce, 
+  double *parg, double *node, double *incl,
+  char *pname, char *serr)
+{
+  int i, iline, iplan, retc;
+  FILE *fp = NULL;
+  char s[AS_MAXCH], *sp;
+  char *cpos[20], serri[AS_MAXCH];
+  AS_BOOL elem_found = FALSE;
+  double tt = 0;
+  /* -1, because file information is not saved, file is always closed */
+  if ((fp = swi_fopen(-1, SE_FICTFILE, swed.ephepath, serr)) == NULL) {
+    /* file does not exist, use built-in bodies */
+    if (ipl >= SE_NFICT_ELEM) {
+      if (serr != NULL)
+        sprintf(serr, "error no elements for fictitious body no %7.0f", (double) ipl);
+      return ERR;
+    }
+    if (tjd0 != NULL)
+      *tjd0 = plan_oscu_elem[ipl][0];			/* epoch */
+    if (tequ != NULL)
+      *tequ = plan_oscu_elem[ipl][1];			/* equinox */
+    if (mano != NULL)
+      *mano = plan_oscu_elem[ipl][2] * DEGTORAD;	/* mean anomaly */
+    if (sema != NULL)
+      *sema = plan_oscu_elem[ipl][3];			/* semi-axis */
+    if (ecce != NULL)
+      *ecce = plan_oscu_elem[ipl][4];			/* eccentricity */
+    if (parg != NULL)
+      *parg = plan_oscu_elem[ipl][5] * DEGTORAD;	/* arg. of peri. */
+    if (node != NULL)
+      *node = plan_oscu_elem[ipl][6] * DEGTORAD;	/* asc. node */
+    if (incl != NULL)
+      *incl = plan_oscu_elem[ipl][7] * DEGTORAD;	/* inclination */
+    if (pname != NULL)
+      strcpy(pname, plan_fict_nam[ipl]);
+    return OK;
+  }
+  /* 
+   * find elements in file 
+   */
+  iline = 0;
+  iplan = -1;
+  while (fgets(s, AS_MAXCH, fp) != NULL) {
+    iline++;
+    sp = s;
+    while(*sp == ' ' || *sp == '\t')
+      sp++;
+    strcpy(s, sp);
+    if (*s == '#')
+      continue;
+    if (*s == '\r')
+      continue;
+    if (*s == '\n')
+      continue;
+    if (*s == '\0')
+      continue;
+    if ((sp = strchr(s, '#')) != NULL)
+      *sp = '\0';
+    i = swi_cutstr(s, ",", cpos, 20);
+    sprintf(serri, "error in file %s, line %7.0f:",
+              SE_FICTFILE, (double) iline);
+    if (i < 9) {
+      if (serr != NULL) 
+        sprintf(serr, "%s nine elements required", serri);
+      return ERR;
+    }
+    iplan++;
+    if (iplan != ipl)
+      continue;
+    elem_found = TRUE;
+    /* epoch of elements */
+    if (tjd0 != NULL) {
+      sp = cpos[0];
+	  for (i = 0; i < 5; i++)
+       sp[i] = tolower(sp[i]);
+      if (strncmp(sp, "j2000", 5) == OK)
+        *tjd0 = J2000;
+      else if (strncmp(sp, "b1950", 5) == OK)
+        *tjd0 = B1950;
+      else if (strncmp(sp, "j1900", 5) == OK)
+        *tjd0 = J1900;
+      else if (*sp == 'j' || *sp == 'b') {
+        if (serr != NULL) 
+          sprintf(serr, "%s invalid epoch", serri);
+        goto return_err;
+      } else
+        *tjd0 = atof(sp);
+      tt = tjd - *tjd0;
+    }
+    /* equinox */
+    if (tequ != NULL) {
+      sp = cpos[1];
+      while(*sp == ' ' || *sp == '\t')
+        sp++;
+	  for (i = 0; i < 5; i++)
+       sp[i] = tolower(sp[i]);
+      if (strncmp(sp, "j2000", 5) == OK)
+        *tequ = J2000;
+      else if (strncmp(sp, "b1950", 5) == OK)
+        *tequ = B1950;
+      else if (strncmp(sp, "j1900", 5) == OK)
+        *tequ = J1900;
+      else if (strncmp(sp, "jdate", 5) == OK)
+        *tequ = tjd;
+      else if (*sp == 'j' || *sp == 'b') {
+        if (serr != NULL) 
+          sprintf(serr, "%s invalid equinox", serri);
+        goto return_err;
+      } else
+        *tequ = atof(sp);
+    }
+    /* mean anomaly t0 */
+    if (mano != NULL) {
+      retc = check_t_terms(tt, cpos[2], mano);
+	  *mano = swe_degnorm(*mano);
+      if (retc == ERR) {
+        if (serr != NULL)
+          sprintf(serr, "%s mean anomaly value invalid", serri);
+        goto return_err;
+      }
+      /* if mean anomaly has t terms (which happens with fictitious 
+       * planet Vulcan), we set
+       * epoch = tjd, so that no motion will be added anymore 
+       * equinox = tjd */
+      if (retc == 1) {
+	*tjd0 = tjd;
+      }
+      *mano *= DEGTORAD;
+    }
+    /* semi-axis */
+    if (sema != NULL) {
+      retc = check_t_terms(tt, cpos[3], sema);
+      if (*sema <= 0 || retc == ERR) {
+        if (serr != NULL)
+          sprintf(serr, "%s semi-axis value invalid", serri);
+        goto return_err;
+      }
+    }
+    /* eccentricity */
+    if (ecce != NULL) {
+      retc = check_t_terms(tt, cpos[4], ecce);
+      if (*ecce >= 1 || *ecce < 0 || retc == ERR) {
+        if (serr != NULL)
+          sprintf(serr, "%s eccentricity invalid (no parabolic or hyperbolic orbits allowed)", serri);
+        goto return_err;
+      }
+    }
+    /* perihelion argument */
+    if (parg != NULL) {
+      retc = check_t_terms(tt, cpos[5], parg);
+	  *parg = swe_degnorm(*parg);
+      if (retc == ERR) {
+        if (serr != NULL)
+          sprintf(serr, "%s perihelion argument value invalid", serri);
+        goto return_err;
+      }
+      *parg *= DEGTORAD;
+    }
+    /* node */
+    if (node != NULL) {
+      retc = check_t_terms(tt, cpos[6], node);
+	  *node = swe_degnorm(*node);
+      if (retc == ERR) {
+        if (serr != NULL)
+          sprintf(serr, "%s node value invalid", serri);
+        goto return_err;
+      }
+      *node *= DEGTORAD;
+    }
+    /* inclination */
+    if (incl != NULL) {
+      retc = check_t_terms(tt, cpos[7], incl);
+	  *incl = swe_degnorm(*incl);
+      if (retc == ERR) {
+        if (serr != NULL)
+          sprintf(serr, "%s inclination value invalid", serri);
+        goto return_err;
+      }
+      *incl *= DEGTORAD;
+    }
+    /* planet name */
+    if (pname != NULL) {
+      sp = cpos[8];
+      while(*sp == ' ' || *sp == '\t')
+        sp++;
+      swi_right_trim(sp);
+      strcpy(pname, sp);
+    }
+    break;
+  }
+  if (!elem_found) {
+    if (serr != NULL)
+      sprintf(serr, "%s elements for planet %7.0f not found", serri, ipl);
+    goto return_err;
+  }
+  fclose(fp);
+  return OK;
+return_err:
+  fclose(fp);
+  return ERR;
+}
+#endif
+
+static int check_t_terms(double t, char *sinp, double *doutp)
+{
+  int i, isgn = 1, z;
+  int retc = 0;
+  char *sp;
+  double tt[5], fac;
+  tt[0] = t / 36525;
+  tt[1] = tt[0];
+  tt[2] = tt[1] * tt[1];
+  tt[3] = tt[2] * tt[1];
+  tt[4] = tt[3] * tt[1];
+  if ((sp = strpbrk(sinp, "+-")) != NULL)
+    retc = 1; /* with additional terms */
+  sp = sinp;
+  *doutp = 0;
+  fac = 1;
+  z = 0;
+  while (1) {
+    while(*sp != '\0' && strchr(" \t", *sp) != NULL)
+      sp++;
+    if (strchr("+-", *sp) || *sp == '\0') {
+	  if (z > 0)
+		*doutp += fac;
+	  isgn = 1;
+	  if (*sp == '-')
+	    isgn = -1;
+	  fac = 1 * isgn;
+	  if (*sp == '\0')
+		return retc;
+	  sp++;
+	} else {
+      while(*sp != '\0' && strchr("* \t", *sp) != NULL)
+        sp++;
+      if (*sp != '\0' && strchr("tT", *sp) != NULL) {
+		/* a T */
+        sp++;
+        if (*sp != '\0' && strchr("+-", *sp))
+		  fac *= tt[0];
+	    else if ((i = atoi(sp)) <= 4 && i >= 0)
+          fac *= tt[i];
+	  } else {
+        /* a number */
+        if (atof(sp) != 0 || *sp == '0')
+          fac *= atof(sp);
+	  }
+      while (*sp != '\0' && strchr("0123456789.", *sp))
+	    sp++;
+	}
+	z++;
+  }
+  return retc;	/* there have been additional terms */
 }

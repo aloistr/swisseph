@@ -1,5 +1,5 @@
 /*******************************************************
-$Header: swehouse.h,v 1.26 98/11/29 21:08:03 dieter Exp $
+$Header: swehouse.h,v 1.65 2003/06/14 13:09:50 alois Exp $
 module swehouse.h
 house and (simple) aspect calculation 
 
@@ -43,8 +43,8 @@ house and (simple) aspect calculation
   The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
   for promoting such software, products or services.
 */
-struct  houses {
-	  double cusp[13];
+struct houses {
+	  double cusp[37];
 	  double ac;
 	  double mc;
 	  double vertex;

@@ -1,6 +1,6 @@
 
 /************************************************************
-   $Header: swephlib.h,v 1.26 98/11/29 21:07:39 dieter Exp $
+   $Header: swephlib.h,v 1.65 2003/06/14 13:09:35 alois Exp $
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 
@@ -87,12 +87,12 @@ extern int swi_precess(double *R, double J, int direction );
 extern void swi_precess_speed(double *xx, double t, int direction);
 
 /* from sweph.c, light deflection, aberration, etc. */
-extern void swi_deflect_light(double *xx, double dt, long iflag);
-extern void swi_aberr_light(double *xx, double *xe, long iflag);
-extern int swi_plan_for_osc_elem(long iflag, double tjd, double *xx);
-extern int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, long iflag, char *serr);
-extern int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, double *xoutr, long iflag, char *serr);
-extern int swi_get_observer(double tjd, long iflag, 
+extern void swi_deflect_light(double *xx, double dt, int32 iflag);
+extern void swi_aberr_light(double *xx, double *xe, int32 iflag);
+extern int swi_plan_for_osc_elem(int32 iflag, double tjd, double *xx);
+extern int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, int32 iflag, char *serr);
+extern int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, double *xoutr, int32 iflag, char *serr);
+extern int swi_get_observer(double tjd, int32 iflag, 
 	AS_BOOL do_save, double *xobs, char *serr);
 extern void swi_force_app_pos_etc();
 
@@ -101,9 +101,9 @@ extern void swi_check_ecliptic(double tjd);
 extern double swi_epsiln(double J);
 
 /* nutation */
-extern void swi_check_nutation(double tjd, long iflag);
+extern void swi_check_nutation(double tjd, int32 iflag);
 extern int swi_nutation(double J, double *nutlo);
-extern void swi_nutate(double *xx, long iflag, AS_BOOL backward);
+extern void swi_nutate(double *xx, int32 iflag, AS_BOOL backward);
 
 extern void swi_mean_lunar_elements(double tjd, 
 							 double *node, double *dnode, 
@@ -140,7 +140,7 @@ extern void swi_FK4_FK5(double *xp, double tjd);
   extern FILE *swi_fp_trace_c;
   extern FILE *swi_fp_trace_out;
   extern void swi_open_trace(char *serr);
-  extern long swi_trace_count;
+  extern int32 swi_trace_count;
   static char *fname_trace_c = "swetrace.c";
   static char *fname_trace_out = "swetrace.txt";
 #ifdef FORCE_IFLAG

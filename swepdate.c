@@ -1,5 +1,5 @@
 /*****************************************************
-$Header: swepdate.c,v 1.30 98/12/17 23:05:22 dieter Exp $
+$Header: swepdate.c,v 1.65 2003/06/14 13:02:01 alois Exp $
 Placalc compatibility interface for Swiss Ephemeris.
 date functions
 *******************************************************/
@@ -176,7 +176,7 @@ void revjuls(double jd, int gregflag, struct adate *adp)
 }
 
 /*********************************************************
-  $Header: swepcalc.c,v 1.30 98/12/17 23:05:22 dieter Exp $
+  $Header: swepdate.c,v 1.65 2003/06/14 13:02:01 alois Exp $
   version 15-feb-89 16:30
 
   This function converts some date+time input {d,m,y,utime}

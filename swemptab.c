@@ -1,5 +1,5 @@
 /* SWISSEPH
-   $Header: swemptab.c,v 1.26 98/11/29 21:08:19 dieter Exp $
+   $Header: swemptab.c,v 1.65 2003/06/14 13:09:54 alois Exp $
 
    ATTENTION: this source file is not to be compiled separately,
    as it is #included by swemplan

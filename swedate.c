@@ -1,5 +1,5 @@
 /*********************************************************
-  $Header: swedate.c,v 1.26 98/11/29 21:08:09 dieter Exp $
+  $Header: swedate.c,v 1.65 2003/06/14 13:09:56 alois Exp $
   version 15-feb-89 16:30
   
   swe_date_conversion()

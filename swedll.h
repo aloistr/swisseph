@@ -1,5 +1,5 @@
 /* SWISSEPH
- * $Header: swedll.c,v 1.30 97/07/08 15:16:43 dieter Exp $
+ * $Header: swedll.h,v 1.65 2003/06/14 13:09:51 alois Exp $
  *
  *  Windows DLL interface imports for the Astrodienst SWISSEPH package
  *
@@ -7,6 +7,9 @@
 
 /* $Id$ */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 #ifndef _SWEDLL_H
 #define _SWEDLL_H
 
@@ -27,8 +30,8 @@
 
 DllImport double FAR PASCAL swe_degnorm(double deg);
 
-DllImport long FAR PASCAL swe_calc( 
-        double tjd, int ipl, long iflag, 
+DllImport int32 FAR PASCAL swe_calc( 
+        double tjd, int ipl, int32 iflag, 
         double *xx,
         char *serr);
 
@@ -37,8 +40,8 @@ DllImport int32 FAR PASCAL swe_calc_ut(
         double *xx,
         char *serr);
 
-DllImport long FAR PASCAL swe_fixstar(
-        char *star, double tjd, long iflag, 
+DllImport int32 FAR PASCAL swe_fixstar(
+        char *star, double tjd, int32 iflag, 
         double *xx,
         char *serr);
 
@@ -67,12 +70,17 @@ DllImport int FAR PASCAL swe_houses_armc(
 DllImport double FAR PASCAL swe_house_pos(
         double armc, double geolon, double eps, int hsys, double *xpin, char *serr);
 
+DllImport int32 FAR PASCAL swe_gauquelin_sector(
+	double t_ut, int32 ipl, char *starname, int32 iflag, int32 imeth, double *geopos, double atpress, double attemp, double *dgsect, char *serr);
+
 DllImport void FAR PASCAL swe_set_sid_mode(
         int32 sid_mode, double t0, double ayan_t0);
 
 DllImport double FAR PASCAL swe_get_ayanamsa(double tjd_et);
 
 DllImport double FAR PASCAL swe_get_ayanamsa_ut(double tjd_ut);
+
+DllImport char *FAR PASCAL swe_get_ayanamsa_name(int32 isidmode);
 
 DllImport int FAR PASCAL swe_date_conversion(
         int y , int m , int d ,         /* year, month, day */
@@ -112,25 +120,30 @@ DllImport void FAR PASCAL swe_set_topo(double geolon, double geolat, double heig
  * eclipse at a given tjd */
 DllImport int32 FAR PASCAL swe_sol_eclipse_where(double tjd, int32 ifl, double *geopos, double *attr, char *serr);
 
+DllImport int32 FAR PASCAL swe_lun_occult_where(double tjd, int32 ipl, char *starname, int32 ifl, double *geopos, double *attr, char *serr);
+
 /* computes attributes of a solar eclipse for given tjd, geolon, geolat */
 DllImport int32 FAR PASCAL swe_sol_eclipse_how(double tjd, int32 ifl, double *geopos, double *attr, char *serr);
 
 /* finds time of next local eclipse */
-DllImport int32 FAR PASCAL swe_sol_eclipse_when_loc(double tjd_start, int32 ifl, double *geopos, double *tret, double *attr, AS_BOOL backward, char *serr);
+DllImport int32 FAR PASCAL swe_sol_eclipse_when_loc(double tjd_start, int32 ifl, double *geopos, double *tret, double *attr, int32 backward, char *serr);
+
+DllImport int32 FAR PASCAL swe_lun_occult_when_loc(double tjd_start, int32 ipl, char *starname, int32 ifl, double *geopos, double *tret, double *attr, int32 backward, char *serr);
 
 /* finds time of next eclipse globally */
-DllImport int32 FAR PASCAL swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype,
-     double *tret, AS_BOOL backward, char *serr);
+DllImport int32 FAR PASCAL swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype, double *tret, int32 backward, char *serr);
+
+/* finds time of next occultation globally */
+DllImport int32 FAR PASCAL swe_lun_occult_when_glob(double tjd_start, int32 ipl, char *starname, int32 ifl, int32 ifltype, double *tret, int32 backward, char *serr);
 
 /* computes attributes of a lunar eclipse for given tjd */
 DllImport int32 FAR PASCAL swe_lun_eclipse_how(
           double tjd_ut, 
           int32 ifl,
-		  double *geopos,
+	  double *geopos,
           double *attr, 
           char *serr);
-DllImport int32 FAR PASCAL swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype,
-     double *tret, AS_BOOL backward, char *serr);
+DllImport int32 FAR PASCAL swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype, double *tret, int32 backward, char *serr);
 
 /* planetary phenomena */
 DllImport int32 FAR PASCAL swe_pheno(double tjd, int32 ipl, int32 iflag, 
@@ -203,7 +216,7 @@ DllImport double FAR PASCAL swe_deg_midp(double x1, double x0);
 /* round second, but at 29.5959 always down */
 DllImport centisec FAR PASCAL swe_csroundsec(centisec x);
 
-/* double to long with rounding, no overflow check */
+/* double to int32 with rounding, no overflow check */
 DllImport int32 FAR PASCAL swe_d2l(double x);
 
 DllImport void FAR PASCAL swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn);
@@ -224,8 +237,8 @@ DllImport char *FAR PASCAL swe_cs2degstr(CSEC t, char *a);
  * void   -> int
  */
 
-DllImport long FAR PASCAL swe_calc_d(
-    double *tjd, int ipl, long iflag,
+DllImport int32 FAR PASCAL swe_calc_d(
+    double *tjd, int ipl, int32 iflag,
     double *x,
     char *serr);
 
@@ -234,8 +247,8 @@ DllImport int32 FAR PASCAL swe_calc_ut_d(
     double *x,
     char *serr);
 
-DllImport long FAR PASCAL swe_fixstar_d(
-    char *star, double *tjd, long iflag,
+DllImport int32 FAR PASCAL swe_fixstar_d(
+    char *star, double *tjd, int32 iflag,
     double *x,
     char *serr);
 
@@ -259,7 +272,7 @@ double *nut, double *sidt);
 DllImport int FAR PASCAL swe_sidtime_d(double *tjd_ut, double *sidt);
 
 DllImport int FAR PASCAL swe_set_sid_mode_d(
-        long sid_mode, double *t0, double *ayan_t0);
+        int32 sid_mode, double *t0, double *ayan_t0);
 
 DllImport int FAR PASCAL swe_get_ayanamsa_d(double *tjd_et, double *ayan);
 DllImport int FAR PASCAL swe_get_ayanamsa_ut_d(double *tjd_et, double *ayan);
@@ -320,8 +333,8 @@ DllImport int FAR PASCAL swe_difdeg2n_d(double *p1, double *p2, double *diff);
 /* round second, but at 29.5959 always down */
 DllImport centisec FAR PASCAL swe_csroundsec_d(centisec x);
 
-/* double to long with rounding, no overflow check */
-DllImport long FAR PASCAL swe_d2l_d(double *x);
+/* double to int32 with rounding, no overflow check */
+DllImport int32 FAR PASCAL swe_d2l_d(double *x);
 
 DllImport int FAR PASCAL swe_split_deg_d(double *ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn);
 
@@ -405,3 +418,6 @@ DllImport int32 FAR PASCAL swe_nod_aps_ut_d(double *tjd_ut, int32 ipl, int32 ifl
                       char *serr);
 
 #endif /* !_SWEDLL_H */
+#ifdef __cplusplus
+}
+#endif

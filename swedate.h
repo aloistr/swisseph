@@ -1,5 +1,5 @@
 /*********************************************************
-  $Header: swedate.h,v 1.26 98/11/29 21:08:23 dieter Exp $
+  $Header: swedate.h,v 1.65 2003/06/14 13:09:52 alois Exp $
   version 15-feb-89 16:30
 *********************************************************/
 
@@ -42,6 +42,10 @@
   for promoting such software, products or services.
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef _SWEDLL_H
 extern EXP32 int FAR PASCAL_CONV EXP16 swe_date_conversion (
 	int y , int m , int d ,		/* year, month, day */
@@ -57,4 +61,7 @@ extern EXP32 void FAR PASCAL_CONV EXP16 swe_revjul (
 	double jd, 
 	int gregflag,
      	int *jyear, int *jmon, int *jday, double *jut);
+#endif
+#ifdef __cplusplus
+}
 #endif

@@ -1,6 +1,6 @@
 
 /* 
-  $Header: swemini.c,v 1.30 98/12/17 23:05:55 dieter Exp $
+  $Header: swemini.c,v 1.65 2003/06/14 13:10:33 alois Exp $
 
   swemini.c	A minimal program to test the Swiss Ephemeris.
 
@@ -62,7 +62,7 @@ int main()
   int jday = 1, jmon = 1, jyear = 2000;
   double jut = 0.0;
   double tjd, te, x2[6];
-  long iflag, iflgret;
+  int32 iflag, iflgret;
   int p;
   iflag = SEFLG_SPEED;
   while (TRUE) {

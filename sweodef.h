@@ -1,5 +1,5 @@
 /************************************************************
-   $Header: sweodef.h,v 1.30 98/12/17 23:05:51 dieter Exp $
+   $Header: sweodef.h,v 1.65 2003/06/14 13:02:34 alois Exp $
    definitions and constants for all Swiss Ephemeris source files,
    only required for compiling the libraries, not for the external
    interface of the libraries.
@@ -212,6 +212,12 @@
 #  define ERR (-1)
 #endif
 
+/* hack because UCHAR is already used by mingw gcc */
+#ifdef __GNUC__
+#ifdef _WIN32
+#define UCHAR SWE_UCHAR
+#endif
+#endif
 
 typedef unsigned char UCHAR;
 #define UCP	(UCHAR*)
@@ -249,8 +255,8 @@ typedef int32    centisec;       /* centiseconds used for angles and times */
 #define CS	(centisec)	/* use for casting */
 #define CSEC	centisec	/* use for typing */
 
-#define DEG     360000L  /* degree expressed in centiseconds */
-#define DEG7_30 (2700000L)	/* 7.5 degrees */
+#define DEG     360000  /* degree expressed in centiseconds */
+#define DEG7_30 (2700000)	/* 7.5 degrees */
 #define DEG15   (15 * DEG)
 #define DEG24   (24 * DEG)
 #define DEG30   (30 * DEG)

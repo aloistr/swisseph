@@ -1,5 +1,5 @@
 /* SWISSEPH
-   $Header: swemmoon.c,v 1.30 98/12/17 23:05:20 dieter Exp $
+   $Header: swemmoon.c,v 1.65 2003/06/14 13:01:58 alois Exp $
  *
  * Steve Moshier's analytical lunar ephemeris
  */
@@ -179,6 +179,9 @@ static void moon3(void);
 static void moon4(void);
 #endif
 
+#ifdef LP
+# undef LP
+#endif
 
 #ifdef MOSH_MOON_200
 /* The following coefficients were calculated by a simultaneous least

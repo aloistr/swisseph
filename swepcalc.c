@@ -1,5 +1,5 @@
 /*****************************************************
-$Header: swepcalc.c,v 1.30 98/12/17 23:05:22 dieter Exp $
+$Header: swepcalc.c,v 1.65 2003/06/14 13:01:59 alois Exp $
 Placalc compatibility interface for Swiss Ephemeris.
 *******************************************************/
 
@@ -185,19 +185,19 @@ int calcserv(int id,	/* request id, random number to prevent phase err */
    * then for each requested planet, if wanted: rgeo (units 0..999)
    * then for each requested planet, if wanted: rau  (A.U.)
    */
-  sprintf (so, "%d,%.8f,%d,%d,%ld,%ld", id, jd_ad, flag, plalist, 
+  sprintf (so, "%d,%.8f,%d,%d,%d,%d", id, jd_ad, flag, plalist, 
 	       swe_d2l(ekl * DEG), swe_d2l (nut * DEG) );
   so_len = strlen (so);
   for (planet = SUN; planet < CALC_N; planet++) {
     if (! check_bit(plalist, planet)) continue;
-    sprintf (s ,",%ld", lcs[planet]);
+    sprintf (s ,",%d", lcs[planet]);
     strcat (so + so_len, s);
     so_len += strlen (s);
   }
   if (flag & CALC_BIT_SPEED) {
     for (planet = SUN; planet < CALC_N; planet++)  {
       if (! check_bit(plalist, planet)) continue;
-      sprintf (s ,",%ld", lpcs[planet]);
+      sprintf (s ,",%d", lpcs[planet]);
       strcat (so + so_len, s);
       so_len += strlen (s);
     }
@@ -205,7 +205,7 @@ int calcserv(int id,	/* request id, random number to prevent phase err */
   if (flag & CALC_BIT_BETA) {
     for (planet = SUN; planet < CALC_N; planet++)  {
       if (! check_bit(plalist, planet)) continue;
-      sprintf (s ,",%ld", betcs[planet]);
+      sprintf (s ,",%d", betcs[planet]);
       strcat (so + so_len, s);
       so_len += strlen (s);
     }
@@ -280,7 +280,7 @@ int calc(int  planet,  	/* planet index as defined in placalc.h,
 {
   double tjd = jd_ad + JUL_OFFSET;
   double x[6];
-  long iflagret = 0, iflag = 0;
+  int32 iflagret = 0, iflag = 0;
   int ipl;
   /* planet number 
    */
@@ -468,7 +468,7 @@ int fixstar(char *star, double jd, double *lon, double *lat)
 {
   double x[6];
   int i;
-  long retflag;
+  int32 retflag;
   /* if call by number, fixstar() is 0-based, 
    * whereas swe_fixstar starts with 1 */
   if (isdigit((int) *star)) {
@@ -636,7 +636,7 @@ double  sidtime (double jd_ad, double ecl, double nuta)
 # ifdef INTEL_BYTE_ORDER
 /********************************************************************/
 void longreorder (UCHAR *p, int n) 
-			   /* p points to memory filled with long values; for
+			   /* p points to memory filled with int32 values; for
                            each of the values the seqeuence of the four bytes
                            has to be reversed, to translate HP-UX and VAX
 			   ordering to MSDOS/Turboc ordering */

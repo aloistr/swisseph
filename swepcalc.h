@@ -1,5 +1,5 @@
 /************************************************************
-   $Header: swepcalc.h,v 1.30 98/12/17 23:05:27 dieter Exp $
+   $Header: swepcalc.h,v 1.65 2003/06/14 13:02:35 alois Exp $
    Definitions and constants for Placalc interface to SwissEph
 
    This should only be used for porting older Placalc applications.

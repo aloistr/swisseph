@@ -1,6 +1,6 @@
 
 /* 
- | $Header: swejpl.c,v 1.30 98/12/17 23:05:35 dieter Exp $
+ | $Header: swejpl.c,v 1.65 2003/06/14 13:01:55 alois Exp $
  |
  | Subroutines for reading JPL ephemerides.
  | derived from testeph.f as contained in DE403 distribution July 1995.
@@ -70,7 +70,7 @@ struct jpl_save {
   short do_reorder;
   double eh_cval[400]; 
   double eh_ss[3], eh_au, eh_emrat;
-  long eh_denum, eh_ncon, eh_ipt[39];
+  int32 eh_denum, eh_ncon, eh_ipt[39];
   char ch_cnam[6*400];
   double pv[78];
   double pvsun[6];
@@ -81,11 +81,11 @@ struct jpl_save {
 
 static struct jpl_save *FAR js;
 
-static int state (double et, long *list, int do_bary, 
+static int state (double et, int32 *list, int do_bary, 
 		  double *pv, double *pvsun, double *nut, char *serr);
-static int interp(double FAR *buf, double t, double intv, long ncfin, 
-		  long ncmin, long nain, long ifl, double *pv);
-static long fsizer(char *serr);
+static int interp(double FAR *buf, double t, double intv, int32 ncfin, 
+		  int32 ncmin, int32 nain, int32 ifl, double *pv);
+static int32 fsizer(char *serr);
 static void reorder(char *x, int size, int number);
 static int read_const_jpl(double *ss, char *serr);
 
@@ -152,21 +152,15 @@ DE200	DE102		  	DE403
  * RETURN: ksize (record size of ephemeris data)
  * jplfptr is opened on return.
  */
-static long fsizer(char *serr)
+static int32 fsizer(char *serr)
 {
   /* Local variables */
-  long ncon; 
+  int32 ncon; 
   double emrat;
-  long numde;
+  int32 numde;
   double au, ss[3];
   int i;
-#if 0
-  int khi;
-  long kmx;
-  long nd;
-  long lpt[3];
-#endif
-  long ksize;
+  int32 ksize;
   char ttl[6*14*3];	
   if ((js->jplfptr = swi_fopen(SEI_FILE_PLANET, js->jplfname, js->jplfpath, serr)) == NULL) {
     return NOT_AVAILABLE;
@@ -192,9 +186,9 @@ static long fsizer(char *serr)
   if (js->do_reorder)
     reorder((char *) &js->eh_ss[0], sizeof(double), 3);
   /* ncon = number of constants */
-  fread((void *) &ncon, sizeof(long), 1, js->jplfptr);
+  fread((void *) &ncon, sizeof(int32), 1, js->jplfptr);
   if (js->do_reorder)
-    reorder((char *) &ncon, sizeof(long), 1);
+    reorder((char *) &ncon, sizeof(int32), 1);
   /* au = astronomical unit */
   fread((void *) &au, sizeof(double), 1, js->jplfptr);
   if (js->do_reorder)
@@ -206,18 +200,18 @@ static long fsizer(char *serr)
   /* ipt[i+0]: coefficients of planet i start at buf[ipt[i+0]-1] 
    * ipt[i+1]: number of coefficients (interpolation order - 1)
    * ipt[i+2]: number of intervals in segment */
-  fread((void *) &js->eh_ipt[0], sizeof(long), 36, js->jplfptr);
+  fread((void *) &js->eh_ipt[0], sizeof(int32), 36, js->jplfptr);
   if (js->do_reorder)
-    reorder((char *) &js->eh_ipt[0], sizeof(long), 36);
+    reorder((char *) &js->eh_ipt[0], sizeof(int32), 36);
   /* numde = number of jpl ephemeris "404" with de404 */
-  fread((void *) &numde, sizeof(long), 1, js->jplfptr);
+  fread((void *) &numde, sizeof(int32), 1, js->jplfptr);
   if (js->do_reorder)
-    reorder((char *) &numde, sizeof(long), 1);
+    reorder((char *) &numde, sizeof(int32), 1);
 #if 0
   /* librations */
-  fread(&lpt[0], sizeof(long), 3, js->jplfptr);
+  fread(&lpt[0], sizeof(int32), 3, js->jplfptr);
   if (js->do_reorder)
-    reorder((char *) &lpt[0], sizeof(long), 3);
+    reorder((char *) &lpt[0], sizeof(int32), 3);
 #endif
   rewind(js->jplfptr);
   /*  find the number of ephemeris coefficients from the pointers */
@@ -259,7 +253,7 @@ static long fsizer(char *serr)
       break;
     default:
       if (serr != NULL)
-	sprintf(serr,"unknown numde value %ld;", numde);
+	sprintf(serr,"unknown numde value %d;", numde);
       return ERR;
   }
   return ksize;
@@ -300,7 +294,7 @@ static long fsizer(char *serr)
 int swi_pleph(double et, int ntarg, int ncent, double *rrd, char *serr)
 {
   int i, retc;
-  long list[12];
+  int32 list[12];
   double FAR *pv = js->pv;
   double FAR *pvsun = js->pvsun;
   for (i = 0; i < 6; ++i) 
@@ -411,8 +405,8 @@ int swi_pleph(double et, int ntarg, int ncent, double *rrd, char *serr)
  *      pv   d.p. interpolated quantities requested. 
  *           assumed dimension is pv(ncm,fl). 
  */
-static int interp(double FAR *buf, double t, double intv, long ncfin, 
-		  long ncmin, long nain, long ifl, double *pv)
+static int interp(double FAR *buf, double t, double intv, int32 ncfin, 
+		  int32 ncmin, int32 nain, int32 ifl, double *pv)
 {
   /* Initialized data */
   static int FAR np, nv;
@@ -591,20 +585,20 @@ static int interp(double FAR *buf, double t, double intv, long ncfin,
  |            default value = FALSE  (km determines time unit 
  |            for nutations and librations.  angle unit is always radians.)
  */
-static int state(double et, long *list, int do_bary, 
+static int state(double et, int32 *list, int do_bary, 
 	  double *pv, double *pvsun, double *nut, char *serr)
 {
   int i, j, k;
-  long flen, nseg, nb;
+  int32 flen, nseg, nb;
   double FAR *buf = js->buf;
   double aufac, s, t, intv;
-  long nrecl, ksize;
-  long nr;
+  int32 nrecl, ksize;
+  int32 nr;
   double et_mn, et_fr;
-  long FAR *ipt = js->eh_ipt;
+  int32 FAR *ipt = js->eh_ipt;
   char *ch_ttl[252];
-  static long irecsz;
-  static long nrl, lpt[3], ncoeffs;
+  static int32 irecsz;
+  static int32 nrl, lpt[3], ncoeffs;
   if (js->jplfptr == NULL) {
     ksize = fsizer(serr); /* the number of single precision words in a record */
     nrecl = 4;
@@ -629,9 +623,9 @@ static int state(double et, long *list, int do_bary,
     if (js->do_reorder)
       reorder((char *) &js->eh_ss[0], sizeof(double), 3);
     /* ncon = number of constants */
-    fread((void *) &js->eh_ncon, sizeof(long), 1, js->jplfptr);
+    fread((void *) &js->eh_ncon, sizeof(int32), 1, js->jplfptr);
     if (js->do_reorder)
-      reorder((char *) &js->eh_ncon, sizeof(long), 1);
+      reorder((char *) &js->eh_ncon, sizeof(int32), 1);
     /* au = astronomical unit */
     fread((void *) &js->eh_au, sizeof(double), 1, js->jplfptr);
     if (js->do_reorder)
@@ -643,16 +637,16 @@ static int state(double et, long *list, int do_bary,
     /* ipt[i+0]: coefficients of planet i start at buf[ipt[i+0]-1] 
      * ipt[i+1]: number of coefficients (interpolation order - 1)
      * ipt[i+2]: number of intervals in segment */
-    fread((void *) &ipt[0], sizeof(long), 36, js->jplfptr);
+    fread((void *) &ipt[0], sizeof(int32), 36, js->jplfptr);
     if (js->do_reorder)
-      reorder((char *) &ipt[0], sizeof(long), 36);
+      reorder((char *) &ipt[0], sizeof(int32), 36);
     /* numde = number of jpl ephemeris "404" with de404 */
-    fread((void *) &js->eh_denum, sizeof(long), 1, js->jplfptr);
+    fread((void *) &js->eh_denum, sizeof(int32), 1, js->jplfptr);
     if (js->do_reorder)
-      reorder((char *) &js->eh_denum, sizeof(long), 1);
-    fread((void *) &lpt[0], sizeof(long), 3, js->jplfptr);
+      reorder((char *) &js->eh_denum, sizeof(int32), 1);
+    fread((void *) &lpt[0], sizeof(int32), 3, js->jplfptr);
     if (js->do_reorder)
-      reorder((char *) &lpt[0], sizeof(long), 3);
+      reorder((char *) &lpt[0], sizeof(int32), 3);
     /* cval[]:  other constants in next record */
     fseek(js->jplfptr, 1L * irecsz, 0);
     fread((void *) &js->eh_cval[0], sizeof(double), 400, js->jplfptr);
@@ -667,7 +661,7 @@ static int state(double et, long *list, int do_bary,
     fseek(js->jplfptr, 0L, SEEK_END);
     flen = ftell(js->jplfptr);
     /* # of segments in file */
-    nseg = (long) ((js->eh_ss[1] - js->eh_ss[0]) / js->eh_ss[2]);	
+    nseg = (int32) ((js->eh_ss[1] - js->eh_ss[0]) / js->eh_ss[2]);	
     /* sum of all cheby coeffs of all planets and segments */
     for(i = 0, nb = 0; i < 13; i++) {		
       k = 3;
@@ -682,16 +676,16 @@ static int state(double et, long *list, int do_bary,
     /* add size of header and constants section */
     nb += 2 * ksize * nrecl;
 #if 0
-    printf("hallo %ld %ld\n", nb, flen);
-    printf("hallo %ld %ld\n", nb-flen, ksize);
+    printf("hallo %d %d\n", nb, flen);
+    printf("hallo %d %d\n", nb-flen, ksize);
 #endif
     if (flen != nb 
       /* some of our files are one record too long */
       && flen - nb != ksize * nrecl) {
       if (serr != NULL) {
-	sprintf(serr, "JPL ephemeris file is mutilated; length = %ld instead of %ld.", flen, nb);
+	sprintf(serr, "JPL ephemeris file is mutilated; length = %d instead of %d.", flen, nb);
 	if (strlen(serr) + strlen(js->jplfname) < AS_MAXCH - 1)
-	  sprintf(serr, "JPL ephemeris file %s is mutilated; length = %ld instead of %ld.", js->jplfname, flen, nb);
+	  sprintf(serr, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, flen, nb);
       }
       return(ERR);
     }
@@ -709,7 +703,7 @@ static int state(double et, long *list, int do_bary,
     return BEYOND_EPH_LIMITS;
   }
   /*       calculate record # and relative time in interval */
-  nr = (long) ((et_mn - js->eh_ss[0]) / js->eh_ss[2]) + 2;
+  nr = (int32) ((et_mn - js->eh_ss[0]) / js->eh_ss[2]) + 2;
   if (et_mn == js->eh_ss[1]) 
     --nr;	/* end point of ephemeris, use last record */
   t = (et_mn - ((nr - 2) * js->eh_ss[2] + js->eh_ss[0]) + et_fr) / js->eh_ss[2];
@@ -788,14 +782,14 @@ static int read_const_jpl(double *ss,  char *serr)
 	"Mercury", "Venus", "EMB", "Mars", "Jupiter", "Saturn", 
 	"Uranus", "Neptune", "Pluto", "Moon", "SunBary", "Nut", "Libr"};
     int j, k;
-    long nb, nc;
+    int32 nb, nc;
     printf(" JPL TEST-EPHEMERIS program.  Version October 1995.\n");
     for (i = 0; i < 13; i++) {
       j = i * 3;
       k = 3;
       if (i == 11) k = 2;
       nb = js->eh_ipt[j+1] * js->eh_ipt[j+2] * k; 
-      nc = (long) (nb * 36525L / js->eh_ss[2] * 8L);
+      nc = (int32) (nb * 36525L / js->eh_ss[2] * 8L);
       printf("%s\t%d\tipt[%d]\t%3ld %2ld %2ld,\t",
 	bname[i], i, j, js->eh_ipt[j], js->eh_ipt[j+1], js->eh_ipt[j+2]);
       printf("%3ld double, bytes per century = %6ld\n", nb, nc);
@@ -842,7 +836,6 @@ void swi_close_jpl_file(void)
 int swi_open_jpl_file(double *ss, char *fname, char *fpath, char *serr)
 {
   int retc = OK;
-  short do_show = FALSE;
   /* if open, return */
   if (js != NULL && js->jplfptr != NULL)
     return OK;
@@ -870,7 +863,7 @@ int swi_open_jpl_file(double *ss, char *fname, char *fpath, char *serr)
   return retc;
 }
 
-long swi_get_jpl_denum()
+int32 swi_get_jpl_denum()
 {
   return js->eh_denum;
 }

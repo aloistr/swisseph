@@ -1,5 +1,5 @@
 /* 
- | $Header: swejpl.h,v 1.27 98/12/02 19:17:56 dieter Exp $
+ | $Header: swejpl.h,v 1.65 2003/06/14 13:02:32 alois Exp $
  |
  | Subroutines for reading JPL ephemerides.
  | derived from testeph.f as contained in DE403 distribution July 1995.
@@ -84,7 +84,7 @@ extern void swi_close_jpl_file(void);
 
 extern int swi_open_jpl_file(double *ss, char *fname, char *fpath, char *serr);
 
-extern long swi_get_jpl_denum(void);
+extern int32 swi_get_jpl_denum(void);
 
 extern void swi_IERS_FK5(double *xin, double *xout, int dir);
 

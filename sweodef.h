@@ -1,5 +1,5 @@
 /************************************************************
-   $Header: sweodef.h,v 1.26 98/11/29 21:08:29 dieter Exp $
+   $Header: sweodef.h,v 1.30 98/12/17 23:05:51 dieter Exp $
    definitions and constants for all Swiss Ephemeris source files,
    only required for compiling the libraries, not for the external
    interface of the libraries.
@@ -59,6 +59,23 @@
 # define MY_TRUE 1	/* for use in other defines, before TRUE is defined */
 # define MY_FALSE 0	/* for use in other defines, before TRUE is defined */
 
+
+#ifdef _WIN32		/* Microsoft VC 5.0 does not define MSDOS anymore */
+# undef MSDOS
+# define MSDOS MY_TRUE
+#include <wtypes.h>
+#include <objbase.h>
+#include <wincon.h>
+#include <winbase.h>
+#include <io.h>
+#include <windows.h>
+# define sleep(x)	Sleep((x) * 1000)
+#endif
+
+#ifdef _MSC_VER
+# define MS_VC
+#endif
+
 #ifdef WIN32		/* Microsoft VC 5.0 does not define MSDOS anymore */
 # define MSDOS MY_TRUE
 #endif
@@ -89,6 +106,13 @@
 # define WATCOMC
 #endif
 
+#ifdef __MWERKS__	/* defined on Macintosh CodeWarrior */
+# if macintosh && powerc
+#  define MACOS MY_TRUE		/* let it undefined otherwise */
+#  define MSDOS MY_FALSE	/* in case one above fired falsely */
+# endif
+#endif
+
 #if MSDOS
 #  define HPUNIX MY_FALSE
 #  define INTEL_BYTE_ORDER 1
@@ -98,13 +122,19 @@
 # define MYFAR far
 # define UNIX_FS MY_FALSE
 #else
+# ifdef MACOS
+#  define HPUNIX MY_FALSE
+#  define MYFAR
+#  define UNIX_FS MY_FALSE
+# else
 #  define MSDOS MY_FALSE
 #  define HPUNIX MY_TRUE
 #  ifndef _HPUX_SOURCE
 #    define _HPUX_SOURCE
 #  endif
 #  define MYFAR
-# define UNIX_FS MY_TRUE
+#  define UNIX_FS MY_TRUE
+# endif
 #endif
 
 #include <math.h>
@@ -115,6 +145,52 @@
 
 #if HPUNIX
 #  include <unistd.h>
+#endif
+
+/*
+ * if we have 16-bit ints, we define INT_16; we will need %ld to printf an int32
+ * if we have 64-bit long, we define LONG_64
+ * If none is defined, we have int = long = 32 bit, and use %d to printf an int32
+ */
+#include <limits.h>
+#if INT_MAX < 40000
+# define INT_16
+#else
+# if LONG_MAX > INT_MAX
+#   define LONG_64
+# endif
+#endif
+
+#ifdef BYTE_ORDER
+#ifdef LITTLE_ENDIAN
+# if BYTE_ORDER == LITTLE_ENDIAN
+#  define INTEL_BYTE_ORDER
+# endif
+#endif
+#endif
+
+#ifdef INT_16
+  typedef long	int32;
+  typedef unsigned long	uint32;
+  typedef int	int16;
+  typedef double  REAL8;  /* real with at least 64 bit precision */
+  typedef long    INT4;   /* signed integer with at least 32 bit precision */
+  typedef unsigned long UINT4;
+                          /* unsigned integer with at least 32 bit precision */
+  typedef int     AS_BOOL;
+  typedef unsigned int UINT2;	/* unsigned 16 bits */
+# define ABS4	labs		/* abs function for long */ 
+#else
+  typedef int	int32;
+  typedef unsigned int	uint32;
+  typedef short	int16;
+  typedef double  REAL8;  /* real with at least 64 bit precision */
+  typedef int     INT4;   /* signed integer with at least 32 bit precision */
+  typedef unsigned int UINT4; 
+			/* unsigned integer with at least 32 bit precision */
+  typedef int     AS_BOOL;
+  typedef unsigned short UINT2;	/* unsigned 16 bits */
+  # define ABS4	abs		/* abs function for long */
 #endif
 
 #if MSDOS 
@@ -140,16 +216,17 @@
 typedef unsigned char UCHAR;
 #define UCP	(UCHAR*)
 #define SCP	(char*)
-typedef double  REAL8;  /* real with at least 64 bit precision */
-typedef int     AS_BOOL;
-# define ABS4	labs		/* abs function for long */
 
 # define CHARSET_ISO_LATIN_1 TRUE	/* used by ctype256 */
 
 #ifdef DOS_DEGREE		/* use compiler switch to get DOS character! */
 # define ODEGREE_CHAR	248	/* DOS degree character */
 #else
-# define ODEGREE_CHAR	176	/* Latin1 degree character */
+# ifdef MACOS
+#  define ODEGREE_CHAR	161	/* Macintosh degree character */
+# else
+#  define ODEGREE_CHAR	176	/* Latin1 degree character */
+# endif
 #endif
  
 
@@ -168,7 +245,7 @@ typedef int     AS_BOOL;
 #define DEGTORAD 0.0174532925199433
 #define RADTODEG 57.2957795130823
  
-typedef long    centisec;       /* centiseconds used for angles and times */
+typedef int32    centisec;       /* centiseconds used for angles and times */
 #define CS	(centisec)	/* use for casting */
 #define CSEC	centisec	/* use for typing */
 
@@ -203,21 +280,29 @@ typedef long    centisec;       /* centiseconds used for angles and times */
 #  define O_BINARY 0		/* for open(), not defined in Unix */
 #  define OPEN_MODE 0666	/* default file creation mode */
 #  define DIR_GLUE "/"		/* glue string for directory/file */
-#  define PATH_SEPARATOR ":"	/* colon used for directory separator in path */
+#  define PATH_SEPARATOR ";:"	/* semicolon or colon may be used */
 #else
 #  define BFILE_R_ACCESS "rb"	/* open binary file for reading */
 #  define BFILE_RW_ACCESS "r+b"	/* open binary file for writing and reading */
 #  define BFILE_W_CREATE "wb"	/* create/open binary file for write*/
 #  define BFILE_A_ACCESS "a+b"	/* create/open binary file for append*/
+#  define PATH_SEPARATOR ";"	/* semicolon as PATH separator */
+#  define OPEN_MODE 0666	/* default file creation mode */
+# ifdef MACOS
+#  define FILE_R_ACCESS "r"	/* open text file for reading */
+#  define FILE_RW_ACCESS "r+"	/* open text file for writing and reading */
+#  define FILE_W_CREATE "w"	/* create/open text file for write*/
+#  define FILE_A_ACCESS "a+"	/* create/open text file for append*/
+#  define DIR_GLUE ":"		/* glue string for directory/file */
+# else
 #  define FILE_R_ACCESS "rt"	/* open text file for reading */
 #  define FILE_RW_ACCESS "r+t"	/* open text file for writing and reading */
 #  define FILE_W_CREATE "wt"	/* create/open text file for write*/
 #  define FILE_A_ACCESS "a+t"	/* create/open text file for append*/
-#  define OPEN_MODE 0666	/* default file creation mode */
 /* attention, all backslashes for msdos directry names must be written as \\,
    because it is the C escape character */
 #  define DIR_GLUE "\\"		/* glue string for directory/file */
-#  define PATH_SEPARATOR ";"	/* semicolon as PATH separator */
+# endif
 #endif
 
 #include <string.h>

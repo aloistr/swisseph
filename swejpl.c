@@ -1,6 +1,6 @@
 
 /* 
- | $Header: swejpl.c,v 1.27 98/12/02 19:17:37 dieter Exp $
+ | $Header: swejpl.c,v 1.30 98/12/17 23:05:35 dieter Exp $
  |
  | Subroutines for reading JPL ephemerides.
  | derived from testeph.f as contained in DE403 distribution July 1995.
@@ -57,6 +57,8 @@
 #include "sweph.h"
 #include "swejpl.h"
 
+#define DEBUG_DO_SHOW	FALSE
+
 #ifndef NO_JPL
 /*
  * local globals
@@ -85,7 +87,7 @@ static int interp(double FAR *buf, double t, double intv, long ncfin,
 		  long ncmin, long nain, long ifl, double *pv);
 static long fsizer(char *serr);
 static void reorder(char *x, int size, int number);
-static int read_const_jpl(double *ss, short do_show, char *serr);
+static int read_const_jpl(double *ss, char *serr);
 
 /* information about eh_ipt[] and buf[]
 DE200	DE102		  	DE403
@@ -157,8 +159,8 @@ static long fsizer(char *serr)
   double emrat;
   long numde;
   double au, ss[3];
-#if 0
   int i;
+#if 0
   int khi;
   long kmx;
   long nd;
@@ -185,6 +187,8 @@ static long fsizer(char *serr)
     js->do_reorder = TRUE;
   else 
     js->do_reorder = 0;
+  for (i = 0; i < 3; i++)
+    js->eh_ss[i] = ss[i];
   if (js->do_reorder)
     reorder((char *) &js->eh_ss[0], sizeof(double), 3);
   /* ncon = number of constants */
@@ -660,19 +664,8 @@ static int state(double et, long *list, int do_bary,
     nrl = 0;
     /* is file length correct? */
     /* file length */
-    if (fseek(js->jplfptr, sizeof(char), SEEK_END) != 0) {
-      if (serr != NULL) {
-	strcpy(serr, "Ephemeris file is corrupt. ");
-	if (strlen(serr) + strlen(js->jplfname) < AS_MAXCH - 1)
-	  sprintf(serr, "Ephemeris file %s is corrupt. ", js->jplfname);
-      }
-      return (ERR);
-    }
-    flen = ftell(js->jplfptr) - 1;
-#if 0
-    fhandle = fileno(js->jplfptr);
-    flen = lseek(fhandle, 0, SEEK_END);		/* true file length */
-#endif
+    fseek(js->jplfptr, 0L, SEEK_END);
+    flen = ftell(js->jplfptr);
     /* # of segments in file */
     nseg = (long) ((js->eh_ss[1] - js->eh_ss[0]) / js->eh_ss[2]);	
     /* sum of all cheby coeffs of all planets and segments */
@@ -712,7 +705,7 @@ static int state(double et, long *list, int do_bary,
   /*       error return for epoch out of range */
   if (et < js->eh_ss[0] || et > js->eh_ss[1]) {
     if (serr != NULL) 
-      sprintf(serr,"jd %f beyond JPL eph. limits %f and %f;", et, js->eh_ss[0], js->eh_ss[1]);
+      sprintf(serr,"jd %f outside JPL eph. range %.2f .. %.2f;", et, js->eh_ss[0], js->eh_ss[1]);
     return BEYOND_EPH_LIMITS;
   }
   /*       calculate record # and relative time in interval */
@@ -781,21 +774,19 @@ static int state(double et, long *list, int do_bary,
  *  this entry obtains the constants from the ephemeris file 
  *  call state to initialize the ephemeris and read in the constants 
  */
-static int read_const_jpl(double *ss, short do_show, char *serr)
+static int read_const_jpl(double *ss,  char *serr)
 {
-#ifndef _WINDOWS
-  static char FAR *bname[] = {
-	"Mercury", "Venus", "EMB", "Mars", "Jupiter", "Saturn", 
-	"Uranus", "Neptune", "Pluto", "Moon", "SunBary", "Nut", "Libr"};
-#endif
   int i, retc;
   retc = state(0.0, NULL, FALSE, NULL, NULL, NULL, serr);
   if (retc != OK)
     return (retc);
   for (i = 0; i < 3; i++)
     ss[i] = js->eh_ss[i];
-#ifndef _WINDOWS
-  if (do_show) {
+#if DEBUG_DO_SHOW
+  {
+    static char FAR *bname[] = {
+	"Mercury", "Venus", "EMB", "Mars", "Jupiter", "Saturn", 
+	"Uranus", "Neptune", "Pluto", "Moon", "SunBary", "Nut", "Libr"};
     int j, k;
     long nb, nc;
     printf(" JPL TEST-EPHEMERIS program.  Version October 1995.\n");
@@ -865,7 +856,7 @@ int swi_open_jpl_file(double *ss, char *fname, char *fpath, char *serr)
   }
   strcpy(js->jplfname, fname);
   strcpy(js->jplfpath, fpath);
-  retc = read_const_jpl(ss, do_show, serr);
+  retc = read_const_jpl(ss, serr);
   if (retc != OK) 
     swi_close_jpl_file();
   else {

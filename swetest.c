@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
   int i, j, n, iflag_f = -1;
   int jmon, jday, jyear;
   int line_count, line_limit = 32000;
-  double jut = 0.0, y_frac;
+  double jut = 0.0, y_frac, daya;
   double top_long = 8.55;	/* Zurich */
   double top_lat = 47.38;
   double top_elev = 400;
@@ -359,6 +359,8 @@ int main(int argc, char *argv[])
   AS_BOOL universal_time = FALSE;
   AS_BOOL with_header = TRUE;
   AS_BOOL with_header_always = FALSE;
+  AS_BOOL do_ayanamsa = FALSE;
+  long sid_mode = SE_SIDM_FAGAN_BRADLEY;
   int gregflag = SE_GREG_CAL;
   int diff_mode = 0;
   long round_flag = 0;
@@ -394,6 +396,29 @@ int main(int argc, char *argv[])
       with_header_always = TRUE;
     } else if (strcmp(argv[i], "-j2000") == 0) {
       iflag |= SEFLG_J2000;
+    } else if (strncmp(argv[i], "-ay", 3) == 0) {
+      do_ayanamsa = TRUE;
+      sid_mode = atol(argv[i]+3);
+      swe_set_sid_mode(sid_mode, 0, 0);
+    } else if (strncmp(argv[i], "-sidt0", 6) == 0) {
+      iflag |= SEFLG_SIDEREAL;
+      sid_mode = atol(argv[i]+6);
+      if (sid_mode == 0)
+	sid_mode = SE_SIDM_FAGAN_BRADLEY;
+      sid_mode |= SE_SIDBIT_ECL_T0;
+      swe_set_sid_mode(sid_mode, 0, 0);
+    } else if (strncmp(argv[i], "-sidsp", 6) == 0) {
+      iflag |= SEFLG_SIDEREAL;
+      sid_mode = atol(argv[i]+6);
+      if (sid_mode == 0)
+	sid_mode = SE_SIDM_FAGAN_BRADLEY;
+      sid_mode |= SE_SIDBIT_SSY_PLANE;
+      swe_set_sid_mode(sid_mode, 0, 0);
+    } else if (strncmp(argv[i], "-sid", 4) == 0) {
+      iflag |= SEFLG_SIDEREAL;
+      sid_mode = atol(argv[i]+4);
+      if (sid_mode > 0)
+	swe_set_sid_mode(sid_mode, 0, 0);
     } else if (strncmp(argv[i], "-j", 2) == 0) {
       begindate = argv[i] + 1;
     } else if (strncmp(argv[i], "-ejpl", 5) == 0) {
@@ -678,6 +703,11 @@ int main(int argc, char *argv[])
       if (with_header) {
         sprintf(sout, "\nET: %f", te);
         printf(sout);
+	if (iflag & SEFLG_SIDEREAL) {
+	  double daya = swe_get_ayanamsa(te);
+	  sprintf(sout, "   ayanamsa = %s", dms(daya, round_flag));
+	  printf(sout);
+	}
 	if (iflag_f >=0)
 	  iflag = iflag_f;
         iflgret = swe_calc(te, SE_ECL_NUT, iflag, x, serr);
@@ -691,6 +721,11 @@ int main(int argc, char *argv[])
       }
       if (with_header && !with_header_always)
         with_header = FALSE;
+      if (do_ayanamsa) {
+	daya = swe_get_ayanamsa(te);
+	printf("Ayanamsa%s%s\n", gap, dms(daya, round_flag));
+	continue;
+      }
       for (psp = plsel; *psp != '\0'; psp++) {
         ipl = letter_to_ipl((int) *psp);
         if (*psp == 'f')
@@ -721,6 +756,9 @@ int main(int argc, char *argv[])
           strcpy(se_pname, star);
         } else {
           iflgret = swe_calc(te, ipl, iflag, x, serr);
+	  /* phase, magnitude, etc. */
+	  if (iflgret != ERR && strpbrk(fmt, "+-*/=") != NULL)
+	    iflgret = swe_pheno(te, ipl, iflag, attr, serr);
 	  swe_get_planet_name(ipl, se_pname);
         }
 	if (*psp == 'o') {/* ecliptic is wanted, remove nutation */
@@ -746,6 +784,28 @@ int main(int argc, char *argv[])
         } else if (*serr != '\0' && *serr_warn == '\0') {
           strcpy(serr_warn, serr);
         }
+        if (diff_mode) {
+          iflgret = swe_calc(te, ipldiff, iflag, x2, serr);
+          if (iflgret < 0) { 
+            sprintf(sout, "error: %s\n", serr);
+            printf(sout);
+          }
+	  if (diff_mode == DIFF_DIFF) {
+	    for (i = 1; i < 6; i++) 
+	      x[i] -= x2[i];
+	    if ((iflag & SEFLG_RADIANS) == 0) 
+	      x[0] = swe_difdeg2n(x[0], x2[0]);
+	    else
+	      x[0] = swe_difrad2n(x[0], x2[0]);
+	  } else {	/* DIFF_MIDP */
+	    for (i = 1; i < 6; i++) 
+	      x[i] = (x[i] + x2[i]) / 2;
+	    if ((iflag & SEFLG_RADIANS) == 0) 
+	      x[0] = swe_deg_midp(x[0], x2[0]);
+	    else
+	      x[0] = swe_rad_midp(x[0], x2[0]);
+	  }
+        }
         /* equator position */
         if (strpbrk(fmt, "aADdQ") != NULL) {
           iflag2 = iflag | SEFLG_EQUATORIAL;
@@ -753,6 +813,24 @@ int main(int argc, char *argv[])
             iflgret = swe_fixstar(star, te, iflag2, xequ, serr);
           else
             iflgret = swe_calc(te, ipl, iflag2, xequ, serr);
+          if (diff_mode) {
+            iflgret = swe_calc(te, ipldiff, iflag2, x2, serr);
+	    if (diff_mode == DIFF_DIFF) {
+	      for (i = 1; i < 6; i++) 
+		xequ[i] -= x2[i];
+	      if ((iflag & SEFLG_RADIANS) == 0) 
+		xequ[0] = swe_difdeg2n(xequ[0], x2[0]);
+	      else
+		xequ[0] = swe_difrad2n(xequ[0], x2[0]);
+	    } else {	/* DIFF_MIDP */
+	      for (i = 1; i < 6; i++) 
+		xequ[i] = (xequ[i] + x2[i]) / 2;
+	      if ((iflag & SEFLG_RADIANS) == 0) 
+		xequ[0] = swe_deg_midp(xequ[0], x2[0]);
+	      else
+		xequ[0] = swe_rad_midp(xequ[0], x2[0]);
+	    }
+          }
         }
         /* ecliptic cartesian position */
         if (strpbrk(fmt, "XU") != NULL) {
@@ -1021,6 +1099,15 @@ int main(int argc, char *argv[])
               printf(sout);
               printf(dms(xequ[4], round_flag));
               break;
+	  case 'N': 
+	  case 'n': {
+	      double xasc[6];
+	      int imeth = (*sp == 'n')?SE_NODBIT_MEAN:SE_NODBIT_OSCU;
+	      iflgret = swe_nod_aps(te, ipl, iflag, imeth, xasc, NULL, NULL, NULL, serr);
+	      if (iflgret >= 0 && (ipl <= SE_NEPTUNE || *sp == 'N') ) 
+		printf("%# 11.7f", xasc[0]);
+	      };
+	      break;
           case '+':
 	      printf(dms(attr[0], round_flag));
               break;

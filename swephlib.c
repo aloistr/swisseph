@@ -1,6 +1,6 @@
 
 /* SWISSEPH
-   $Header: swephlib.c,v 1.27 98/12/02 19:18:00 dieter Exp $
+   $Header: swephlib.c,v 1.30 98/12/17 23:05:54 dieter Exp $
 
    SWISSEPH modules that may be useful for other applications
    e.g. chopt.c, venus.c, swetest.c
@@ -63,12 +63,15 @@
 #include "swephexp.h"
 #include "sweph.h"
 #include "swephlib.h"
+#if MSDOS
+# include <process.h>
+#endif
 
 #ifdef TRACE
 void swi_open_trace(char *serr);
 FILE *swi_fp_trace_c = NULL;
 FILE *swi_fp_trace_out = NULL;
-long swi_trace_count = 0;
+int32 swi_trace_count = 0;
 #endif
 
 static double tid_acc = SE_TIDAL_DEFAULT;
@@ -80,8 +83,33 @@ double FAR PASCAL_CONV swe_degnorm(double x)
 {
   double y;
   y = fmod(x, 360.0);
+  if (fabs(y) < 1e-13) y = 0;	/* Alois fix 11-dec-1999 */
   if( y < 0.0 ) y += 360.0;
   return(y);
+}
+
+/* Reduce x modulo TWOPI degrees
+ */
+double FAR PASCAL_CONV swe_radnorm(double x)
+{
+  double y;
+  y = fmod(x, TWOPI);
+  if (fabs(y) < 1e-13) y = 0;	/* Alois fix 11-dec-1999 */
+  if( y < 0.0 ) y += TWOPI;
+  return(y);
+}
+
+double FAR PASCAL_CONV swe_deg_midp(double x1, double x0)
+{
+  double d, y;
+  d = swe_difdeg2n(x1, x0);	/* arc from x0 to x1 */
+  y = swe_degnorm(x0 + d / 2);
+  return(y);
+}
+
+double FAR PASCAL_CONV swe_rad_midp(double x1, double x0)
+{
+  return DEGTORAD * swe_deg_midp(x1 * RADTODEG, x0 * RADTODEG);
 }
 
 /* Reduce x modulo 2*PI
@@ -386,6 +414,20 @@ void swi_polcart_sp(double *l, double *x)
   x[0] = xx[0];					/* return position */
   x[1] = xx[1];
   x[2] = xx[2];
+}
+
+double swi_dot_prod_unit(double *x, double *y)
+{
+  double dop = x[0]*y[0]+x[1]*y[1]+x[2]*y[2];
+  double e1 = sqrt(x[0]*x[0]+x[1]*x[1]+x[2]*x[2]);
+  double e2 = sqrt(y[0]*y[0]+y[1]*y[1]+y[2]*y[2]);
+  dop /= e1;
+  dop /= e2;
+  if (dop > 1)
+    dop = 1;
+  if (dop < -1)
+    dop = -1;
+  return dop;
 }
 
 /* Obliquity of the ecliptic at Julian date J
@@ -1268,9 +1310,12 @@ return_ans:
       fprintf(swi_fp_trace_c, " t = swe_deltat(tjd);\n");
       fputs("  printf(\"swe_deltat: %f\\t%f\\t\\n\", ", swi_fp_trace_c);
       fputs("tjd, t);\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
-    if (swi_fp_trace_out != NULL)
+    if (swi_fp_trace_out != NULL) {
       fprintf(swi_fp_trace_out, "swe_deltat: %f\t%f\t\n", tjd, ans);
+      fflush(swi_fp_trace_out);
+    }
   }
 #endif
   return ans;
@@ -1300,9 +1345,12 @@ void FAR PASCAL_CONV swe_set_tid_acc(double t_acc)
       fprintf(swi_fp_trace_c, "  swe_set_tid_acc(t);\n");
       fputs("  printf(\"swe_set_tid_acc: %f\\t\\n\", ", swi_fp_trace_c);
       fputs("t);\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
-    if (swi_fp_trace_out != NULL)
+    if (swi_fp_trace_out != NULL) {
       fprintf(swi_fp_trace_out, "swe_set_tid_acc: %f\t\n", t_acc);
+      fflush(swi_fp_trace_out);
+    }
   }
 #endif
 }
@@ -1364,9 +1412,12 @@ double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
       fprintf(swi_fp_trace_c, "  t = swe_sidtime0(tjd, eps, nut);\n");
       fputs("  printf(\"swe_sidtime0: %f\\tsidt = %f\\teps = %f\\tnut = %f\\t\\n\", ", swi_fp_trace_c);
       fputs("tjd, t, eps, nut);\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
-    if (swi_fp_trace_out != NULL)
+    if (swi_fp_trace_out != NULL) {
       fprintf(swi_fp_trace_out, "swe_sidtime0: %f\tsidt = %f\teps = %f\tnut = %f\t\n", tjd, gmst, eps, nut);
+      fflush(swi_fp_trace_out);
+    }
   }
 #endif
   return gmst;
@@ -1395,9 +1446,12 @@ double FAR PASCAL_CONV swe_sidtime(double tjd_ut)
       fprintf(swi_fp_trace_c, "  t = swe_sidtime(tjd);\n");
       fputs("  printf(\"swe_sidtime: %f\\t%f\\t\\n\", ", swi_fp_trace_c);
       fputs("tjd, t);\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
-    if (swi_fp_trace_out != NULL)
+    if (swi_fp_trace_out != NULL) {
       fprintf(swi_fp_trace_out, "swe_sidtime: %f\t%f\t\n", tjd_ut, tsid);
+      fflush(swi_fp_trace_out);
+    }
   }
 #endif
   return tsid;
@@ -1475,10 +1529,12 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
     icty -=1;
   while(icty % ncties != 0)
     icty--;
+#if 0
   if (icty < BEG_YEAR / 100)
     icty = BEG_YEAR / 100;
   if (icty >= END_YEAR / 100)
     icty = END_YEAR / 100 - ncties;
+#endif
   /* B.C. or A.D. */
   if (icty < 0) 
     strcat(fname, "m");
@@ -1541,15 +1597,15 @@ char *swi_right_trim(char *s)
  * The CRCs this code generates agree with the vendor-supplied Verilog models
  * of several of the popular FDDI "MAC" chips.
  */
-static unsigned long crc32_table[256];
+static uint32 crc32_table[256];
 /* Initialized first time "crc32()" is called. If you prefer, you can
  * statically initialize it at compile time. [Another exercise.]
  */
 
-unsigned long swi_crc32(unsigned char *buf, int len)
+uint32 swi_crc32(unsigned char *buf, int len)
 {
   unsigned char *p;
-  unsigned long  crc;
+  uint32  crc;
   if (!crc32_table[1])    /* if not already done, */
     init_crc32();   /* build table */
   crc = 0xffffffff;       /* preload shift register, per CRC-32 spec */
@@ -1565,8 +1621,8 @@ unsigned long swi_crc32(unsigned char *buf, int len)
 
 static void init_crc32(void)
 {
-  long i, j;
-  unsigned long c;
+  int32 i, j;
+  uint32 c;
   for (i = 0; i < 256; ++i) {
     for (c = i << 24, j = 8; j > 0; --j)
       c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY : (c << 1);
@@ -1624,6 +1680,13 @@ double FAR PASCAL_CONV swe_difdeg2n(double p1, double p2)
   return (dif);
 }
 
+double FAR PASCAL_CONV swe_difrad2n(double p1, double p2)
+{ double dif;
+  dif = swe_radnorm(p1 - p2);
+  if (dif  >= TWOPI / 2) return (dif - TWOPI);
+  return (dif);
+}
+
 /*************************************
 round second, but at 29.5959 always down
 *************************************/ 
@@ -1637,14 +1700,14 @@ centisec FAR PASCAL_CONV swe_csroundsec(centisec x)
 }
 
 /*************************************
-double to long with rounding, no overflow check
+double to int32 with rounding, no overflow check
 *************************************/ 
-long FAR PASCAL_CONV swe_d2l(double x)		
+int32 FAR PASCAL_CONV swe_d2l(double x)		
 {
   if (x >=0)
-    return ((long) (x + 0.5));
+    return ((int32) (x + 0.5));
   else
-    return (- (long) (0.5 - x));
+    return (- (int32) (0.5 - x));
 }
 
 /*
@@ -1729,22 +1792,83 @@ char *FAR PASCAL_CONV swe_cs2degstr(CSEC t, char *a)
   return (a);
 } /* swe_cs2degstr() */
 
+/*********************************************************
+ *  function for splitting centiseconds into             *
+ *  ideg 	degrees, 
+ *  imin 	minutes, 
+ *  isec 	seconds, 
+ *  dsecfr	fraction of seconds 
+ *  isgn	zodiac sign number; 
+ *              or +/- sign
+ *  
+ *********************************************************/
+void FAR PASCAL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn)
+{
+  int rfl_save = roundflag;
+  double ddeg_save = ddeg;
+  double dadd = 0;
+  *isgn = 1;
+  if (ddeg < 0) {
+    *isgn = -1;
+    ddeg = -ddeg;
+  }
+  if (roundflag & SE_SPLIT_DEG_ROUND_DEG) {
+    dadd = 0.5;
+  } else if (roundflag & SE_SPLIT_DEG_ROUND_MIN) {
+    dadd = 0.5 / 60;
+  } else if (roundflag & SE_SPLIT_DEG_ROUND_SEC) {
+    dadd = 0.5 / 3600;
+  }
+  if (roundflag & SE_SPLIT_DEG_KEEP_DEG) {
+    if ((int32) (ddeg + dadd) - (int32) ddeg > 0)
+      dadd = 0;
+  } else if (roundflag & SE_SPLIT_DEG_KEEP_SIGN) {
+    if (fmod(ddeg, 30) + dadd >= 30)
+      dadd = 0;
+  }
+  ddeg += dadd;
+  if (roundflag & SE_SPLIT_DEG_ZODIACAL) {
+    *isgn = (int32) (ddeg / 30);
+    ddeg = fmod(ddeg, 30);
+  }
+  *ideg = (int32) ddeg;
+  ddeg -= *ideg;
+  *imin = (int32) (ddeg * 60);
+  ddeg -= *imin / 60.0;
+  *isec = (int32) (ddeg * 3600);
+  if (!(roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN | SE_SPLIT_DEG_ROUND_SEC))) {
+    *dsecfr = ddeg * 3600 - *isec;
+  }
+}  /* end split_deg */
+
 double swi_kepler(double E, double M, double ecce)
 {
   double dE = 1, E0;
+  double x;
   /* simple formula for small eccentricities */
   if (ecce < 0.4) {
-    while(dE > 1e-10) {
+    while(dE > 1e-12) {
       E0 = E;
       E = M + ecce * sin(E0);
       dE = fabs(E - E0);
     }
   /* complicated formula for high eccentricities */
   } else {
-    while(dE > 1e-10) {
+    while(dE > 1e-12) {
       E0 = E;
-      E = swi_mod2PI(E0 + (M + ecce * sin(E0) - E0) / (1 - ecce * cos(E0)));
-      dE = fabs(E - E0);
+      /*
+       * Alois 21-jul-2000: workaround an optimizer problem in gcc 
+       * swi_mod2PI sees very small negative argument e-322 and returns +2PI;
+       * we avoid swi_mod2PI for small x.
+       */
+      x = (M + ecce * sin(E0) - E0) / (1 - ecce * cos(E0));
+      dE = fabs(x);
+      if (dE < 1e-2) {
+	E = E0 + x;
+      } else {
+	E = swi_mod2PI(E0 + x);
+	dE = fabs(E - E0);
+      }
     }
   }
   return E;
@@ -1758,6 +1882,17 @@ void swi_FK4_FK5(double *xp, double tjd)
   /* according to Expl.Suppl., p. 167f. */
   xp[0] += (0.035 + 0.085 * (tjd - B1950) / 36524.2198782) / 3600 * 15 * DEGTORAD;
   xp[3] += (0.085 / 36524.2198782) / 3600 * 15 * DEGTORAD;
+  swi_polcart(xp, xp);
+}
+
+void swi_FK5_FK4(double *xp, double tjd)
+{
+  if (xp[0] == 0 && xp[1] == 0 && xp[2] == 0)
+    return;
+  swi_cartpol(xp, xp);
+  /* according to Expl.Suppl., p. 167f. */
+  xp[0] -= (0.035 + 0.085 * (tjd - B1950) / 36524.2198782) / 3600 * 15 * DEGTORAD;
+  xp[3] -= (0.085 / 36524.2198782) / 3600 * 15 * DEGTORAD;
   swi_polcart(xp, xp);
 }
 
@@ -1777,25 +1912,52 @@ void swi_open_trace(char *serr)
     return;
   }
   if (swi_fp_trace_c == NULL) {
-    remove(fname_trace_c);
-    if ((swi_fp_trace_c = fopen(fname_trace_c, BFILE_A_ACCESS)) == NULL) {
+    char *sp, *sp1, fname[AS_MAXCH];
+    int ipid;
+    /* remove(fname_trace_c); */
+    strcpy(fname, fname_trace_c);
+#if TRACE == 2
+    sp = strchr(fname_trace_c, '.');
+    sp1 = strchr(fname, '.');
+# if MSDOS
+    ipid = _getpid();
+# else
+    ipid = getpid();
+# endif
+    sprintf(sp1, "_%d%s", ipid, sp);
+#endif
+    if ((swi_fp_trace_c = fopen(fname, FILE_A_ACCESS)) == NULL) {
       if (serr != NULL)
-	sprintf(serr, "could not open trace output file '%s'", fname_trace_c);
+	sprintf(serr, "could not open trace output file '%s'", fname);
     } else {
       fputs("#include \"sweodef.h\"\n", swi_fp_trace_c);   
       fputs("#include \"swephexp.h\"\n\n", swi_fp_trace_c);   
       fputs("void main()\n{\n", swi_fp_trace_c);   
-      fputs("  double tjd, t, nut, eps; int i, ipl, retc; long iflag;\n", swi_fp_trace_c);
+      fputs("  double tjd, t, nut, eps; int i, ipl, retc; int32 iflag;\n", swi_fp_trace_c);
       fputs("  double armc, geolat, cusp[12], ascmc[10]; int hsys;\n", swi_fp_trace_c);
-      fputs("  double xx[6]; long iflgret;\n", swi_fp_trace_c);
+      fputs("  double xx[6]; int32 iflgret;\n", swi_fp_trace_c);
       fputs("  char s[AS_MAXCH], star[AS_MAXCH], serr[AS_MAXCH];\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
     }
   }
   if (swi_fp_trace_out == NULL) {
-    remove(fname_trace_out);
-    if ((swi_fp_trace_out = fopen(fname_trace_out, BFILE_A_ACCESS)) == NULL) {
+    char *sp, *sp1, fname[AS_MAXCH];
+    int ipid;
+    /* remove(fname_trace_out); */
+    strcpy(fname, fname_trace_out);
+#if TRACE == 2
+    sp = strchr(fname_trace_out, '.');
+    sp1 = strchr(fname, '.');
+# if MSDOS
+    ipid = _getpid();
+# else
+    ipid = getpid();
+# endif
+    sprintf(sp1, "_%d%s", ipid, sp);
+#endif
+    if ((swi_fp_trace_out = fopen(fname, FILE_A_ACCESS)) == NULL) {
       if (serr != NULL)
-	sprintf(serr, "could not open trace output file '%s'", fname_trace_out);
+	sprintf(serr, "could not open trace output file '%s'", fname);
     }
   }
 }

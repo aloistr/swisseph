@@ -1,5 +1,5 @@
 /************************************************************
-  $Header: swephexp.h,v 1.31 99/07/13 08:54:13 dieter Exp $
+  $Header: swephexp.h,v 1.65 2003/06/14 13:09:46 alois Exp $
   SWISSEPH: exported definitions and constants 
 
   This file represents the standard application interface (API)
@@ -102,6 +102,7 @@
 #define SE_NPLANETS     21      
 
 #define SE_AST_OFFSET   10000
+#define SE_VARUNA   (SE_AST_OFFSET + 20000)
 
 #define SE_FICT_OFFSET  	40
 #define SE_FICT_OFFSET_1  	39
@@ -129,6 +130,10 @@
 #define SE_NEPTUNE_ADAMS        52
 #define SE_PLUTO_LOWELL         53
 #define SE_PLUTO_PICKERING      54
+#define SE_VULCAN      		55
+#define SE_WHITE_MOON  		56
+#define SE_PROSERPINA  		57
+#define SE_WALDEMATH  		58
 
 #define SE_FIXSTAR      -10
 
@@ -154,25 +159,25 @@
  *
  * The 'L' behind the number indicates that 32-bit integers (Long) are used.
  */
-#define SEFLG_JPLEPH    1L       /* use JPL ephemeris */
-#define SEFLG_SWIEPH    2L       /* use SWISSEPH ephemeris */
-#define SEFLG_MOSEPH    4L       /* use Moshier ephemeris */
+#define SEFLG_JPLEPH    1       /* use JPL ephemeris */
+#define SEFLG_SWIEPH    2       /* use SWISSEPH ephemeris */
+#define SEFLG_MOSEPH    4       /* use Moshier ephemeris */
 
-#define SEFLG_HELCTR	8L      /* return heliocentric position */
-#define SEFLG_TRUEPOS	16L     /* return true positions, not apparent */
-#define SEFLG_J2000	32L     /* no precession, i.e. give J2000 equinox */
-#define SEFLG_NONUT	64L     /* no nutation, i.e. mean equinox of date */
-#define SEFLG_SPEED3	128L     /* speed from 3 positions (do not use it,
+#define SEFLG_HELCTR	8      /* return heliocentric position */
+#define SEFLG_TRUEPOS	16     /* return true positions, not apparent */
+#define SEFLG_J2000	32     /* no precession, i.e. give J2000 equinox */
+#define SEFLG_NONUT	64     /* no nutation, i.e. mean equinox of date */
+#define SEFLG_SPEED3	128     /* speed from 3 positions (do not use it,
                                   SEFLG_SPEED is faster and more precise.) */
-#define SEFLG_SPEED	256L     /* high precision speed  */
-#define SEFLG_NOGDEFL	512L     /* turn off gravitational deflection */
-#define SEFLG_NOABERR	1024L    /* turn off 'annual' aberration of light */
-#define SEFLG_EQUATORIAL (2*1024L)    /* equatorial positions are wanted */
-#define SEFLG_XYZ	(4*1024L)    /* cartesian, not polar, coordinates */
-#define SEFLG_RADIANS	(8*1024L)    /* coordinates in radians, not degrees */
-#define SEFLG_BARYCTR	(16*1024L)   /* barycentric positions */
-#define SEFLG_TOPOCTR	(32*1024L)   /* topocentric positions */
-#define SEFLG_SIDEREAL	(64*1024L)   /* sidereal positions */
+#define SEFLG_SPEED	256     /* high precision speed  */
+#define SEFLG_NOGDEFL	512     /* turn off gravitational deflection */
+#define SEFLG_NOABERR	1024    /* turn off 'annual' aberration of light */
+#define SEFLG_EQUATORIAL (2*1024)    /* equatorial positions are wanted */
+#define SEFLG_XYZ	(4*1024)    /* cartesian, not polar, coordinates */
+#define SEFLG_RADIANS	(8*1024)    /* coordinates in radians, not degrees */
+#define SEFLG_BARYCTR	(16*1024)   /* barycentric positions */
+#define SEFLG_TOPOCTR	(32*1024)   /* topocentric positions */
+#define SEFLG_SIDEREAL	(64*1024)   /* sidereal positions */
 
 #define SE_SIDBITS		256
 /* for projection onto ecliptic of t0 */
@@ -206,10 +211,11 @@
 
 #define SE_NSIDM_PREDEF	  	    21
 
-#define SE_NODBIT_MEAN		1
-#define SE_NODBIT_OSCU		2
-#define SE_NODBIT_OSCU_BAR	4
-#define SE_NODBIT_FOPOINT	256
+/* used for swe_nod_aps(): */
+#define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
+#define SE_NODBIT_OSCU		2   /* osculating nodes/apsides */
+#define SE_NODBIT_OSCU_BAR	4   /* same, but motion about solar system barycenter is considered */
+#define SE_NODBIT_FOPOINT	256   /* focal point of orbit instead of aphelion */
 
 /* default ephemeris used when no ephemeris flagbit is set */
 #define SEFLG_DEFAULTEPH SEFLG_SWIEPH
@@ -235,16 +241,19 @@
 #define SE_ECL_2ND_VISIBLE	1024
 #define SE_ECL_3RD_VISIBLE	2048
 #define SE_ECL_4TH_VISIBLE	4096
+#define SE_ECL_ONE_TRY          (32*1024) 
+		/* check if the next conjunction of the moon with
+		 * a planet is an occultation; don't search further */
 
 /* for swe_rise_transit() */
 #define SE_CALC_RISE		1
 #define SE_CALC_SET		2
 #define SE_CALC_MTRANSIT	4
 #define SE_CALC_ITRANSIT	8
-#define SE_BIT_DISC_CENTER      256 /* to be added to SE_CALC_RISE/SET */
+#define SE_BIT_DISC_CENTER      256 /* to be or'ed to SE_CALC_RISE/SET */
 				    /* if rise or set of disc center is */
 				    /* requried */
-#define SE_BIT_NO_REFRACTION    512 /* to be added to SE_CALC_RISE/SET, */
+#define SE_BIT_NO_REFRACTION    512 /* to be or'ed to SE_CALC_RISE/SET, */
 				    /* if refraction is not to be considered */
 
 /* for swe_azalt() and swe_azalt_rev() */
@@ -402,8 +411,8 @@
  ****************************/
 
 /* planets, moon, nodes etc. */
-ext_def( long ) swe_calc(
-        double tjd, int ipl, long iflag, 
+ext_def( int32 ) swe_calc(
+        double tjd, int ipl, int32 iflag, 
         double *xx,
         char *serr);
 
@@ -411,8 +420,8 @@ ext_def(int32) swe_calc_ut(double tjd_ut, int32 ipl, int32 iflag,
 	double *xx, char *serr);
 
 /* fixed stars */
-ext_def( long ) swe_fixstar(
-        char *star, double tjd, long iflag, 
+ext_def( int32 ) swe_fixstar(
+        char *star, double tjd, int32 iflag, 
         double *xx,
         char *serr);
 
@@ -441,6 +450,8 @@ ext_def(void) swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0);
 ext_def(double) swe_get_ayanamsa(double tjd_et);
 
 ext_def(double) swe_get_ayanamsa_ut(double tjd_ut);
+
+ext_def( char *) swe_get_ayanamsa_name(int32 isidmode);
 
 /**************************** 
  * exports from swedate.c 
@@ -484,19 +495,30 @@ ext_def(double) swe_house_pos(
  * exports from swecl.c 
  ****************************/
 
+ext_def(int32) swe_gauquelin_sector(double t_ut, int32 ipl, char *starname, int32 iflag, int32 imeth, double *geopos, double atpress, double attemp, double *dgsect, char *serr);
+
 /* computes geographic location and attributes of solar 
  * eclipse at a given tjd */
 ext_def (int32) swe_sol_eclipse_where(double tjd, int32 ifl, double *geopos, double *attr, char *serr);
+
+ext_def (int32) swe_lun_occult_where(double tjd, int32 ipl, char *starname, int32 ifl, double *geopos, double *attr, char *serr);
 
 /* computes attributes of a solar eclipse for given tjd, geolon, geolat */
 ext_def (int32) swe_sol_eclipse_how(double tjd, int32 ifl, double *geopos, double *attr, char *serr);
 
 /* finds time of next local eclipse */
-ext_def (int32) swe_sol_eclipse_when_loc(double tjd_start, int32 ifl, double *geopos, double *tret, double *attr, AS_BOOL backward, char *serr);
+ext_def (int32) swe_sol_eclipse_when_loc(double tjd_start, int32 ifl, double *geopos, double *tret, double *attr, int32 backward, char *serr);
+
+ext_def (int32) swe_lun_occult_when_loc(double tjd_start, int32 ipl, char *starname, int32 ifl,
+     double *geopos, double *tret, double *attr, int32 backward, char *serr);
 
 /* finds time of next eclipse globally */
 ext_def (int32) swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype,
-     double *tret, AS_BOOL backward, char *serr);
+     double *tret, int32 backward, char *serr);
+
+/* finds time of next occultation globally */
+ext_def (int32) swe_lun_occult_when_glob(double tjd_start, int32 ipl, char *starname, int32 ifl, int32 ifltype,
+     double *tret, int32 backward, char *serr);
 
 /* computes attributes of a lunar eclipse for given tjd */
 ext_def (int32) swe_lun_eclipse_how(
@@ -507,7 +529,7 @@ ext_def (int32) swe_lun_eclipse_how(
           char *serr);
 
 ext_def (int32) swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype,
-     double *tret, AS_BOOL backward, char *serr);
+     double *tret, int32 backward, char *serr);
 
 /* planetary phenomena */
 ext_def (int32) swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr);
@@ -604,7 +626,7 @@ ext_def( double ) swe_difrad2n(double p1, double p2);
 /* round second, but at 29.5959 always down */
 ext_def( centisec ) swe_csroundsec(centisec x);
 
-/* double to long with rounding, no overflow check */
+/* double to int32 with rounding, no overflow check */
 ext_def( int32 ) swe_d2l(double x);
 
 /* monday = 0, ... sunday = 6 */

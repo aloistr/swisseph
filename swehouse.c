@@ -1,6 +1,6 @@
 
 /*******************************************************
-$Header: swehouse.c,v 1.31 2000/09/18 18:54:50 dieter Exp $
+$Header: swehouse.c,v 1.65 2003/06/14 13:01:54 alois Exp $
 module swehouse.c
 house and (simple) aspect calculation 
 
@@ -44,6 +44,7 @@ house and (simple) aspect calculation
   for promoting such software, products or services.
 */
 
+#include "sweodef.h"
 #include "swephexp.h"
 #include "sweph.h"
 #include "swephlib.h"
@@ -83,7 +84,8 @@ static int sidereal_houses_ssypl(double tjde,
                            double *ascmc);
 
 /* housasp.c 
- * cusps are returned in double cusp[13]:
+ * cusps are returned in double cusp[13],
+ *                           or cusp[37] with house system 'G'.
  * cusp[1...12]	houses 1 - 12
  * additional points are returned in ascmc[10].
  * ascmc[0] = ascendant
@@ -132,7 +134,8 @@ int FAR PASCAL_CONV swe_houses(double tjd_ut,
 }
 
 /* housasp.c 
- * cusps are returned in double cusp[13]:
+ * cusps are returned in double cusp[13],
+ *                           or cusp[37] with house system 'G'.
  * cusp[1...12]	houses 1 - 12
  * additional points are returned in ascmc[10].
  * ascmc[0] = ascendant
@@ -156,6 +159,11 @@ int FAR PASCAL_CONV swe_houses_ex(double tjd_ut,
   double armc, eps_mean, nutlo[2];
   double tjde = tjd_ut + swe_deltat(tjd_ut);
   struct sid_data *sip = &swed.sidd;
+  int ito;
+  if (toupper(hsys) == 'G')
+    ito = 36;
+  else
+    ito = 12;
   if ((iflag & SEFLG_SIDEREAL) && !swed.ayana_is_set)
     swe_set_sid_mode(SE_SIDM_FAGAN_BRADLEY, 0, 0);
   eps_mean = swi_epsiln(tjde) * RADTODEG;
@@ -193,7 +201,7 @@ int FAR PASCAL_CONV swe_houses_ex(double tjd_ut,
     retc = swe_houses_armc(armc, geolat, eps_mean + nutlo[1], hsys, cusp, ascmc);
   }
   if (iflag & SEFLG_RADIANS) {
-    for (i = 1; i <= 12; i++)
+    for (i = 1; i <= ito; i++)
       cusp[i] *= DEGTORAD;
     for (i = 0; i < SE_NASCMC; i++)
       ascmc[i] *= DEGTORAD;
@@ -241,6 +249,11 @@ static int sidereal_houses_ecl_t0(double tjde,
   double rxy, rxyz, c2, epsx, sgn, fac, dvpx, dvpxe;
   double armcx;
   struct sid_data *sip = &swed.sidd;
+  int ito;
+  if (toupper(hsys) == 'G')
+    ito = 36;
+  else
+    ito = 12;
   /* epsilon at t0 */
   epst0 = swi_epsiln(sip->t0);
   /* cartesian coordinates of an imaginary moving body on the
@@ -291,7 +304,7 @@ static int sidereal_houses_ecl_t0(double tjde,
   dvpxe = acos(swi_dot_prod_unit(x, xvpx)) * RADTODEG;  /* 5 */
   if (tjde < sip->t0)
     dvpxe = -dvpxe;
-  for (i = 1; i <= 12; i++)                     /* 6, 7 */
+  for (i = 1; i <= ito; i++)                     /* 6, 7 */
     cusp[i] = swe_degnorm(cusp[i] - dvpxe - sip->ayan_t0);
   for (i = 0; i <= SE_NASCMC; i++)
     ascmc[i] = swe_degnorm(ascmc[i] - dvpxe - sip->ayan_t0);
@@ -332,6 +345,11 @@ static int sidereal_houses_ssypl(double tjde,
   double rxy, rxyz, c2, epsx, eps2000, sgn, fac, dvpx, dvpxe, x00;
   double armcx;
   struct sid_data *sip = &swed.sidd;
+  int ito;
+  if (toupper(hsys) == 'G')
+    ito = 36;
+  else
+    ito = 12;
   /* epsilon at t0 */
   epst0 = swi_epsiln(sip->t0);
   eps2000 = swi_epsiln(J2000);
@@ -406,7 +424,7 @@ static int sidereal_houses_ssypl(double tjde,
   swi_cartpol(x0, x0);
   x0[0] += SSY_PLANE_NODE;
   x00 = x0[0] * RADTODEG;                       /* 7 */
-  for (i = 1; i <= 12; i++)                     /* 6, 8, 9 */
+  for (i = 1; i <= ito; i++)                     /* 6, 8, 9 */
     cusp[i] = swe_degnorm(cusp[i] - dvpxe - sip->ayan_t0 - x00);
   for (i = 0; i <= SE_NASCMC; i++)
     ascmc[i] = swe_degnorm(ascmc[i] - dvpxe - sip->ayan_t0 - x00);
@@ -425,9 +443,14 @@ static int sidereal_houses_trad(double tjde,
 {
   int i, retc = OK;
   double ay;
+  int ito;
+  if (toupper(hsys) == 'G')
+    ito = 36;
+  else
+    ito = 12;
   retc = swe_houses_armc(armc, lat, eps, hsys, cusp, ascmc);
   ay = swe_get_ayanamsa(tjde);
-  for (i = 1; i <= 12; i++)
+  for (i = 1; i <= ito; i++)
     cusp[i] = swe_degnorm(cusp[i] - ay - nutl);
   for (i = 0; i < SE_NASCMC; i++) {
     if (i == 2)	/* armc */
@@ -441,7 +464,8 @@ static int sidereal_houses_trad(double tjde,
  * this function is required for very special computations
  * where no date is given for house calculation,
  * e.g. for composite charts or progressive charts.
- * cusps are returned in double cusp[13]:
+ * cusps are returned in double cusp[13],
+ *                           or cusp[37] with house system 'G'.
  * cusp[1...12]	houses 1 - 12
  * additional points are returned in ascmc[10].
  * ascmc[0] = ascendant
@@ -463,23 +487,20 @@ int FAR PASCAL_CONV swe_houses_armc(
 {
   struct houses h;
   int i, retc = 0;
+  int ito;
+  if (toupper(hsys) == 'G')
+    ito = 36;
+  else
+    ito = 12;
+  armc = swe_degnorm(armc);
   retc = CalcH(armc,    
 	       geolat,
 	       eps, 
 	       (char)hsys, 2, &h);
   cusp[0] = 0;
-  cusp[1] = h.cusp[1];   /* cusp 1 */ 
-  cusp[2] = h.cusp[2];   /* cusp 2 */ 
-  cusp[3] = h.cusp[3];   /* cusp 3 */ 
-  cusp[4] = h.cusp[4];   
-  cusp[5] = h.cusp[5];  
-  cusp[6] = h.cusp[6]; 
-  cusp[7] = h.cusp[7];
-  cusp[8] = h.cusp[8];
-  cusp[9] = h.cusp[9];
-  cusp[10] = h.cusp[10];
-  cusp[11] = h.cusp[11];
-  cusp[12] = h.cusp[12];
+  for (i = 1; i <= ito; i++) {
+    cusp[i] = h.cusp[i];
+  }
   ascmc[0] = h.ac;        /* Asc */    
   ascmc[1] = h.mc;        /* Mid */    
   ascmc[2] = armc;   
@@ -552,6 +573,7 @@ static int CalcH(
  *                   R  Regiomontanus                  
  *                   V  equal Vehlow                 
  *                   X  axial rotation system/ Meridian houses 
+ *                   G  36 Gauquelin sectors
  *             fi = geographic latitude             
  *             ekl = obliquity of the ecliptic               
  *             iteration_count = number of iterations in    
@@ -568,7 +590,7 @@ static int CalcH(
 {
   double tane, tanfi, cosfi, tant, sina, cosa, th2;
   double a, c, f, fh1, fh2, xh1, xh2, rectasc, ad3, acmc, vemc;
-  int 	i, retc = OK;
+  int 	i, ih, ih2, retc = OK;
   double sine, cose;
   cose  = cosd(ekl);
   sine  = sind(ekl);
@@ -788,12 +810,35 @@ porphyry:
     }
     }
     break;
+  case 'M': {
+    /* 
+     * Morinus
+     * points of the equator (armc + n * 30) are transformed
+     * into the ecliptic coordinate system
+     */
+    int j;
+    double a = th;
+    double x[3];
+    for (i = 1; i <= 12; i++) {
+      j = i + 10;
+      if (j > 12) j -= 12;
+      a = swe_degnorm(a + 30);
+      x[0] = a;
+      x[1] = 0;
+      swe_cotrans(x, x, ekl);
+      hsp->cusp[j] = x[0];
+    }
+    }
+    break;
   case 'B': {	/* Alcabitius */
     /* created by Alois 17-sep-2000, followed example in Matrix
        electrical library. The code reproduces the example!
+       See http://www.astro.com/cgi/adict.cgi query: alcabitius
+       in the resuotl page, see program code example.
        I think the Alcabitius code in Walter Pullen's Astrolog 5.40
        is wrong, because he remains in RA and forgets the transform to
        the ecliptic. */
+
     double dek, r, sna, sda, sn3, sd3;
 #if FALSE
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
@@ -819,6 +864,8 @@ porphyry:
     sd3 = sda / 3;
     sn3 = sna / 3;
     rectasc = swe_degnorm(th + sd3);	/* cusp 11 */
+    /* project rectasc onto eclipitic with pole height 0, i.e. along the
+    declination circle */
     hsp->cusp [11] = Asc1 (rectasc, 0, sine, cose);
     rectasc = swe_degnorm(th + 2 * sd3);	/* cusp 12 */
     hsp->cusp [12] = Asc1 (rectasc, 0, sine, cose);
@@ -827,6 +874,71 @@ porphyry:
     rectasc = swe_degnorm(th + 180 -  sn3);	/* cusp 3 */
     hsp->cusp [3] = Asc1 (rectasc, 0, sine, cose);
     }
+    break;
+  case 'G': 	/* 36 Gauquelin sectors */
+    for (i = 1; i <= 36; i++) {
+      hsp->cusp[i] = 0;
+    }
+    if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
+      retc = ERR;
+      goto porphyry;
+    } 
+    /*************** forth/second quarter ***************/
+    /* note: Gauquelin sectors are counted in clockwise direction */
+    a = asind(tand(fi) * tane);
+    for (ih = 2; ih <= 9; ih++) {
+      ih2 = 10 - ih;
+      fh1 = atand(sind(a * ih2 / 9) / tane);
+      rectasc = swe_degnorm((90 / 9) * ih2 + th);
+      tant = tand(asind(sine * sind(Asc1 (rectasc, fh1, sine, cose))));
+      if (fabs(tant) < VERY_SMALL) {
+        hsp->cusp[ih] = rectasc;
+      } else {
+        /* pole height */
+        f = atand(sind(asind(tanfi * tant) * ih2 / 9)  /tant);  
+        hsp->cusp [ih] = Asc1 (rectasc, f, sine, cose);
+        for (i = 1; i <= iteration_count; i++) {
+	  tant = tand(asind(sine * sind(hsp->cusp[ih])));
+	  if (fabs(tant) < VERY_SMALL) {
+	    hsp->cusp[ih] = rectasc;
+	    break;
+	  }
+	  /* pole height */
+	  f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
+  	  hsp->cusp[ih] = Asc1 (rectasc, f, sine, cose);
+        }
+      }
+      hsp->cusp[ih+18] = swe_degnorm(hsp->cusp[ih] + 180);
+    }
+    /*************** first/third quarter ***************/
+    for (ih = 29; ih <= 36; ih++) {
+      ih2 = ih - 28;
+      fh1 = atand(sind(a * ih2 / 9) / tane);
+      rectasc = swe_degnorm(180 - ih2 * 90 / 9 + th);
+      tant = tand(asind(sine * sind(Asc1 (rectasc, fh1, sine, cose))));
+      if (fabs(tant) < VERY_SMALL) {
+        hsp->cusp[ih] = rectasc;
+      } else {
+        f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
+        /*  pole height */
+        hsp->cusp[ih] = Asc1 (rectasc, f, sine, cose);
+        for (i = 1; i <= iteration_count; i++) {
+	  tant = tand(asind(sine * sind(hsp->cusp[ih])));
+	  if (fabs(tant) < VERY_SMALL) {
+	    hsp->cusp[ih] = rectasc;
+	    break;
+	  }
+	  f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
+	  /*  pole height */
+  	  hsp->cusp[ih] = Asc1 (rectasc, f, sine, cose);
+        }
+      }
+      hsp->cusp[ih-18] = swe_degnorm(hsp->cusp[ih] + 180);
+    }
+    hsp->cusp[1] = hsp->ac;
+    hsp->cusp[10] = hsp->mc;
+    hsp->cusp[19] = swe_degnorm(hsp->ac + 180);
+    hsp->cusp[28] = swe_degnorm(hsp->mc + 180);
     break;
   default:	/* Placidus houses */
 #ifndef _WINDOWS
@@ -922,12 +1034,14 @@ porphyry:
     }
     break;
   } /* end switch */
-  hsp->cusp [4] = swe_degnorm(hsp->cusp [10] + 180);
-  hsp->cusp [5] = swe_degnorm(hsp->cusp [11] + 180);
-  hsp->cusp [6] = swe_degnorm(hsp->cusp [12] + 180);
-  hsp->cusp [7] = swe_degnorm(hsp->cusp [1] + 180);
-  hsp->cusp [8] = swe_degnorm(hsp->cusp [2] + 180);
-  hsp->cusp [9] = swe_degnorm(hsp->cusp [3] + 180);
+  if (hsy != 'G') {
+    hsp->cusp [4] = swe_degnorm(hsp->cusp [10] + 180);
+    hsp->cusp [5] = swe_degnorm(hsp->cusp [11] + 180);
+    hsp->cusp [6] = swe_degnorm(hsp->cusp [12] + 180);
+    hsp->cusp [7] = swe_degnorm(hsp->cusp [1] + 180);
+    hsp->cusp [8] = swe_degnorm(hsp->cusp [2] + 180);
+    hsp->cusp [9] = swe_degnorm(hsp->cusp [3] + 180);
+  }
   /* vertex */
   if (fi >= 0)
     f = 90 - fi;
@@ -1074,7 +1188,8 @@ double FAR PASCAL_CONV swe_house_pos(
   double sine = sind(eps);
   double cose = cosd(eps);
   AS_BOOL is_above_hor = FALSE;
-  AS_BOOL clockwise = FALSE;
+  if (serr != NULL)
+    *serr = '\0';
   hsys = toupper(hsys);
   xeq[0] = xpin[0];
   xeq[1] = xpin[1];
@@ -1149,6 +1264,24 @@ double FAR PASCAL_CONV swe_house_pos(
     break;
     case 'X': /* Merdidian or axial rotation system */
       hpos = swe_degnorm(mdd - 90) / 30.0 + 1;
+    break;
+    case 'M': { /* Morinus */
+      double a = xpin[0];
+      if (fabs(a - 90) > VERY_SMALL
+        && fabs(a - 270) > VERY_SMALL) {
+        tant = tand(a);
+        hpos = atand(tant / cose);
+        if (a > 90 && a <= 270) 
+          hpos = swe_degnorm(hpos + 180);
+      } else {
+        if (fabs(a - 90) <= VERY_SMALL)
+          hpos = 90;
+        else 
+          hpos = 270;
+      } /*  if */
+      hpos = swe_degnorm(hpos - armc - 90);
+      hpos = hpos / 30.0 + 1;
+    }
     break;
     case 'K':
      demc = atand(sind(armc) * tand(eps));
@@ -1278,6 +1411,7 @@ double FAR PASCAL_CONV swe_house_pos(
 	  hpos = swe_degnorm(hpos - 90) / 30 + 1;
 	  break;
     case 'P':
+    case 'G':
     default:
        /* circumpolar region */
       if (90 - fabs(de) <= fabs(geolat)) {
@@ -1303,7 +1437,12 @@ double FAR PASCAL_CONV swe_house_pos(
 	 * a value within the house, 0.001" is added */
         xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
       }
-      hpos = xp[0] / 30.0 + 1;
+      if (hsys == 'G') {
+        xp[0] = 360 - xp[0]; /* Gauquelin sectors are in clockwise direction */
+        hpos = xp[0] / 10.0 + 1;
+      } else {
+        hpos = xp[0] / 30.0 + 1;
+      }
     break;
   }
   return hpos;

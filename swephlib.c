@@ -1,6 +1,6 @@
 
 /* SWISSEPH
-   $Header: swephlib.c,v 1.30 98/12/17 23:05:54 dieter Exp $
+   $Header: swephlib.c,v 1.65 2003/06/14 13:02:20 alois Exp $
 
    SWISSEPH modules that may be useful for other applications
    e.g. chopt.c, venus.c, swetest.c
@@ -75,7 +75,10 @@ int32 swi_trace_count = 0;
 #endif
 
 static double tid_acc = SE_TIDAL_DEFAULT;
+static AS_BOOL init_dt_done = FALSE;
 static void init_crc32(void);
+static int init_dt(void);
+static double adjust_for_tidacc(double ans, double Y);
 
 /* Reduce x modulo 360 degrees
  */
@@ -206,7 +209,7 @@ void FAR PASCAL_CONV swe_cotrans(double *xpo, double *xpn, double eps)
   x[1] *= DEGTORAD;
   x[2] = 1;
   for(i = 3; i <= 5; i++)
-    x[3] = 0;
+    x[i] = 0;
   swi_polcart(x, x);
   swi_coortrf(x, x, e);
   swi_cartpol(x, x);
@@ -1060,31 +1063,46 @@ int swi_nutation(double J, double *nutlo)
   return(0);
 }
 
-/* DeltaT = Ephemeris Time - Universal Time
- *
+/* DeltaT = Ephemeris Time - Universal Time, in days.
+ * 
+ * 1620 - today + a couple of years:
+ * ---------------------------------
  * The tabulated values of deltaT, in hundredths of a second,
  * were taken from The Astronomical Almanac 1997, page K8.  The program
- * adjusts for a value of secular tidal acceleration ndot = -25.8
+ * adjusts for a value of secular tidal acceleration ndot = -25.7376.
  * arcsec per century squared, the value used in JPL's DE403 ephemeris.
  * ELP2000 (and DE200) used the value -23.8946.
- * To change ndot, you can
+ * To change ndot, one can
  * either redefine SE_TIDAL_DEFAULT in swephexp.h
- * or use the routine swe_set_tid_acc() in your program.
+ * or use the routine swe_set_tid_acc() before calling Swiss 
+ * Ephemeris.
+ * Bessel's interpolation formula is implemented to obtain fourth 
+ * order interpolated values at intermediate times.
  *
- * The tabulated range is 1620.0 through 1998.0.  Bessel's interpolation
- * formula is implemented to obtain fourth order interpolated values at
- * intermediate times.
+ * -500 - 1620:
+ * ---------------------------------
+ * For dates between -500 and 1600, the table given by 
+ * Stephenson (1997; p. 515) is used, with linear interpolation.
+ * This table is based on an assumed value of ndot = -26.
+ * The program adjusts for ndot = -25.7376.
+ * For 1600 - 1620, a linear interpolation between the last value
+ * of the latter and the first value of the former table is made.
  *
- * For dates earlier than the tabulated range, the program
- * calculates approximate formulae of Stephenson and Morrison
- * or K. M. Borkowski.  These approximations have an estimated
- * error of 15 minutes at 1500 B.C.  They are not adjusted for small
- * improvements in the current estimate of ndot because the formulas
- * were derived from studies of ancient eclipses and other historical
- * information, whose interpretation depends only partly on ndot.
+ * before -500:
+ * ---------------------------------
+ * For times before -600, a formula of Stephenson & Morrison (1995) 
+ * (S. Stephenson 1997; p. 508) is used: 
+ * dt = 35 * t * t - 20 sec, where t is centuries from 1735 AD.
+ * For -600 to -500, a transition from this formula to the Stephenson
+ * table has been implemented in order to avoid a jump.
  *
- * A quadratic extrapolation formula, that agrees in value and slope with
- * current data, predicts future values of deltaT.
+ * future:
+ * ---------------------------------
+ * For the time after the last tabulated value, we use the formula
+ * of Stephenson (1997; p. 507), with a modification that avoids a jump
+ * at the end of the tabulated period. A linear term is added that
+ * makes a slow transition from the table to the formula over a period
+ * of 100 years. (Need not be updated, when table will be enlarged.)
  *
  * References:
  *
@@ -1096,8 +1114,9 @@ int swi_nutation(double J, double *nutlo)
  * Borkowski, K. M., "ELP2000-85 and the Dynamical Time
  * - Universal Time relation," Astronomy and Astrophysics
  * 205, L8-L10 (1988)
- * Borkowski's formula is derived from eclipses going back to 2137 BC
- * and uses lunar position based on tidal coefficient of -23.9 arcsec/cy^2.
+ * Borkowski's formula is derived from partly doubtful eclipses 
+ * going back to 2137 BC and uses lunar position based on tidal 
+ * coefficient of -23.9 arcsec/cy^2.
  *
  * Chapront-Touze, Michelle, and Jean Chapront, _Lunar Tables
  * and Programs from 4000 B.C. to A.D. 8000_, Willmann-Bell 1991
@@ -1106,22 +1125,42 @@ int swi_nutation(double J, double *nutlo)
  *
  * Stephenson, F. R., and M. A. Houlden, _Atlas of Historical
  * Eclipse Maps_, Cambridge U. Press (1986)
- */
-
-#define DEMO 0
-#define TABSTART 1620.0
-#define TABEND 1999.0
-#define TABSIZ 380
-
-/* Note, Stephenson and Morrison's table starts at the year 1630.
+ *
+ * Stephenson, F.R. & Morrison, L.V., "Long-Term Fluctuations in 
+ * the Earth's Rotation: 700 BC to AD 1990", Philosophical 
+ * Transactions of the Royal Society of London, 
+ * Ser. A, 351 (1995), 165-202. 
+ *
+ * Stephenson, F. Richard, _Historical Eclipses and Earth's 
+ * Rotation_, Cambridge U. Press (1997)
+ * 
+ * Table from AA for 1620 through today
+ * Note, Stephenson and Morrison's table starts at the year 1630.
  * The Chapronts' table does not agree with the Almanac prior to 1630.
  * The actual accuracy decreases rapidly prior to 1780.
  *
- * Last update of table: Dieter Koch, 2 Dec 1997, from AA 1998.
- * ATTENTION: Whenever updating table, do not forget to adjust
- * the macros TABEND and TABSIZ above!
+ * Jean Meeus, Astronomical Algorithms, 2nd edition, 1998.
+ * 
+ * For a comprehensive collection of publications and formulae, see:
+ * http://www.phys.uu.nl/~vgent/astro/deltatime.htm
+ * 
+ * For future values of delta t, the following data from the 
+ * Earth Orientation Department of the US Naval Observatory can be used:
+ * (TAI-UTC) from: ftp://maia.usno.navy.mil/ser7/tai-utc.dat
+ * (UT1-UTC) from: ftp://maia.usno.navy.mil/ser7/finals.all
+ * file description in: ftp://maia.usno.navy.mil/ser7/readme.finals
+ * Delta T = TAI-UT1 + 32.184 sec = (TAI-UTC) - (UT1-UTC) + 32.184 sec
+ *
+ * Last update of table dt[]: Dieter Koch, 31 March 2005.
+ * ATTENTION: Whenever updating this table, do not forget to adjust
+ * the macros TABEND and TABSIZ !
  */
-static short FAR dt[TABSIZ] = {
+#define TABSTART 	1620
+#define TABEND 		2014
+#define TABSIZ 		(TABEND-TABSTART+1) 
+/* we make the table greater for additional values read from external file */
+#define TABSIZ_SPACE 	(TABSIZ+50)
+static short FAR dt[TABSIZ_SPACE] = {
 /* 1620.0 thru 1659.0 */
 12400, 11900, 11500, 11000, 10600, 10200, 9800, 9500, 9100, 8800,
 8500, 8200, 7900, 7700, 7400, 7200, 7000, 6700, 6500, 6300,
@@ -1168,139 +1207,177 @@ static short FAR dt[TABSIZ] = {
  2915, 2957, 2997, 3036, 3072, 3107, 3135, 3168, 3218, 3268,
  3315, 3359, 3400, 3447, 3503, 3573, 3654, 3743, 3829, 3920,
  4018, 4117, 4223, 4337, 4449, 4548, 4646, 4752, 4853, 4959,
-/* 1980.0 thru 1996.0 */
+/* 1980.0 thru 1999.0 */
  5054, 5138, 5217, 5296, 5379, 5434, 5487, 5532, 5582, 5630,
- 5686, 5757, 5831, 5912, 5998, 6078, 6163,
-/* Extrapolated values, 1997 - 1999 */
- 6300, 6400, 6500
+ 5686, 5757, 5831, 5912, 5998, 6078, 6163, 6230, 6297, 6347,
+/* 2000.0 thru 2005.0 */
+ 6383, 6409, 6430, 6447, 6457, 6469,       
+/* Extrapolated values, 2006 - 2014 */
+                                     6481, 6500, 6520, 6550,
+ 6600, 6650, 6700, 6750, 6800,
 };
-
+/* Table for -500 through 1600, from Stephenson & Morrison (1995).
+ *
+ * The first value for -550 has been added from Borkowski
+ * in order to make this table fit with the Borkowski formula
+ * for times before -550.
+ */
+#define TAB2_SIZ	43
+#define TAB2_START	(-500)
+#define TAB2_END	1600
+static short FAR dt2[TAB2_SIZ] = {
+/* -500  -450  -400  -350  -300  -250  -200  -150  -100   -50*/
+  16800,16000,15300,14600,14000,13400,12800,12200,11600,11100,
+/*    0    50   100   150   200   250   300   350   400   450*/
+  10600,10100, 9600, 9100, 8600, 8200, 7700, 7200, 6700, 6200,
+/*  500   550   600   650   700   750   800   850   900   950*/
+   5700, 5200, 4700, 4300, 3800, 3400, 3000, 2600, 2200, 1900,
+/* 1000  1050  1100  1150  1200  1250  1300  1350  1400  1450*/
+   1600, 1350, 1100,  900,  750,  600,  470,  380,  300,  230,
+/* 1500  1550  1600 */
+    180,  140,  110,
+};
 /* returns DeltaT (ET - UT) in days
  * double tjd 	= 	julian day in UT
  */
+#define DEMO 0
 double FAR PASCAL_CONV swe_deltat(double tjd)
 {
-  double ans;
-  double p, B, Y;
+  double ans = 0, ans2, ans3;
+  double p, B, B2, Y, dd;
   int d[6];
   int i, iy, k;
+  /* read additional values from swedelta.txt */
+  int tabsiz = init_dt();
+  int tabend = TABSTART + tabsiz - 1;
   Y = 2000.0 + (tjd - J2000)/365.25;
-  if( Y > TABEND ) {
-#if 0
-    /* Morrison, L. V. and F. R. Stephenson, "Sun and Planetary System"
-     * vol 96,73 eds. W. Fricke, G. Teleki, Reidel, Dordrecht (1982)
-     */
-    B = 0.01*(Y-1800.0) - 0.1;
-    ans = -15.0 + 32.5*B*B;
-    ans /= 86400;
-    goto return_ans;
-#else
-    /* Extrapolate forward by a second-degree curve that agrees with
-     * the most recent data in value and slope, and vaguely fits
-     * over the past century.  This idea communicated by Paul Muller,
-     * who says NASA used to do something like it.  */
-    B = Y - 1902.0;
-    ans = (0.00362 * B + 0.319) * B + 0.0;
-#if DEMO 
-    printf("[extrapolated deltaT] ");
-#endif
-    ans /= 86400;
-    goto return_ans;
-#endif
-  }
-  if( Y < TABSTART ) {
-    if( Y >= 948.0 ) {
-      /* Stephenson and Morrison, stated domain is 948 to 1600:
-       * 25.5(centuries from 1800)^2 - 1.9159(centuries from 1955)^2
-       */
-      B = 0.01*(Y - 2000.0);
-      ans = (23.58 * B + 100.3)*B + 101.6;
-    } else {
-      /* Borkowski */
-      B = 0.01*(Y - 2000.0)  +  3.75;
-      ans = 35.0 * B * B  +  40.;
+  /* before -500:
+   * formula by Stephenson (1997; p. 508) but adjusted to fit the starting
+   * point of table dt2 (Stephenson 1997). */
+  if( Y < TAB2_START ) {
+    B = (Y - 1735) * 0.01;
+    ans = -20 + 35 * B * B;
+    ans = adjust_for_tidacc(ans, Y);
+    /* transition from formula to table over 100 years */
+    if (Y >= TAB2_START - 100) {
+      /* starting value of table dt2: */
+      ans2 = adjust_for_tidacc(dt2[0], TAB2_START);
+      /* value of formula at epoch TAB2_START */
+      B = (TAB2_START - 1735) * 0.01;
+      ans3 = -20 + 35 * B * B;
+      ans3 = adjust_for_tidacc(ans3, Y);
+      dd = ans3 - ans2;
+      B = (Y - (TAB2_START - 100)) * 0.01;
+      /* fit to starting point of table dt2. */
+      ans = ans - dd * B;
     }
-    ans /= 86400;
-    goto return_ans;
   }
-  /* Besselian interpolation from tabulated values.
+  /* between -500 and 1600: 
+   * linear interpolation between values of table dt2 (Stephenson 1997) */
+  if (Y >= TAB2_START && Y < TAB2_END) { 
+    p = floor(Y);
+    iy = (int) ((p - TAB2_START) / 50.0);
+    dd = (Y - (TAB2_START + 50 * iy)) / 50.0;
+    ans = dt2[iy] + (dt2[iy+1] - dt2[iy]) * dd;
+    /* correction for tidal acceleration used by our ephemeris */
+    ans = adjust_for_tidacc(ans, Y);
+  }
+  /* between 1600 and 1620:
+   * linear interpolation between 
+   * end of table dt2 and start of table dt */
+  if (Y >= TAB2_END && Y < TABSTART) { 
+    B = TABSTART - TAB2_END;
+    iy = (TAB2_END - TAB2_START) / 50;
+    dd = (Y - TAB2_END) / B;
+    ans = dt2[iy] + dd * (dt[0] / 100.0 - dt2[iy]);
+    ans = adjust_for_tidacc(ans, Y);
+  }
+  /* 1620 - today + a few years (tabend):
+   * Besselian interpolation from tabulated values in table dt.
    * See AA page K11.
    */
-  /* Index into the table.
-   */
-  p = floor(Y);
-  iy = (int) (p - TABSTART);
-  /* Zeroth order estimate is value at start of year
-   */
-  ans = dt[iy];
-  k = iy + 1;
-  if( k >= TABSIZ )
-    goto done; /* No data, can't go on. */
-  /* The fraction of tabulation interval
-   */
-  p = Y - p;
-  /* First order interpolated value
-   */
-  ans += p*(dt[k] - dt[iy]);
-  if( (iy-1 < 0) || (iy+2 >= TABSIZ) )
-    goto done; /* can't do second differences */
-  /* Make table of first differences
-   */
-  k = iy - 2;
-  for( i=0; i<5; i++ ) {
-    if( (k < 0) || (k+1 >= TABSIZ) ) 
-      d[i] = 0;
-    else
-      d[i] = dt[k+1] - dt[k];
-    k += 1;
+  if (Y >= TABSTART && Y <= tabend) {
+    /* Index into the table.
+     */
+    p = floor(Y);
+    iy = (int) (p - TABSTART);
+    /* Zeroth order estimate is value at start of year
+     */
+    ans = dt[iy];
+    k = iy + 1;
+    if( k >= tabsiz )
+      goto done; /* No data, can't go on. */
+    /* The fraction of tabulation interval
+     */
+    p = Y - p;
+    /* First order interpolated value
+     */
+    ans += p*(dt[k] - dt[iy]);
+    if( (iy-1 < 0) || (iy+2 >= tabsiz) )
+      goto done; /* can't do second differences */
+    /* Make table of first differences
+     */
+    k = iy - 2;
+    for( i=0; i<5; i++ ) {
+      if( (k < 0) || (k+1 >= tabsiz) ) 
+        d[i] = 0;
+      else
+        d[i] = dt[k+1] - dt[k];
+      k += 1;
+    }
+    /* Compute second differences
+     */
+    for( i=0; i<4; i++ )
+      d[i] = d[i+1] - d[i];
+    B = 0.25*p*(p-1.0);
+    ans += B*(d[1] + d[2]);
+#if DEMO
+    printf( "B %.4lf, ans %.4lf\n", B, ans );
+#endif
+    if( iy+2 >= tabsiz )
+      goto done;
+    /* Compute third differences
+     */
+    for( i=0; i<3; i++ )
+      d[i] = d[i+1] - d[i];
+    B = 2.0*B/3.0;
+    ans += (p-0.5)*B*d[1];
+#if DEMO
+    printf( "B %.4lf, ans %.4lf\n", B*(p-0.5), ans );
+#endif
+    if( (iy-2 < 0) || (iy+3 > tabsiz) )
+      goto done;
+    /* Compute fourth differences
+     */
+    for( i=0; i<2; i++ )
+      d[i] = d[i+1] - d[i];
+    B = 0.125*B*(p+1.0)*(p-2.0);
+    ans += B*(d[0] + d[1]);
+#if DEMO
+    printf( "B %.4lf, ans %.4lf\n", B, ans );
+#endif
+    done:
+    ans *= 0.01;
+    ans = adjust_for_tidacc(ans, Y);
   }
-  /* Compute second differences
+  /* today - : 
+   * Formula Stephenson (1997; p. 507),
+   * with modification to avoid jump at end of AA table,
+   * similar to what Meeus 1998 had suggested.
+   * Slow transition within 100 years.
    */
-  for( i=0; i<4; i++ )
-    d[i] = d[i+1] - d[i];
-  B = 0.25*p*(p-1.0);
-  ans += B*(d[1] + d[2]);
-#if DEMO
-  printf( "B %.4lf, ans %.4lf\n", B, ans );
-#endif
-  if( iy+2 >= TABSIZ )
-    goto done;
-  /* Compute third differences
-   */
-  for( i=0; i<3; i++ )
-    d[i] = d[i+1] - d[i];
-  B = 2.0*B/3.0;
-  ans += (p-0.5)*B*d[1];
-#if DEMO
-  printf( "B %.4lf, ans %.4lf\n", B*(p-0.5), ans );
-#endif
-  if( (iy-2 < 0) || (iy+3 > TABSIZ) )
-    goto done;
-  /* Compute fourth differences
-   */
-  for( i=0; i<2; i++ )
-    d[i] = d[i+1] - d[i];
-  B = 0.125*B*(p+1.0)*(p-2.0);
-  ans += B*(d[0] + d[1]);
-#if DEMO
-  printf( "B %.4lf, ans %.4lf\n", B, ans );
-#endif
-  done:
-  /* Astronomical Almanac table is corrected by adding the expression
-   *     -0.000091 (ndot + 26)(year-1955)^2  seconds
-   * to entries prior to 1955 (AA page K8), where ndot is the secular
-   * tidal term in the mean motion of the Moon.
-   *
-   * Entries after 1955 are referred to atomic time standards and
-   * are not affected by errors in Lunar or planetary theory.
-   */
-  ans *= 0.01;
-  if( Y < 1955.0 ) {
-    B = (Y - 1955.0);
-    ans += -0.000091 * (tid_acc + 26.0) * B * B;
+  if (Y > tabend) {
+    B = 0.01 * (Y - 1820);
+    ans = -20 + 31 * B * B;
+    /* slow transition from tabulated values to Stephenson formula: */
+    if (Y <= tabend+100) {
+      B2 = 0.01 * (tabend - 1820);
+      ans2 = -20 + 31 * B2 * B2;
+      ans3 = dt[tabsiz-1] * 0.01;
+      dd = (ans2 - ans3);
+      ans += dd * (Y - (tabend + 100)) * 0.01;
+    }
   }
-  ans /= 86400;
-return_ans:
 #ifdef TRACE
   swi_open_trace(NULL);
   if (swi_trace_count < TRACE_COUNT_MAX) {
@@ -1318,6 +1395,71 @@ return_ans:
     }
   }
 #endif
+  return ans / 86400.0;
+}
+
+/* Read delta t values from external file.
+ * record structure: year(whitespace)delta_t in 0.01 sec.
+ */
+static int init_dt(void)
+{
+  FILE *fp;
+  int year;
+  int tab_index;
+  int tabsiz;
+  int i;
+  char s[AS_MAXCH];
+  char *sp;
+  if (!init_dt_done) {
+    init_dt_done = TRUE;
+    /* no error message if file is missing */
+    if ((fp = swi_fopen(-1, "sedeltat.txt", swed.ephepath, NULL)) == NULL)
+      return TABSIZ; 
+    while(fgets(s, AS_MAXCH, fp) != NULL) {
+      sp = s;
+      while (strchr(" \t", *sp) != NULL && *sp != '\0') 
+        sp++;	/* was *sp++  fixed by Alois 2-jul-2003 */
+      if (*sp == '#' || *sp == '\n')
+        continue;
+      year = atoi(s);
+      tab_index = year - TABSTART;
+      /* table space is limited. no error msg, if exceeded */
+      if (tab_index >= TABSIZ_SPACE)
+        continue; 
+      sp += 4;
+      while (strchr(" \t", *sp) != NULL && *sp != '\0')
+        sp++;	/* was *sp++  fixed by Alois 2-jul-2003 */
+      dt[tab_index] = (short) (atof(sp) * 100 + 0.5);
+    }
+    fclose(fp);
+  }
+  /* find table size */
+  tabsiz = 2001 - TABSTART + 1;
+  for (i = tabsiz - 1; i < TABSIZ_SPACE; i++) {
+    if (dt[i] == 0) 
+      break;
+    else
+      tabsiz++;
+  }
+  tabsiz--;
+  return tabsiz;
+}
+
+/* Astronomical Almanac table is corrected by adding the expression
+ *     -0.000091 (ndot + 26)(year-1955)^2  seconds
+ * to entries prior to 1955 (AA page K8), where ndot is the secular
+ * tidal term in the mean motion of the Moon.
+ *
+ * Entries after 1955 are referred to atomic time standards and
+ * are not affected by errors in Lunar or planetary theory.
+ */
+static double adjust_for_tidacc(double ans, double Y)
+{
+  double B;
+  if( Y < 1955.0 ) {
+    B = (Y - 1955.0);
+    ans += -0.000091 * (tid_acc + 26.0) * B * B;
+  }
   return ans;
 }
 
@@ -1478,6 +1620,7 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
   short gregflag;
   int jmon, jday, jyear, sgn;
   double jut;
+  char *sform;
   switch(ipli) {
     case SEI_MOON:
       strcpy(fname, "semo");
@@ -1503,7 +1646,10 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
       strcpy(fname, "seas");
       break;
     default: 	/* asteroid */
-      sprintf(fname, "ast%d%sse%05d.%s", 
+      sform = "ast%d%sse%05d.%s";
+      if (ipli - SE_AST_OFFSET > 99999) 
+	sform = "ast%d%ss%06d.%s";
+      sprintf(fname, sform,
 	(ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, 
 	SE_FILE_SUFFIX);
       return;	/* asteroids: only one file 3000 bc - 3000 ad */
@@ -1804,8 +1950,6 @@ char *FAR PASCAL_CONV swe_cs2degstr(CSEC t, char *a)
  *********************************************************/
 void FAR PASCAL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn)
 {
-  int rfl_save = roundflag;
-  double ddeg_save = ddeg;
   double dadd = 0;
   *isgn = 1;
   if (ddeg < 0) {
@@ -1903,11 +2047,11 @@ void swi_open_trace(char *serr)
   if (swi_trace_count >= TRACE_COUNT_MAX) {
     if (swi_trace_count == TRACE_COUNT_MAX) { 
       if (serr != NULL)
-	sprintf(serr, "trace stopped, %ld calls exceeded.", TRACE_COUNT_MAX);
+	sprintf(serr, "trace stopped, %d calls exceeded.", TRACE_COUNT_MAX);
       if (swi_fp_trace_out != NULL)
-	fprintf(swi_fp_trace_out, "trace stopped, %ld calls exceeded.\n", TRACE_COUNT_MAX);
+	fprintf(swi_fp_trace_out, "trace stopped, %d calls exceeded.\n", TRACE_COUNT_MAX);
       if (swi_fp_trace_c != NULL)
-	fprintf(swi_fp_trace_c, "/* trace stopped, %ld calls exceeded. */\n", TRACE_COUNT_MAX);
+	fprintf(swi_fp_trace_c, "/* trace stopped, %d calls exceeded. */\n", TRACE_COUNT_MAX);
     }
     return;
   }

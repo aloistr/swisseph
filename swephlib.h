@@ -84,13 +84,30 @@ extern void swi_polcart(double *l, double *x);
 
 /* precession */
 extern int swi_precess(double *R, double J, int direction );
+extern void swi_precess_speed(double *xx, double t, int direction);
+
+/* from sweph.c, light deflection, aberration, etc. */
+extern void swi_deflect_light(double *xx, double dt, long iflag);
+extern void swi_aberr_light(double *xx, double *xe, long iflag);
+extern int swi_plan_for_osc_elem(long iflag, double tjd, double *xx);
+extern int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, long iflag, char *serr);
+extern int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, double *xoutr, long iflag, char *serr);
+extern int swi_get_observer(double tjd, long iflag, 
+	AS_BOOL do_save, double *xobs, char *serr);
+extern void swi_force_app_pos_etc();
 
 /* obliquity of ecliptic */
+extern void swi_check_ecliptic(double tjd);
 extern double swi_epsiln(double J);
 
 /* nutation */
+extern void swi_check_nutation(double tjd, long iflag);
 extern int swi_nutation(double J, double *nutlo);
+extern void swi_nutate(double *xx, long iflag, AS_BOOL backward);
 
+extern void swi_mean_lunar_elements(double tjd, 
+							 double *node, double *dnode, 
+							 double *peri, double *dperi);
 /* */
 extern double swi_mod2PI(double x);
 
@@ -107,12 +124,14 @@ extern double swi_angnorm(double x);
 extern void swi_gen_filename(double tjd, int ipli, char *fname);
 
 /* cyclic redundancy checksum (CRC), 32 bit */
-extern unsigned long swi_crc32(unsigned char *buf, int len);
+extern uint32 swi_crc32(unsigned char *buf, int len);
 
 extern int swi_cutstr(char *s, char *cutlist, char *cpos[], int nmax);
 extern char *swi_right_trim(char *s);
 
 extern double swi_kepler(double E, double M, double ecce);
+
+extern char *swi_get_fict_name(int32 ipl, char *s);
 
 extern void swi_FK4_FK5(double *xp, double tjd);
 
@@ -128,4 +147,3 @@ extern void swi_FK4_FK5(double *xp, double tjd);
   static char *fname_force_flg = "force.flg";
 #endif
 #endif /* TRACE */
-

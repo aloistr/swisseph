@@ -1,5 +1,5 @@
 /************************************************************
-   $Header: sweph.h,v 1.27 98/12/02 19:17:57 dieter Exp $
+   $Header: sweph.h,v 1.31 99/01/24 14:34:39 dieter Exp $
    definitions and constants SWISSEPH
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
@@ -181,22 +181,47 @@
 #define SEI_NEPHFILES   7
 #define SEI_CURR_FPOS   -1
 
+/* Chiron's orbit becomes chaotic 
+ * before 720 AD and after 4606 AD, because of close encounters
+ * with Saturn. Accepting a maximum error of 5 degrees, 
+ * the ephemeris is good between the following dates:
+ */
+#define CHIRON_START    1958470.5  	/* 1.1.650 */
+#define CHIRON_END      3419437.5  	/* 1.1.4650 */
+
+/* Pholus's orbit is unstable as well, because he sometimes
+ * approaches Saturn.
+ * Accepting a maximum error of 5 degrees,
+ * the ephemeris is good after the following date:
+ */
+#define PHOLUS_START    314845.5  	/* 1.1.-3850 */
+
 #define MOSHPLEPH_START	 625000.5
 #define MOSHPLEPH_END  	2818000.5
 #define MOSHLUEPH_START	 625000.5
 #define MOSHLUEPH_END  	2818000.5
+#define MOSHNDEPH_START	-254900.5	/* 14 Feb -5410 00:00 ET jul.cal.*/
+#define MOSHNDEPH_END  	3697000.5	/* 11 Dec 5409 00:00 ET, greg. cal */
+/*
+#define MOSHPLEPH_START	 -225000.5
+#define MOSHPLEPH_END  	3600000.5
+#define MOSHLUEPH_START	 -225000.5
+#define MOSHLUEPH_END  	3600000.5
+*/
+#if FALSE	/*	Alois commented out, not used anywhere  */
 #define JPLEPH_START	 625307.5	/* about -3000 (DE406) */
 #define JPLEPH_END	2816848.5	/* about  3000 (DE406) */
 #define SWIEPH_START	 625614.927151
 #define SWIEPH_END	2813641.5
 #define ALLEPH_START	MOSHPLEPH_START
 #define ALLEPH_END	MOSHPLEPH_END
+#define BEG_YEAR       (-3000)
+#define END_YEAR       3000
+#endif
 
 #define MAXORD          40
 
 #define NCTIES         6.0     /* number of centuries per eph. file */
-#define BEG_YEAR       (-3000)
-#define END_YEAR       3000
 
 #define OK (0)
 #define ERR (-1)
@@ -210,7 +235,7 @@
 #define MOON_MEAN_DIST  384400000.0		/* in m, AA 1996, F2 */
 #define MOON_MEAN_INCL  5.1453964		/* AA 1996, D2 */
 #define MOON_MEAN_ECC   0.054900489		/* AA 1996, F2 */
-#define EARTH_MOON_MRAT (1 / 0.012300034)	/* AA 1966, K6 */
+#define EARTH_MOON_MRAT (1 / 0.012300034)	/* AA 1996, K6 */
 #if 0
 #define EARTH_MOON_MRAT 81.30056		/* de406 */
 #endif
@@ -226,8 +251,17 @@
 #define SUN_RADIUS      (959.63 / 3600 * DEGTORAD)  /*  Meeus germ. p 391 */
 #define EARTH_RADIUS	6378137.0		/* AA 1998 K13 */
 #define EARTH_OBLATENESS (1.0/ 298.257223563)	/* AA 1998 K13 */
+#define EARTH_ROT_SPEED (7.2921151467e-5 * 86400) /* in rad/day, expl. suppl., p 162 */
 
 #define LIGHTTIME_AUNIT  (499.004782/3600/24) 	/* 8.3167 minutes (days), AA K6 */
+
+/* node of ecliptic measured on ecliptic 2000 */
+#define SSY_PLANE_NODE_E2000    (107.582569 * DEGTORAD)
+/* node of ecliptic measured on solar system rotation plane */
+#define SSY_PLANE_NODE          (107.58883388 * DEGTORAD)
+/* inclination of ecliptic against solar system rotation plane */
+#define SSY_PLANE_INCL          (1.578701 * DEGTORAD)
+
 #define KM_S_TO_AU_CTY	 21.095			/* km/s to AU/year */
 #define MOON_SPEED_INTV  0.00005 		/* 4.32 seconds (in days) */
 #define PLAN_SPEED_INTV  0.0001 	        /* 8.64 seconds (in days) */
@@ -246,6 +280,34 @@
 
 #define PNOINT2JPL {J_EARTH, J_MOON, J_MERCURY, J_VENUS, J_MARS, J_JUPITER, J_SATURN, J_URANUS, J_NEPTUNE, J_PLUTO, J_SUN,}
 
+/* Ayanamsas */
+struct aya_init {double t0, ayan_t0;};
+static const struct aya_init ayanamsa[] = {
+    {2433282.5, 24.042044444},	/* 0: Fagan/Bradley (Default) */
+    {J1900, 360 - 337.53953},   /* 1: Lahiri (Robert Hand) */
+    {J1900, 360 - 333.58695},   /* 2: De Luce (Robert Hand) */
+    {J1900, 360 - 338.98556},   /* 3: Raman (Robert Hand) */
+    {J1900, 360 - 341.33904},   /* 4: Ushashashi (Robert Hand) */
+    {J1900, 360 - 337.636111},  /* 5: Krishnamurti (Robert Hand) */
+    {J1900, 360 - 333.0369024}, /* 6: Djwhal Khool; (Graham Dawson)  
+                                 *    Aquarius entered on 1 July 2117 */
+    {J1900, 360 - 338.917778},  /* 7: Yukteshwar; (David Cochrane) */
+    {J1900, 360 - 338.634444},  /* 8: JN Bhasin; (David Cochrane) */
+    {1684532.5, -3.36667},      /* 9: Babylonian, Kugler 1 */
+    {1684532.5, -4.76667},      /*10: Babylonian, Kugler 2 */
+    {1684532.5, -5.61667},      /*11: Babylonian, Kugler 3 */
+    {1684532.5, -4.56667},      /*12: Babylonian, Huber */
+    {1673941, -5.079167},       /*13: Babylonian, Mercier;
+                                 *    eta Piscium culminates with zero point */
+    {1684532.5, -4.44088389},   /*14: t0 is defined by Aldebaran at 15 Taurus */
+    {1674484, -9.33333},        /*15: Hipparchos */
+    {1927135.8747793, 0},       /*16: Sassanian */
+    {1746443.513, 0},           /*17: Galactic Center at 0 Sagittarius */
+    {J2000, 0},	                /*18: J2000 */
+    {J1900, 0},	                /*19: J1900 */
+    {B1950, 0},	                /*20: B1950 */
+	};
+
 #define PLAN_DATA struct plan_data
 
 /* obliquity of ecliptic */
@@ -253,8 +315,10 @@ struct epsilon {
   double teps, eps, seps, ceps; 	/* jd, eps, sin(eps), cos(eps) */
 };
 
+/*
 extern struct epsilon oec2000;
 extern struct epsilon oec;
+*/
 
 struct plan_data {
   /* the following data are read from file only once, immediately after 
@@ -320,8 +384,9 @@ extern int swi_moshmoon2(double jd, double *x);
 /* planets, s. moshplan.c */
 extern int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, double *xeret, char *serr);
 extern int swi_moshplan2(double J, int iplm, double *pobj);
-extern void swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli);
+extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, char *serr);
 extern FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr);
+extern double swi_dot_prod_unit(double *x, double *y);
 
 /* nutation */
 struct nut {
@@ -392,21 +457,34 @@ struct node_data {
 };
 
 struct topo_data {
-  AS_BOOL geopos_is_set;
   double geolon, geolat, geoalt;
   double teval;
   double tjd_ut;
   double xobs[6];
 };
 
+struct sid_data {
+  int32 sid_mode;
+  double ayan_t0;
+  double t0;
+};
+
 struct swe_data {
+  AS_BOOL ephe_path_is_set;
+  short jpl_file_is_open;
+  FILE *fixfp;		/* fixed stars file pointer */
   char ephepath[AS_MAXCH];
   char jplfnam[AS_MAXCH];
-  short jpl_file_is_open;
+  AS_BOOL geopos_is_set;
+  AS_BOOL ayana_is_set;
   struct file_data fidat[SEI_NEPHFILES];
   struct gen_const gcdat;
   struct plan_data pldat[SEI_NPLANETS];
+#if 0
   struct node_data nddat[SEI_NNODE_ETC];
+#else
+  struct plan_data nddat[SEI_NNODE_ETC];
+#endif
   struct save_positions savedat[SE_NPLANETS+1];
   struct epsilon oec;
   struct epsilon oec2000;
@@ -414,7 +492,11 @@ struct swe_data {
   struct nut nut2000;
   struct nut nutv;
   struct topo_data topd;
+  struct sid_data sidd;
+  char astelem[AS_MAXCH * 2];
+  double ast_G;
+  double ast_H;
+  double ast_diam;
 };
 
 extern struct swe_data FAR swed;
-

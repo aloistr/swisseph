@@ -1,5 +1,5 @@
 /************************************************************
-  $Header: swephexp.h,v 1.27 98/11/30 22:13:27 dieter Exp $
+  $Header: swephexp.h,v 1.31 99/07/13 08:54:13 dieter Exp $
   SWISSEPH: exported definitions and constants 
 
   This file represents the standard application interface (API)
@@ -104,7 +104,11 @@
 #define SE_AST_OFFSET   10000
 
 #define SE_FICT_OFFSET  	40
+#define SE_FICT_OFFSET_1  	39
+#define SE_FICT_MAX  	       999 
 #define SE_NFICT_ELEM           15
+
+#define SE_COMET_OFFSET 1000
 
 #define SE_NALL_NAT_POINTS      (SE_NPLANETS + SE_NFICT_ELEM)
 
@@ -117,7 +121,7 @@
 #define SE_ADMETOS      	45
 #define SE_VULKANUS     	46
 #define SE_POSEIDON     	47
-/* other ficticious bodies */
+/* other fictitious bodies */
 #define SE_ISIS         	48
 #define SE_NIBIRU       	49
 #define SE_HARRINGTON           50
@@ -127,6 +131,16 @@
 #define SE_PLUTO_PICKERING      54
 
 #define SE_FIXSTAR      -10
+
+#define SE_ASC			0
+#define SE_MC			1
+#define SE_ARMC			2
+#define SE_VERTEX		3
+#define SE_EQUASC  		4	/* "equatorial ascendant" */
+#define SE_COASC1		5	/* "co-ascendant" (W. Koch) */
+#define SE_COASC2		6	/* "co-ascendant" (M. Munkasey) */
+#define SE_POLASC		7	/* "polar ascendant" (M. Munkasey) */
+#define SE_NASCMC		8
 
 /*
  * flag bits for parameter iflag in function swe_calc()
@@ -158,6 +172,44 @@
 #define SEFLG_RADIANS	(8*1024L)    /* coordinates in radians, not degrees */
 #define SEFLG_BARYCTR	(16*1024L)   /* barycentric positions */
 #define SEFLG_TOPOCTR	(32*1024L)   /* topocentric positions */
+#define SEFLG_SIDEREAL	(64*1024L)   /* sidereal positions */
+
+#define SE_SIDBITS		256
+/* for projection onto ecliptic of t0 */
+#define SE_SIDBIT_ECL_T0        256
+/* for projection onto solar system plane */
+#define SE_SIDBIT_SSY_PLANE     512
+
+/* sidereal modes (ayanamsas) */
+#define SE_SIDM_FAGAN_BRADLEY    0
+#define SE_SIDM_LAHIRI           1
+#define SE_SIDM_DELUCE           2
+#define SE_SIDM_RAMAN            3
+#define SE_SIDM_USHASHASHI       4
+#define SE_SIDM_KRISHNAMURTI     5
+#define SE_SIDM_DJWHAL_KHUL      6
+#define SE_SIDM_YUKTESHWAR       7
+#define SE_SIDM_JN_BHASIN        8
+#define SE_SIDM_BABYL_KUGLER1    9
+#define SE_SIDM_BABYL_KUGLER2   10
+#define SE_SIDM_BABYL_KUGLER3   11
+#define SE_SIDM_BABYL_HUBER    	12
+#define SE_SIDM_BABYL_ETPSC    	13
+#define SE_SIDM_ALDEBARAN_15TAU 14
+#define SE_SIDM_HIPPARCHOS      15
+#define SE_SIDM_SASSANIAN       16
+#define SE_SIDM_GALCENT_0SAG    17
+#define SE_SIDM_J2000           18
+#define SE_SIDM_J1900           19
+#define SE_SIDM_B1950           20
+#define SE_SIDM_USER            255
+
+#define SE_NSIDM_PREDEF	  	    21
+
+#define SE_NODBIT_MEAN		1
+#define SE_NODBIT_OSCU		2
+#define SE_NODBIT_OSCU_BAR	4
+#define SE_NODBIT_FOPOINT	256
 
 /* default ephemeris used when no ephemeris flagbit is set */
 #define SEFLG_DEFAULTEPH SEFLG_SWIEPH
@@ -168,6 +220,42 @@
 				         * the returned star name.
 					 */
 
+/* defines for eclipse computations */
+
+#define SE_ECL_CENTRAL		1
+#define SE_ECL_NONCENTRAL	2
+#define SE_ECL_TOTAL		4
+#define SE_ECL_ANNULAR		8
+#define SE_ECL_PARTIAL		16
+#define SE_ECL_ANNULAR_TOTAL	32
+#define SE_ECL_PENUMBRAL	64
+#define SE_ECL_VISIBLE		128
+#define SE_ECL_MAX_VISIBLE	256
+#define SE_ECL_1ST_VISIBLE	512
+#define SE_ECL_2ND_VISIBLE	1024
+#define SE_ECL_3RD_VISIBLE	2048
+#define SE_ECL_4TH_VISIBLE	4096
+
+/* for swe_rise_transit() */
+#define SE_CALC_RISE		1
+#define SE_CALC_SET		2
+#define SE_CALC_MTRANSIT	4
+#define SE_CALC_ITRANSIT	8
+#define SE_BIT_DISC_CENTER      256 /* to be added to SE_CALC_RISE/SET */
+				    /* if rise or set of disc center is */
+				    /* requried */
+#define SE_BIT_NO_REFRACTION    512 /* to be added to SE_CALC_RISE/SET, */
+				    /* if refraction is not to be considered */
+
+/* for swe_azalt() and swe_azalt_rev() */
+#define SE_ECL2HOR		0
+#define SE_EQU2HOR		1
+#define SE_HOR2ECL		0
+#define SE_HOR2EQU		1
+
+/* for swe_refrac() */
+#define SE_TRUE_TO_APP	0
+#define SE_APP_TO_TRUE	1
 
 /*
  * only used for experimenting with various JPL ephemeris files
@@ -181,6 +269,8 @@
 #define SE_FNAME_DE406  "de406.eph"
 #define SE_FNAME_DFT    SE_FNAME_DE406
 #define SE_STARFILE     "fixstars.cat"
+#define SE_ASTNAMFILE   "seasnam.txt"
+#define SE_FICTFILE     "seorbel.txt"
 
 /*
  * ephemeris path
@@ -197,12 +287,28 @@
 #  define SE_EPHE_PATH    "\\sweph\\ephe\\"
 #endif
 #else
-#  define SE_EPHE_PATH    "/users/ephe/:/users/ephe2/"
+# ifdef MACOS
+#  define SE_EPHE_PATH	":ephe:"
+# else
+#  define SE_EPHE_PATH    ".:/users/ephe2/:/users/ephe/"
 			/* At Astrodienst, we maintain two ephemeris areas for
 			   the thousands of asteroid files: 
 			   the short files in /users/ephe/ast*,
 			   the long file in /users/ephe2/ast*. */
+# endif
 #endif
+
+/* defines for function swe_split_deg() (in swephlib.c) */
+# define SE_SPLIT_DEG_ROUND_SEC    1
+# define SE_SPLIT_DEG_ROUND_MIN    2
+# define SE_SPLIT_DEG_ROUND_DEG    4
+# define SE_SPLIT_DEG_ZODIACAL     8
+# define SE_SPLIT_DEG_KEEP_SIGN   16	/* don't round to next sign, 
+					 * e.g. 29.9999999 will be rounded
+					 * to 29°59'59" (or 29°59' or 29°) */
+# define SE_SPLIT_DEG_KEEP_DEG    32	/* don't round to next degree
+					 * e.g. 13.9999999 will be rounded
+					 * to 13°59'59" (or 13°59' or 13°) */
 
 /*
  * by compiling with -DPAIR_SWEPH in he compiler options it
@@ -301,11 +407,17 @@ ext_def( long ) swe_calc(
         double *xx,
         char *serr);
 
+ext_def(int32) swe_calc_ut(double tjd_ut, int32 ipl, int32 iflag, 
+	double *xx, char *serr);
+
 /* fixed stars */
 ext_def( long ) swe_fixstar(
         char *star, double tjd, long iflag, 
         double *xx,
         char *serr);
+
+ext_def(int32) swe_fixstar_ut(char *star, double tjd_ut, int32 iflag, 
+	double *xx, char *serr);
 
 /* close Swiss Ephemeris */
 ext_def( void ) swe_close(void);
@@ -321,6 +433,14 @@ ext_def( char *) swe_get_planet_name(int ipl, char *spname);
 
 /* set geographic position of observer */
 ext_def (void) swe_set_topo(double geolon, double geolat, double geoalt);
+
+/* set sidereal mode */
+ext_def(void) swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0);
+
+/* get ayanamsa */
+ext_def(double) swe_get_ayanamsa(double tjd_et);
+
+ext_def(double) swe_get_ayanamsa_ut(double tjd_ut);
 
 /**************************** 
  * exports from swedate.c 
@@ -349,12 +469,88 @@ ext_def( int ) swe_houses(
         double tjd_ut, double geolat, double geolon, int hsys, 
 	double *cusps, double *ascmc);
 
+ext_def( int ) swe_houses_ex(
+        double tjd_ut, int32 iflag, double geolat, double geolon, int hsys, 
+	double *cusps, double *ascmc);
+
 ext_def( int ) swe_houses_armc(
         double armc, double geolat, double eps, int hsys, 
 	double *cusps, double *ascmc);
 
 ext_def(double) swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr);
+
+/**************************** 
+ * exports from swecl.c 
+ ****************************/
+
+/* computes geographic location and attributes of solar 
+ * eclipse at a given tjd */
+ext_def (int32) swe_sol_eclipse_where(double tjd, int32 ifl, double *geopos, double *attr, char *serr);
+
+/* computes attributes of a solar eclipse for given tjd, geolon, geolat */
+ext_def (int32) swe_sol_eclipse_how(double tjd, int32 ifl, double *geopos, double *attr, char *serr);
+
+/* finds time of next local eclipse */
+ext_def (int32) swe_sol_eclipse_when_loc(double tjd_start, int32 ifl, double *geopos, double *tret, double *attr, AS_BOOL backward, char *serr);
+
+/* finds time of next eclipse globally */
+ext_def (int32) swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype,
+     double *tret, AS_BOOL backward, char *serr);
+
+/* computes attributes of a lunar eclipse for given tjd */
+ext_def (int32) swe_lun_eclipse_how(
+          double tjd_ut, 
+          int32 ifl,
+          double *geopos, 
+          double *attr, 
+          char *serr);
+
+ext_def (int32) swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype,
+     double *tret, AS_BOOL backward, char *serr);
+
+/* planetary phenomena */
+ext_def (int32) swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr);
+ 
+ext_def(int32) swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr);
+
+ext_def (double) swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag);
+
+ext_def (void) swe_azalt(
+      double tjd_ut,
+      int32 calc_flag,
+      double *geopos,
+      double atpress,
+      double attemp,
+      double *xin, 
+      double *xaz); 
+
+ext_def (void) swe_azalt_rev(
+      double tjd_ut,
+      int32 calc_flag,
+      double *geopos,
+      double *xin, 
+      double *xout); 
+
+ext_def (int32) swe_rise_trans(
+               double tjd_ut, int32 ipl, char *starname, 
+	       int32 epheflag, int32 rsmi,
+               double *geopos, 
+	       double atpress, double attemp,
+               double *tret,
+               char *serr);
+
+ext_def (int32) swe_nod_aps(double tjd_et, int32 ipl, int32 iflag, 
+                      int32  method,
+                      double *xnasc, double *xndsc, 
+                      double *xperi, double *xaphe, 
+                      char *serr);
+
+ext_def (int32) swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag, 
+                      int32  method,
+                      double *xnasc, double *xndsc, 
+                      double *xperi, double *xaphe, 
+                      char *serr);
 
 /**************************** 
  * exports from swephlib.c 
@@ -379,6 +575,11 @@ ext_def( double ) swe_get_tid_acc(void);
 ext_def( void ) swe_set_tid_acc(double t_acc);
 
 ext_def( double ) swe_degnorm(double x);
+ext_def( double ) swe_radnorm(double x);
+ext_def( double ) swe_rad_midp(double x1, double x0);
+ext_def( double ) swe_deg_midp(double x1, double x0);
+
+ext_def( void ) swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn);
 
 /******************************************************* 
  * other functions from swephlib.c;
@@ -398,12 +599,13 @@ ext_def( double ) swe_difdegn (double p1, double p2);
 ext_def( centisec ) swe_difcs2n(centisec p1, centisec p2);
 
 ext_def( double ) swe_difdeg2n(double p1, double p2);
+ext_def( double ) swe_difrad2n(double p1, double p2);
 
 /* round second, but at 29.5959 always down */
 ext_def( centisec ) swe_csroundsec(centisec x);
 
 /* double to long with rounding, no overflow check */
-ext_def( long ) swe_d2l(double x);
+ext_def( int32 ) swe_d2l(double x);
 
 /* monday = 0, ... sunday = 6 */
 ext_def( int ) swe_day_of_week(double jd);

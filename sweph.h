@@ -1,5 +1,5 @@
 /************************************************************
-   $Header: sweph.h,v 1.31 99/01/24 14:34:39 dieter Exp $
+   $Header: sweph.h,v 1.65 2003/06/14 13:09:48 alois Exp $
    definitions and constants SWISSEPH
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
@@ -97,17 +97,18 @@
 #define SE_NAME_NEPTUNE_ADAMS   "Adams"
 #define SE_NAME_PLUTO_LOWELL    "Lowell"
 #define SE_NAME_PLUTO_PICKERING "Pickering"
+#define SE_NAME_VULCAN          "Vulcan"
+#define SE_NAME_WHITE_MOON      "White Moon"
 
 /* for delta t: tidal acceleration in the mean motion of the moon */
 #define SE_TIDAL_DE403          (-25.8)
 #define SE_TIDAL_DE404          (-25.8)
-#define SE_TIDAL_DE405          (-25.8)
-#define SE_TIDAL_DE406          (-25.8)
+#define SE_TIDAL_DE405          (-25.7376)
+#define SE_TIDAL_DE406          (-25.7376)
 #define SE_TIDAL_DE200          (-23.8946)
 #define SE_TIDAL_26             (-26.0)
 
 #define SE_TIDAL_DEFAULT        SE_TIDAL_DE406
-
 
 /*
  * earlier content
@@ -235,6 +236,8 @@
 #define MOON_MEAN_DIST  384400000.0		/* in m, AA 1996, F2 */
 #define MOON_MEAN_INCL  5.1453964		/* AA 1996, D2 */
 #define MOON_MEAN_ECC   0.054900489		/* AA 1996, F2 */
+/* #define SUN_EARTH_MRAT  328900.5                Su/(Ea+Mo) AA 1996, K6 */
+#define SUN_EARTH_MRAT  332946.0                /* Su / (Ea only) */   
 #define EARTH_MOON_MRAT (1 / 0.012300034)	/* AA 1996, K6 */
 #if 0
 #define EARTH_MOON_MRAT 81.30056		/* de406 */
@@ -271,14 +274,33 @@
 #define NUT_SPEED_INTV   0.0001
 #define DEFL_SPEED_INTV  0.0000005
 
-/* for chopt.c and numint.c, asteroid ephemerides */
-#define AST_ELEM_FILE 	"/users/dieter/numint/astorb.dat"
-#define AST_DATA_DIR	"/opt/jpl/data/mpc/"
-
 #define square_sum(x)   (x[0]*x[0]+x[1]*x[1]+x[2]*x[2])
 #define dot_prod(x,y)   (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 
 #define PNOINT2JPL {J_EARTH, J_MOON, J_MERCURY, J_VENUS, J_MARS, J_JUPITER, J_SATURN, J_URANUS, J_NEPTUNE, J_PLUTO, J_SUN,}
+
+/* planetary radii in meters */
+#define NDIAM  (SE_VESTA + 1)
+static const double pla_diam[NDIAM] = {1392000000.0, /* Sun */
+                           3476300.0, /* Moon */
+                           2439000.0 * 2, /* Mercury */
+                           6052000.0 * 2, /* Venus */
+                           3397200.0 * 2, /* Mars */
+                          71398000.0 * 2, /* Jupiter */
+                          60000000.0 * 2, /* Saturn */
+                          25400000.0 * 2, /* Uranus */
+                          24300000.0 * 2, /* Neptune */
+                           2500000.0 * 2, /* Pluto */
+                           0, 0, 0, 0,    /* nodes and apogees */
+                           6378140.0 * 2, /* Earth */
+                                 0.0, /* Chiron */
+                                 0.0, /* Pholus */
+                            913000.0, /* Ceres */
+                            523000.0, /* Pallas */
+                            244000.0, /* Juno */
+                            501000.0, /* Vesta */
+                        };
+
 
 /* Ayanamsas */
 struct aya_init {double t0, ayan_t0;};
@@ -324,7 +346,7 @@ struct plan_data {
   /* the following data are read from file only once, immediately after 
    * file has been opened */
   int ibdy;		/* internal body number */
-  long iflg;		/* contains several bit flags describing the data:	
+  int32 iflg;		/* contains several bit flags describing the data:	
 			 * SEI_FLG_HELIO: true if helio, false if bary
 			 * SEI_FLG_ROTATE: TRUE if coefficients are referred 
 			 *      to coordinate system of orbital plane 
@@ -332,8 +354,8 @@ struct plan_data {
   int ncoe;		/* # of coefficients of ephemeris polynomial,
 			   is polynomial order + 1  */
   /* where is the segment index on the file */
-  long lndx0;   	/* file position of begin of planet's index */
-  long nndx;		/* number of index entries on file: computed */
+  int32 lndx0;   	/* file position of begin of planet's index */
+  int32 nndx;		/* number of index entries on file: computed */
   double tfstart;	/* file contains ephemeris for tfstart thru tfend */
   double tfend;         /*      for this particular planet !!!            */
   double dseg;		/* segment size (days covered by a polynomial)  */
@@ -357,9 +379,9 @@ struct plan_data {
 			 * be less than ncoe */
   /* result of most recent data evaluation for this body: */
   double teval;		/* time for which previous computation was made */
-  long iephe;            /* which ephemeris was used */
+  int32 iephe;            /* which ephemeris was used */
   double x[6];		/* position and speed vectors equatorial J2000 */
-  long xflgs;		/* hel., light-time, aberr., prec. flags etc. */
+  int32 xflgs;		/* hel., light-time, aberr., prec. flags etc. */
   double xreturn[24];   /* return positions:
 			 * xreturn+0	ecliptic polar coordinates
 			 * xreturn+6	ecliptic cartesian coordinates
@@ -384,7 +406,7 @@ extern int swi_moshmoon2(double jd, double *x);
 /* planets, s. moshplan.c */
 extern int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, double *xeret, char *serr);
 extern int swi_moshplan2(double J, int iplm, double *pobj);
-extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, char *serr);
+extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, double *xsun, char *serr);
 extern FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr);
 extern double swi_dot_prod_unit(double *x, double *y);
 
@@ -410,14 +432,14 @@ struct file_data {
   char fnam[AS_MAXCH];	/* ephemeris file name */
   int fversion;		/* version number of file */
   char astnam[50];	/* asteroid name, if asteroid file */ 
-  long sweph_denum;     /* DE number of JPL ephemeris, which this file
+  int32 sweph_denum;     /* DE number of JPL ephemeris, which this file
 			 * is derived from. */
   FILE *fptr;		/* ephemeris file pointer */
   double tfstart;       /* file may be used from this date */
   double tfend;         /*      through this date          */
-  long iflg; 		/* byte reorder flag and little/bigendian flag */
+  int32 iflg; 		/* byte reorder flag and little/bigendian flag */
   short npl;		/* how many planets in file */
-  short ipl[SEI_FILE_NMAXPLAN];	/* planet numbers */
+  int ipl[SEI_FILE_NMAXPLAN];	/* planet numbers */
 };
  
 struct gen_const {
@@ -431,7 +453,7 @@ struct gen_const {
 struct save_positions {
   int ipl;
   double tsave;
-  long iflgsave;
+  int32 iflgsave;
   /* position at t = tsave,
    * in ecliptic polar (offset 0),
    *    ecliptic cartesian (offset 6), 
@@ -445,9 +467,9 @@ struct save_positions {
 struct node_data {
   /* result of most recent data evaluation for this body: */
   double teval;		/* time for which last computation was made */
-  long iephe;            /* which ephemeris was used */
+  int32 iephe;            /* which ephemeris was used */
   double x[6];		/* position and speed vectors equatorial J2000 */
-  long xflgs;		/* hel., light-time, aberr., prec. flags etc. */
+  int32 xflgs;		/* hel., light-time, aberr., prec. flags etc. */
   double xreturn[24];   /* return positions: 
 			 * xreturn+0	ecliptic polar coordinates
 			 * xreturn+6	ecliptic cartesian coordinates
@@ -497,6 +519,8 @@ struct swe_data {
   double ast_G;
   double ast_H;
   double ast_diam;
+  int i_saved_planet_name;
+  char saved_planet_name[80];
 };
 
 extern struct swe_data FAR swed;

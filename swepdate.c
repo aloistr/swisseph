@@ -2,30 +2,45 @@
 $Header: swepdate.c,v 1.65 2003/06/14 13:02:01 alois Exp $
 Placalc compatibility interface for Swiss Ephemeris.
 date functions
-*******************************************************/
 
-/* Copyright (C) 1997-1999 Astrodienst AG, Switzerland.  All rights reserved.
+*******************************************************/
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
   
-  This file is part of Swiss Ephemeris Free Edition.
-  
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -89,7 +104,7 @@ date functions
  not be confused with the Julian calendar system, which is named after
  Julius Cesar, the Roman politician who introduced this calendar.
  The Julian century is named after Cesar, i.e. a century in the Julian
- calendar. The 'gregorian' century has a variable lenght.
+ calendar. The 'gregorian' century has a variable length.
 
  Be aware the we always use astronomical year numbering for the years
  before Christ, not the historical year numbering.
@@ -111,7 +126,7 @@ date functions
  related functions: revjul() reverse Julian day number: compute the
   			       calendar date from a given JD
 	            date_conversion() includes test for legal date values
-		    and notfies errors like 32 January.
+		    and notifies errors like 32 January.
  ****************************************************************/
 
 double julday(int month, int day, int year, double hour, int gregflag) 

@@ -1,6 +1,6 @@
 
 /* 
- | $Header: swejpl.c,v 1.65 2003/06/14 13:01:55 alois Exp $
+ | $Header: /home/dieter/sweph/RCS/swejpl.c,v 1.76 2008/08/26 13:55:36 dieter Exp $
  |
  | Subroutines for reading JPL ephemerides.
  | derived from testeph.f as contained in DE403 distribution July 1995.
@@ -11,29 +11,44 @@
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 
-*/
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+************************************************************/
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
   
-  This file is part of Swiss Ephemeris Free Edition.
-  
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -151,6 +166,9 @@ DE200	DE102		  	DE403
  * the number of single precision words in a record. 
  * RETURN: ksize (record size of ephemeris data)
  * jplfptr is opened on return.
+ * note 26-aug-2008: now record size is computed by fsizer(), not 
+ * set to a fixed value depending as in previous releases. The caller of
+ * fsizer() will verify by data comparison whether it computed correctly.
  */
 static int32 fsizer(char *serr)
 {
@@ -159,8 +177,8 @@ static int32 fsizer(char *serr)
   double emrat;
   int32 numde;
   double au, ss[3];
-  int i;
-  int32 ksize;
+  int i, kmx, khi, nd;
+  int32 ksize, lpt[3];
   char ttl[6*14*3];	
   if ((js->jplfptr = swi_fopen(SEI_FILE_PLANET, js->jplfname, js->jplfpath, serr)) == NULL) {
     return NOT_AVAILABLE;
@@ -185,6 +203,13 @@ static int32 fsizer(char *serr)
     js->eh_ss[i] = ss[i];
   if (js->do_reorder)
     reorder((char *) &js->eh_ss[0], sizeof(double), 3);
+  /* plausibility test of these constants. Start and end date must be
+   * between -20000 and +20000, segment size >= 1 and <= 200 */
+  if (js->eh_ss[0] < -5583942 || js->eh_ss[1] > 9025909 || js->eh_ss[2] < 1 || js->eh_ss[2] > 200) {
+    if (serr != NULL)
+      sprintf(serr, "alleged ephemeris file (%s) has invalid format.", js->jplfname);
+    return(NOT_AVAILABLE);
+  }
   /* ncon = number of constants */
   fread((void *) &ncon, sizeof(int32), 1, js->jplfptr);
   if (js->do_reorder)
@@ -207,15 +232,16 @@ static int32 fsizer(char *serr)
   fread((void *) &numde, sizeof(int32), 1, js->jplfptr);
   if (js->do_reorder)
     reorder((char *) &numde, sizeof(int32), 1);
-#if 0
-  /* librations */
+  /* read librations */
   fread(&lpt[0], sizeof(int32), 3, js->jplfptr);
   if (js->do_reorder)
     reorder((char *) &lpt[0], sizeof(int32), 3);
-#endif
+  /* fill librations into eh_ipt[36]..[38] */
+  for (i = 0; i < 3; ++i) 
+    js->eh_ipt[i + 36] = lpt[i];
   rewind(js->jplfptr);
   /*  find the number of ephemeris coefficients from the pointers */
-#if 0
+  /* re-activated this code on 26-aug-2008 */
   kmx = 0;
   khi = 0;
   for (i = 0; i < 13; i++) {
@@ -235,10 +261,16 @@ static int32 fsizer(char *serr)
    */
   if (ksize == 1546) 
     ksize = 1652;
-#endif
+#if 0		/* we prefer to compute ksize to be comaptible
+                   with new DE releases */
   switch (numde) {
     case 403:
     case 405:
+    case 410:
+    case 413:
+    case 414:
+    case 418:
+    case 421:
       ksize = 2036;
       break;
     case 404:
@@ -255,6 +287,12 @@ static int32 fsizer(char *serr)
       if (serr != NULL)
 	sprintf(serr,"unknown numde value %d;", numde);
       return ERR;
+  }
+#endif
+  if (ksize < 1000 || ksize > 5000) {
+    if (serr != NULL)
+      sprintf(serr, "JPL ephemeris file does not provide valid ksize (%d)", ksize);/**/
+    return NOT_AVAILABLE;
   }
   return ksize;
 } 
@@ -377,10 +415,6 @@ int swi_pleph(double et, int ntarg, int ncent, double *rrd, char *serr)
   }
   for (i = 0; i < 6; ++i) 
     rrd[i] = pv[i + ntarg * 6] - pv[i + ncent * 6];
-  if (js->eh_denum >= 403) {
-    swi_IERS_FK5(rrd, rrd, 1);
-    swi_IERS_FK5(rrd+3, rrd+3, 1);
-  }
   return OK;
 } 
 
@@ -591,29 +625,26 @@ static int state(double et, int32 *list, int do_bary,
   int i, j, k;
   int32 flen, nseg, nb;
   double FAR *buf = js->buf;
-  double aufac, s, t, intv;
+  double aufac, s, t, intv, ts[4];
   int32 nrecl, ksize;
   int32 nr;
   double et_mn, et_fr;
   int32 FAR *ipt = js->eh_ipt;
-  char *ch_ttl[252];
+  char ch_ttl[252];
   static int32 irecsz;
   static int32 nrl, lpt[3], ncoeffs;
   if (js->jplfptr == NULL) {
     ksize = fsizer(serr); /* the number of single precision words in a record */
     nrecl = 4;
-    if (ksize < 0) {
-      if (serr != NULL && ksize != NOT_AVAILABLE) 
-	sprintf(serr, "fsizer does not work");/**/
-      return (int) ksize;
-    }
+    if (ksize == NOT_AVAILABLE)
+      return NOT_AVAILABLE;
     irecsz = nrecl * ksize; 	/* record size in bytes */
     ncoeffs = ksize / 2;	/* # of coefficients, doubles */
     /* ttl = ephemeris title, e.g.
      * "JPL Planetary Ephemeris DE404/LE404
      *  Start Epoch: JED=   625296.5-3001 DEC 21 00:00:00
      *  Final Epoch: JED=  2817168.5 3001 JAN 17 00:00:00c */
-    fread((void *) &ch_ttl[0], 1, 252, js->jplfptr);
+    fread((void *) ch_ttl, 1, 252, js->jplfptr);
     /* cnam = names of constants */
     fread((void *) js->ch_cnam, 1, 2400, js->jplfptr);
     /* ss[0] = start epoch of ephemeris
@@ -652,7 +683,27 @@ static int state(double et, int32 *list, int do_bary,
     fread((void *) &js->eh_cval[0], sizeof(double), 400, js->jplfptr);
     if (js->do_reorder)
       reorder((char *) &js->eh_cval[0], sizeof(double), 400);
-    fseek(js->jplfptr, 2L * irecsz, 0);
+    /* new 26-aug-2008: verify correct block size */
+#if 0
+    sp = strstr(js->ch_cnam, "EMRAT ");
+    if (sp == NULL) {
+      if (serr != NULL) 
+	sprintf(serr, "JPL ephemeris file strange, constant name 'EMRAT' missing");
+      return ERR;
+    }
+    i = (sp - js->ch_cnam);
+    if (i % 6 != 0) {
+      if (serr != NULL) 
+	sprintf(serr, "JPL ephemeris file strange, constant name 'EMRAT' not at multiple of 6");
+      return ERR;
+    }
+    i = i / 6;	/* position of EMRAT in constant array eh_cval */
+    if (js->eh_cval[i] != js->eh_emrat) {
+      if (serr != NULL) 
+	sprintf(serr, "JPL ephemeris file error, record size failed EMRAT check");
+      return ERR;
+    }
+#endif
     for (i = 0; i < 3; ++i) 
       ipt[i + 36] = lpt[i];
     nrl = 0;
@@ -687,7 +738,22 @@ static int state(double et, int32 *list, int do_bary,
 	if (strlen(serr) + strlen(js->jplfname) < AS_MAXCH - 1)
 	  sprintf(serr, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, flen, nb);
       }
-      return(ERR);
+      return(NOT_AVAILABLE);
+    }
+    /* check if start and end dates in segments are the same as in 
+     * file header */
+    fseek(js->jplfptr, 2L * irecsz, 0);
+    fread((void *) &ts[0], sizeof(double), 2, js->jplfptr);
+    if (js->do_reorder)
+      reorder((char *) &ts[0], sizeof(double), 2);
+    fseek(js->jplfptr, (nseg + 2 - 1) * irecsz, 0);
+    fread((void *) &ts[2], sizeof(double), 2, js->jplfptr);
+    if (js->do_reorder)
+      reorder((char *) &ts[2], sizeof(double), 2);
+    if (ts[0] != js->eh_ss[0] || ts[3] != js->eh_ss[1]) {
+      if (serr != NULL)
+	strcpy(serr, "JPL ephemeris file is corrupt; start/end date check failed.");
+      return NOT_AVAILABLE;
     }
   }
   if (list == NULL) 
@@ -713,13 +779,13 @@ static int state(double et, int32 *list, int do_bary,
     if (fseek(js->jplfptr, nr * irecsz, 0) != 0) {
       if (serr != NULL) 
 	sprintf(serr, "Read error in JPL eph. at %f\n", et);
-      return ERR;
+      return NOT_AVAILABLE;
     }
     for (k = 1; k <= ncoeffs; ++k) {
       if ( fread((void *) &buf[k - 1], sizeof(double), 1, js->jplfptr) != 1) {
 	if (serr != NULL) 
 	  sprintf(serr, "Read error in JPL eph. at %f\n", et);
-	return ERR;
+	return NOT_AVAILABLE;
       }
       if (js->do_reorder)
 	reorder((char *) &buf[k-1], sizeof(double), 1);
@@ -868,48 +934,4 @@ int32 swi_get_jpl_denum()
   return js->eh_denum;
 }
 #endif	/* NO_JPL */
-
-/* rotation angles for conversion from IERS to FK5 */
-static double AT[3] = {2.0, 12.0, 6.0};
-
-/* for IERS -> FK5 dir = 1, else dir = -1 */
-void swi_IERS_FK5(double *xin, double *xout, int dir)
-{
-  static double sina; 
-  static double cosa;
-  static double sinb; 
-  static double cosb;
-  static double sinc; 
-  static double cosc;
-  static short sin_cos_done = FALSE;
-  int i;
-  double x[3];
-#if 1	
-  /* return without doing anything, as long as no generally
-   * accepted transformation algorithm is given */
-  for (i = 0; i < 3; i++)
-    xout[i] = xin[i];
-  return;   
-#endif
-  if (!sin_cos_done) {
-    sina = (AT[0] / 3600000.0 * DEGTORAD) * dir;
-    cosa = sqrt(1 - sina * sina);
-    sinb = (AT[1] / 3600000.0 * DEGTORAD) * dir;
-    cosb = sqrt(1 - sinb * sinb); 
-    sinc = (AT[2] / 3600000.0 * DEGTORAD) * dir;
-    cosc = sqrt(1 - sinc * sinc);
-    sin_cos_done = TRUE;
-  }
-  for (i = 0; i < 3; i++)
-    x[i] = xin[i];
-  xout[0] = x[0];
-  xout[1] = x[1] * cosa + x[2] * sina;
-  xout[2] = -x[1] * sina + x[2] * cosa;
-  x[1] = xout[1];
-  x[2] = xout[2] * cosb + xout[0] * sinb;
-  x[0] = -xout[2] * sinb + xout[0] * cosb;
-  xout[2] = x[2];
-  xout[0] = x[0] * cosc + x[1] * sinc;
-  xout[1] = -x[0] * sinc + x[1] * cosc;
-}
 

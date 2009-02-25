@@ -1,5 +1,5 @@
 /* SWISSEPH
-   $Header: sweclips.c,v 1.4 97/09/01 15:38:21 dieter Exp $
+   $Header: sweclips.c,v 1.2 2000/12/25 13:43:33 alois Exp $
    
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 
@@ -42,6 +42,20 @@
   for promoting such software, products or services.
 **************************************************************/
 
+# define SMOD_LUNAR	1
+# define SMOD_HOW	2	/* an option for Lunar */
+# define SMOD_SOLAR	4
+# define SMOD_LOCAL	8	/* an option for Solar */
+# define SMOD_TOTAL	16
+# define SMOD_ANNULAR	32	/* count as penumbral for Lunar */
+# define SMOD_ANNTOT	64
+# define SMOD_PARTIAL	128	
+# define SMOD_ALL	(SMOD_TOTAL| SMOD_ANNULAR|SMOD_PARTIAL|SMOD_ANNTOT)
+# define SMOD_RISE	256
+# define SMOD_METR	512
+# define SMOD_HOCAL	1024
+
+
 /* attention: Microsoft Compiler does not accept strings > 2048 char */
 static char *infocmd0 = "\n\
   Sweclips computes solar and lunar eclipses,\n\
@@ -53,6 +67,8 @@ static char *infocmd1 = "\n\
   Command line options:\n\
         -lunar  lunar eclipse\n\
         -solar  solar eclipse\n\
+        -hocal  hocallist format\n\
+        -local  local solar eclipse\n\
         -annular\n\
         -total\n\
         -partial\n\
@@ -127,6 +143,13 @@ static char *infodate = "\n\
 #define BIT_ROUND_MIN   2
 #define BIT_ZODIAC      4
 
+# define ECL_LUN_PENUMBRAL       1       /* eclipse types for hocal list */
+# define ECL_LUN_PARTIAL        2
+# define ECL_LUN_TOTAL          3
+# define ECL_SOL_PARTIAL        4
+# define ECL_SOL_ANNULAR        5
+# define ECL_SOL_TOTAL          6        
+
 static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi", 
                           "li", "sc", "sa", "cp", "aq", "pi"};
 
@@ -148,6 +171,8 @@ sout[AS_MAXCH];
   char *sp, *sp2;
   char *fmt = "PLBRS";
   int i, ii;
+  int smod = 0;
+  int ecl_type = 0;
   int jmon, jday, jyear;
   double jut = 0.0;
   long nstep = 1;
@@ -162,24 +187,14 @@ sout[AS_MAXCH];
   double a, b, c;
   int whicheph = SEFLG_SWIEPH;   
   short with_header = TRUE;
-  int gregflag;
+  int gregflag = SE_GREG_CAL;
   double tjd = 2415020.5, t_ut;
   double dt;
   int direction = 1;
   AS_BOOL direction_flag = FALSE;
-  AS_BOOL search_total = TRUE;
-  AS_BOOL search_annular = TRUE;
-  AS_BOOL search_partial = TRUE;
-  AS_BOOL search_local = FALSE;
-  AS_BOOL do_how = FALSE;
-  AS_BOOL do_lunar = FALSE;
-  AS_BOOL do_rise = FALSE;
-  AS_BOOL do_metr = FALSE;
-  int32 ipl;
+  int32 ipl = 0;
   char starname[AS_MAXCH];
-  int32 search_flag = SE_ECL_CENTRAL | SE_ECL_NONCENTRAL 
-       | SE_ECL_TOTAL | SE_ECL_ANNULAR | SE_ECL_PARTIAL
-       | SE_ECL_ANNULAR_TOTAL | SE_ECL_PENUMBRAL;
+  int32 search_flag = 0;
   char slon[30], slat[30];
   serr[0] = serr_save[0] = serr_warn[0] = saves[0] = '\0';
   starname[0] = '\0';
@@ -190,54 +205,42 @@ sout[AS_MAXCH];
   /*
    * command line
    */
-  /* if only total or annular or partial eclipse is wanted,
-   * not all of them at once, set their booleans to FALSE */
-  for (i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-total") == 0
-      || strcmp(argv[i], "-annular") == 0
-      || strcmp(argv[i], "-anntot") == 0
-      || strncmp(argv[i], "-penumb", 7) == 0
-      || strcmp(argv[i], "-partial") == 0) {
-      search_total = search_annular = search_partial = FALSE;
-      search_flag = SE_ECL_CENTRAL | SE_ECL_NONCENTRAL;
-    }
-  }
-  for (i = 1; i < argc; i++) {
-    if (strcmp(argv[i], "-central") == 0
-      || strcmp(argv[i], "-noncentral") == 0) {
-      search_flag &= ~(SE_ECL_CENTRAL | SE_ECL_NONCENTRAL);
-    }
-  }
+  search_flag = SE_ECL_CENTRAL | SE_ECL_NONCENTRAL;
+  smod = SMOD_SOLAR;
   for (i = 1; i < argc; i++) {
     if (strncmp(argv[i], "-head", 5) == 0) {
       with_header = FALSE;
     } else if (strcmp(argv[i], "-lunar") == 0) {
-      do_lunar = TRUE;
+      smod |= SMOD_LUNAR;
+      smod &= ~SMOD_SOLAR;
+    } else if (strcmp(argv[i], "-hocal") == 0) {
+      smod |= SMOD_HOCAL;
+    } else if (strcmp(argv[i], "-solar") == 0) {
+      smod |= SMOD_SOLAR;
     } else if (strcmp(argv[i], "-how") == 0) {
-      do_how = TRUE;
+      smod |= SMOD_HOW;
     } else if (strcmp(argv[i], "-total") == 0) {
-      search_total = TRUE;
-      search_flag |= SE_ECL_TOTAL;
+      smod |= SMOD_TOTAL;
     } else if (strcmp(argv[i], "-annular") == 0) {
-      search_annular = TRUE;
-      search_flag |= SE_ECL_ANNULAR;
+      smod |= SMOD_ANNULAR;
     } else if (strcmp(argv[i], "-anntot") == 0) {
-      search_flag |= SE_ECL_ANNULAR_TOTAL;
+      smod |= SMOD_ANNTOT;
     } else if (strcmp(argv[i], "-partial") == 0) {
-      search_partial = TRUE;
-      search_flag |= SE_ECL_PARTIAL;
-    } else if (strncmp(argv[i], "-penumb", 7) == 0) {
-      search_flag |= SE_ECL_PENUMBRAL;
+      smod |= SMOD_PARTIAL;
     } else if (strcmp(argv[i], "-noncentral") == 0) {
+      search_flag &= ~SE_ECL_CENTRAL;
       search_flag |= SE_ECL_NONCENTRAL;
     } else if (strcmp(argv[i], "-central") == 0) {
+      search_flag &= ~SE_ECL_NONCENTRAL;
       search_flag |= SE_ECL_CENTRAL;
     } else if (strcmp(argv[i], "-local") == 0) {
-      search_local = TRUE;
+      smod |= SMOD_LOCAL;
     } else if (strcmp(argv[i], "-rise") == 0) {
-      do_rise = TRUE;
+      smod |= SMOD_RISE;
+      smod &= ~SMOD_SOLAR;
     } else if (strcmp(argv[i], "-metr") == 0) {
-      do_metr = TRUE;
+      smod |= SMOD_METR;
+      smod &= ~SMOD_SOLAR;
     } else if (strncmp(argv[i], "-j", 2) == 0) {
       begindate = argv[i] + 1;
     } else if (strncmp(argv[i], "-lon", 4) == 0) {
@@ -286,6 +289,14 @@ sout[AS_MAXCH];
       do_printf(sout);
       exit(1);
     }
+  }
+  if (smod & (SMOD_LUNAR | SMOD_SOLAR))  {
+    if ((smod & SMOD_ALL) == 0) /* no selective eclipse type set, set all */
+      smod |= SMOD_ALL;
+    if (smod & SMOD_TOTAL) search_flag |= SE_ECL_TOTAL;
+    if (smod & SMOD_ANNULAR) search_flag |= SE_ECL_ANNULAR | SE_ECL_PENUMBRAL;
+    if (smod & SMOD_PARTIAL) search_flag |= SE_ECL_PARTIAL;
+    if (smod & SMOD_ANNTOT) search_flag |= SE_ECL_ANNULAR_TOTAL;
   }
   if (with_header) {
     for (i = 0; i < argc; i++) {
@@ -350,7 +361,7 @@ sout[AS_MAXCH];
   /* 
    * for local eclipses: set geographic position of observer 
    */
-  if (search_local || (do_how && !do_lunar) || do_rise || do_metr) {
+  if (smod & (SMOD_LOCAL|SMOD_RISE|SMOD_METR)) {
     sscanf(slon,"%lf", &a);
     b = fmod(a * 10000, 100);
     c = a - b / 10000;
@@ -366,27 +377,29 @@ sout[AS_MAXCH];
   t_ut = tjd;
   for (ii = 0; ii < nstep; ii++) {
     *sout = '\0';
-    if (do_how && do_lunar) {
+    if ((smod & SMOD_LUNAR) && (smod & SMOD_HOW)) { 
       if ((eclflag = swe_lun_eclipse_how(t_ut, whicheph, geopos, attr, serr)) ==
 ERR) {
         do_printf(serr);
         exit(0);
       } else {
-        if (eclflag & SE_ECL_TOTAL) 
+	ecl_type = 0;
+        if (eclflag & SE_ECL_TOTAL) {
           sprintf(sout, "total lunar eclipse: %f o/o \n", attr[0]);
-        else if (eclflag & SE_ECL_PARTIAL) 
+	  ecl_type = ECL_LUN_TOTAL;
+        } else if (eclflag & SE_ECL_PARTIAL)  {
           sprintf(sout, "partial lunar eclipse: %f o/o \n", attr[0]);
-        else if (eclflag & SE_ECL_PENUMBRAL) 
+	  ecl_type = ECL_LUN_PARTIAL;
+        } else if (eclflag & SE_ECL_PENUMBRAL)  {
           sprintf(sout, "penumbral lunar eclipse: %f o/o \n", attr[0]);
-        else
+	  ecl_type = ECL_LUN_PENUMBRAL;
+        } else {
           sprintf(sout, "no lunar eclipse \n");
+	}
         do_printf(sout);
       }
-    } 
-    /*
-     * search for lunar eclipse
-     */
-    else if (do_lunar) {
+    }
+    if ((smod & SMOD_LUNAR) && ! (smod & SMOD_HOW)) { 
       if ((eclflag = swe_lun_eclipse_when(t_ut, whicheph, search_flag, 
                 tret, direction_flag, serr)) == ERR) {
         do_printf(serr);
@@ -395,15 +408,18 @@ ERR) {
       t_ut = tret[0];
       if ((eclflag & SE_ECL_TOTAL)) {
         strcpy(sout, "total   ");
+	ecl_type = ECL_LUN_TOTAL;
       }
       if ((eclflag & SE_ECL_PENUMBRAL)) {
         strcpy(sout, "penumb. ");
+	ecl_type = ECL_LUN_PENUMBRAL;
       }
       if ((eclflag & SE_ECL_PARTIAL)) {
         strcpy(sout, "partial ");
+	ecl_type = ECL_LUN_PARTIAL;
       }
       strcat(sout, "lunar eclipse ");
-      swe_revjul(t_ut, SE_GREG_CAL, &jyear, &jmon, &jday, &jut);
+      swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
       if ((eclflag = swe_lun_eclipse_how(t_ut, whicheph, geopos, attr, serr)) ==
 ERR) {
         do_printf(serr);
@@ -430,12 +446,15 @@ ERR) {
         else
           strcat(sout, "   -         ");
 	sprintf(sout + strlen(sout), "%s\n", hms_from_tjd(tret[7])); 
+      if (smod & SMOD_HOCAL) {
+	int ihou, imin, isec, isgn;
+	double dfrc;
+	swe_split_deg(jut, SE_SPLIT_DEG_ROUND_MIN, &ihou, &imin, &isec, &dfrc, &isgn);
+	sprintf(sout, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou, imin, ecl_type);
+      } 
       do_printf(sout);
-    } 
-    /*  
-     * search for local solar eclipse 
-     */
-    else if (search_local) {
+    }
+    if ((smod & SMOD_SOLAR) && (smod & SMOD_LOCAL)) { 
       if ((eclflag = swe_sol_eclipse_when_loc(t_ut, whicheph, geopos, tret,
 attr, direction_flag, serr)) == ERR) {
         do_printf(serr);
@@ -443,23 +462,26 @@ attr, direction_flag, serr)) == ERR) {
       } else { 
 	AS_BOOL has_found = FALSE;
         t_ut = tret[0];
-        if (search_total && (eclflag & SE_ECL_TOTAL)) {
+        if ((smod & SMOD_TOTAL) && (eclflag & SE_ECL_TOTAL)) {
           strcpy(sout, "total   ");
 	  has_found = TRUE;
+	  ecl_type = ECL_SOL_TOTAL;
 	}
-        if (search_annular && (eclflag & SE_ECL_ANNULAR)) {
+        if ((smod & SMOD_ANNULAR) && (eclflag & SE_ECL_ANNULAR)) {
           strcpy(sout, "annular ");
 	  has_found = TRUE;
+	  ecl_type = ECL_SOL_ANNULAR;
 	}
-        if (search_partial && (eclflag & SE_ECL_PARTIAL)) {
+        if ((smod & SMOD_PARTIAL) && (eclflag & SE_ECL_PARTIAL)) {
           strcpy(sout, "partial ");
 	  has_found = TRUE;
+	  ecl_type = ECL_SOL_PARTIAL;
 	}
 	if (!has_found) {
 	  ii--;
 	} else {
 	  i = do_calc(t_ut + swe_deltat(t_ut), SE_ECL_NUT, 0, x, serr);
-	  swe_revjul(t_ut, SE_GREG_CAL, &jyear, &jmon, &jday, &jut);
+	  swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
 	  sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\t%fo/o\n", jday, jmon, jyear, hms(jut,0), attr[0]);
 	  dt = (tret[3] - tret[2]) * 24 * 60;
 	  sprintf(sout + strlen(sout), "\t%d min %4.2f sec\t",
@@ -493,28 +515,34 @@ attr, direction_flag, serr)) == ERR) {
 	}
       }
     }   /* endif search_local */
-    /* 
-     * global search for eclipses 
-     */
-    else if (!do_rise && !do_metr) {      
+    if ((smod & SMOD_SOLAR) && ! (smod & SMOD_LOCAL)) { 
+    /* * global search for eclipses */
       if ((eclflag = swe_sol_eclipse_when_glob(t_ut, whicheph, search_flag,
                 tret, direction_flag, serr)) == ERR) {
         do_printf(serr);
         exit(0);
       } 
       t_ut = tret[0];
-      if ((eclflag & SE_ECL_TOTAL))
+      if ((eclflag & SE_ECL_TOTAL)) {
         strcpy(sout, "total   ");
-      if ((eclflag & SE_ECL_ANNULAR))
+	ecl_type = ECL_SOL_TOTAL;
+      }
+      if ((eclflag & SE_ECL_ANNULAR)) {
         strcpy(sout, "annular ");
-      if ((eclflag & SE_ECL_ANNULAR_TOTAL))
+	ecl_type = ECL_SOL_ANNULAR;
+      }
+      if ((eclflag & SE_ECL_ANNULAR_TOTAL)) {
         strcpy(sout, "ann-tot ");
-      if ((eclflag & SE_ECL_PARTIAL))
+	ecl_type = ECL_SOL_ANNULAR;	/* by Alois: what is this ? */
+      }
+      if ((eclflag & SE_ECL_PARTIAL)) {
         strcpy(sout, "partial ");
+	ecl_type = ECL_SOL_PARTIAL;
+      }
       if ((eclflag & SE_ECL_NONCENTRAL) && !(eclflag & SE_ECL_PARTIAL))
         strcat(sout, "non-central ");
       swe_sol_eclipse_where(t_ut, whicheph, geopos, attr, serr);
-      swe_revjul(t_ut, SE_GREG_CAL, &jyear, &jmon, &jday, &jut);
+      swe_revjul(t_ut, gregflag, &jyear, &jmon, &jday, &jut);
       sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\t%f km\t%f o/o\n", 
                 jday, jmon, jyear, hms(jut,0), attr[3], attr[0]);
       sprintf(sout + strlen(sout), "\t%s ", hms_from_tjd(tret[2])); 
@@ -528,7 +556,7 @@ attr, direction_flag, serr)) == ERR) {
           strcat(sout, "   -         ");
       sprintf(sout + strlen(sout), "%s\n", hms_from_tjd(tret[3])); 
 #if 0
-      swe_revjul(tret[1], SE_GREG_CAL, &jyear, &jmon, &jday, &jut);
+      swe_revjul(tret[1], gregflag, &jyear, &jmon, &jday, &jut);
       sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\t%f km\n", 
                 jday, jmon, jyear, hms(jut,0), attr[3]);
 #endif
@@ -548,50 +576,65 @@ geopos, tret, attr, 0, serr)) == ERR) {
                 (int) dt, fmod(dt, 1) * 60);
       } 
       strcat(sout, "\n");
+      if (smod & SMOD_HOCAL) {
+	int ihou, imin, isec, isgn;
+	double dfrc;
+	swe_split_deg(jut, SE_SPLIT_DEG_ROUND_MIN, &ihou, &imin, &isec, &dfrc, &isgn);
+	sprintf(sout, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou, imin, ecl_type);
+      } 
       do_printf(sout);
-    } 
-    /* 
-     * search for rise, set, meridian transit
-     */
-    else {      
-      if (do_rise) {
-	if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_RISE, geopos, 1013.25, 10, &(tret[0]), serr) != OK) {
-	  do_printf(serr);
-	  exit(0);
-	} 
-	if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_SET, geopos, 1013.25, 10, &(tret[1]), serr) != OK) {
-	  do_printf(serr);
-	  exit(0);
-	} 
-      } else {
-	if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_MTRANSIT, geopos, 1013.25, 10, &(tret[0]), serr) != OK) {
-	  do_printf(serr);
-	  exit(0);
-	} 
-	if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_ITRANSIT, geopos, 1013.25, 10, &(tret[1]), serr) != OK) {
-	  do_printf(serr);
-	  exit(0);
-	} 
-      }
-      if (do_rise) strcpy(sout, "rise     ");
-      else         strcpy(sout, "mtransit ");
+    }
+    if (smod & SMOD_RISE) {
+      if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_RISE, geopos, 1013.25, 10, &(tret[0]), serr) != OK) {
+	do_printf(serr);
+	exit(0);
+      } 
+      if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_SET, geopos, 1013.25, 10, &(tret[1]), serr) != OK) {
+	do_printf(serr);
+	exit(0);
+      } 
+      strcpy(sout, "rise     ");
       if (tret[0] == 0) strcat(sout, "         -                     ");
       else {
-	swe_revjul(tret[0], SE_GREG_CAL, &jyear, &jmon, &jday, &jut);
+	swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
 	sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s    ", 
 		  jday, jmon, jyear, hms(jut,0));
       }
-      if (do_rise) strcat(sout, "set      ");
-      else         strcat(sout, "itransit ");
+      strcat(sout, "set      ");
       if (tret[1] == 0) strcat(sout, "         -                     \n");
       else {
-	swe_revjul(tret[1], SE_GREG_CAL, &jyear, &jmon, &jday, &jut);
+	swe_revjul(tret[1], gregflag, &jyear, &jmon, &jday, &jut);
 	sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\n", 
 		  jday, jmon, jyear, hms(jut,0));
       }
       do_printf(sout);
     }
-    if ((do_rise || do_metr) && tret[1] > 0)
+    if (smod & SMOD_METR) {
+      if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_MTRANSIT, geopos, 1013.25, 10, &(tret[0]), serr) != OK) {
+	do_printf(serr);
+	exit(0);
+      } 
+      if (swe_rise_trans(t_ut, ipl, starname, whicheph, SE_CALC_ITRANSIT, geopos, 1013.25, 10, &(tret[1]), serr) != OK) {
+	do_printf(serr);
+	exit(0);
+      } 
+      strcpy(sout, "mtransit ");
+      if (tret[0] == 0) strcat(sout, "         -                     ");
+      else {
+	swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
+	sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s    ", 
+		  jday, jmon, jyear, hms(jut,0));
+      }
+      strcat(sout, "itransit ");
+      if (tret[1] == 0) strcat(sout, "         -                     \n");
+      else {
+	swe_revjul(tret[1], gregflag, &jyear, &jmon, &jday, &jut);
+	sprintf(sout + strlen(sout), "%2d.%2d.%4d\t%s\n", 
+		  jday, jmon, jyear, hms(jut,0));
+      }
+      do_printf(sout);
+    }
+    if ((smod & (SMOD_RISE | SMOD_METR)) && tret[1] > 0)
       t_ut = tret[1] + 0.1;
     else
       t_ut += direction;
@@ -703,7 +746,7 @@ static int make_ephemeris_path(long iflag, char *argv0)
   char path[AS_MAXCH], s[AS_MAXCH];
   char *sp;
   char *dirglue = DIR_GLUE;
-  size_t pathlen; 
+  size_t pathlen = 0; 
   /* moshier needs no ephemeris path */
   if (iflag & SEFLG_MOSEPH)
     return OK;

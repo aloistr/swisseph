@@ -1,32 +1,47 @@
 
 /************************************************************
-   $Header: swephlib.h,v 1.65 2003/06/14 13:09:35 alois Exp $
+   $Header: /home/dieter/sweph/RCS/swephlib.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 
 ************************************************************/
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
-  
-  This file is part of Swiss Ephemeris Free Edition.
-  
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
+
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -50,21 +65,24 @@
 #define NUT_CORR_1987    	FALSE
 
 /* Precession coefficients for remote past and future.
- * One of the following three defines must be TRUE.
- * Be careful with changes. Moshier's lunar routine contains
- * coefficients for Williams' precession. You cannot change
- * this by just setting, e.g., PREC_SIMON_1994 TRUE.
+ * One of the following four defines must be true.
  */
 #define PREC_WILLIAMS_1994	TRUE	/* used by Moshier for DE404 */
 #define PREC_SIMON_1994 	FALSE
 #define PREC_LASKAR_1986 	FALSE
+#define PREC_BRETAGNON_2003	FALSE	
+/* IAU precession 1976 or 2003 for recent centuries.
+ * only one of the following two defines may be TRUE */
+#define PREC_IAU_1976		FALSE 	
+#define PREC_IAU_2003		TRUE  /* precession model P03 */	
+#define PREC_IAU_1976_CTIES          2.0 	/* J2000 +/- two centuries */
+/* we use P03 for whole ephemeris */
+#define PREC_IAU_2003_CTIES          75.0 	/* J2000 +/- 75 centuries */
 
-/* IAU precession 1976 for recent centuries.
- * It is used by AA 1996, but is good for a few centuries 
- * only (PREC_IAU_CTIES). 
- */
-#define PREC_IAU_1976		TRUE 	
-#define PREC_IAU_CTIES          2.0 	/* J2000 +/- two centuries */
+/* choose between the following nutation models */
+#define NUT_IAU_1980          FALSE
+#define NUT_IAU_2000A         FALSE   /* very time consuming ! */
+#define NUT_IAU_2000B         TRUE  /* fast, but precision of milli-arcsec */
 					 
 /* coordinate transformation */
 extern void swi_coortrf(double *xpo, double *xpn, double eps);
@@ -81,6 +99,11 @@ extern void swi_polcart_sp(double *l, double *x);
  
 /* polar to cartesian coordinates */
 extern void swi_polcart(double *l, double *x);
+
+/* GCRS to J2000 */
+extern void swi_bias(double *x, int32 iflag, AS_BOOL backward);
+/* GCRS to FK5 */
+extern void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward);
 
 /* precession */
 extern int swi_precess(double *R, double J, int direction );
@@ -117,6 +140,8 @@ extern double swi_edcheb(double x, double *coef, int ncf);
 
 /* cross product of vectors */
 extern void swi_cross_prod(double *a, double *b, double *x);
+/* dot product of vecotrs */
+extern double swi_dot_prod_unit(double *x, double *y);
 
 extern double swi_angnorm(double x);
 

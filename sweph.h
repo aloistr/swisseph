@@ -1,32 +1,47 @@
 /************************************************************
-   $Header: sweph.h,v 1.65 2003/06/14 13:09:48 alois Exp $
+   $Header: /home/dieter/sweph/RCS/sweph.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
    definitions and constants SWISSEPH
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 
 ************************************************************/
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
-  
-  This file is part of Swiss Ephemeris Free Edition.
-  
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
+
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -47,6 +62,8 @@
 /*
  * move over from swephexp.h
  */
+
+#define SE_VERSION      "1.76.02"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -73,6 +90,8 @@
 #define SE_NAME_TRUE_NODE       "true Node"
 #define SE_NAME_MEAN_APOG       "mean Apogee"
 #define SE_NAME_OSCU_APOG       "osc. Apogee"
+#define SE_NAME_INTP_APOG       "intp. Apogee"
+#define SE_NAME_INTP_PERG       "intp. Perigee"
 #define SE_NAME_EARTH           "Earth"
 #define SE_NAME_CERES           "Ceres"
 #define SE_NAME_PALLAS          "Pallas"
@@ -148,8 +167,10 @@
 #define SEI_TRUE_NODE   1
 #define SEI_MEAN_APOG   2
 #define SEI_OSCU_APOG   3
+#define SEI_INTP_APOG   4
+#define SEI_INTP_PERG   5
 
-#define SEI_NNODE_ETC    4
+#define SEI_NNODE_ETC    6
 
 #define SEI_FLG_HELIO   1
 #define SEI_FLG_ROTATE  2
@@ -236,27 +257,27 @@
 #define MOON_MEAN_DIST  384400000.0		/* in m, AA 1996, F2 */
 #define MOON_MEAN_INCL  5.1453964		/* AA 1996, D2 */
 #define MOON_MEAN_ECC   0.054900489		/* AA 1996, F2 */
-/* #define SUN_EARTH_MRAT  328900.5                Su/(Ea+Mo) AA 1996, K6 */
-#define SUN_EARTH_MRAT  332946.0                /* Su / (Ea only) */   
-#define EARTH_MOON_MRAT (1 / 0.012300034)	/* AA 1996, K6 */
+/* #define SUN_EARTH_MRAT  328900.561400           Su/(Ea+Mo) AA 2006 K7 */
+#define SUN_EARTH_MRAT  332946.050895           /* Su / (Ea only) AA 2006 K7 */   
+#define EARTH_MOON_MRAT (1 / 0.0123000383)	/* AA 2006, K7 */
 #if 0
 #define EARTH_MOON_MRAT 81.30056		/* de406 */
 #endif
-#define AUNIT       	1.4959787066e+11  	/* au in meters, AA 1996 K6 */
-#if 0
-#define AUNIT       	1.49597870691e+11  	/* au in meters, de403-6 */
-#endif
+#define AUNIT       	1.49597870691e+11  	/* au in meters, AA 2006 K6 */
 #define CLIGHT       	2.99792458e+8   	/* m/s, AA 1996 K6 */
+#if 0
 #define HELGRAVCONST    1.32712438e+20		/* G * M(sun), m^3/sec^2, AA 1996 K6 */
+#endif
+#define HELGRAVCONST    1.32712440017987e+20	/* G * M(sun), m^3/sec^2, AA 2006 K6 */
 #define GEOGCONST       3.98600448e+14 		/* G * M(earth) m^3/sec^2, AA 1996 K6 */
 #define KGAUSS		0.01720209895		/* Gaussian gravitational constant K6 */
-#define PRECESSCONST    50.290966       	/* AA 1996 K6 */
 #define SUN_RADIUS      (959.63 / 3600 * DEGTORAD)  /*  Meeus germ. p 391 */
-#define EARTH_RADIUS	6378137.0		/* AA 1998 K13 */
-#define EARTH_OBLATENESS (1.0/ 298.257223563)	/* AA 1998 K13 */
+#define EARTH_RADIUS	6378136.6		/* AA 2006 K6 */
+/*#define EARTH_OBLATENESS (1.0/ 298.257223563)	 * AA 1998 K13 */
+#define EARTH_OBLATENESS (1.0/ 298.25642)	/* AA 2006 K6 */
 #define EARTH_ROT_SPEED (7.2921151467e-5 * 86400) /* in rad/day, expl. suppl., p 162 */
 
-#define LIGHTTIME_AUNIT  (499.004782/3600/24) 	/* 8.3167 minutes (days), AA K6 */
+#define LIGHTTIME_AUNIT  (499.0047838061/3600/24) 	/* 8.3167 minutes (days), AA 2006 K6 */
 
 /* node of ecliptic measured on ecliptic 2000 */
 #define SSY_PLANE_NODE_E2000    (107.582569 * DEGTORAD)
@@ -265,7 +286,7 @@
 /* inclination of ecliptic against solar system rotation plane */
 #define SSY_PLANE_INCL          (1.578701 * DEGTORAD)
 
-#define KM_S_TO_AU_CTY	 21.095			/* km/s to AU/year */
+#define KM_S_TO_AU_CTY	 21.095			/* km/s to AU/century */
 #define MOON_SPEED_INTV  0.00005 		/* 4.32 seconds (in days) */
 #define PLAN_SPEED_INTV  0.0001 	        /* 8.64 seconds (in days) */
 #define MEAN_NODE_SPEED_INTV  0.001		
@@ -274,10 +295,12 @@
 #define NUT_SPEED_INTV   0.0001
 #define DEFL_SPEED_INTV  0.0000005
 
+#define SE_LAPSE_RATE        0.0065  /* °K / m, for refraction */
+
 #define square_sum(x)   (x[0]*x[0]+x[1]*x[1]+x[2]*x[2])
 #define dot_prod(x,y)   (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
 
-#define PNOINT2JPL {J_EARTH, J_MOON, J_MERCURY, J_VENUS, J_MARS, J_JUPITER, J_SATURN, J_URANUS, J_NEPTUNE, J_PLUTO, J_SUN,}
+#define PNOINT2JPL {J_EARTH, J_MOON, J_MERCURY, J_VENUS, J_MARS, J_JUPITER, J_SATURN, J_URANUS, J_NEPTUNE, J_PLUTO, J_SUN, }
 
 /* planetary radii in meters */
 #define NDIAM  (SE_VESTA + 1)
@@ -402,13 +425,13 @@ extern int swi_mean_node(double jd, double *x, char *serr);
 extern int swi_mean_apog(double jd, double *x, char *serr);
 extern int swi_moshmoon(double tjd, AS_BOOL do_save, double *xpm, char *serr) ;
 extern int swi_moshmoon2(double jd, double *x);
+extern int swi_intp_apsides(double J, double *pol, int ipli);
 
 /* planets, s. moshplan.c */
 extern int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, double *xeret, char *serr);
 extern int swi_moshplan2(double J, int iplm, double *pobj);
 extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, double *xsun, char *serr);
 extern FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr);
-extern double swi_dot_prod_unit(double *x, double *y);
 
 /* nutation */
 struct nut {
@@ -497,6 +520,7 @@ struct swe_data {
   FILE *fixfp;		/* fixed stars file pointer */
   char ephepath[AS_MAXCH];
   char jplfnam[AS_MAXCH];
+  short jpldenum;
   AS_BOOL geopos_is_set;
   AS_BOOL ayana_is_set;
   struct file_data fidat[SEI_NEPHFILES];

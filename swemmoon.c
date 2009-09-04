@@ -1,30 +1,46 @@
 /* SWISSEPH
-   $Header: swemmoon.c,v 1.65 2003/06/14 13:01:58 alois Exp $
+   $Header: /home/dieter/sweph/RCS/swemmoon.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
  *
  * Steve Moshier's analytical lunar ephemeris
- */
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+
+**************************************************************/
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
   
-  This file is part of Swiss Ephemeris Free Edition.
-  
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -159,6 +175,7 @@
  * DE404 fit: October, 1995
  *
  * Dieter Koch: adaptation to SWISSEPH, April 1996
+ * 18-feb-2006  replaced LP by SWELP because of name collision
  */
 
 #include <string.h>
@@ -167,8 +184,8 @@
 #include "swephlib.h"
 
 static void mean_elements(void);
+static void mean_elements_pl(void);
 static double mods3600(double x);
-#ifndef NO_MOSHIER
 static void ecldat_equ2000(double tjd, double *xpm);
 static void chewm(short *pt, int nlines, int nangles, 
   				     int typflg, double *ans );
@@ -177,11 +194,7 @@ static void moon1(void);
 static void moon2(void);
 static void moon3(void);
 static void moon4(void);
-#endif
 
-#ifdef LP
-# undef LP
-#endif
 
 #ifdef MOSH_MOON_200
 /* The following coefficients were calculated by a simultaneous least
@@ -301,8 +314,6 @@ static double FAR z[] = {
 };
 #endif	/* ! MOSH_MOON_200 */
 
-
-#ifndef NO_MOSHIER
 /* Perturbation tables
  */
 #define NLR 118
@@ -721,11 +732,10 @@ static double l;		/* Moon's ecliptic longitude */
 static double B;		/* Ecliptic latitude */
 
 static double moonpol[3];
-#endif /* NO_MOSHIER */
 
 /* Orbit calculation begins.
  */
-static double LP;
+static double SWELP;
 static double M;
 static double MP;
 static double D;
@@ -733,7 +743,6 @@ static double NF;
 static double T;
 static double T2;
 
-#ifndef NO_MOSHIER
 static double T3;
 static double T4;
 static double f;
@@ -759,6 +768,7 @@ int i;
 T = (J-J2000)/36525.0;
 T2 = T*T;
 mean_elements();
+mean_elements_pl();
 moon1();
 moon2();
 moon3();
@@ -844,36 +854,6 @@ int swi_moshmoon(double tjd, AS_BOOL do_save, double *xpmret, char *serr)
 static void  moon1()
 {
 double a;
-/* Mean longitudes of planets (Laskar, Bretagnon) */
-Ve = mods3600( 210664136.4335482 * T + 655127.283046 );
-Ve += ((((((((
-  -9.36e-023 * T
- - 1.95e-20 ) * T
- + 6.097e-18 ) * T
- + 4.43201e-15 ) * T
- + 2.509418e-13 ) * T
- - 3.0622898e-10 ) * T
- - 2.26602516e-9 ) * T
- - 1.4244812531e-5 ) * T
- + 0.005871373088 ) * T2;
-Ea = mods3600( 129597742.26669231  * T +  361679.214649 );
-Ea += (((((((( -1.16e-22 * T
- + 2.976e-19 ) * T
- + 2.8460e-17 ) * T
- - 1.08402e-14 ) * T
- - 1.226182e-12 ) * T
- + 1.7228268e-10 ) * T
- + 1.515912254e-7 ) * T
- + 8.863982531e-6 ) * T
- - 2.0199859001e-2 ) * T2;
-Ma = mods3600(  68905077.59284 * T + 1279559.78866 );
-Ma += (-1.043e-5*T + 9.38012e-3)*T2;
-
-Ju = mods3600( 10925660.428608 * T +  123665.342120 );
-Ju += (1.543273e-5*T - 3.06037836351e-1)*T2;
-
-Sa = mods3600( 4399609.65932 * T + 180278.89694 );
-Sa += (( 4.475946e-8*T - 6.874806E-5 ) * T + 7.56161437443E-1)*T2;
 
 sscc( 0, STR*D, 6 );
 sscc( 1, STR*M,  4 );
@@ -955,7 +935,7 @@ sg = sin(g);
 l += -0.034700 * cg + 0.160041 * sg;
 l2 += z[52] * cg + z[53] * sg;
 
-g = STR * (LP - NF);
+g = STR * (SWELP - NF);
 cg = cos(g);
 sg = sin(g);
 l += 0.000116 * cg + 7.063040 * sg;
@@ -1031,7 +1011,7 @@ g = STR*(f - MP + NF - 235353.6); /* 18V - 16E - l + F */
 moonpol[1] +=  -1123. * sin(g);
 g = STR*(Ea + D + 51987.6);
 moonpol[1] +=  1303. * sin(g);
-g = STR*LP;
+g = STR*SWELP;
 moonpol[1] +=  342. * sin(g);
 
 
@@ -1119,34 +1099,22 @@ moonpol[2] *= a;
 static void moon1()
 {
 double a;
-/* Mean longitudes of planets (Laskar, Bretagnon) */
-Ve = mods3600( 210664136.4335482 * T + 655127.283046 );
-Ve += ((((((((
-  -9.36e-023 * T
- - 1.95e-20 ) * T
- + 6.097e-18 ) * T
- + 4.43201e-15 ) * T
- + 2.509418e-13 ) * T
- - 3.0622898e-10 ) * T
- - 2.26602516e-9 ) * T
- - 1.4244812531e-5 ) * T
- + 0.005871373088 ) * T2;
-Ea = mods3600( 129597742.26669231  * T +  361679.214649 );
-Ea += (((((((( -1.16e-22 * T
- + 2.976e-19 ) * T
- + 2.8460e-17 ) * T
- - 1.08402e-14 ) * T
- - 1.226182e-12 ) * T
- + 1.7228268e-10 ) * T
- + 1.515912254e-7 ) * T
- + 8.863982531e-6 ) * T
- - 2.0199859001e-2 ) * T2;
-Ma = mods3600(  68905077.59284 * T + 1279559.78866 );
-Ma += (-1.043e-5*T + 9.38012e-3)*T2;
-Ju = mods3600( 10925660.428608 * T +  123665.342120 );
-Ju += (1.543273e-5*T - 3.06037836351e-1)*T2;
-Sa = mods3600( 4399609.65932 * T + 180278.89694 );
-Sa += (( 4.475946e-8*T - 6.874806E-5 ) * T + 7.56161437443E-1)*T2;
+/* This code added by Bhanu Pinnamaneni, 17-aug-2009 */
+/* Note by Dieter: Bhanu noted that ss and cc are not sufficiently
+ * initialised and random values are used for the calculation.
+ * However, this may be only part of the bug.
+ * The bug could be in sscc(). Or may be the bug is rather in
+ * the 116th line of NLR, where the value "5" may be wrong.
+ * Still, this will make a maximum difference of only 0.1", while the error
+ * of the Moshier lunar ephemeris can reach 7". */
+int i, j;
+for (i = 0; i < 5; i++) {
+  for (j = 0; j < 8; j++) {
+    ss[i][j] = 0;
+    cc[i][j] = 0;
+  }
+}
+/* End of code addition */
 sscc( 0, STR*D, 6 );
 sscc( 1, STR*M,  4 );
 sscc( 2, STR*MP, 4 );
@@ -1205,7 +1173,7 @@ cg = cos(g);
 sg = sin(g);
 l += -0.034700 * cg + 0.160041 * sg;
 l2 += z[22] * cg + z[23] * sg;
-g = STR * (LP - NF);
+g = STR * (SWELP - NF);
 cg = cos(g);
 sg = sin(g);
 l += 0.000116 * cg + 7.063040 * sg;
@@ -1242,7 +1210,7 @@ g = STR*(f - MP + NF - 235353.6); /* 18V - 16E - l + F */
 moonpol[1] +=  -1123. * sin(g);
 g = STR*(Ea + D + 51987.6);
 moonpol[1] +=  1303. * sin(g);
-g = STR*LP;
+g = STR*SWELP;
 moonpol[1] +=  342. * sin(g);
 g = STR*(2.*Ve - 3.*Ea);
 cg = cos(g);
@@ -1324,11 +1292,11 @@ g = STR*(3*(Ve-Ea)+2*D-MP+647933.184);
 l += 0.64371 * sin(g);
 g = STR*(Ea-Ju+4424.04);
 l += 0.63880 * sin(g);
-g = STR*(LP + MP - NF + 4.68);
+g = STR*(SWELP + MP - NF + 4.68);
 l += 0.49331 * sin(g);
-g = STR*(LP - MP - NF + 4.68);
+g = STR*(SWELP - MP - NF + 4.68);
 l += 0.4914 * sin(g);
-g = STR*(LP+NF+2.52);
+g = STR*(SWELP+NF+2.52);
 l += 0.36061 * sin(g);
 g = STR*(2.*Ve - 2.*Ea + 736.2);
 l += 0.30154 * sin(g);
@@ -1372,7 +1340,7 @@ g = STR*(26.*Ve - 29.*Ea - MP + 270002.52);
 l += 0.10490 * sin(g);
 g = STR*(3.*Ve - 4.*Ea + D - MP - 322765.56);
 l += 0.10386 * sin(g);
-g = STR*(LP+648002.556);
+g = STR*(SWELP+648002.556);
 B =  8.04508 * sin(g);
 g = STR*(Ea+D+996048.252);
 B += 1.51021 * sin(g);
@@ -1380,13 +1348,13 @@ g = STR*(f - MP + NF + 95554.332);
 B += 0.63037 * sin(g);
 g = STR*(f - MP - NF + 95553.792);
 B += 0.63014 * sin(g);
-g = STR*(LP - MP + 2.9);
+g = STR*(SWELP - MP + 2.9);
 B +=  0.45587 * sin(g);
-g = STR*(LP + MP + 2.5);
+g = STR*(SWELP + MP + 2.5);
 B +=  -0.41573 * sin(g);
-g = STR*(LP - 2.0*NF + 3.2);
+g = STR*(SWELP - 2.0*NF + 3.2);
 B +=  0.32623 * sin(g);
-g = STR*(LP - 2.0*D + 2.5);
+g = STR*(SWELP - 2.0*D + 2.5);
 B +=  0.29855 * sin(g);
 }
 
@@ -1397,7 +1365,7 @@ moonpol[0] = 0.0;
 chewm( LR, NLR, 4, 1, moonpol );
 chewm( MB, NMB, 4, 3, moonpol );
 l += (((l4 * T + l3) * T + l2) * T + l1) * T * 1.0e-5;
-moonpol[0] = LP + l + 1.0e-4 * moonpol[0];
+moonpol[0] = SWELP + l + 1.0e-4 * moonpol[0];
 moonpol[1] = 1.0e-4 * moonpol[1] + B;
 moonpol[2] = 1.0e-4 * moonpol[2] + 385000.52899; /* kilometers */
 }
@@ -1409,8 +1377,8 @@ static void moon4()
 moonpol[2] /= AUNIT / 1000;
 moonpol[0] = STR * mods3600( moonpol[0] );
 moonpol[1] = STR * moonpol[1];
+B = moonpol[1];
 }
-#endif /* NO_MOSHIER */
 
 /* mean lunar node
  * J		julian day
@@ -1425,10 +1393,8 @@ int swi_mean_node(double J, double *pol, char *serr)
   char s[AS_MAXCH];
   T = (J-J2000)/36525.0;
   T2 = T*T;
-#ifndef NO_MOSHIER
   T3 = T*T2;
   T4 = T2*T2;
-#endif /* NO_MOSHIER */
   /* with elements from swi_moshmoon2(), which are fitted to jpl-ephemeris */
   if (J < MOSHNDEPH_START || J > MOSHNDEPH_END) {
     if (serr != NULL) {
@@ -1441,7 +1407,7 @@ int swi_mean_node(double J, double *pol, char *serr)
   }
   mean_elements();
   /* longitude */
-  pol[0] = swi_mod2PI((LP - NF) * STR);
+  pol[0] = swi_mod2PI((SWELP - NF) * STR);
   /* latitude */
   pol[1] = 0.0;
   /* distance */
@@ -1477,10 +1443,8 @@ int swi_mean_apog(double J, double *pol, char *serr)
   char s[AS_MAXCH];
   T = (J-J2000)/36525.0;
   T2 = T*T;
-#ifndef NO_MOSHIER
   T3 = T*T2;
   T4 = T2*T2;
-#endif
   /* with elements from swi_moshmoon2(), which are fitted to jpl-ephemeris */
   if (J < MOSHNDEPH_START || J > MOSHNDEPH_END) {
     if (serr != NULL) {
@@ -1492,7 +1456,7 @@ int swi_mean_apog(double J, double *pol, char *serr)
     return(ERR);
   }
   mean_elements();
-  pol[0] = swi_mod2PI((LP - MP) * STR + PI);
+  pol[0] = swi_mod2PI((SWELP - MP) * STR + PI);
 #if 0
   a = pol[0];
   /* Chapront, according to Meeus, German, p. 339 */
@@ -1530,7 +1494,7 @@ int swi_mean_apog(double J, double *pol, char *serr)
    * We neglect this influence.
    */
   /* apogee is now projected onto ecliptic */
-  node = (LP - NF) * STR;
+  node = (SWELP - NF) * STR;
   pol[0] = swi_mod2PI(pol[0] - node);
   swi_polcart(pol, pol);
   swi_coortrf(pol, pol, -MOON_MEAN_INCL * DEGTORAD);
@@ -1538,14 +1502,14 @@ int swi_mean_apog(double J, double *pol, char *serr)
   pol[0] = swi_mod2PI(pol[0] + node);
 #if 0
   /* speed */
-  mean_elements(T-PLAN_SPEED_INTV, &LP, &MP, &NF, &M, &D);
-  pol[3] = swi_mod2PI((LP - MP) * STR + PI);
+  mean_elements(T-PLAN_SPEED_INTV, &SWELP, &MP, &NF, &M, &D);
+  pol[3] = swi_mod2PI((SWELP - MP) * STR + PI);
   pol[4] = 0;
   pol[5] = MOON_MEAN_DIST * (1 + MOON_MEAN_ECC) / AUNIT; /* apogee */
 #if 0
   pol[2] = 2 * MOON_MEAN_ECC * MOON_MEAN_DIST / AUNIT; /* 2nd focus */
 #endif
-  node = (LP - NF) * STR;
+  node = (SWELP - NF) * STR;
   pol[3] = swi_mod2PI(pol[3] - node);
   swi_polcart(pol+3, pol+3);
   swi_coortrf(pol+3, pol+3, -MOON_MEAN_INCL * DEGTORAD);
@@ -1558,7 +1522,6 @@ int swi_mean_apog(double J, double *pol, char *serr)
   return OK;
 }
 
-#ifndef NO_MOSHIER
 /* Program to step through the perturbation table
  */
 static void chewm(short *pt, int nlines, int nangles, int typflg, double *ans )
@@ -1663,7 +1626,6 @@ static void ecldat_equ2000(double tjd, double *xpm) {
   /* j2000 */
   swi_precess(xpm, tjd, J_TO_J2000);/**/
 }
-#endif	/* NO_MOSHIER */
 
 /* Reduce arc seconds modulo 360 degrees
  * answer in arc seconds
@@ -1683,13 +1645,13 @@ void swi_mean_lunar_elements(double tjd,
   T = (tjd - J2000) / 36525.0;
   T2 = T*T;
   mean_elements();
-  *node = swe_degnorm((LP - NF) * STR * RADTODEG);
-  *peri = swe_degnorm((LP - MP) * STR * RADTODEG);
+  *node = swe_degnorm((SWELP - NF) * STR * RADTODEG);
+  *peri = swe_degnorm((SWELP - MP) * STR * RADTODEG);
   T -= 1.0 / 36525;
   mean_elements();
-  *dnode = swe_degnorm(*node - (LP - NF) * STR * RADTODEG);
+  *dnode = swe_degnorm(*node - (SWELP - NF) * STR * RADTODEG);
   *dnode -= 360;
-  *dperi = swe_degnorm(*peri - (LP - MP) * STR * RADTODEG);
+  *dperi = swe_degnorm(*peri - (SWELP - MP) * STR * RADTODEG);
 }
 
 static void mean_elements()
@@ -1716,12 +1678,12 @@ MP = mods3600( 1717915923.4728 * T +  485868.28096 );
 /* Mean elongation of moon = D */
 D = mods3600( 1602961601.4603 * T + 1072260.73512 );
 /* Mean longitude of moon */
-LP = mods3600( 1732564372.83264 * T +  785939.95571 );                      
+SWELP = mods3600( 1732564372.83264 * T +  785939.95571 );                      
 /* Higher degree secular terms found by least squares fit */
 NF += (((((z[5] *T+z[4] )*T + z[3] )*T + z[2] )*T + z[1] )*T + z[0] )*T2;
 MP += (((((z[11]*T+z[10])*T + z[9] )*T + z[8] )*T + z[7] )*T + z[6] )*T2;
 D  += (((((z[17]*T+z[16])*T + z[15])*T + z[14])*T + z[13])*T + z[12])*T2;
-LP += (((((z[23]*T+z[22])*T + z[21])*T + z[20])*T + z[19])*T + z[18])*T2;    
+SWELP += (((((z[23]*T+z[22])*T + z[21])*T + z[20])*T + z[19])*T + z[18])*T2;    
 #else
 /* Mean distance of moon from its ascending node = F */
 /*NF = mods3600((1739527263.0983 - 2.079419901760e-01) * T + 335779.55755);*/
@@ -1733,13 +1695,13 @@ MP = mods3600(1717200000.0 * fracT + 715923.4728 * T - 2.035946368532e-01 * T + 
 /*D = mods3600((1602961601.4603 + 3.962893294503e-01) * T + 1072260.73512);*/
 D = mods3600(1601856000.0 * fracT + 1105601.4603 * T + 3.962893294503e-01 * T + 1072260.73512);
 /* Mean longitude of moon, referred to the mean ecliptic and equinox of date */
-/*LP = mods3600((1732564372.83264 - 6.784914260953e-01) * T +  785939.95571);*/
-LP = mods3600(1731456000.0 * fracT + 1108372.83264 * T - 6.784914260953e-01 * T +  785939.95571);
+/*SWELP = mods3600((1732564372.83264 - 6.784914260953e-01) * T +  785939.95571);*/
+SWELP = mods3600(1731456000.0 * fracT + 1108372.83264 * T - 6.784914260953e-01 * T +  785939.95571);
 /* Higher degree secular terms found by least squares fit */
 NF += ((z[2]*T + z[1])*T + z[0])*T2;
 MP += ((z[5]*T + z[4])*T + z[3])*T2;
 D  += ((z[8]*T + z[7])*T + z[6])*T2;
-LP += ((z[11]*T + z[10])*T + z[9])*T2;
+SWELP += ((z[11]*T + z[10])*T + z[9])*T2;
 #endif	/* ! MOSH_MOON_200 */
 /* sensitivity of mean elements
  *    delta argument = scale factor times delta amplitude (arcsec)
@@ -1748,3 +1710,115 @@ LP += ((z[11]*T + z[10])*T + z[9])*T2;
  * cos F  11.2 (latitude term)
  */
 }
+
+void mean_elements_pl() 
+{
+/* Mean longitudes of planets (Laskar, Bretagnon) */
+Ve = mods3600( 210664136.4335482 * T + 655127.283046 );
+Ve += ((((((((
+  -9.36e-023 * T
+ - 1.95e-20 ) * T
+ + 6.097e-18 ) * T
+ + 4.43201e-15 ) * T
+ + 2.509418e-13 ) * T
+ - 3.0622898e-10 ) * T
+ - 2.26602516e-9 ) * T
+ - 1.4244812531e-5 ) * T
+ + 0.005871373088 ) * T2;
+Ea = mods3600( 129597742.26669231  * T +  361679.214649 );
+Ea += (((((((( -1.16e-22 * T
+ + 2.976e-19 ) * T
+ + 2.8460e-17 ) * T
+ - 1.08402e-14 ) * T
+ - 1.226182e-12 ) * T
+ + 1.7228268e-10 ) * T
+ + 1.515912254e-7 ) * T
+ + 8.863982531e-6 ) * T
+ - 2.0199859001e-2 ) * T2;
+Ma = mods3600(  68905077.59284 * T + 1279559.78866 );
+Ma += (-1.043e-5*T + 9.38012e-3)*T2;
+Ju = mods3600( 10925660.428608 * T +  123665.342120 );
+Ju += (1.543273e-5*T - 3.06037836351e-1)*T2;
+Sa = mods3600( 4399609.65932 * T + 180278.89694 );
+Sa += (( 4.475946e-8*T - 6.874806E-5 ) * T + 7.56161437443E-1)*T2;
+}
+
+/* Calculate geometric coordinates of true interpolated Moon apsides
+ */
+int swi_intp_apsides(double J, double *pol, int ipli)
+{
+double dd;
+double rsv[3];
+double sNF, sD, sLP, sMP, sM, sVe, sEa, sMa, sJu, sSa, fM, fVe, fEa, fMa, fJu, fSa, cMP, zMP, fNF, fD, fLP;
+double dMP, mLP, mNF, mD, mMP;
+int i, ii, iii, niter = 4;	/* niter: silence compiler warning */
+ii=1;
+zMP=27.55454988;
+fNF = 27.212220817/zMP;/**/
+fD  = 29.530588835/zMP;/**/
+fLP = 27.321582/zMP;/**/
+fM  = 365.2596359/zMP;
+fVe = 224.7008001/zMP;
+fEa = 365.2563629/zMP;
+fMa = 686.9798519/zMP;
+fJu = 4332.589348/zMP;
+fSa = 10759.22722/zMP;
+T = (J-J2000)/36525.0;
+T2 = T*T;
+T4 = T2*T2;
+mean_elements();
+mean_elements_pl();
+sNF = NF;
+sD  = D;
+sLP = SWELP;
+sMP = MP;
+sM  = M ;
+sVe = Ve;
+sEa = Ea;
+sMa = Ma;
+sJu = Ju;
+sSa = Sa;
+sNF = mods3600(NF);
+sD  = mods3600(D);
+sLP = mods3600(SWELP);
+sMP = mods3600(MP);
+if (ipli == SEI_INTP_PERG) {MP = 0.0; niter = 5;}
+if (ipli == SEI_INTP_APOG) {MP = 648000.0; niter = 4;}
+cMP = 0;
+dd = 18000.0;
+for (iii= 0; iii<=niter; iii++) {/**/
+ dMP = sMP - MP;
+ mLP = sLP - dMP;
+ mNF = sNF - dMP;
+ mD  = sD  - dMP;
+ mMP = sMP - dMP;
+ for (ii = 0; ii <=2; ii++) {/**/
+   MP = mMP + (ii-1)*dd;       /**/
+   NF = mNF + (ii-1)*dd/fNF;
+   D  = mD  + (ii-1)*dd/fD;
+   SWELP = mLP + (ii-1)*dd/fLP;
+   M  = sM  + (ii-1)*dd/fM ;
+   Ve = sVe + (ii-1)*dd/fVe;
+   Ea = sEa + (ii-1)*dd/fEa;
+   Ma = sMa + (ii-1)*dd/fMa;
+   Ju = sJu + (ii-1)*dd/fJu;
+   Sa = sSa + (ii-1)*dd/fSa;
+   moon1();
+   moon2();
+   moon3();
+   moon4();
+   if (ii==1) {
+     for( i=0; i<3; i++ ) pol[i] = moonpol[i];
+   }
+   rsv[ii] = moonpol[2];
+ }
+ cMP = (1.5*rsv[0] - 2*rsv[1] + 0.5*rsv[2]) / (rsv[0] + rsv[2] - 2*rsv[1]);/**/
+ cMP *= dd;
+ cMP = cMP - dd;
+ mMP += cMP;
+ MP = mMP;
+ dd /= 10;
+}
+return(0);
+}
+

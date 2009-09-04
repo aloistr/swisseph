@@ -1,11 +1,65 @@
 /* SWISSEPH
- * $Header: swedll.h,v 1.65 2003/06/14 13:09:51 alois Exp $
+ * $Header: /home/dieter/sweph/RCS/swedll.h,v 1.75 2009/04/08 07:19:08 dieter Exp $
  *
  *  Windows DLL interface imports for the Astrodienst SWISSEPH package
  *
- */
 
-/* $Id$ */
+**************************************************************/
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
+
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
+  Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
+  or distributor accepts any responsibility for the consequences of using it,
+  or for whether it serves any particular purpose or works at all, unless he
+  or she says so in writing.  
+
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
+
+  Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
+
+  The authors of Swiss Ephemeris have no control or influence over any of
+  the derived works, i.e. over software or services created by other
+  programmers which use Swiss Ephemeris functions.
+
+  The names of the authors or of the copyright holder (Astrodienst) must not
+  be used for promoting any software, product or service which uses or contains
+  the Swiss Ephemeris. This copyright notice is the ONLY place where the
+  names of the authors can legally appear, except in cases where they have
+  given special permission in writing.
+
+  The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
+  for promoting such software, products or services.
+*/
+
+/* $Id: swedll.h,v 1.75 2009/04/08 07:19:08 dieter Exp $ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,8 +81,16 @@ extern "C" {
 # endif
 #endif
 
+DllImport int32 FAR PASCAL swe_heliacal_ut(double JDNDaysUTStart, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 iflag, double *dret, char *serr);
+DllImport int32 FAR PASCAL swe_heliacal_pheno_ut(double JDNDaysUT, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 helflag, double *darr, char *serr);
+DllImport int32 FAR PASCAL swe_vis_limit_mag(double tjdut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 helflag, double *dret, char *serr);
+/* the following are secret, for Victor Reijs' */
+DllImport int32 FAR PASCAL swe_heliacal_angle(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
+DllImport int32 FAR PASCAL swe_topo_arcus_visionis(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double alt_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
 
 DllImport double FAR PASCAL swe_degnorm(double deg);
+
+DllImport char * FAR PASCAL swe_version(char *);
 
 DllImport int32 FAR PASCAL swe_calc( 
         double tjd, int ipl, int32 iflag, 
@@ -49,6 +111,9 @@ DllImport int32 FAR PASCAL swe_fixstar_ut(
         char *star, double tjd_ut, int32 iflag, 
         double *xx,
         char *serr);
+
+DllImport int32 FAR PASCAL swe_fixstar_mag(
+        char *star, double *xx, char *serr);
 
 DllImport double FAR PASCAL swe_sidtime0(double tjd_ut, double ecl, double nut);
 DllImport double FAR PASCAL swe_sidtime(double tjd_ut);
@@ -97,6 +162,28 @@ DllImport void FAR PASCAL swe_revjul(
         double jd, int gregflag,
         int *year, int *mon, int *mday,
         double *hour);
+
+DllImport void FAR PASCAL swe_utc_to_time_zone(
+        int32 iyear, int32 imonth, int32 iday,
+	int32 ihour, int32 imin, double dsec,
+	double d_timezone,
+	int32 *iyear_out, int32 *imonth_out, int32 *iday_out,
+	int32 *ihour_out, int32 *imin_out, double *dsec_out);
+
+DllImport int32 FAR PASCAL swe_utc_to_jd(
+        int32 iyear, int32 imonth, int32 iday, 
+	int32 ihour, int32 imin, double dsec, 
+	int32 gregflag, double *dret, char *serr);
+
+DllImport void FAR PASCAL swe_jdet_to_utc(
+        double tjd_et, int32 gregflag, 
+	int32 *iyear, int32 *imonth, int32 *iday, 
+	int32 *ihour, int32 *imin, double *dsec);
+
+DllImport void FAR PASCAL swe_jdut1_to_utc(
+        double tjd_ut, int32 gregflag, 
+	int32 *iyear, int32 *imonth, int32 *iday, 
+	int32 *ihour, int32 *imin, double *dsec);
 
 DllImport int FAR PASCAL swe_time_equ(
         double tjd, double *e, char *serr);
@@ -152,6 +239,8 @@ DllImport int32 FAR PASCAL swe_pheno(double tjd, int32 ipl, int32 iflag,
 DllImport int32 FAR PASCAL swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr);
 
 DllImport double FAR PASCAL swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag);
+DllImport double FAR PASCAL swe_refrac_extended(double inalt, double geoalt, double atpress, double attemp, double lapse_rate, int32 calc_flag, double *dret);
+DllImport void FAR PASCAL swe_set_lapse_rate(double lapse_rate);
 
 DllImport void FAR PASCAL swe_azalt(
       double tjd_ut,
@@ -188,6 +277,10 @@ DllImport int32 FAR PASCAL swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
                       char *serr);
+
+/*DllImport int32 FAR PASCAL HeliacalAngle(double Magn, double Age, int SN, double AziO, double AltM, double AziM, double JDNDaysUT, double AziS, double Lat, double HeightEye, double Temperature, double Pressure, double RH, double VR, double *dangret, char *serr);
+
+DllImport int32 FAR PASCAL HeliacalJDut(double JDNDaysUTStart, double Age, int SN, double Lat, double Longitude, double HeightEye, double Temperature, double Pressure, double RH, double VR, char *ObjectName, int TypeEvent, char *AVkind, double *dret, char *serr);*/
 
 /******************************************************* 
  * other functions from swephlib.c;
@@ -419,5 +512,5 @@ DllImport int32 FAR PASCAL swe_nod_aps_ut_d(double *tjd_ut, int32 ipl, int32 ifl
 
 #endif /* !_SWEDLL_H */
 #ifdef __cplusplus
-}
+} /* extern C */
 #endif

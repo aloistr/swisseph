@@ -1,5 +1,5 @@
 /************************************************************
-  $Header: swephexp.h,v 1.65 2003/06/14 13:09:46 alois Exp $
+  $Header: /home/dieter/sweph/RCS/swephexp.h,v 1.75 2009/04/08 07:19:08 dieter Exp $
   SWISSEPH: exported definitions and constants 
 
   This file represents the standard application interface (API)
@@ -19,28 +19,43 @@
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 
 ************************************************************/
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
-  
-  This file is part of Swiss Ephemeris Free Edition.
-  
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
+
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
+
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -58,6 +73,9 @@
   for promoting such software, products or services.
 */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef _SWEPHEXP_INCLUDED      /* allow multiple #includes of swephexp.h */
 #define _SWEPHEXP_INCLUDED
@@ -98,8 +116,10 @@
 #define SE_PALLAS       18      
 #define SE_JUNO         19      
 #define SE_VESTA        20      
+#define SE_INTP_APOG    21      
+#define SE_INTP_PERG    22    
 
-#define SE_NPLANETS     21      
+#define SE_NPLANETS     23      
 
 #define SE_AST_OFFSET   10000
 #define SE_VARUNA   (SE_AST_OFFSET + 20000)
@@ -178,6 +198,7 @@
 #define SEFLG_BARYCTR	(16*1024)   /* barycentric positions */
 #define SEFLG_TOPOCTR	(32*1024)   /* topocentric positions */
 #define SEFLG_SIDEREAL	(64*1024)   /* sidereal positions */
+#define SEFLG_ICRS	(128*1024)   /* ICRS (DE406 reference frame) */
 
 #define SE_SIDBITS		256
 /* for projection onto ecliptic of t0 */
@@ -220,7 +241,7 @@
 /* default ephemeris used when no ephemeris flagbit is set */
 #define SEFLG_DEFAULTEPH SEFLG_SWIEPH
 
-#define SE_MAX_STNAME		20	/* maximum size of fixstar name;
+#define SE_MAX_STNAME		256	/* maximum size of fixstar name;
                                          * the parameter star in swe_fixstar
 					 * must allow twice this space for
 				         * the returned star name.
@@ -235,6 +256,8 @@
 #define SE_ECL_PARTIAL		16
 #define SE_ECL_ANNULAR_TOTAL	32
 #define SE_ECL_PENUMBRAL	64
+#define SE_ECL_ALLTYPES_SOLAR   (SE_ECL_CENTRAL|SE_ECL_NONCENTRAL|SE_ECL_TOTAL|SE_ECL_ANNULAR|SE_ECL_PARTIAL|SE_ECL_ANNULAR_TOTAL)
+#define SE_ECL_ALLTYPES_LUNAR   (SE_ECL_TOTAL|SE_ECL_PARTIAL|SE_ECL_PENUMBRAL)
 #define SE_ECL_VISIBLE		128
 #define SE_ECL_MAX_VISIBLE	256
 #define SE_ECL_1ST_VISIBLE	512
@@ -250,11 +273,21 @@
 #define SE_CALC_SET		2
 #define SE_CALC_MTRANSIT	4
 #define SE_CALC_ITRANSIT	8
-#define SE_BIT_DISC_CENTER      256 /* to be or'ed to SE_CALC_RISE/SET */
-				    /* if rise or set of disc center is */
-				    /* requried */
-#define SE_BIT_NO_REFRACTION    512 /* to be or'ed to SE_CALC_RISE/SET, */
-				    /* if refraction is not to be considered */
+#define SE_BIT_DISC_CENTER      256 /* to be or'ed to SE_CALC_RISE/SET,
+				     * if rise or set of disc center is 
+				     * required */
+#define SE_BIT_DISC_BOTTOM      8192 /* to be or'ed to SE_CALC_RISE/SET,
+                                      * if rise or set of lower limb of 
+				      * disc is requried */
+#define SE_BIT_NO_REFRACTION    512 /* to be or'ed to SE_CALC_RISE/SET, 
+				     * if refraction is to be ignored */
+#define SE_BIT_CIVIL_TWILIGHT    1024 /* to be or'ed to SE_CALC_RISE/SET */
+#define SE_BIT_NAUTIC_TWILIGHT   2048 /* to be or'ed to SE_CALC_RISE/SET */
+#define SE_BIT_ASTRO_TWILIGHT    4096 /* to be or'ed to SE_CALC_RISE/SET */
+#define SE_BIT_FIXED_DISC_SIZE (16*1024) /* or'ed to SE_CALC_RISE/SET:
+                                     * neglect the effect of distance on
+				     * disc size */
+
 
 /* for swe_azalt() and swe_azalt_rev() */
 #define SE_ECL2HOR		0
@@ -319,8 +352,39 @@
 					 * e.g. 13.9999999 will be rounded
 					 * to 13°59'59" (or 13°59' or 13°) */
 
+/* for heliacal functions */
+#define SE_HELIACAL_RISING		1
+#define SE_HELIACAL_SETTING		2
+#define SE_MORNING_FIRST		SE_HELIACAL_RISING
+#define SE_EVENING_LAST			SE_HELIACAL_SETTING
+#define SE_EVENING_FIRST		3
+#define SE_MORNING_LAST			4
+#define SE_ACRONYCHAL_RISING		5  /* still not implemented */
+#define SE_ACRONYCHAL_SETTING		6  /* still not implemented */
+#define SE_COSMICAL_SETTING		SE_ACRONYCHAL_SETTING
+
+#define SE_HELFLAG_LONG_SEARCH 	128
+#define SE_HELFLAG_HIGH_PRECISION 	256
+#define SE_HELFLAG_OPTICAL_PARAMS	512
+#define SE_HELFLAG_NO_DETAILS		1024
+#define SE_HELFLAG_SEARCH_1_PERIOD	(1 << 11)  /*  2048 */
+#define SE_HELFLAG_VISLIM_DARK		(1 << 12)  /*  4096 */
+#define SE_HELFLAG_VISLIM_NOMOON	(1 << 13)  /*  8192 */
+#define SE_HELFLAG_VISLIM_PHOTOPIC	(1 << 14)  /* 16384 */
+#define SE_HELFLAG_AVKIND_VR 		(1 << 15)  /* 32768 */
+#define SE_HELFLAG_AVKIND_PTO 		(1 << 16)
+#define SE_HELFLAG_AVKIND_MIN7 		(1 << 17)
+#define SE_HELFLAG_AVKIND_MIN9 		(1 << 18)
+#define SE_HELFLAG_AVKIND (SE_HELFLAG_AVKIND_VR|SE_HELFLAG_AVKIND_PTO|SE_HELFLAG_AVKIND_MIN7|SE_HELFLAG_AVKIND_MIN9)
+#define TJD_INVALID		 	99999999.0
+#define SIMULATE_VICTORVB               1
+
+#define SE_PHOTOPIC_FLAG		0
+#define SE_SCOTOPIC_FLAG		1
+#define SE_MIXEDOPIC_FLAG		2
+
 /*
- * by compiling with -DPAIR_SWEPH in he compiler options it
+ * by compiling with -DPAIR_SWEPH in the compiler options it
  * is possible to create a more compact version of SwissEph which
  * contains no code for the JPL ephemeris file and for the builtin
  * Moshier ephemeris.
@@ -331,7 +395,6 @@
  */
 #ifdef PAIR_SWEPH	
 # define NO_JPL
-# define NO_MOSHIER
 #endif
 
 /**************************************************************
@@ -406,9 +469,18 @@
 #define ext_def(x)	extern EXP32 x FAR PASCAL_CONV EXP16
 			/* ext_def(x) evaluates to x on Unix */
 
+ext_def(int32) swe_heliacal_ut(double tjdstart_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 iflag, double *dret, char *serr);
+ext_def(int32) swe_heliacal_pheno_ut(double tjd_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 helflag, double *darr, char *serr);
+ext_def(int32) swe_vis_limit_mag(double tjdut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 helflag, double *dret, char *serr);
+/* the following are secret, for Victor Reijs' */
+ext_def(int32) swe_heliacal_angle(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
+ext_def(int32) swe_topo_arcus_visionis(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double alt_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
+
 /**************************** 
  * exports from sweph.c 
  ****************************/
+
+ext_def(char *) swe_version(char *);
 
 /* planets, moon, nodes etc. */
 ext_def( int32 ) swe_calc(
@@ -427,6 +499,8 @@ ext_def( int32 ) swe_fixstar(
 
 ext_def(int32) swe_fixstar_ut(char *star, double tjd_ut, int32 iflag, 
 	double *xx, char *serr);
+
+ext_def(int32) swe_fixstar_mag(char *star, double *mag, char *serr);
 
 /* close Swiss Ephemeris */
 ext_def( void ) swe_close(void);
@@ -471,6 +545,28 @@ ext_def( void ) swe_revjul (
         double jd, 
         int gregflag,
         int *jyear, int *jmon, int *jday, double *jut);
+
+ext_def(int32) swe_utc_to_jd(
+        int32 iyear, int32 imonth, int32 iday, 
+	int32 ihour, int32 imin, double dsec, 
+	int32 gregflag, double *dret, char *serr);
+
+ext_def(void) swe_jdet_to_utc(
+        double tjd_et, int32 gregflag, 
+	int32 *iyear, int32 *imonth, int32 *iday, 
+	int32 *ihour, int32 *imin, double *dsec);
+
+ext_def(void) swe_jdut1_to_utc(
+        double tjd_ut, int32 gregflag, 
+	int32 *iyear, int32 *imonth, int32 *iday, 
+	int32 *ihour, int32 *imin, double *dsec);
+
+ext_def(void) swe_utc_to_time_zone(
+        int32 iyear, int32 imonth, int32 iday,
+	int32 ihour, int32 imin, double dsec,
+	double d_timezone,
+	int32 *iyear_out, int32 *imonth_out, int32 *iday_out,
+	int32 *ihour_out, int32 *imin_out, double *dsec_out);
 
 /**************************** 
  * exports from swehouse.c 
@@ -538,6 +634,10 @@ ext_def(int32) swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr,
 
 ext_def (double) swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag);
 
+ext_def (double) swe_refrac_extended(double inalt, double geoalt, double atpress, double attemp, double lapse_rate, int32 calc_flag, double *dret);
+
+ext_def (void) swe_set_lapse_rate(double lapse_rate);
+
 ext_def (void) swe_azalt(
       double tjd_ut,
       int32 calc_flag,
@@ -573,6 +673,7 @@ ext_def (int32) swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
                       char *serr);
+
 
 /**************************** 
  * exports from swephlib.c 
@@ -641,3 +742,7 @@ ext_def( char *) swe_cs2degstr(CSEC t, char *a);
 #endif  /* #ifndef _SWEDLL_H */
 
 #endif  /* #ifndef _SWEPHEXP_INCLUDED */
+
+#ifdef __cplusplus
+} /* extern C */
+#endif

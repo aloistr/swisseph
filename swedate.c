@@ -1,34 +1,49 @@
 /*********************************************************
-  $Header: swedate.c,v 1.65 2003/06/14 13:09:56 alois Exp $
+  $Header: /home/dieter/sweph/RCS/swedate.c,v 1.75 2009/04/08 07:17:29 dieter Exp $
   version 15-feb-89 16:30
   
   swe_date_conversion()
   swe_revjul()
   swe_julday()
- */
 
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+************************************************************/
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
   
-  This file is part of Swiss Ephemeris Free Edition.
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
   
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+  
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -69,6 +84,9 @@
 *********************************************************/
 
 # include "swephexp.h"
+# include "sweph.h"
+
+static AS_BOOL init_leapseconds_done = FALSE;
 
 
 int FAR PASCAL_CONV swe_date_conversion(int y,
@@ -121,7 +139,7 @@ int FAR PASCAL_CONV swe_date_conversion(int y,
  not be confused with the Julian calendar system, which is named after
  Julius Cesar, the Roman politician who introduced this calendar.
  The Julian century is named after Cesar, i.e. a century in the Julian
- calendar. The 'gregorian' century has a variable lenght.
+ calendar. The 'gregorian' century has a variable length.
 
  Be aware the we always use astronomical year numbering for the years
  before Christ, not the historical year numbering.
@@ -143,7 +161,7 @@ int FAR PASCAL_CONV swe_date_conversion(int y,
  related functions: swe_revjul() reverse Julian day number: compute the
   			       calendar date from a given JD
 	            date_conversion() includes test for legal date values
-		    and notfies errors like 32 January.
+		    and notifies errors like 32 January.
  ****************************************************************/
 
 double FAR PASCAL_CONV swe_julday(int year, int month, int day, double hour, int gregflag) 
@@ -205,4 +223,368 @@ void FAR PASCAL_CONV swe_revjul (double jd, int gregflag,
   *jday = (int) (u2 - floor (365.25 * u3) - floor (30.6001 * u4));
   *jyear = (int) (u3 + floor ( (u4 - 2.0) / 12.0) - 4800);
   *jut = (jd - floor (jd + 0.5) + 0.5) * 24.0;
+}
+
+/* transform local time to UTC or UTC to local time
+ *
+ * input 
+ *   iyear ... dsec     date and time
+ *   d_timezone		timezone offset
+ * output
+ *   iyear_out ... dsec_out
+ * 
+ * For time zones east of Greenwich, d_timezone is positive.
+ * For time zones west of Greenwich, d_timezone is negative.
+ * 
+ * For conversion from local time to utc, use +d_timezone.
+ * For conversion from utc to local time, use -d_timezone.
+ */
+void FAR PASCAL_CONV swe_utc_to_time_zone(
+        int32 iyear, int32 imonth, int32 iday,
+        int32 ihour, int32 imin, double dsec,
+        double d_timezone,
+        int32 *iyear_out, int32 *imonth_out, int32 *iday_out,
+        int32 *ihour_out, int32 *imin_out, double *dsec_out
+        )
+{
+  double tjd, d;
+  AS_BOOL have_leapsec = FALSE;
+  double dhour;
+  if (dsec >= 60.0) {
+    have_leapsec = TRUE;
+    dsec -= 1.0;
+  }
+  dhour = ((double) ihour) + ((double) imin) / 60.0 + dsec / 3600.0;
+  tjd = swe_julday(iyear, imonth, iday, 0, SE_GREG_CAL);
+  dhour -= d_timezone;
+  if (dhour < 0.0) {
+    tjd -= 1.0;
+    dhour += 24.0;
+  }
+  if (dhour >= 24.0) {
+    tjd += 1.0;
+    dhour -= 24.0;
+  }
+  swe_revjul(tjd + 0.001, SE_GREG_CAL, iyear_out, imonth_out, iday_out, &d);
+  *ihour_out = (int) dhour;
+  d = (dhour - (double) *ihour_out) * 60;
+  *imin_out = (int) d;
+  *dsec_out = (d - (double) *imin_out) * 60;
+  if (have_leapsec)
+    *dsec_out += 1.0;
+}
+
+/*
+ * functions for the handling of UTC
+ */
+
+/* Leap seconds were inserted at the end of the following days:*/
+#define NLEAP_SECONDS 24
+#define NLEAP_SECONDS_SPACE 100
+static int leap_seconds[NLEAP_SECONDS_SPACE] = {
+19720630,
+19721231,
+19731231,
+19741231,
+19751231,
+19761231,
+19771231,
+19781231,
+19791231,
+19810630,
+19820630,
+19830630,
+19850630,
+19871231,
+19891231,
+19901231,
+19920630,
+19930630,
+19940630,
+19951231,
+19970630,
+19981231,
+20051231,
+20081231,
+0  /* keep this 0 as end mark */
+};
+#define J1972 2441317.5
+#define NLEAP_INIT 10
+
+/* Read additional leap second dates from external file, if given.
+ */
+static int init_leapsec(void)
+{
+  FILE *fp;
+  int ndat, ndat_last;
+  int tabsiz = 0;
+  int i;
+  char s[AS_MAXCH];
+  char *sp;
+  if (!init_leapseconds_done) {
+    init_leapseconds_done = TRUE;
+    tabsiz = NLEAP_SECONDS;
+    ndat_last = leap_seconds[NLEAP_SECONDS - 1];
+    /* no error message if file is missing */
+    if ((fp = swi_fopen(-1, "seleapsec.txt", swed.ephepath, NULL)) == NULL)
+      return NLEAP_SECONDS; 
+    while(fgets(s, AS_MAXCH, fp) != NULL) {
+      sp = s;
+      while (*sp == ' ' || *sp == '\t') sp++;
+        sp++;
+      if (*sp == '#' || *sp == '\n')
+        continue;
+      ndat = atoi(s);
+      if (ndat <= ndat_last)
+        continue;
+      /* table space is limited. no error msg, if exceeded */
+      if (tabsiz >= NLEAP_SECONDS_SPACE)
+        return tabsiz;
+      leap_seconds[tabsiz] = ndat;
+      tabsiz++;
+    }
+    if (tabsiz > NLEAP_SECONDS) leap_seconds[tabsiz] = 0; /* end mark */
+    fclose(fp);
+    return tabsiz;
+  }
+  /* find table size */
+  tabsiz = 0;
+  for (i = 0; i < NLEAP_SECONDS_SPACE; i++) {
+    if (leap_seconds[i] == 0) 
+      break;
+    else
+      tabsiz++;
+  }
+  return tabsiz;
+}
+
+/*
+ * Input:  Clock time UTC, year, month, day, hour, minute, second (decimal).
+ *         gregflag  Calendar flag
+ *         serr      error string
+ * Output: An array of doubles:
+ *         dret[0] = Julian day number TT (ET)
+ *         dret[1] = Julian day number UT1
+ *
+ * Function returns OK or Error.
+ *
+ * - Before 1972, swe_utc_to_jd() treats its input time as UT1.
+ *   Note: UTC was introduced in 1961. From 1961 - 1971, the length of the
+ *   UTC second was regularly changed, so that UTC remained very close to UT1.
+ * - From 1972 on, input time is treated as UTC.
+ * - If delta_t - nleap - 32.184 > 1, the input time is treated as UT1.
+ *   Note: Like this we avoid errors greater than 1 second in case that
+ *   the leap seconds table (or the Swiss Ephemeris version) is not updated
+ *   for a long time.
+*/
+int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32 ihour, int32 imin, double dsec, int32 gregflag, double *dret, char *serr)
+{
+  double tjd_ut1, tjd_et, tjd_et_1972, dhour, d;
+  int iyear2, imonth2, iday2;
+  int i, j, ndat, nleap, tabsiz_nleap;
+  /* 
+   * error handling: invalid iyear etc. 
+   */
+  tjd_ut1 = swe_julday(iyear, imonth, iday, 0, gregflag);
+  swe_revjul(tjd_ut1, gregflag, &iyear2, &imonth2, &iday2, &d);
+  if (iyear != iyear2 || imonth != imonth2 || iday != iday2) {
+    if (serr != NULL)
+      sprintf(serr, "invalid date: year = %d, month = %d, day = %d", iyear, imonth, iday);
+    return ERR;
+  }
+  if (ihour < 0 || ihour > 23 
+   || imin < 0 || imin > 59 
+   || dsec < 0 || dsec >= 61
+   || (dsec >= 60 && (imin < 59 || ihour < 23 || tjd_ut1 < J1972))) {
+    if (serr != NULL)
+      sprintf(serr, "invalid time: %d:%d:%.2f", ihour, imin, dsec);
+    return ERR;
+  }
+  dhour = (double) ihour + ((double) imin) / 60.0 + dsec / 3600.0;
+  /* 
+   * before 1972, we treat input date as UT1 
+   */
+  if (tjd_ut1 < J1972) {
+    dret[1] = swe_julday(iyear, imonth, iday, dhour, gregflag);
+    dret[0] = dret[1] + swe_deltat(dret[1]);
+    return OK;
+  }
+  /* 
+   * if gregflag = Julian calendar, convert to gregorian calendar 
+   */
+  if (gregflag == SE_JUL_CAL) {
+    gregflag = SE_GREG_CAL;
+    swe_revjul(tjd_ut1, gregflag, &iyear, &imonth, &iday, &d);
+  }
+  /* 
+   * number of leap seconds since 1972: 
+   */
+  tabsiz_nleap = init_leapsec();
+  nleap = NLEAP_INIT; /* initial difference between UTC and TAI in 1972 */
+  ndat = iyear * 10000 + imonth * 100 + iday;
+  for (i = 0; i < tabsiz_nleap; i++) {
+    if (ndat <= leap_seconds[i])
+      break;
+    nleap++;
+  }
+  /*
+   * For input dates > today:
+   * If leap seconds table is not up to date, we'd better interpret the
+   * input time as UT1, not as UTC. How do we find out? 
+   * Check, if delta_t - nleap - 32.184 > 0.9
+   */
+  d = swe_deltat(tjd_ut1) * 86400.0;
+  if (d - (double) nleap - 32.184 >= 1.0) {
+    dret[1] = tjd_ut1 + dhour / 24.0;
+    dret[0] = dret[1] + swe_deltat(dret[1]);
+    return OK;
+  }
+  /* 
+   * if input second is 60: is it a valid leap second ? 
+   */
+  if (dsec >= 60) {
+    j = 0;
+    for (i = 0; i < tabsiz_nleap; i++) {
+      if (ndat == leap_seconds[i]) {
+	j = 1;
+	break;
+      }
+    }
+    if (j != 1) {
+      if (serr != NULL)
+	sprintf(serr, "invalid time (no leap second!): %d:%d:%.2f", ihour, imin, dsec);
+      return ERR;
+    }
+  }
+  /* 
+   * convert UTC to ET and UT1 
+   */
+  /* the number of days between input date and 1 jan 1972: */
+  d = tjd_ut1 - J1972;
+  /* SI time since 1972, ignoring leap seconds: */
+  d += (double) ihour / 24.0 + (double) imin / 1440.0 + dsec / 86400.0; 
+  /* ET (TT) */
+  tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0;
+  tjd_et = tjd_et_1972 + d + ((double) (nleap - NLEAP_INIT)) / 86400.0;
+  d = swe_deltat(tjd_et);
+  tjd_ut1 = tjd_et - swe_deltat(tjd_et - d);
+  dret[0] = tjd_et;
+  dret[1] = tjd_ut1;
+  return OK;
+}
+
+/*
+ * Input:  tjd_et   Julian day number, terrestrial time (ephemeris time).
+ *         gregfalg Calendar flag
+ * Output: UTC year, month, day, hour, minute, second (decimal).
+ *
+ * - Before 1 jan 1972 UTC, output UT1.
+ *   Note: UTC was introduced in 1961. From 1961 - 1971, the length of the
+ *   UTC second was regularly changed, so that UTC remained very close to UT1.
+ * - From 1972 on, output is UTC.
+ * - If delta_t - nleap - 32.184 > 1, the output is UT1.
+ *   Note: Like this we avoid errors greater than 1 second in case that
+ *   the leap seconds table (or the Swiss Ephemeris version) has not been
+ *   updated for a long time.
+ */
+void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
+{
+  int i;
+  int second_60 = 0;
+  int iyear2, imonth2, iday2, nleap, ndat, tabsiz_nleap;
+  double d, tjd, tjd_et_1972, tjd_ut, dret[10];
+  /* 
+   * if tjd_et is before 1 jan 1972 UTC, return UT1
+   */
+  tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0; 
+  d = swe_deltat(tjd_et);
+  tjd_ut = tjd_et - swe_deltat(tjd_et - d);
+  if (tjd_et < tjd_et_1972) {
+    swe_revjul(tjd_ut, gregflag, iyear, imonth, iday, &d);
+    *ihour = (int32) d;
+    d -= (double) *ihour;
+    d *= 60;
+    *imin = (int32) d;
+    *dsec = (d - (double) *imin) * 60.0;
+    return;
+  }
+  /* 
+   * minimum number of leap seconds since 1972; we may be missing one leap
+   * second
+   */
+  tabsiz_nleap = init_leapsec();
+  swe_revjul(tjd_ut-1, SE_GREG_CAL, &iyear2, &imonth2, &iday2, &d);
+  ndat = iyear2 * 10000 + imonth2 * 100 + iday2;
+  nleap = 0; 
+  for (i = 0; i < tabsiz_nleap; i++) {
+    if (ndat <= leap_seconds[i])
+      break;
+    nleap++;
+  }
+  /* date of potentially missing leapsecond */
+  if (nleap < tabsiz_nleap) {
+    i = leap_seconds[nleap];
+    iyear2 = i / 10000;
+    imonth2 = (i % 10000) / 100;;
+    iday2 = i % 100;
+    tjd = swe_julday(iyear2, imonth2, iday2, 0, SE_GREG_CAL);
+    swe_revjul(tjd+1, SE_GREG_CAL, &iyear2, &imonth2, &iday2, &d);
+    swe_utc_to_jd(iyear2,imonth2,iday2, 0, 0, 0, SE_GREG_CAL, dret, NULL);
+    d = tjd_et - dret[0];
+    if (d >= 0) {
+      nleap++;
+    } else if (d < 0 && d > -1.0/86400.0) {
+      second_60 = 1;
+    }
+  }
+  /*
+   * UTC, still unsure about one leap second
+   */
+  tjd = J1972 + (tjd_et - tjd_et_1972) - ((double) nleap + second_60) / 86400.0;
+  swe_revjul(tjd, SE_GREG_CAL, iyear, imonth, iday, &d);
+  *ihour = (int32) d;
+  d -= (double) *ihour;
+  d *= 60;
+  *imin = (int32) d;
+  *dsec = (d - (double) *imin) * 60.0 + second_60;
+  /*
+   * For input dates > today:
+   * If leap seconds table is not up to date, we'd better interpret the
+   * input time as UT1, not as UTC. How do we find out? 
+   * Check, if delta_t - nleap - 32.184 > 0.9
+   */
+  d = swe_deltat(tjd_et);
+  d = swe_deltat(tjd_et - d);
+  if (d * 86400.0 - (double) (nleap + NLEAP_INIT) - 32.184 >= 1.0) {
+    swe_revjul(tjd_et - d, SE_GREG_CAL, iyear, imonth, iday, &d);
+    *ihour = (int32) d;
+    d -= (double) *ihour;
+    d *= 60;
+    *imin = (int32) d;
+    *dsec = (d - (double) *imin) * 60.0;
+  }
+  if (gregflag == SE_JUL_CAL) {
+    tjd = swe_julday(*iyear, *imonth, *iday, 0, SE_GREG_CAL);
+    swe_revjul(tjd, gregflag, iyear, imonth, iday, &d);
+  }
+}
+
+/*
+ * Input:  tjd_ut   Julian day number, universal time (UT1).
+ *         gregfalg Calendar flag
+ * Output: UTC year, month, day, hour, minute, second (decimal).
+ *
+ * - Before 1 jan 1972 UTC, output UT1.
+ *   Note: UTC was introduced in 1961. From 1961 - 1971, the length of the
+ *   UTC second was regularly changed, so that UTC remained very close to UT1.
+ * - From 1972 on, output is UTC.
+ * - If delta_t - nleap - 32.184 > 1, the output is UT1.
+ *   Note: Like this we avoid errors greater than 1 second in case that
+ *   the leap seconds table (or the Swiss Ephemeris version) has not been
+ *   updated for a long time.
+ */
+void FAR PASCAL_CONV swe_jdut1_to_utc(double tjd_ut, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
+{
+  double tjd_et = tjd_ut + swe_deltat(tjd_ut);
+  swe_jdet_to_utc(tjd_et, gregflag, iyear, imonth, iday, ihour, imin, dsec);
 }

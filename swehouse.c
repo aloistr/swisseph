@@ -1,32 +1,47 @@
 
 /*******************************************************
-$Header: swehouse.c,v 1.65 2003/06/14 13:01:54 alois Exp $
+$Header: /home/dieter/sweph/RCS/swehouse.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
 module swehouse.c
 house and (simple) aspect calculation 
 
-*******************************************************/
-/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+************************************************************/
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
   
-  This file is part of Swiss Ephemeris Free Edition.
+  License conditions
+  ------------------
+
+  This file is part of Swiss Ephemeris.
   
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  Refer to the Swiss Ephemeris Public License
-  ("SEPL" or the "License") for full details.
-  
-  Every copy of Swiss Ephemeris must include a copy of the License,
-  normally in a plain ASCII text file named LICENSE.  The License grants you
-  the right to copy, modify and redistribute Swiss Ephemeris, but only
-  under certain conditions described in the License.  Among other things, the
-  License requires that the copyright notices and this notice be preserved on
-  all copies.
+  or she says so in writing.  
 
-  For uses of the Swiss Ephemeris which do not fall under the definitions
-  laid down in the Public License, the Swiss Ephemeris Professional Edition
-  must be purchased by the developer before he/she distributes any of his
-  software or makes available any product or service built upon the use of
-  the Swiss Ephemeris.
+  Swiss Ephemeris is made available by its authors under a dual licensing
+  system. The software developer, who uses any part of Swiss Ephemeris
+  in his or her software, must choose between one of the two license models,
+  which are
+  a) GNU public license version 2 or later
+  b) Swiss Ephemeris Professional License
+  
+  The choice must be made before the software developer distributes software
+  containing parts of Swiss Ephemeris to others, and before any public
+  service using the developed software is activated.
+
+  If the developer choses the GNU GPL software license, he or she must fulfill
+  the conditions of that license, which includes the obligation to place his
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+
+  If the developer choses the Swiss Ephemeris Professional license,
+  he must follow the instructions as found in http://www.astro.com/swisseph/ 
+  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
+  and sign the corresponding license contract.
+
+  The License grants you the right to use, copy, modify and redistribute
+  Swiss Ephemeris, but only under certain conditions described in the License.
+  Among other things, the License requires that the copyright notices and
+  this notice be preserved on all copies.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -78,7 +93,7 @@ static int sidereal_houses_ssypl(double tjde,
                            double armc, 
                            double eps, 
                            double *nutlo, 
-                           double lat, 
+                           double lat,
 			   int hsys, 
                            double *cusp, 
                            double *ascmc);
@@ -432,7 +447,7 @@ static int sidereal_houses_ssypl(double tjde,
 }
 
 /* common simplified procedure */
-static int sidereal_houses_trad(double tjde, 
+static int sidereal_houses_trad(double tjde,
                            double armc, 
                            double eps, 
                            double nutl, 
@@ -444,14 +459,21 @@ static int sidereal_houses_trad(double tjde,
   int i, retc = OK;
   double ay;
   int ito;
-  if (toupper(hsys) == 'G')
+  int ihs = toupper(hsys);
+  int ihs2 = ihs;
+  ay = swe_get_ayanamsa(tjde);
+  if (ihs == 'G')
     ito = 36;
   else
     ito = 12;
-  retc = swe_houses_armc(armc, lat, eps, hsys, cusp, ascmc);
-  ay = swe_get_ayanamsa(tjde);
-  for (i = 1; i <= ito; i++)
+  if (ihs == 'W')  /* whole sign houses: treat as 'E' and fix later */
+    ihs2 = 'E';
+  retc = swe_houses_armc(armc, lat, eps, ihs2, cusp, ascmc);
+  for (i = 1; i <= ito; i++) {
     cusp[i] = swe_degnorm(cusp[i] - ay - nutl);
+    if (ihs == 'W') /* whole sign houses */
+      cusp[i] -= fmod(cusp[i], 30);
+  }
   for (i = 0; i < SE_NASCMC; i++) {
     if (i == 2)	/* armc */
       continue;
@@ -558,62 +580,66 @@ for (i = 1; i <=12; i++) {
 }
 
 static int CalcH(
-	double th, double fi, double ekl, char hsy, 
+	double th, double fi, double ekl, char hsy,
 	int iteration_count, struct houses *hsp )
-/* ********************************************************* 
- *  Arguments: th = sidereal time (angle 0..360 degrees     
- *             hsy = letter code for house system;         
- *                   A  equal                         
- *                   E  equal                         
- *                   C  Campanus                        
+/* *********************************************************
+ *  Arguments: th = sidereal time (angle 0..360 degrees
+ *             hsy = letter code for house system;
+ *                   A  equal
+ *                   E  equal
+ *                   B  Alcabitius
+ *                   C  Campanus
  *                   H  horizon / azimut
- *                   K  Koch                             
- *                   O  Porphyry                          
- *                   P  Placidus                          
- *                   R  Regiomontanus                  
- *                   V  equal Vehlow                 
- *                   X  axial rotation system/ Meridian houses 
+ *                   K  Koch
+ *                   O  Porphyry
+ *                   P  Placidus
+ *                   R  Regiomontanus
+ *                   V  equal Vehlow
+ *                   W  equal, whole sign
+ *                   X  axial rotation system/ Meridian houses
  *                   G  36 Gauquelin sectors
- *             fi = geographic latitude             
- *             ekl = obliquity of the ecliptic               
- *             iteration_count = number of iterations in    
- *             Placidus calculation; can be 1 or 2.        
- * ********************************************************* 
- *  Koch and Placidus don't work in the polar circle.        
- *  We swap MC/IC so that MC is always before AC in the zodiac 
- *  We than divide the quadrants into 3 equal parts.         
+ *                   U  Krusinski-Pisa
+ *             fi = geographic latitude
+ *             ekl = obliquity of the ecliptic
+ *             iteration_count = number of iterations in
+ *             Placidus calculation; can be 1 or 2.
  * *********************************************************
- *  All angles are expressed in degrees.                     
- *  Special trigonometric functions sind, cosd etc. are 
- *  implemented for arguments in degrees.                 
+ *  Koch and Placidus don't work in the polar circle.
+ *  We swap MC/IC so that MC is always before AC in the zodiac
+ *  We than divide the quadrants into 3 equal parts.
+ * *********************************************************
+ *  All angles are expressed in degrees.
+ *  Special trigonometric functions sind, cosd etc. are
+ *  implemented for arguments in degrees.
  ***********************************************************/
 {
   double tane, tanfi, cosfi, tant, sina, cosa, th2;
   double a, c, f, fh1, fh2, xh1, xh2, rectasc, ad3, acmc, vemc;
   int 	i, ih, ih2, retc = OK;
   double sine, cose;
+  double x[3], krHorizonLon; /* BK 14.02.2006 */
   cose  = cosd(ekl);
   sine  = sind(ekl);
   tane  = tand(ekl);
   /* north and south poles */
-  if (fabs(fabs(fi) - 90) < VERY_SMALL) { 
+  if (fabs(fabs(fi) - 90) < VERY_SMALL) {
     if (fi < 0)
       fi = -90 + VERY_SMALL;
     else
       fi = 90 - VERY_SMALL;
-  } 
+  }
   tanfi = tand(fi);
   /* mc */
   if (fabs(th - 90) > VERY_SMALL
-    && fabs(th - 270) > VERY_SMALL) {
+      && fabs(th - 270) > VERY_SMALL) {
     tant = tand(th);
     hsp->mc = atand(tant / cose);
-    if (th > 90 && th <= 270) 
+    if (th > 90 && th <= 270)
       hsp->mc = swe_degnorm(hsp->mc + 180);
   } else {
     if (fabs(th - 90) <= VERY_SMALL)
       hsp->mc = 90;
-    else 
+    else
       hsp->mc = 270;
   } /*  if */
   hsp->mc = swe_degnorm(hsp->mc);
@@ -626,8 +652,8 @@ static int CalcH(
   case 'A':	/* equal houses */
   case 'E':
     /*
-    * within polar circle we swap AC/DC if AC is on wrong side
-    */
+     * within polar circle we swap AC/DC if AC is on wrong side
+     */
     acmc = swe_difdeg2n(hsp->ac, hsp->mc);
     if (acmc < 0) {
       hsp->ac = swe_degnorm(hsp->ac + 180);
@@ -644,11 +670,11 @@ static int CalcH(
       else
         fi = -90 - fi;
       /* equator */
-      if (fabs(fabs(fi) - 90) < VERY_SMALL) { 
+      if (fabs(fabs(fi) - 90) < VERY_SMALL) {
         if (fi < 0)
           fi = -90 + VERY_SMALL;
         else
-          fi = 90 - VERY_SMALL;
+	  fi = 90 - VERY_SMALL;
       } 
       th = swe_degnorm(th + 180);
     }
@@ -656,7 +682,7 @@ static int CalcH(
     fh2 = asind(sqrt (3.0) / 2 * sind(fi));
     cosfi = cosd(fi);
     if (fabs(cosfi) == 0) {	/* '==' should be save! */ 
-      if (fi > 0) 
+      if (fi > 0)
 	xh1 = xh2 = 90; /* cosfi = VERY_SMALL; */
       else
 	xh1 = xh2 = 270; /* cosfi = -VERY_SMALL; */
@@ -671,7 +697,7 @@ static int CalcH(
     hsp->cusp [2] = Asc1 (th + 90 + xh2, fh2, sine, cose);
     hsp->cusp [3] = Asc1 (th + 90 + xh1, fh1, sine, cose);
     /* within polar circle, when mc sinks below horizon and 
-     * ascendant changes to western hemisphere, all cusps
+	 * ascendant changes to western hemisphere, all cusps
      * must be added 180 degrees. 
      * houses will be in clockwise direction */
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
@@ -686,13 +712,13 @@ static int CalcH(
     if (hsy == 'H') {
       for (i = 1; i <= 3; i++)
         hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
-      for (i = 11; i <= 12; i++)
+	  for (i = 11; i <= 12; i++)
         hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
       /* restore fi and th */
       if (fi > 0)
         fi = 90 - fi;
       else
-        fi = -90 - fi;
+	fi = -90 - fi;
       th = swe_degnorm(th + 180);
     }
     break;
@@ -700,9 +726,10 @@ static int CalcH(
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
       retc = ERR;
       goto porphyry;
-    } 
-    sina = sind(hsp->mc) * sine / cosd(fi); 	/* always << 1, 
-				      because fi < polar circle */
+    }
+    sina = sind(hsp->mc) * sine / cosd(fi);
+    if (sina > 1) sina = 1;
+    if (sina < -1) sina = -1;
     cosa = sqrt(1 - sina * sina);		/* always >> 0 */
     c = atand(tanfi / cosa);
     ad3 = asind(sind(c) * sina) / 3.0;
@@ -730,10 +757,10 @@ porphyry:
   case 'R':	/* Regiomontanus houses */
     fh1 = atand (tanfi * 0.5);
     fh2 = atand (tanfi * cosd(30));
-    hsp->cusp [11] =  Asc1 (30 + th, fh1, sine, cose); 
-    hsp->cusp [12] =  Asc1 (60 + th, fh2, sine, cose); 
-    hsp->cusp [2] =  Asc1 (120 + th, fh2, sine, cose); 
-    hsp->cusp [3] =  Asc1 (150 + th, fh1, sine, cose); 
+    hsp->cusp [11] = Asc1 (30 + th, fh1, sine, cose); 
+    hsp->cusp [12] = Asc1 (60 + th, fh2, sine, cose); 
+    hsp->cusp [2] = Asc1 (120 + th, fh2, sine, cose);
+    hsp->cusp [3] = Asc1 (150 + th, fh1, sine, cose); 
     /* within polar circle, when mc sinks below horizon and 
      * ascendant changes to western hemisphere, all cusps
      * must be added 180 degrees.
@@ -752,18 +779,18 @@ porphyry:
     fh1 = atand (tanfi / 3.0);
     fh2 = atand (tanfi * 2.0 / 3.0);
     hsp->cusp [11] =  Asc1 (30 + th, fh1, sine, cose); 
-    hsp->cusp [12] =  Asc1 (60 + th, fh2, sine, cose); 
+    hsp->cusp [12] =  Asc1 (60 + th, fh2, sine, cose);
     hsp->cusp [2] =  Asc1 (120 + th, fh2, sine, cose); 
-    hsp->cusp [3] =  Asc1 (150 + th, fh1, sine, cose); 
+    hsp->cusp [3] =  Asc1 (150 + th, fh1, sine, cose);
     /* within polar circle, when mc sinks below horizon and 
      * ascendant changes to western hemisphere, all cusps
      * must be added 180 degrees.
-     * houses will be in clockwise direction */
+	 * houses will be in clockwise direction */
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
       acmc = swe_difdeg2n(hsp->ac, hsp->mc);
       if (acmc < 0) {
         hsp->ac = swe_degnorm(hsp->ac + 180);
-        hsp->mc = swe_degnorm(hsp->mc + 180);
+	hsp->mc = swe_degnorm(hsp->mc + 180);
 	for (i = 1; i <= 12; i++)
 	  hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
       }
@@ -782,11 +809,24 @@ porphyry:
     for (i = 2; i <=12; i++)
       hsp->cusp [i] = swe_degnorm(hsp->cusp [1] + (i-1) * 30);
     break;
+  case 'W':	/* equal, whole-sign houses */
+    /*
+    * within polar circle we swap AC/DC if AC is on wrong side
+    */
+    acmc = swe_difdeg2n(hsp->ac, hsp->mc);
+    if (acmc < 0) {
+      hsp->ac = swe_degnorm(hsp->ac + 180);
+      hsp->cusp[1] = hsp->ac;
+    }
+    hsp->cusp [1] = hsp->ac - fmod(hsp->ac, 30);
+    for (i = 2; i <=12; i++)
+      hsp->cusp [i] = swe_degnorm(hsp->cusp [1] + (i-1) * 30);
+    break;
   case 'X': {
-    /* 
+    /*
      * Meridian or axial rotation system:
      * ecliptic points whose rectascensions
-     * are armc + n * 30 
+     * are armc + n * 30
      */
     int j;
     double a = th;
@@ -794,7 +834,7 @@ porphyry:
       j = i + 10;
       if (j > 12) j -= 12;
       a = swe_degnorm(a + 30);
-      if (fabs(a - 90) > VERY_SMALL
+	  if (fabs(a - 90) > VERY_SMALL
         && fabs(a - 270) > VERY_SMALL) {
         tant = tand(a);
         hsp->cusp[j] = atand(tant / cose);
@@ -804,12 +844,11 @@ porphyry:
         if (fabs(a - 90) <= VERY_SMALL)
           hsp->cusp[j] = 90;
         else 
-          hsp->cusp[j] = 270;
+		  hsp->cusp[j] = 270;
       } /*  if */
-      hsp->cusp[j] = swe_degnorm(hsp->cusp[j]);
+	  hsp->cusp[j] = swe_degnorm(hsp->cusp[j]);
     }
-    }
-    break;
+    break; }
   case 'M': {
     /* 
      * Morinus
@@ -828,8 +867,7 @@ porphyry:
       swe_cotrans(x, x, ekl);
       hsp->cusp[j] = x[0];
     }
-    }
-    break;
+    break; }
   case 'B': {	/* Alcabitius */
     /* created by Alois 17-sep-2000, followed example in Matrix
        electrical library. The code reproduces the example!
@@ -838,13 +876,12 @@ porphyry:
        I think the Alcabitius code in Walter Pullen's Astrolog 5.40
        is wrong, because he remains in RA and forgets the transform to
        the ecliptic. */
-
     double dek, r, sna, sda, sn3, sd3;
 #if FALSE
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
       retc = ERR;
       goto porphyry;
-    } 
+    }
 #endif
     acmc = swe_difdeg2n(hsp->ac, hsp->mc);
     if (acmc < 0) {
@@ -854,7 +891,7 @@ porphyry:
     }
     dek = asind(sind(hsp->ac) * sine);	/* declination of Ascendant */
     /* must treat the case fi == 90 or -90 */
-    r = -tanfi * tand(dek);	
+    r = -tanfi * tand(dek);
     /* must treat the case of abs(r) > 1; probably does not happen
      * because dek becomes smaller when fi is large, as ac is close to
      * zero Aries/Libra in that case.
@@ -882,7 +919,7 @@ porphyry:
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
       retc = ERR;
       goto porphyry;
-    } 
+    }
     /*************** forth/second quarter ***************/
     /* note: Gauquelin sectors are counted in clockwise direction */
     a = asind(tand(fi) * tane);
@@ -892,10 +929,10 @@ porphyry:
       rectasc = swe_degnorm((90 / 9) * ih2 + th);
       tant = tand(asind(sine * sind(Asc1 (rectasc, fh1, sine, cose))));
       if (fabs(tant) < VERY_SMALL) {
-        hsp->cusp[ih] = rectasc;
+	hsp->cusp[ih] = rectasc;
       } else {
-        /* pole height */
-        f = atand(sind(asind(tanfi * tant) * ih2 / 9)  /tant);  
+	/* pole height */
+	f = atand(sind(asind(tanfi * tant) * ih2 / 9)  /tant);
         hsp->cusp [ih] = Asc1 (rectasc, f, sine, cose);
         for (i = 1; i <= iteration_count; i++) {
 	  tant = tand(asind(sine * sind(hsp->cusp[ih])));
@@ -931,7 +968,7 @@ porphyry:
 	  f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
 	  /*  pole height */
   	  hsp->cusp[ih] = Asc1 (rectasc, f, sine, cose);
-        }
+	}
       }
       hsp->cusp[ih-18] = swe_degnorm(hsp->cusp[ih] + 180);
     }
@@ -940,9 +977,84 @@ porphyry:
     hsp->cusp[19] = swe_degnorm(hsp->ac + 180);
     hsp->cusp[28] = swe_degnorm(hsp->mc + 180);
     break;
+  case 'U': /* Krusinski-Pisa */
+    /*
+     * The following code was written by Bogdan Krusinski in 2006.
+     * bogdan@astrologia.pl
+     *
+     * Definition:
+     * "Krusinski - house system based on the great circle passing through 
+     * ascendant and zenith. This circle is divided into 12 equal parts 
+     * (1st cusp is ascendent, 10th cusp is zenith), then the resulting 
+     * points are projected onto the ecliptic through meridian circles.
+     * The house cusps in space are half-circles perpendicular to the equator
+     * and running from the north to the south celestial pole through the
+     * resulting cusp points on the house circle. The points where they 
+     * cross the ecliptic mark the ecliptic house cusps."
+     *
+     * Description of the algorithm:
+     * Transform into great circle running through Asc and zenit (where arc 
+     * between Asc and zenith is always 90 deg), and then return with 
+     * house cusps into ecliptic. Eg. solve trigonometrical triangle 
+     * with three transformations and two rotations starting from ecliptic. 
+     * House cusps in space are meridian circles. 
+     *
+     * Notes:
+     * 1. In this definition we assume MC on ecliptic as point where
+     *    half-meridian (from north to south pole) cuts ecliptic,
+     *    so MC may be below horizon in arctic regions.
+     * 2. Houses could be calculated in all latitudes except the poles 
+     *    themselves (-90,90) and points on arctic circle in cases where 
+     *    ecliptic is equal to horizon and then ascendant is undefined. 
+     *    But ascendant when 'horizon=ecliptic' could be deduced as limes 
+     *    from both sides of that point and houses with that provision can 
+     *    be computed also there.
+     *
+     * Starting values for calculations:
+     *	   - Asc ecliptic longitude
+     *	   - right ascension of MC (RAMC)
+     *	   - geographic latitude.
+     */
+    /*
+     * within polar circle we swap AC/DC if AC is on wrong side
+     */
+    acmc = swe_difdeg2n(hsp->ac, hsp->mc);
+    if (acmc < 0) {
+      hsp->ac = swe_degnorm(hsp->ac + 180);
+    }
+    /* A0. Start point - ecliptic coords of ascendant */
+    x[0] = hsp->ac; /* Asc longitude   */
+    x[1] = 0.0;     /* Asc declination */
+    x[2] = 1.0;     /* Radius to test validity of subsequent transformations. */
+    swe_cotrans(x, x, -ekl);      /* A1. Transform into equatorial coords */
+    x[0] = x[0] - (th-90);        /* A2. Rotate                           */
+    swe_cotrans(x, x, -(90-fi));  /* A3. Transform into horizontal coords */
+    krHorizonLon = x[0];          /* ...save asc lon on horizon to get back later with house cusp */
+    x[0] = x[0] - x[0];           /* A4. Rotate                           */
+    swe_cotrans(x, x, -90);       /* A5. Transform into this house system great circle (asc-zenith) */
+    /* As it is house circle now, simple add 30 deg increments... */
+    for(i = 0; i < 6; i++) {
+      /* B0. Set 'n-th' house cusp. 
+       *     Note that IC/MC are also calculated here to check 
+       *     if really this is the asc-zenith great circle. */
+      x[0] = 30.0*i;
+      x[1] = 0.0;
+      swe_cotrans(x, x, 90);                 /* B1. Transform back into horizontal coords */
+      x[0] = x[0] + krHorizonLon;            /* B2. Rotate back.                          */
+      swe_cotrans(x, x, 90-fi);              /* B3. Transform back into equatorial coords */
+      x[0] = swe_degnorm(x[0] + (th-90));    /* B4. Rotate back -> RA of house cusp as result. */
+      /* B5. Where's this house cusp on ecliptic? */
+      /* ... so last but not least - get ecliptic longitude of house cusp: */
+      hsp->cusp[i+1] = atand(tand(x[0])/cosd(ekl));
+      if (x[0] > 90 && x[0] <= 270)
+	hsp->cusp[i+1] = swe_degnorm(hsp->cusp[i+1] + 180);
+      hsp->cusp[i+1] = swe_degnorm(hsp->cusp[i+1]);
+      hsp->cusp[i+7] = swe_degnorm(hsp->cusp[i+1]+180);
+    }
+    break;
   default:	/* Placidus houses */
 #ifndef _WINDOWS
-    if (hsy != 'P') 
+    if (hsy != 'P')
       fprintf (stderr, "swe_houses: make Placidus, unknown key %c\n", hsy);
 #endif
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
@@ -995,7 +1107,7 @@ porphyry:
     /* ************  house  2 ******************** */
     rectasc = swe_degnorm(120 + th);
     tant = tand(asind(sine * sind(Asc1 (rectasc, fh2, sine, cose))));
-    if (fabs(tant) < VERY_SMALL) {
+	if (fabs(tant) < VERY_SMALL) {
       hsp->cusp [2] = rectasc;
     } else {
       f = atand(sind(asind(tanfi * tant) / 1.5) / tant);
@@ -1049,10 +1161,10 @@ porphyry:
     f = -90 - fi;
   hsp->vertex = Asc1 (th - 90, f, sine, cose);
   /* with tropical latitudes, the vertex behaves strange, 
-   * in a similar way as the ascendant within the polar 
+   * in a similar way as the ascendant within the polar
    * circle. we keep it always on the western hemisphere.*/
   if (fabs(fi) <= ekl) {
-    vemc = swe_difdeg2n(hsp->vertex, hsp->mc);
+	vemc = swe_difdeg2n(hsp->vertex, hsp->mc);
     if (vemc > 0)
       hsp->vertex = swe_degnorm(hsp->vertex + 180);
   }
@@ -1103,7 +1215,7 @@ static double Asc1 (double x1, double f, double sine, double cose)
     ass = (360 - Asc2 (360- x1,  f, sine, cose));
   ass = swe_degnorm(ass);
   if (fabs(ass - 90) < VERY_SMALL)	/* rounding, e.g.: if */
-    ass = 90;				/* fi = 0 & st = 0, ac = 89.999... */
+	ass = 90;				/* fi = 0 & st = 0, ac = 89.999... */
   if (fabs(ass - 180) < VERY_SMALL)
     ass = 180;
   if (fabs(ass - 270) < VERY_SMALL)	/* rounding, e.g.: if */
@@ -1141,60 +1253,52 @@ static double Asc2 (double x, double f, double sine, double cose)
 } /* Asc2 */
 
 
-/* computes the house position of a planet or another point,
+/* Computes the house position of a planet or another point,
  * in degrees: 0 - 30 = 1st house, 30 - 60 = 2nd house, etc.
  * armc 	sidereal time in degrees
  * geolat	geographic latitude
  * eps		true ecliptic obliquity
  * hsys		house system character
- * xpin		array of 6 doubles: 
+ * xpin		array of 6 doubles:
  * 		only the first two of them are used: ecl. long., lat.
  * serr		error message area
  *
- * house position is returned by function.
- * 
- * sidereal house positions:
+ * House position is returned by function.
  *
- * tropical and sidereal house positions of planets are always identical 
- * if the traditional method of computing sidereal positions (subtracting
- * the ayanamsha from tropical in order to get sidereal positions) is used.
- *
- * if the sidereal plane is not identical to the ecliptic of date, 
- * sidereal and tropical house positions are identical with
- * house systems that are independent on the ecliptic such as:
- * - Campanus
- * - Regiomontanus
- * - Placidus
- * - Azimuth/Horizon
- * - Axial rotation system
- * - "topocentric" system
- * 
- * in all these cases call swe_house_pos() with TROPICAL planetary positions.
- *
- * but there are different house positions for ecliptic-dependent systems
- * such as:
- * - equal
- * - Porphyry
- * - Koch
- * 
- * for these cases there is no function. 
+ * IMPORTANT: This function should NOT be used for sidereal astrology.
+ * If you cannot avoid doing so, please note:
+ * - The input longitudes (xpin) MUST always be tropical, even if you 
+ *   are a siderealist.
+ * - Sidereal and tropical house positions are identical for most house
+ *   systems, if a traditional definition of the sidereal zodiac is used 
+ *   (sid = trop - ayanamsa).
+ * - The function does NOT provide correct positions for Whole Sign houses.
+ * - The function does NOT provide correct positions, if you use a 
+ *   non-traditional sidereal method (where the sidereal plane is not 
+ *   identical to the ecliptic of date) with a house system whose definition 
+ *   is dependent on the ecliptic, such as: 
+ *   equal, Porphyry, Alcabitius, Koch, Krusinski (all others should work).
+ * The Swiss Ephemeris currently does not handle these cases.
  */
 double FAR PASCAL_CONV swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr)
 {
   double xp[6], xeq[6], ra, de, mdd, mdn, sad, san;
   double hpos, sinad, ad, a, admc, adp, samc, demc, asc, mc, acmc, tant;
-  double fh, ra0, tanfi, fac;
+  double fh, ra0, tanfi, fac, dfac;
+  double x[3], xasc[3], raep, raaz, oblaz, xtemp; /* BK 21.02.2006 */
   double sine = sind(eps);
   double cose = cosd(eps);
   AS_BOOL is_above_hor = FALSE;
+  AS_BOOL is_invalid = FALSE;
+  AS_BOOL is_circumpolar = FALSE;
   if (serr != NULL)
     *serr = '\0';
   hsys = toupper(hsys);
   xeq[0] = xpin[0];
   xeq[1] = xpin[1];
   xeq[2] = 1;
-  swe_cotrans(xpin, xeq, -eps);	
+  swe_cotrans(xpin, xeq, -eps);
   ra = xeq[0];
   de = xeq[1];
   mdd = swe_degnorm(ra - armc);
@@ -1208,6 +1312,7 @@ double FAR PASCAL_CONV swe_house_pos(
     case 'A':
     case 'E':
     case 'V':
+    case 'W':
       asc = Asc1 (swe_degnorm(armc + 90), geolat, sine, cose);
       demc = atand(sind(armc) * tand(eps));
       if (geolat >= 0 && 90 - geolat + demc < 0)
@@ -1215,14 +1320,17 @@ double FAR PASCAL_CONV swe_house_pos(
       if (geolat < 0 && -90 - geolat + demc > 0)
 	asc = swe_degnorm(asc + 180);
       xp[0] = swe_degnorm(xpin[0] - asc);
-      if (hsys == 'V') 
+      if (hsys == 'V')
 	xp[0] = swe_degnorm(xp[0] + 15);
+      if (hsys == 'W')
+	xp[0] = swe_degnorm(xp[0] + fmod(asc, 30));
       /* to make sure that a call with a house cusp position returns
        * a value within the house, 0.001" is added */
       xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
       hpos = xp[0] / 30.0 + 1;
-    break;
-    case 'O':
+      break;
+    case 'O':  /* Porphyry */
+    case 'B':  /* Alcabitius */
       asc = Asc1 (swe_degnorm(armc + 90), geolat, sine, cose);
       demc = atand(sind(armc) * tand(eps));
       /* mc */
@@ -1230,14 +1338,205 @@ double FAR PASCAL_CONV swe_house_pos(
 	      && fabs(armc - 270) > VERY_SMALL) {
 	tant = tand(armc);
 	mc = swe_degnorm(atand(tant / cose));
-	if (armc > 90 && armc <= 270) 
-	  mc = swe_degnorm(mc + 180);
+	if (armc > 90 && armc <= 270)
+	mc = swe_degnorm(mc + 180);
       } else {
 	if (fabs(armc - 90) <= VERY_SMALL)
 	  mc = 90;
-	else 
+	else
 	  mc = 270;
       }
+      /* while MC is always south,
+       * Asc must always be in eastern hemisphere */
+      if (geolat >= 0 && 90 - geolat + demc < 0) {
+	asc = swe_degnorm(asc + 180);
+      }
+      if (geolat < 0 && -90 - geolat + demc > 0) {
+	asc = swe_degnorm(asc + 180);
+      }
+      if (hsys ==  'O') {
+	xp[0] = swe_degnorm(xpin[0] - asc);
+	/* to make sure that a call with a house cusp position returns
+	 * a value within the house, 0.001" is added */
+	xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
+	if (xp[0] < 180)
+	  hpos = 1;
+	else {
+	  hpos = 7;
+	  xp[0] -= 180;
+	}
+	acmc = swe_difdeg2n(asc, mc);
+	if (xp[0] < 180 - acmc)
+	  hpos += xp[0] * 3 / (180 - acmc);
+	else
+	  hpos += 3 + (xp[0] - 180 + acmc) * 3 / acmc;
+      } else { /* Alcabitius */
+	double dek, r, sna, sda;
+	dek = asind(sind(asc) * sine);	/* declination of Ascendant */
+	/* must treat the case fi == 90 or -90 */
+	tanfi = tand(geolat);
+	r = -tanfi * tand(dek);
+	/* must treat the case of abs(r) > 1; probably does not happen
+	 * because dek becomes smaller when fi is large, as ac is close to
+	 * zero Aries/Libra in that case.
+	 */
+	sda = acos(r) * RADTODEG;	/* semidiurnal arc, measured on equator */
+	sna = 180 - sda;		/* complement, seminocturnal arc */
+	if (mdd > 0) {
+	  if (mdd < sda) 
+	    hpos = mdd * 90 / sda;
+	  else
+	    hpos = 90 + (mdd - sda) * 90 / sna;
+	} else {
+	  if (mdd > -sna) 
+	    hpos = 360 + mdd * 90 / sna;
+	  else
+	    hpos = 270 + (mdd + sna) * 90 / sda;
+	}
+	hpos = swe_degnorm(hpos - 90) / 30.0 + 1.0;
+	if (hpos >= 13.0) hpos -= 12;
+      }
+      break;
+    case 'X': /* Merdidian or axial rotation system */
+      hpos = swe_degnorm(mdd - 90) / 30.0 + 1.0;
+      break;
+    case 'M': { /* Morinus */
+      double a = xpin[0];
+      if (fabs(a - 90) > VERY_SMALL
+        && fabs(a - 270) > VERY_SMALL) {
+        tant = tand(a);
+	hpos = atand(tant / cose);
+        if (a > 90 && a <= 270) 
+          hpos = swe_degnorm(hpos + 180);
+      } else {
+	if (fabs(a - 90) <= VERY_SMALL)
+          hpos = 90;
+        else 
+          hpos = 270;
+      } /*  if */
+      hpos = swe_degnorm(hpos - armc - 90);
+      hpos = hpos / 30.0 + 1;
+    }
+      break;
+#if 0
+    /* old version of Koch method */
+    case 'K':
+      demc = atand(sind(armc) * tand(eps));
+      /* if body is within circumpolar region, error */
+      if (90 - fabs(geolat) <= fabs(de)) {
+        if (serr != NULL)
+          strcpy(serr, "no Koch house position, because planet is circumpolar.");
+        xp[0] = 0;
+	hpos = 0;	/* Error */
+      } else if (90 - fabs(geolat) <= fabs(demc)) {
+	if (serr != NULL)
+	  strcpy(serr, "no Koch house position, because mc is circumpolar.");
+        xp[0] = 0;
+	hpos = 0;	/* Error */
+      } else {
+        admc = asind(tand(eps) * tand(geolat) * sind(armc));
+        adp = asind(tand(geolat) * tand(de));
+	samc = 90 + admc;
+        if (mdd >= 0) {	/* east */
+          xp[0] = swe_degnorm(((mdd - adp + admc) / samc - 1) * 90);
+	} else {
+	  xp[0] = swe_degnorm(((mdd + 180 + adp + admc) / samc + 1) * 90);
+	}
+	/* to make sure that a call with a house cusp position returns
+	 * a value within the house, 0.001" is added */
+	xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
+	hpos = xp[0] / 30.0 + 1;
+      }
+      break;
+#endif
+    /* version of Koch method: do calculations within circumpolar circle,
+     * if possible; make sure house positions 4 - 9 only appear on western
+     * hemisphere */
+    case 'K': 
+      demc = atand(sind(armc) * tand(eps));
+      is_invalid = FALSE;
+      is_circumpolar = FALSE;
+      /* object is within a circumpolar circle */
+      if (90 - geolat < de || -90 - geolat > de) {
+        adp = 90;
+	is_circumpolar = TRUE;
+      }
+      /* object is within a circumpolar circle, southern hemisphere */
+      else if (geolat - 90 > de || geolat + 90 < de) {
+        adp = -90;
+	is_circumpolar = TRUE;
+      }
+      /* object does rise and set */
+      else {
+	adp = asind(tand(geolat) * tand(de));
+      }
+#if 0
+      if (fabs(adp) == 90)
+        is_invalid = TRUE; /* omit this to use the above values */
+#endif
+      admc = tand(eps) * tand(geolat) * sind(armc);
+      /* midheaven is circumpolar */
+      if (fabs(admc) > 1) {
+#if 0
+        is_invalid = TRUE; /* omit this line to use the below values */
+#endif
+	if (admc > 1)
+	  admc = 1;
+	else
+	  admc = -1;
+	is_circumpolar = TRUE;
+      }
+      admc = asind(admc);
+      samc = 90 + admc;
+      if (samc == 0)
+        is_invalid = TRUE;
+      if (fabs(samc) > 0) {
+	if (mdd >= 0) { /* east */
+	  dfac = (mdd - adp + admc) / samc;
+	  xp[0] = swe_degnorm((dfac - 1) * 90);
+	  xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
+	  /* eastern object has longer SA than midheaven */
+	  if (dfac > 2 || dfac < 0)
+	    is_invalid = TRUE; /* if this is omitted, funny things happen */
+	} else {
+	  dfac = (mdd + 180 + adp + admc) / samc;
+	  xp[0] = swe_degnorm((dfac + 1) * 90);
+	  xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
+	  /* western object has longer SA than midheaven */
+	  if (dfac > 2 || dfac < 0)
+	    is_invalid = TRUE; /* if this is omitted, funny things happen */
+	}
+      }
+      if (is_invalid) {
+        xp[0] = 0;
+	hpos = 0;
+	if (serr != NULL)
+          strcpy(serr, "Koch house position failed in circumpolar area");
+	break;
+      }
+      if (is_circumpolar) {
+	if (serr != NULL)
+          strcpy(serr, "Koch house position, doubtful result in circumpolar area");
+      }
+      /* to make sure that a call with a house cusp position returns
+       * a value within the house, 0.001" is added */
+      hpos = xp[0] / 30.0 + 1;
+      break;
+    case 'C':
+      xeq[0] = swe_degnorm(mdd - 90);
+      swe_cotrans(xeq, xp, -geolat);
+      /* to make sure that a call with a house cusp position returns
+       * a value within the house, 0.001" is added */
+      xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
+      hpos = xp[0] / 30.0 + 1;
+      break;
+    case 'U': /* Krusinski-Pisa */
+      /* Purpose: find point where planet's house circle (meridian)
+       *   cuts house plane, giving exact planet's house position.
+       * Input data: ramc, geolat, asc.
+       */
+      asc = Asc1 (swe_degnorm(armc + 90), geolat, sine, cose);
+      demc = atand(sind(armc) * tand(eps));
       /* while MC is always south, 
        * Asc must always be in eastern hemisphere */
       if (geolat >= 0 && 90 - geolat + demc < 0) {
@@ -1246,78 +1545,57 @@ double FAR PASCAL_CONV swe_house_pos(
       if (geolat < 0 && -90 - geolat + demc > 0) {
 	asc = swe_degnorm(asc + 180);
       }
-      xp[0] = swe_degnorm(xpin[0] - asc);
-      /* to make sure that a call with a house cusp position returns
-       * a value within the house, 0.001" is added */
-      xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
-      if (xp[0] < 180)
-	hpos = 1;
-      else {
-	hpos = 7;
-	xp[0] -= 180;
-      }
-      acmc = swe_difdeg2n(asc, mc);
-      if (xp[0] < 180 - acmc)
-	hpos += xp[0] * 3 / (180 - acmc);
-      else
-	hpos += 3 + (xp[0] - 180 + acmc) * 3 / acmc;
-    break;
-    case 'X': /* Merdidian or axial rotation system */
-      hpos = swe_degnorm(mdd - 90) / 30.0 + 1;
-    break;
-    case 'M': { /* Morinus */
-      double a = xpin[0];
-      if (fabs(a - 90) > VERY_SMALL
-        && fabs(a - 270) > VERY_SMALL) {
-        tant = tand(a);
-        hpos = atand(tant / cose);
-        if (a > 90 && a <= 270) 
-          hpos = swe_degnorm(hpos + 180);
-      } else {
-        if (fabs(a - 90) <= VERY_SMALL)
-          hpos = 90;
-        else 
-          hpos = 270;
-      } /*  if */
-      hpos = swe_degnorm(hpos - armc - 90);
-      hpos = hpos / 30.0 + 1;
-    }
-    break;
-    case 'K':
-     demc = atand(sind(armc) * tand(eps));
-     /* if body is within circumpolar region, error */
-     if (90 - fabs(geolat) <= fabs(de)) {
-       if (serr != NULL)
-         strcpy(serr, "no Koch house position, because planet is circumpolar.");
-       xp[0] = 0;
-       hpos = 0;	/* Error */
-     } else if (90 - fabs(geolat) <= fabs(demc)) {
-       if (serr != NULL)
-         strcpy(serr, "no Koch house position, because mc is circumpolar.");
-       xp[0] = 0;
-       hpos = 0;	/* Error */
-#if 0
-     /* if geolat beyond polar circle, error */
-       || (fabs(geolat) >= 90 - eps)) 
-#endif
-      } else {
-        admc = asind(tand(eps) * tand(geolat) * sind(armc));
-        adp = asind(tand(geolat) * tand(de));
-          samc = 90 + admc;
-        if (mdd >= 0) {	/* east */
-          xp[0] = swe_degnorm(((mdd - adp + admc) / samc - 1) * 90);
-        } else {
-          xp[0] = swe_degnorm(((mdd + 180 + adp + admc) / samc + 1) * 90);
-        }
-	/* to make sure that a call with a house cusp position returns
-	 * a value within the house, 0.001" is added */
-	xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
-	hpos = xp[0] / 30.0 + 1;
-      }
-      break;
-    case 'C':
-      xeq[0] = swe_degnorm(mdd - 90);
-      swe_cotrans(xeq, xp, -geolat);
+      /*
+       * Descr: find the house plane 'asc-zenith' - where it intersects 
+       * with equator and at what angle, and then simple find arc 
+       * from asc on that plane to planet's meridian intersection 
+       * with this plane.
+       */
+      /* I. find plane of 'asc-zenith' great circle relative to equator: 
+       *   solve spherical triangle 'EP-asc-intersection of house circle with equator' */
+      /* Ia. Find intersection of house plane with equator: */
+      x[0] = asc; x[1] = 0.0; x[2] = 1.0;          /* 1. Start with ascendent on ecliptic     */
+      swe_cotrans(x, x, -eps);                     /* 2. Transform asc into equatorial coords */
+      raep = swe_degnorm(armc + 90);               /* 3. RA of east point                     */
+      x[0] = swe_degnorm(raep - x[0]);             /* 4. Rotation - found arc raas-raep      */
+      swe_cotrans(x, x, -(90-geolat));             /* 5. Transform into horizontal coords - arc EP-asc on horizon */
+      xtemp = atand(tand(x[0])/cosd((90-geolat))); /* 6. Rotation from horizon on circle perpendicular to equator */
+      if (x[0] > 90 && x[0] <= 270)
+	xtemp = swe_degnorm(xtemp + 180);
+      x[0] = swe_degnorm(xtemp);        
+      raaz = swe_degnorm(raep - x[0]); /* result: RA of intersection 'asc-zenith' great circle with equator */
+      /* Ib. Find obliquity to equator of 'asc-zenith' house plane: */
+      x[0] = raaz; x[1] = 0.0; 
+      x[0] = swe_degnorm(raep - x[0]);  /* 1. Rotate start point relative to EP   */
+      swe_cotrans(x, x, -(90-geolat));  /* 2. Transform into horizontal coords    */
+      x[1] = x[1] + 90;                 /* 3. Add 90 deg do decl - so get the point on house plane most distant from equ. */
+      swe_cotrans(x, x, 90-geolat);     /* 4. Rotate back to equator              */
+      oblaz = x[1];                     /* 5. Obliquity of house plane to equator */
+      /* II. Next find asc and planet position on house plane, 
+       *     so to find relative distance of planet from 
+       *     coords beginning. */
+      /* IIa. Asc on house plane relative to intersection 
+       *      of equator with 'asc-zenith' plane. */
+      xasc[0] = asc; xasc[1] = 0.0; xasc[2] = 1.0;
+      swe_cotrans(xasc, xasc, -eps);
+      xasc[0] = swe_degnorm(xasc[0] - raaz);
+      xtemp = atand(tand(xasc[0])/cosd(oblaz));
+      if (xasc[0] > 90 && xasc[0] <= 270)
+          xtemp = swe_degnorm(xtemp + 180);
+      xasc[0] = swe_degnorm(xtemp);
+      /* IIb. Planet on house plane relative to intersection 
+       *      of equator with 'asc-zenith' plane */
+      xp[0] = swe_degnorm(xeq[0] - raaz);        /* Rotate on equator  */
+      xtemp = atand(tand(xp[0])/cosd(oblaz));    /* Find arc on house plane from equator */
+      if (xp[0] > 90 && xp[0] <= 270)
+	xtemp = swe_degnorm(xtemp + 180);
+      xp[0] = swe_degnorm(xtemp);
+      xp[0] = swe_degnorm(xp[0]-xasc[0]); /* find arc between asc and planet, and get planet house position  */
+      /* IIc. Distance from planet to house plane on declination circle: */
+      x[0] = xeq[0];
+      x[1] = xeq[1];
+      swe_cotrans(x, x, oblaz);
+      xp[1] = xeq[1] - x[1]; /* How many degrees is the point on declination circle from house circle */
       /* to make sure that a call with a house cusp position returns
        * a value within the house, 0.001" is added */
       xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
@@ -1333,21 +1611,21 @@ double FAR PASCAL_CONV swe_house_pos(
       break;
     case 'R':
       if (fabs(mdd) < VERY_SMALL)
-        xp[0] = 270; 
+	xp[0] = 270;
       else if (180 - fabs(mdd) < VERY_SMALL)
         xp[0] = 90; 
       else {
         if (90 - fabs(geolat) < VERY_SMALL) {
           if (geolat > 0)
-            geolat = 90 - VERY_SMALL;
+	    geolat = 90 - VERY_SMALL;
           else
-            geolat = -90 + VERY_SMALL;
+	    geolat = -90 + VERY_SMALL;
         }
         if (90 - fabs(de) < VERY_SMALL) {
           if (de > 0)
             de = 90 - VERY_SMALL;
           else
-            de = -90 + VERY_SMALL;
+	    de = -90 + VERY_SMALL;
         }
         a = tand(geolat) * tand(de) + cosd(mdd);
         xp[0] = swe_degnorm(atand(-a / sind(mdd)));
@@ -1361,55 +1639,55 @@ double FAR PASCAL_CONV swe_house_pos(
       hpos = xp[0] / 30.0 + 1;
       break;
     case 'T':
-	  mdd = swe_degnorm(mdd);
+      mdd = swe_degnorm(mdd);
       if (de > 90 - VERY_SMALL)
-	    de = 90 - VERY_SMALL;
-	  if (de < -90 + VERY_SMALL)
-	    de = -90 + VERY_SMALL;
+	de = 90 - VERY_SMALL;
+      if (de < -90 + VERY_SMALL)
+	de = -90 + VERY_SMALL;
       sinad = tand(de) * tand(geolat);
       ad = asind(sinad);
       a = sinad + cosd(mdd);
       if (a >= 0)
         is_above_hor = TRUE;
-	  /* mirror everything below the horizon to the opposite point
-	   * above the horizon */
-	  if (!is_above_hor) {
-	    ra = swe_degnorm(ra + 180);
-	    de = -de;
-	    mdd = swe_degnorm(mdd + 180);
-	  }
+      /* mirror everything below the horizon to the opposite point
+       * above the horizon */
+      if (!is_above_hor) {
+	ra = swe_degnorm(ra + 180);
+	de = -de;
+	mdd = swe_degnorm(mdd + 180);
+      }
       /* mirror everything on western hemisphere to eastern hemisphere */  
-	  if (mdd > 180) {
-		ra = swe_degnorm(armc - mdd);
-	  }
-	  /* binary search for "topocentric" position line of body */
+      if (mdd > 180) {
+	ra = swe_degnorm(armc - mdd);
+      }
+      /* binary search for "topocentric" position line of body */
       tanfi = tand(geolat);
-	  fh = geolat;
-	  ra0 = swe_degnorm(armc + 90);
-	  xp[1] = 1;
-	  xeq[1] = de;
-	  fac = 2;
+      fh = geolat;
+      ra0 = swe_degnorm(armc + 90);
+      xp[1] = 1;
+      xeq[1] = de;
+      fac = 2;
       while (fabs(xp[1]) > 0.000001) {
-		if (xp[1] > 0) {
-		  fh = atand(tand(fh) - tanfi / fac);
-		  ra0 -= 90 / fac;
-		} else {
-		  fh = atand(tand(fh) + tanfi / fac);
-		  ra0 += 90 / fac;
-		}
-		xeq[0] = swe_degnorm(ra - ra0);
+	if (xp[1] > 0) {
+	  fh = atand(tand(fh) - tanfi / fac);
+	  ra0 -= 90 / fac;
+	} else {
+	  fh = atand(tand(fh) + tanfi / fac);
+	  ra0 += 90 / fac;
+	}
+	xeq[0] = swe_degnorm(ra - ra0);
         swe_cotrans(xeq, xp, 90 - fh);
-		fac *= 2;
-	  }
+	fac *= 2;
+      }
       hpos = swe_degnorm(ra0 - armc);
-	  /* mirror back to west */
-	  if (mdd > 180)
-		hpos = swe_degnorm(-hpos);
-	  /* mirror back to below horizon */
-	  if (!is_above_hor)
-	    hpos = swe_degnorm(hpos + 180);
-	  hpos = swe_degnorm(hpos - 90) / 30 + 1;
-	  break;
+      /* mirror back to west */
+      if (mdd > 180)
+	    hpos = swe_degnorm(-hpos);
+      /* mirror back to below horizon */
+      if (!is_above_hor)
+	hpos = swe_degnorm(hpos + 180);
+      hpos = swe_degnorm(hpos - 90) / 30 + 1;
+      break;
     case 'P':
     case 'G':
     default:
@@ -1419,7 +1697,7 @@ double FAR PASCAL_CONV swe_house_pos(
           xp[0] = swe_degnorm(90 + mdn / 2);
         else
           xp[0] = swe_degnorm(270 + mdd / 2);
-        if (serr != NULL)
+	if (serr != NULL)
           strcpy(serr, "Otto Ludwig procedure within circumpolar regions.");
       } else {
         sinad = tand(de) * tand(geolat);

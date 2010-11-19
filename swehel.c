@@ -447,7 +447,7 @@ if (eventflag & SE_CALC_RISE) {
     rdi = 0;
   /* true altitude of sun, when it appears at the horizon */
   /* refraction for a body visible at the horizon at 0m above sea,
-   * atmospheric temperature 10°C, atmospheric pressure 1013.25 is 34.5 arcmin*/
+   * atmospheric temperature 10 deg C, atmospheric pressure 1013.25 is 34.5 arcmin*/
   rh = -(34.5 / 60.0 + rdi);
   /* semidiurnal arc of sun */
   sda = acos(-tan(dgeo[1] * DEGTORAD) * tan(xx[1] * DEGTORAD)) * RADTODEG;
@@ -3127,7 +3127,10 @@ static int32 heliacal_ut_vis_lim(double tjd_start, double *dgeo, double *datm, d
   iflag = SEFLG_TOPOCTR | SEFLG_EQUATORIAL | epheflag;
   if (!(helflag & SE_HELFLAG_HIGH_PRECISION)) 
     iflag |= SEFLG_NONUT | SEFLG_TRUEPOS;
-  tjd = tjd_start - 50; /* -50 makes sure, that no event is missed, 
+  if (ipl == SE_MERCURY)
+    tjd = tjd_start - 30;
+  else
+    tjd = tjd_start - 50; /* -50 makes sure, that no event is missed, 
                          * but may return an event before start date */
   helflag2 = helflag;
   /*helflag2 &= ~SE_HELFLAG_HIGH_PRECISION;*/
@@ -3219,7 +3222,7 @@ static int32 moon_event_vis_lim(double tjdstart, double *dgeo, double *datm, dou
   Daystep = 1;
   eventtype = TypeEvent + SE_BIT_DISC_CENTER;
   /* check Synodic/phase Period */
-  tjd = tjdstart - 3; /* -50 makes sure, that no event is missed, 
+  tjd = tjdstart - 30; /* -50 makes sure, that no event is missed, 
                          * but may return an event before start date */
   if ((retval = find_conjunct_sun(tjd, ipl, helflag, TypeEvent, &tjd, serr)) == ERR)
     return ERR;
@@ -3301,7 +3304,7 @@ static int32 heliacal_ut(double JDNDaysUTStart, double *dgeo, double *datm, doub
 ' dgeo[3]           geogr. longitude, latitude, eye height (m above sea level)
 ' datm[4]           atm. pressure, temperature, RH, and VR
 ' - pressure        atmospheric pressure (mbar, =hPa) default 1013.25hPa
-' - temperature     °C, default 15°C (if at
+' - temperature      deg C, default 15 deg C (if at
 '                   If both attemp and atpress are 0, a temperature and
 '                   atmospheric pressure are estimated from the above-mentioned
 '                   default values and the height above sea level.
@@ -3329,11 +3332,11 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
   char ObjectName[AS_MAXCH], serr[AS_MAXCH], s[AS_MAXCH];
   double tjd0 = JDNDaysUTStart, tjd, dsynperiod, tjdmax, tadd;
   int32 MaxCountSynodicPeriod = MAX_COUNT_SYNPER;
-  char *sevent[5] = {"", "morning first", "evening last", "evening first", "morning last"};
+  char *sevent[7] = {"", "morning first", "evening last", "evening first", "morning last", "acronychal rising", "acronychal setting"};
   if (helflag & SE_HELFLAG_LONG_SEARCH)
     MaxCountSynodicPeriod = MAX_COUNT_SYNPER_MAX;
-//  if (helflag & SE_HELFLAG_SEARCH_1_PERIOD)
-//    MaxCountSynodicPeriod = 1;
+/*  if (helflag & SE_HELFLAG_SEARCH_1_PERIOD)
+      MaxCountSynodicPeriod = 1; */
   *serr = '\0';
   if (serr_ret != NULL)
     *serr_ret = '\0';
@@ -3380,11 +3383,27 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
       }
     }
   }
-  if ((helflag & SE_HELFLAG_AVKIND) && (Planet == -1 || Planet >= SE_MARS)) {
-    if (TypeEvent == SE_ACRONYCHAL_RISING)
-      TypeEvent = 3;
-    if (TypeEvent == SE_ACRONYCHAL_SETTING)
-      TypeEvent = 4;
+  /* arcus visionis method: set the TypeEvent for acronychal events */
+  if (helflag & SE_HELFLAG_AVKIND) {
+    if (Planet == -1 || Planet >= SE_MARS) {
+      if (TypeEvent == SE_ACRONYCHAL_RISING)
+	TypeEvent = 3;
+      if (TypeEvent == SE_ACRONYCHAL_SETTING)
+	TypeEvent = 4;
+    }
+  /* acronychal rising and setting (cosmic setting) are ill-defined.
+   * We do not calculate them with the "visibility limit method" */
+  } else if (1) {
+    if (TypeEvent == SE_ACRONYCHAL_RISING || TypeEvent == SE_ACRONYCHAL_SETTING) {
+      if (serr_ret != NULL) {
+	if (Planet == -1)
+	  strcpy(s, ObjectName);
+	else
+	  swe_get_planet_name(Planet, s);
+	sprintf(serr_ret, "%s (event type %d) is not provided for %s\n", sevent[TypeEvent], TypeEvent, s);
+      }
+      return ERR;
+    }
   }
   dsynperiod = get_synodic_period(Planet);
   tjdmax = tjd0 + dsynperiod * MaxCountSynodicPeriod;

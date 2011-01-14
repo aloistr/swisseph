@@ -2,7 +2,7 @@
    $Header: /home/dieter/sweph/RCS/sweph.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
    definitions and constants SWISSEPH
 
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 ************************************************************/
 /* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
@@ -63,7 +63,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "1.76.02"
+#define SE_VERSION      "1.77.00"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -119,12 +119,16 @@
 #define SE_NAME_VULCAN          "Vulcan"
 #define SE_NAME_WHITE_MOON      "White Moon"
 
-/* for delta t: tidal acceleration in the mean motion of the moon */
-#define SE_TIDAL_DE403          (-25.8)
-#define SE_TIDAL_DE404          (-25.8)
-#define SE_TIDAL_DE405          (-25.7376)
-#define SE_TIDAL_DE406          (-25.7376)
+/* for delta t: intrinsic tidal acceleration in the mean motion of the moon,
+ * not given in the parameters list of the ephemeris files but computed
+ * by Chapront/Chapront-TouzÃ©/Francou A&A 387 (2002), p. 705.
+ */
 #define SE_TIDAL_DE200          (-23.8946)
+#define SE_TIDAL_DE403          (-25.580)  /* was (-25.8) until V. 1.76.2 */
+#define SE_TIDAL_DE404          (-25.580)  /* was (-25.8) until V. 1.76.2 */
+#define SE_TIDAL_DE405          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
+#define SE_TIDAL_DE406          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
+
 #define SE_TIDAL_26             (-26.0)
 
 #define SE_TIDAL_DEFAULT        SE_TIDAL_DE406
@@ -295,7 +299,7 @@
 #define NUT_SPEED_INTV   0.0001
 #define DEFL_SPEED_INTV  0.0000005
 
-#define SE_LAPSE_RATE        0.0065  /* °K / m, for refraction */
+#define SE_LAPSE_RATE        0.0065  /* deg K / m, for refraction */
 
 #define square_sum(x)   (x[0]*x[0]+x[1]*x[1]+x[2]*x[2])
 #define dot_prod(x,y)   (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
@@ -347,7 +351,8 @@ static const struct aya_init ayanamsa[] = {
     {1684532.5, -4.44088389},   /*14: t0 is defined by Aldebaran at 15 Taurus */
     {1674484, -9.33333},        /*15: Hipparchos */
     {1927135.8747793, 0},       /*16: Sassanian */
-    {1746443.513, 0},           /*17: Galactic Center at 0 Sagittarius */
+    /*{1746443.513, 0},          *17: Galactic Center at 0 Sagittarius */
+    {1746447.518, 0},           /*17: Galactic Center at 0 Sagittarius */
     {J2000, 0},	                /*18: J2000 */
     {J1900, 0},	                /*19: J1900 */
     {B1950, 0},	                /*20: B1950 */
@@ -523,6 +528,7 @@ struct swe_data {
   short jpldenum;
   AS_BOOL geopos_is_set;
   AS_BOOL ayana_is_set;
+  AS_BOOL is_old_starfile;
   struct file_data fidat[SEI_NEPHFILES];
   struct gen_const gcdat;
   struct plan_data pldat[SEI_NPLANETS];

@@ -742,7 +742,7 @@ static int read_elements_file(int32 ipl, double tjd,
     sp = s;
     while(*sp == ' ' || *sp == '\t')
       sp++;
-    strcpy(s, sp);
+    swi_strcpy(s, sp);
     if (*s == '#')
       continue;
     if (*s == '\r')

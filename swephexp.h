@@ -16,7 +16,7 @@
     Internal developer's definitions
     Public API functions.
 
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 ************************************************************/
 /* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
@@ -310,7 +310,8 @@ extern "C" {
 #define SE_FNAME_DE405  "de405.eph"
 #define SE_FNAME_DE406  "de406.eph"
 #define SE_FNAME_DFT    SE_FNAME_DE406
-#define SE_STARFILE     "fixstars.cat"
+#define SE_STARFILE_OLD "fixstars.cat"
+#define SE_STARFILE     "sefstars.txt"
 #define SE_ASTNAMFILE   "seasnam.txt"
 #define SE_FICTFILE     "seorbel.txt"
 
@@ -347,10 +348,10 @@ extern "C" {
 # define SE_SPLIT_DEG_ZODIACAL     8
 # define SE_SPLIT_DEG_KEEP_SIGN   16	/* don't round to next sign, 
 					 * e.g. 29.9999999 will be rounded
-					 * to 29°59'59" (or 29°59' or 29°) */
+					 * to 29d59'59" (or 29d59' or 29d) */
 # define SE_SPLIT_DEG_KEEP_DEG    32	/* don't round to next degree
 					 * e.g. 13.9999999 will be rounded
-					 * to 13°59'59" (or 13°59' or 13°) */
+					 * to 13d59'59" (or 13d59' or 13d) */
 
 /* for heliacal functions */
 #define SE_HELIACAL_RISING		1
@@ -561,7 +562,7 @@ ext_def(void) swe_jdut1_to_utc(
 	int32 *iyear, int32 *imonth, int32 *iday, 
 	int32 *ihour, int32 *imin, double *dsec);
 
-ext_def(void) swe_utc_to_time_zone(
+ext_def(void) swe_utc_time_zone(
         int32 iyear, int32 imonth, int32 iday,
 	int32 ihour, int32 imin, double dsec,
 	double d_timezone,

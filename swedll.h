@@ -163,7 +163,7 @@ DllImport void FAR PASCAL swe_revjul(
         int *year, int *mon, int *mday,
         double *hour);
 
-DllImport void FAR PASCAL swe_utc_to_time_zone(
+DllImport void FAR PASCAL swe_utc_time_zone(
         int32 iyear, int32 imonth, int32 iday,
 	int32 ihour, int32 imin, double dsec,
 	double d_timezone,

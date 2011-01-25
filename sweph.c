@@ -3,7 +3,7 @@
 
    Ephemeris computations
 
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 **************************************************************/
 /* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
@@ -1847,9 +1847,9 @@ again:
 	 * asteroid subdirectory.
 	 */
         spp--;	/* point to the character before '.' which must be a 's' */
-	strcpy(spp, spp + 1);	/* remove the s */
+	swi_strcpy(spp, spp + 1);	/* remove the s */
 	if (subdirlen > 0 && strncmp(s, subdirnam, (size_t) subdirlen) == 0) {
-	  strcpy(s, s + subdirlen + 1);	/* remove "ast0/" etc. */
+	  swi_strcpy(s, s + subdirlen + 1);	/* remove "ast0/" etc. */
 	  goto again;
 	}
       }
@@ -2936,9 +2936,9 @@ void swi_deflect_light(double *xx, double dt, int32 iflag)
      * to 30" or more.
      * e.g. mercury at j2434871.45: 
      *	distance from sun 		45"
-     *	1. speed without deflection     2³10'10".4034
-     *    2. speed with deflection        2³10'42".8460 (-speed flag)
-     *    3. speed with deflection        2³10'43".4824 (< 3 positions/
+     *	1. speed without deflection     2d10'10".4034
+     *    2. speed with deflection        2d10'42".8460 (-speed flag)
+     *    3. speed with deflection        2d10'43".4824 (< 3 positions/
      *							   -speed3 flag)
      * 3. is not very precise. Smaller dt would give result closer to 2.,
      * but will probably never be as good as 2, unless int32 doubles are 
@@ -3554,6 +3554,8 @@ static int get_new_segment(double tjd, int ipli, int ifno, char *serr)
 	if (strlen(serr) + strlen(fdp->fnam) < AS_MAXCH - 1)
 	  sprintf(serr, "error in ephemeris file %s: %d coefficients instead of %d. ", fdp->fnam, nco, pdp->ncoe);
       }
+      free(pdp->segp);
+      pdp->segp = NULL;
       return (ERR);
     }
     /* now unpack */
@@ -5251,7 +5253,9 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
     if ((sp = strchr(sstar, ',')) != NULL)
       *sp = '\0';
   }
-  swi_right_trim(sstar);
+  /*swi_right_trim(sstar);*/
+  while ((sp = strchr(sstar, ' ')) != NULL)
+    swi_strcpy(sp, sp+1);
   cmplen = strlen(sstar);
   if (cmplen == 0) {
     if (serr != NULL)
@@ -5273,8 +5277,11 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
    ******************************************************/
   if (swed.fixfp == NULL) {
     if ((swed.fixfp = swi_fopen(SEI_FILE_FIXSTAR, SE_STARFILE, swed.ephepath, serr)) == NULL) {
-      retc = ERR;
-      goto return_err;
+      swed.is_old_starfile = TRUE;
+      if ((swed.fixfp = swi_fopen(SEI_FILE_FIXSTAR, SE_STARFILE_OLD, swed.ephepath, NULL)) == NULL) {
+	retc = ERR;
+	goto return_err;
+      }
     }
   }
   rewind(swed.fixfp);
@@ -5302,7 +5309,9 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
     strncpy(fstar, s, SE_MAX_STNAME);
     *sp = ',';
     fstar[SE_MAX_STNAME] = '\0';	/* force termination */
-    swi_right_trim(fstar);
+    /*swi_right_trim(fstar);*/
+    while ((sp = strchr(fstar, ' ')) != NULL)
+      swi_strcpy(sp, sp+1);
     i = strlen(fstar);
     if (i < (int) cmplen)
       continue;
@@ -5356,20 +5365,28 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
   else
     de = -de_s / 3600.0 - de_m / 60.0 + de_d;
   /* speed in ra and de, degrees per century */
-  ra_pm = ra_pm * 15 / 3600.0;
-  de_pm = de_pm / 3600.0;
+  if (swed.is_old_starfile == TRUE) {
+    ra_pm = ra_pm * 15 / 3600.0;
+    de_pm = de_pm / 3600.0;
+  } else {
+    ra_pm = ra_pm / 10.0 / 3600.0;
+    de_pm = de_pm / 10.0 / 3600.0;
+    parall /= 1000.0;
+  }
   /* parallax, degrees */
   if (parall > 1)
-    parall = (1 / parall / 3600);
+    parall = (1 / parall / 3600.0);
   else
     parall /= 3600;
   /* radial velocity in AU per century */
   radv *= KM_S_TO_AU_CTY;
+  /*printf("ra=%.17f,de=%.17f,ma=%.17f,md=%.17f,pa=%.17f,rv=%.17f\n",ra,de,ra_pm,de_pm,parall,radv);*/
   /* radians */
   ra *= DEGTORAD;
   de *= DEGTORAD;
   ra_pm *= DEGTORAD;
   de_pm *= DEGTORAD;
+  ra_pm /= cos(de); /* catalogues give proper motion in RA as great circle */
   parall *= DEGTORAD;
   x[0] = ra;
   x[1] = de;
@@ -5512,6 +5529,10 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
    ************************************************/
   if (!(iflag & SEFLG_NONUT))
     swi_nutate(x, 0, FALSE);
+if (0) {
+  double r = sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
+  printf("%.17f %.17f %f\n", x[0]/r, x[1]/r, x[2]/r);
+}
   /************************************************
    * unit vector (distance = 1)                   *
    ************************************************/

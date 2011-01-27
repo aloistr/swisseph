@@ -1,11 +1,11 @@
 
 /* SWISSEPH
-   $Header: /home/dieter/sweph/RCS/swephlib.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
+   $Header: /home/dieter/sweph/RCS/swephlib.c,v 1.75 2009/11/27 11:00:57 dieter Exp $
 
    SWISSEPH modules that may be useful for other applications
    e.g. chopt.c, venus.c, swetest.c
 
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
    coordinate transformations
    obliquity of ecliptic
@@ -95,6 +95,10 @@ static AS_BOOL init_dt_done = FALSE;
 static void init_crc32(void);
 static int init_dt(void);
 static double adjust_for_tidacc(double ans, double Y);
+static double deltat_espenak_meeus_1620(double tjd);
+static double deltat_longterm_morrison_stephenson(double tjd);
+static double deltat_stephenson_morrison_1600(double tjd);
+static double deltat_aa(double tjd);
 
 /* Reduce x modulo 360 degrees
  */
@@ -464,8 +468,8 @@ double swi_dot_prod_unit(double *x, double *y)
  *
  * Bretagnon, P. et al.: 2003, "Expressions for Precession Consistent with 
  * the IAU 2000A Model". A&A 400,785
- *B03  	84381.4088  	-46.836051*t  	-1667×10-7*t2  	+199911×10-8*t3  	-523×10-9*t4  	-248×10-10*t5  	-3×10-11*t6
- *C03   84381.406  	-46.836769*t  	-1831×10-7*t2  	+20034×10-7*t3  	-576×10-9*t4  	-434×10-10*t5
+ *B03  	84381.4088  	-46.836051*t  	-1667*10-7*t2  	+199911*10-8*t3  	-523*10-9*t4  	-248*10-10*t5  	-3*10-11*t6
+ *C03   84381.406  	-46.836769*t  	-1831*10-7*t2  	+20034*10-7*t3  	-576*10-9*t4  	-434*10-10*t5
  *
  *  See precess and page B18 of the Astronomical Almanac.
  */
@@ -1461,7 +1465,8 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
  * Jean Meeus, Astronomical Algorithms, 2nd edition, 1998.
  * 
  * For a comprehensive collection of publications and formulae, see:
- * http://www.phys.uu.nl/~vgent/astro/deltatime.htm
+ * http://www.phys.uu.nl/~vgent/deltat/deltat_modern.htm
+ * http://www.phys.uu.nl/~vgent/deltat/deltat_old.htm
  * 
  * For future values of delta t, the following data from the 
  * Earth Orientation Department of the US Naval Observatory can be used:
@@ -1474,72 +1479,73 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
  * http://maia.usno.navy.mil/ser7/deltat.data, but it is about 3 months
  * behind (on 3 feb 2009)
  *
- * Last update of table dt[]: Dieter Koch, 3 feb 2009.
+ * Last update of table dt[]: Dieter Koch, 27 april 2010.
  * ATTENTION: Whenever updating this table, do not forget to adjust
  * the macros TABEND and TABSIZ !
  */
 #define TABSTART 	1620
-#define TABEND 		2014
+#define TABEND 		2017
 #define TABSIZ 		(TABEND-TABSTART+1) 
 /* we make the table greater for additional values read from external file */
 #define TABSIZ_SPACE 	(TABSIZ+100)
-static short FAR dt[TABSIZ_SPACE] = {
+static double FAR dt[TABSIZ_SPACE] = {
 /* 1620.0 thru 1659.0 */
-12400, 11900, 11500, 11000, 10600, 10200, 9800, 9500, 9100, 8800,
-8500, 8200, 7900, 7700, 7400, 7200, 7000, 6700, 6500, 6300,
-6200, 6000, 5800, 5700, 5500, 5400, 5300, 5100, 5000, 4900,
-4800, 4700, 4600, 4500, 4400, 4300, 4200, 4100, 4000, 3800,
+124.00, 119.00, 115.00, 110.00, 106.00, 102.00, 98.00, 95.00, 91.00, 88.00,
+85.00, 82.00, 79.00, 77.00, 74.00, 72.00, 70.00, 67.00, 65.00, 63.00,
+62.00, 60.00, 58.00, 57.00, 55.00, 54.00, 53.00, 51.00, 50.00, 49.00,
+48.00, 47.00, 46.00, 45.00, 44.00, 43.00, 42.00, 41.00, 40.00, 38.00,
 /* 1660.0 thru 1699.0 */
-3700, 3600, 3500, 3400, 3300, 3200, 3100, 3000, 2800, 2700,
-2600, 2500, 2400, 2300, 2200, 2100, 2000, 1900, 1800, 1700,
-1600, 1500, 1400, 1400, 1300, 1200, 1200, 1100, 1100, 1000,
-1000, 1000, 900, 900, 900, 900, 900, 900, 900, 900,
+37.00, 36.00, 35.00, 34.00, 33.00, 32.00, 31.00, 30.00, 28.00, 27.00,
+26.00, 25.00, 24.00, 23.00, 22.00, 21.00, 20.00, 19.00, 18.00, 17.00,
+16.00, 15.00, 14.00, 14.00, 13.00, 12.00, 12.00, 11.00, 11.00, 10.00,
+10.00, 10.00, 9.00, 9.00, 9.00, 9.00, 9.00, 9.00, 9.00, 9.00,
 /* 1700.0 thru 1739.0 */
-900, 900, 900, 900, 900, 900, 900, 900, 1000, 1000,
-1000, 1000, 1000, 1000, 1000, 1000, 1000, 1100, 1100, 1100,
-1100, 1100, 1100, 1100, 1100, 1100, 1100, 1100, 1100, 1100,
-1100, 1100, 1100, 1100, 1200, 1200, 1200, 1200, 1200, 1200,
+9.00, 9.00, 9.00, 9.00, 9.00, 9.00, 9.00, 9.00, 10.00, 10.00,
+10.00, 10.00, 10.00, 10.00, 10.00, 10.00, 10.00, 11.00, 11.00, 11.00,
+11.00, 11.00, 11.00, 11.00, 11.00, 11.00, 11.00, 11.00, 11.00, 11.00,
+11.00, 11.00, 11.00, 11.00, 12.00, 12.00, 12.00, 12.00, 12.00, 12.00,
 /* 1740.0 thru 1779.0 */
-1200, 1200, 1200, 1200, 1300, 1300, 1300, 1300, 1300, 1300,
-1300, 1400, 1400, 1400, 1400, 1400, 1400, 1400, 1500, 1500,
-1500, 1500, 1500, 1500, 1500, 1600, 1600, 1600, 1600, 1600,
-1600, 1600, 1600, 1600, 1600, 1700, 1700, 1700, 1700, 1700,
+12.00, 12.00, 12.00, 12.00, 13.00, 13.00, 13.00, 13.00, 13.00, 13.00,
+13.00, 14.00, 14.00, 14.00, 14.00, 14.00, 14.00, 14.00, 15.00, 15.00,
+15.00, 15.00, 15.00, 15.00, 15.00, 16.00, 16.00, 16.00, 16.00, 16.00,
+16.00, 16.00, 16.00, 16.00, 16.00, 17.00, 17.00, 17.00, 17.00, 17.00,
 /* 1780.0 thru 1799.0 */
-1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700, 1700,
-1700, 1700, 1600, 1600, 1600, 1600, 1500, 1500, 1400, 1400,
+17.00, 17.00, 17.00, 17.00, 17.00, 17.00, 17.00, 17.00, 17.00, 17.00,
+17.00, 17.00, 16.00, 16.00, 16.00, 16.00, 15.00, 15.00, 14.00, 14.00,
 /* 1800.0 thru 1819.0 */
-1370, 1340, 1310, 1290, 1270, 1260, 1250, 1250, 1250, 1250,
-1250, 1250, 1250, 1250, 1250, 1250, 1250, 1240, 1230, 1220,
+13.70, 13.40, 13.10, 12.90, 12.70, 12.60, 12.50, 12.50, 12.50, 12.50,
+12.50, 12.50, 12.50, 12.50, 12.50, 12.50, 12.50, 12.40, 12.30, 12.20,
 /* 1820.0 thru 1859.0 */
-1200, 1170, 1140, 1110, 1060, 1020, 960, 910, 860, 800,
-750, 700, 660, 630, 600, 580, 570, 560, 560, 560,
-570, 580, 590, 610, 620, 630, 650, 660, 680, 690,
-710, 720, 730, 740, 750, 760, 770, 770, 780, 780,
+12.00, 11.70, 11.40, 11.10, 10.60, 10.20, 9.60, 9.10, 8.60, 8.00,
+7.50, 7.00, 6.60, 6.30, 6.00, 5.80, 5.70, 5.60, 5.60, 5.60,
+5.70, 5.80, 5.90, 6.10, 6.20, 6.30, 6.50, 6.60, 6.80, 6.90,
+7.10, 7.20, 7.30, 7.40, 7.50, 7.60, 7.70, 7.70, 7.80, 7.80,
 /* 1860.0 thru 1899.0 */
-788, 782, 754, 697, 640, 602, 541, 410, 292, 182,
-161, 10, -102, -128, -269, -324, -364, -454, -471, -511,
--540, -542, -520, -546, -546, -579, -563, -564, -580, -566,
--587, -601, -619, -664, -644, -647, -609, -576, -466, -374,
+7.88, 7.82, 7.54, 6.97, 6.40, 6.02, 5.41, 4.10, 2.92, 1.82,
+1.61, .10, -1.02, -1.28, -2.69, -3.24, -3.64, -4.54, -4.71, -5.11,
+-5.40, -5.42, -5.20, -5.46, -5.46, -5.79, -5.63, -5.64, -5.80, -5.66,
+-5.87, -6.01, -6.19, -6.64, -6.44, -6.47, -6.09, -5.76, -4.66, -3.74,
 /* 1900.0 thru 1939.0 */
--272, -154, -2, 124, 264, 386, 537, 614, 775, 913,
-1046, 1153, 1336, 1465, 1601, 1720, 1824, 1906, 2025, 2095,
-2116, 2225, 2241, 2303, 2349, 2362, 2386, 2449, 2434, 2408,
-2402, 2400, 2387, 2395, 2386, 2393, 2373, 2392, 2396, 2402,
+-2.72, -1.54, -.02, 1.24, 2.64, 3.86, 5.37, 6.14, 7.75, 9.13,
+10.46, 11.53, 13.36, 14.65, 16.01, 17.20, 18.24, 19.06, 20.25, 20.95,
+21.16, 22.25, 22.41, 23.03, 23.49, 23.62, 23.86, 24.49, 24.34, 24.08,
+24.02, 24.00, 23.87, 23.95, 23.86, 23.93, 23.73, 23.92, 23.96, 24.02,
 /* 1940.0 thru 1979.0 */
- 2433, 2483, 2530, 2570, 2624, 2677, 2728, 2778, 2825, 2871,
- 2915, 2957, 2997, 3036, 3072, 3107, 3135, 3168, 3218, 3268,
- 3315, 3359, 3400, 3447, 3503, 3573, 3654, 3743, 3829, 3920,
- 4018, 4117, 4223, 4337, 4449, 4548, 4646, 4752, 4853, 4959,
+ 24.33, 24.83, 25.30, 25.70, 26.24, 26.77, 27.28, 27.78, 28.25, 28.71,
+ 29.15, 29.57, 29.97, 30.36, 30.72, 31.07, 31.35, 31.68, 32.18, 32.68,
+ 33.15, 33.59, 34.00, 34.47, 35.03, 35.73, 36.54, 37.43, 38.29, 39.20,
+ 40.18, 41.17, 42.23, 43.37, 44.49, 45.48, 46.46, 47.52, 48.53, 49.59,
 /* 1980.0 thru 1999.0 */
- 5054, 5138, 5217, 5296, 5379, 5434, 5487, 5532, 5582, 5630,
- 5686, 5757, 5831, 5912, 5998, 6078, 6163, 6230, 6297, 6347,
+ 50.54, 51.38, 52.17, 52.96, 53.79, 54.34, 54.87, 55.32, 55.82, 56.30,
+ 56.86, 57.57, 58.31, 59.12, 59.98, 60.78, 61.63, 62.30, 62.97, 63.47,
 /* 2000.0 thru 2009.0 */
- 6383, 6409, 6430, 6447, 6457, 6469, 6485, 6515, 6546, 6578,      
-/* Extrapolated values, 2010 - 2014 */
- 6607, 6660, 6700, 6750, 6800,
+ 63.83, 64.09, 64.30, 64.47, 64.57, 64.69, 64.85, 65.15, 65.46, 65.78,      
+/* 2010.0 thru 2019.0 */
+ 66.07, 66.32,
+/* Extrapolated values, 2011 - 2014 */
+             67.00, 67.50, 68.00, 68.50, 69.00, 69.50,
 };
-#define DELTAT_STEPHENSON_2004 TRUE
-#if DELTAT_STEPHENSON_2004
+#define ESPENAK_MEEUS_2006 TRUE
 #define TAB2_SIZ	27
 #define TAB2_START	(-1000)
 #define TAB2_END	1600
@@ -1555,89 +1561,90 @@ static short FAR dt2[TAB2_SIZ] = {
 /* 1000  1100  1200  1300  1400  1500  1600,                 */
    1570, 1090,  740,  490,  320,  200,  120,  
 };
-#else 
-/* Table for -500 through 1600, from Stephenson & Morrison (1995).  */
-#define TAB2_SIZ	43
-#define TAB2_START	(-500)
-#define TAB2_END	1600
-#define TAB2_STEP	50
-#define LTERM_EQUATION_YSTART	1735
-#define LTERM_EQUATION_COEFF	35
-static short FAR dt2[TAB2_SIZ] = {
-/* -500  -450  -400  -350  -300  -250  -200  -150  -100   -50*/
-  16800,16000,15300,14600,14000,13400,12800,12200,11600,11100,
-/*    0    50   100   150   200   250   300   350   400   450*/
-  10600,10100, 9600, 9100, 8600, 8200, 7700, 7200, 6700, 6200,
-/*  500   550   600   650   700   750   800   850   900   950*/
-   5700, 5200, 4700, 4300, 3800, 3400, 3000, 2600, 2200, 1900,
-/* 1000  1050  1100  1150  1200  1250  1300  1350  1400  1450*/
-   1600, 1350, 1100,  900,  750,  600,  470,  380,  300,  230,
-/* 1500  1550  1600 */
-    180,  140,  110,
-};
-#endif
 /* returns DeltaT (ET - UT) in days
  * double tjd 	= 	julian day in UT
  */
 #define DEMO 0
 double FAR PASCAL_CONV swe_deltat(double tjd)
 {
-  double ans = 0, ans2, ans3;
-  double p, B, B2, Y, Ygreg, dd;
-  int d[6];
-  int i, iy, k;
+  double ans = 0;
+  double B, Y, Ygreg, dd;
+  int iy;
   /* read additional values from swedelta.txt */
-  int tabsiz = init_dt();
-  int tabend = TABSTART + tabsiz - 1;
+  AS_BOOL use_espenak_meeus = ESPENAK_MEEUS_2006;
   Y = 2000.0 + (tjd - J2000)/365.25;
   Ygreg = 2000.0 + (tjd - J2000)/365.2425;
-  /* before -500:
-   * formula by Stephenson (1997; p. 508) but adjusted to fit the starting
-   * point of table dt2 (Stephenson 1997). */
-  if( Y < TAB2_START ) {
-    B = (Y - LTERM_EQUATION_YSTART) * 0.01;
-    ans = -20 + LTERM_EQUATION_COEFF * B * B;
-    ans = adjust_for_tidacc(ans, Y);
-    /* transition from formula to table over 100 years */
-    if (Y >= TAB2_START - 100) {
-      /* starting value of table dt2: */
-      ans2 = adjust_for_tidacc(dt2[0], TAB2_START);
-      /* value of formula at epoch TAB2_START */
-      B = (TAB2_START - LTERM_EQUATION_YSTART) * 0.01;
-      ans3 = -20 + LTERM_EQUATION_COEFF * B * B;
-      ans3 = adjust_for_tidacc(ans3, Y);
-      dd = ans3 - ans2;
-      B = (Y - (TAB2_START - 100)) * 0.01;
-      /* fit to starting point of table dt2. */
-      ans = ans - dd * B;
+  /* Before 1633 AD, if the macro ESPENAK_MEEUS_2006 is TRUE: 
+   * Polynomials by Espenak & Meeus 2006, derived from Stephenson & Morrison 
+   * 2004. 
+   * Note, Espenak & Meeus use their formulae only from 2000 BC on.
+   * However, they use the long-term formula of Morrison & Stephenson,
+   * which can be used even for the remoter past.
+   */
+  if (use_espenak_meeus && tjd < 2317746.13090277789) {
+    return deltat_espenak_meeus_1620(tjd);
+  }
+  /* If the macro ESPENAK_MEEUS_2006 is FALSE:
+   * Before 1620, we follow Stephenson & Morrsion 2004. For the tabulated 
+   * values 1000 BC through 1600 AD, we use linear interpolation.
+   */
+  if (Y < TABSTART) {
+    if (Y < TAB2_END) {
+      return deltat_stephenson_morrison_1600(tjd);
+    } else {
+      /* between 1600 and 1620:
+       * linear interpolation between 
+       * end of table dt2 and start of table dt */
+      if (Y >= TAB2_END) { 
+	B = TABSTART - TAB2_END;
+	iy = (TAB2_END - TAB2_START) / TAB2_STEP;
+	dd = (Y - TAB2_END) / B;
+	/*ans = dt2[iy] + dd * (dt[0] / 100.0 - dt2[iy]);*/
+	ans = dt2[iy] + dd * (dt[0] - dt2[iy]);
+	ans = adjust_for_tidacc(ans, Ygreg);
+	return ans / 86400.0;
+      }
     }
-  }
-  /* between -500 and 1600: 
-   * linear interpolation between values of table dt2 (Stephenson 1997) */
-  if (Y >= TAB2_START && Y < TAB2_END) { 
-    double Yjul = 2000 + (tjd - 2451557.5) / 365.25;
-    p = floor(Yjul);
-    iy = (int) ((p - TAB2_START) / TAB2_STEP);
-    dd = (Yjul - (TAB2_START + TAB2_STEP * iy)) / TAB2_STEP;
-    ans = dt2[iy] + (dt2[iy+1] - dt2[iy]) * dd;
-    /* correction for tidal acceleration used by our ephemeris */
-    ans = adjust_for_tidacc(ans, Y);
-  }
-  /* between 1600 and 1620:
-   * linear interpolation between 
-   * end of table dt2 and start of table dt */
-  if (Y >= TAB2_END && Y < TABSTART) { 
-    B = TABSTART - TAB2_END;
-    iy = (TAB2_END - TAB2_START) / TAB2_STEP;
-    dd = (Y - TAB2_END) / B;
-    ans = dt2[iy] + dd * (dt[0] / 100.0 - dt2[iy]);
-    ans = adjust_for_tidacc(ans, Y);
   }
   /* 1620 - today + a few years (tabend):
    * Besselian interpolation from tabulated values in table dt.
    * See AA page K11.
    */
-  if (Y >= TABSTART && Y <= tabend) {
+  if (Y >= TABSTART) {
+    return deltat_aa(tjd);
+  }
+#ifdef TRACE
+  swi_open_trace(NULL);
+  if (swi_trace_count < TRACE_COUNT_MAX) {
+    if (swi_fp_trace_c != NULL) {
+      fputs("\n/*SWE_DELTAT*/\n", swi_fp_trace_c);
+      fprintf(swi_fp_trace_c, "  tjd = %.9f;", tjd);
+      fprintf(swi_fp_trace_c, " t = swe_deltat(tjd);\n");
+      fputs("  printf(\"swe_deltat: %f\\t%f\\t\\n\", ", swi_fp_trace_c);
+      fputs("tjd, t);\n", swi_fp_trace_c);
+      fflush(swi_fp_trace_c);
+    }
+    if (swi_fp_trace_out != NULL) {
+      fprintf(swi_fp_trace_out, "swe_deltat: %f\t%f\t\n", tjd, ans);
+      fflush(swi_fp_trace_out);
+    }
+  }
+#endif
+  return ans / 86400.0;
+}
+
+static double deltat_aa(double tjd)
+{
+  double ans = 0, ans2, ans3;
+  double p, B, B2, Y, dd;
+  double d[6];
+  int i, iy, k;
+  /* read additional values from swedelta.txt */
+  int tabsiz = init_dt();
+  int tabend = TABSTART + tabsiz - 1;
+  /*Y = 2000.0 + (tjd - J2000)/365.25;*/
+  Y = 2000.0 + (tjd - J2000)/365.2425;
+  if (Y <= tabend) {
     /* Index into the table.
      */
     p = floor(Y);
@@ -1661,9 +1668,9 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
     k = iy - 2;
     for( i=0; i<5; i++ ) {
       if( (k < 0) || (k+1 >= tabsiz) ) 
-        d[i] = 0;
+	d[i] = 0;
       else
-        d[i] = dt[k+1] - dt[k];
+	d[i] = dt[k+1] - dt[k];
       k += 1;
     }
     /* Compute second differences
@@ -1672,9 +1679,9 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
       d[i] = d[i+1] - d[i];
     B = 0.25*p*(p-1.0);
     ans += B*(d[1] + d[2]);
-#if DEMO
+  #if DEMO
     printf( "B %.4lf, ans %.4lf\n", B, ans );
-#endif
+  #endif
     if( iy+2 >= tabsiz )
       goto done;
     /* Compute third differences
@@ -1683,9 +1690,9 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
       d[i] = d[i+1] - d[i];
     B = 2.0*B/3.0;
     ans += (p-0.5)*B*d[1];
-#if DEMO
+  #if DEMO
     printf( "B %.4lf, ans %.4lf\n", B*(p-0.5), ans );
-#endif
+  #endif
     if( (iy-2 < 0) || (iy+3 > tabsiz) )
       goto done;
     /* Compute fourth differences
@@ -1694,12 +1701,12 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
       d[i] = d[i+1] - d[i];
     B = 0.125*B*(p+1.0)*(p-2.0);
     ans += B*(d[0] + d[1]);
-#if DEMO
+  #if DEMO
     printf( "B %.4lf, ans %.4lf\n", B, ans );
-#endif
+  #endif
     done:
-    ans *= 0.01;
     ans = adjust_for_tidacc(ans, Y);
+    return ans / 86400.0;
   }
   /* today - : 
    * Formula Stephenson (1997; p. 507),
@@ -1707,36 +1714,120 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
    * similar to what Meeus 1998 had suggested.
    * Slow transition within 100 years.
    */
-  if (Y > tabend) {
-    B = 0.01 * (Y - 1820);
-    ans = -20 + 31 * B * B;
-    /* slow transition from tabulated values to Stephenson formula: */
-    if (Y <= tabend+100) {
-      B2 = 0.01 * (tabend - 1820);
-      ans2 = -20 + 31 * B2 * B2;
-      ans3 = dt[tabsiz-1] * 0.01;
-      dd = (ans2 - ans3);
-      ans += dd * (Y - (tabend + 100)) * 0.01;
-    }
+  B = 0.01 * (Y - 1820);
+  ans = -20 + 31 * B * B;
+  /* slow transition from tabulated values to Stephenson formula: */
+  if (Y <= tabend+100) {
+    B2 = 0.01 * (tabend - 1820);
+    ans2 = -20 + 31 * B2 * B2;
+    ans3 = dt[tabsiz-1];
+    dd = (ans2 - ans3);
+    ans += dd * (Y - (tabend + 100)) * 0.01;
   }
-#ifdef TRACE
-  swi_open_trace(NULL);
-  if (swi_trace_count < TRACE_COUNT_MAX) {
-    if (swi_fp_trace_c != NULL) {
-      fputs("\n/*SWE_DELTAT*/\n", swi_fp_trace_c);
-      fprintf(swi_fp_trace_c, "  tjd = %.9f;", tjd);
-      fprintf(swi_fp_trace_c, " t = swe_deltat(tjd);\n");
-      fputs("  printf(\"swe_deltat: %f\\t%f\\t\\n\", ", swi_fp_trace_c);
-      fputs("tjd, t);\n", swi_fp_trace_c);
-      fflush(swi_fp_trace_c);
-    }
-    if (swi_fp_trace_out != NULL) {
-      fprintf(swi_fp_trace_out, "swe_deltat: %f\t%f\t\n", tjd, ans);
-      fflush(swi_fp_trace_out);
-    }
-  }
-#endif
   return ans / 86400.0;
+}
+
+static double deltat_longterm_morrison_stephenson(double tjd)
+{
+  double Ygreg =  2000.0 + (tjd - J2000)/365.2425;
+  double u = (Ygreg  - 1820) / 100.0;
+  return (-20 + 32 * u * u);
+}
+
+static double deltat_stephenson_morrison_1600(double tjd)
+{
+  double ans = 0, ans2, ans3;
+  double p, B, dd;
+  double tjd0;
+  int iy;
+  /* read additional values from swedelta.txt */
+  double Y = 2000.0 + (tjd - J2000)/365.2425;
+  /* double Y = 2000.0 + (tjd - J2000)/365.25;*/
+  /* before -1000:
+   * formula by Stephenson&Morrison (2004; p. 335) but adjusted to fit the 
+   * starting point of table dt2. */
+  if( Y < TAB2_START ) {
+    /*B = (Y - LTERM_EQUATION_YSTART) * 0.01;
+    ans = -20 + LTERM_EQUATION_COEFF * B * B;*/
+    ans = deltat_longterm_morrison_stephenson(tjd);
+    ans = adjust_for_tidacc(ans, Y);
+    /* transition from formula to table over 100 years */
+    if (Y >= TAB2_START - 100) {
+      /* starting value of table dt2: */
+      ans2 = adjust_for_tidacc(dt2[0], TAB2_START);
+      /* value of formula at epoch TAB2_START */
+      /* B = (TAB2_START - LTERM_EQUATION_YSTART) * 0.01;
+      ans3 = -20 + LTERM_EQUATION_COEFF * B * B;*/
+      tjd0 = (TAB2_START - 2000) * 365.2425 + J2000;
+      ans3 = deltat_longterm_morrison_stephenson(tjd0);
+      ans3 = adjust_for_tidacc(ans3, Y);
+      dd = ans3 - ans2;
+      B = (Y - (TAB2_START - 100)) * 0.01;
+      /* fit to starting point of table dt2. */
+      ans = ans - dd * B;
+    }
+  }
+  /* between -1000 and 1600: 
+   * linear interpolation between values of table dt2 (Stephenson&Morrison 2004) */
+  if (Y >= TAB2_START && Y < TAB2_END) { 
+    double Yjul = 2000 + (tjd - 2451557.5) / 365.25;
+    p = floor(Yjul);
+    iy = (int) ((p - TAB2_START) / TAB2_STEP);
+    dd = (Yjul - (TAB2_START + TAB2_STEP * iy)) / TAB2_STEP;
+    ans = dt2[iy] + (dt2[iy+1] - dt2[iy]) * dd;
+    /* correction for tidal acceleration used by our ephemeris */
+    ans = adjust_for_tidacc(ans, Y);
+  }
+  ans /= 86400.0;
+  return ans;
+}
+
+static double deltat_espenak_meeus_1620(double tjd)
+{
+  double ans = 0;
+  double Ygreg;
+  double u;
+  /* double Y = 2000.0 + (tjd - J2000)/365.25;*/
+  Ygreg = 2000.0 + (tjd - J2000)/365.2425;
+  if (Ygreg < -500) {
+    ans = deltat_longterm_morrison_stephenson(tjd);
+  } else if (Ygreg < 500) {
+    u = Ygreg / 100.0;
+    ans = (((((0.0090316521 * u + 0.022174192) * u - 0.1798452) * u - 5.952053) * u+ 33.78311) * u - 1014.41) * u + 10583.6;
+  } else if (Ygreg < 1600) {
+    u = (Ygreg - 1000) / 100.0;
+    ans = (((((0.0083572073 * u - 0.005050998) * u - 0.8503463) * u + 0.319781) * u + 71.23472) * u - 556.01) * u + 1574.2;
+  } else if (Ygreg < 1700) {
+    u = Ygreg - 1600;
+    ans = 120 - 0.9808 * u - 0.01532 * u * u + u * u * u / 7129.0;
+  } else if (Ygreg < 1800) {
+    u = Ygreg - 1700;
+    ans = (((-u / 1174000.0 + 0.00013336) * u - 0.0059285) * u + 0.1603) * u + 8.83;
+  } else if (Ygreg < 1860) {
+    u = Ygreg - 1800;
+    ans = ((((((0.000000000875 * u - 0.0000001699) * u + 0.0000121272) * u - 0.00037436) * u + 0.0041116) * u + 0.0068612) * u - 0.332447) * u + 13.72;
+  } else if (Ygreg < 1900) {
+    u = Ygreg - 1860;
+    ans = ((((u / 233174.0 - 0.0004473624) * u + 0.01680668) * u - 0.251754) * u + 0.5737) * u + 7.62;
+  } else if (Ygreg < 1920) {
+    u = Ygreg - 1900;
+    ans = (((-0.000197 * u + 0.0061966) * u - 0.0598939) * u + 1.494119) * u -2.79;
+  } else if (Ygreg < 1941) {
+    u = Ygreg - 1920;
+    ans = 21.20 + 0.84493 * u - 0.076100 * u * u + 0.0020936 * u * u * u;
+  } else if (Ygreg < 1961) {
+    u = Ygreg - 1950;
+    ans = 29.07 + 0.407 * u - u * u / 233.0 + u * u * u / 2547.0;
+  } else if (Ygreg < 1986) {
+    u = Ygreg - 1975;
+    ans = 45.45 + 1.067 * u - u * u / 260.0 - u * u * u / 718.0;
+  } else if (Ygreg < 2005) {
+    u = Ygreg - 2000;
+    ans = ((((0.00002373599 * u + 0.000651814) * u + 0.0017275) * u - 0.060374) * u + 0.3345) * u + 63.86;
+  }
+  ans = adjust_for_tidacc(ans, Ygreg);
+  ans /= 86400.0;
+  return ans;
 }
 
 /* Read delta t values from external file.
@@ -1771,7 +1862,8 @@ static int init_dt(void)
       sp += 4;
       while (strchr(" \t", *sp) != NULL && *sp != '\0')
         sp++;	/* was *sp++  fixed by Alois 2-jul-2003 */
-      dt[tab_index] = (short) (atof(sp) * 100 + 0.5);
+      /*dt[tab_index] = (short) (atof(sp) * 100 + 0.5);*/
+      dt[tab_index] = atof(sp);
     }
     fclose(fp);
   }
@@ -2272,18 +2364,11 @@ char *FAR PASCAL_CONV swe_cs2degstr(CSEC t, char *a)
 {
   /* char a[9];	 must be initialized at each call */
   centisec h,m,s;
-  strcpy (a, "     '  ");
-  a[2] = (unsigned char) ODEGREE_CHAR;
   t = t  / 100 % (30L*3600L); /* truncate to seconds */
   s = t % 60L;
   m = t / 60 % 60L;
   h = t / 3600 % 100L;	/* only 0..99 degrees */ 
-  if (h > 9)  a [0] = (char) (h / 10 + '0');
-  a [1] = (char) (h % 10 + '0');
-  a [3] = (char) (m / 10 + '0');
-  a [4] = (char) (m % 10 + '0');
-  a [6] = (char) (s / 10 + '0');
-  a [7] = (char) (s % 10 + '0');
+  sprintf(a, "%2d%s%02d'%02d", h, ODEGREE_STRING, m, s);
   return (a);
 } /* swe_cs2degstr() */
 
@@ -2387,6 +2472,39 @@ void swi_FK5_FK4(double *xp, double tjd)
   xp[0] -= (0.035 + 0.085 * (tjd - B1950) / 36524.2198782) / 3600 * 15 * DEGTORAD;
   xp[3] -= (0.085 / 36524.2198782) / 3600 * 15 * DEGTORAD;
   swi_polcart(xp, xp);
+}
+
+char *swi_strcpy(char *to, char *from)
+{
+  char *s;
+  if (*from == '\0') {
+    *to = '\0';
+    return to;
+  }
+  s = strdup(from);
+  if (s == NULL) {
+    strcpy(to, from);
+    return to;
+  }
+  strcpy(to, s);
+  free(s);
+  return to;
+}
+
+char *swi_strncpy(char *to, char *from, size_t n)
+{ 
+  char *s;
+  if (*from == '\0') {
+    return to;
+  }
+  s = strdup(from);
+  if (s == NULL) {
+    strncpy(to, from, n);
+    return to;
+  }
+  strncpy(to, s, n);
+  free(s);
+  return to;
 }
 
 #ifdef TRACE

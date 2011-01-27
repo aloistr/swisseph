@@ -104,6 +104,377 @@ static int32 calc_mer_trans(
                char *serr); 
 static int32 calc_planet_star(double tjd_et, int32 ipl, char *starname, int32 iflag, double *x, char *serr);
 
+struct saros_data {int series_no; double tstart;};
+
+#define SAROS_CYCLE  6585.3213
+#define NSAROS_SOLAR 181
+struct saros_data saros_data_solar[NSAROS_SOLAR] = {
+{0, 641886.5}, /* 23 May -2955 */
+{1, 672214.5}, /* 04 Jun -2872 */
+{2, 676200.5}, /* 04 May -2861 */
+{3, 693357.5}, /* 24 Apr -2814 */
+{4, 723685.5}, /* 06 May -2731 */
+{5, 727671.5}, /* 04 Apr -2720 */
+{6, 744829.5}, /* 27 Mar -2673 */
+{7, 775157.5}, /* 08 Apr -2590 */
+{8, 779143.5}, /* 07 Mar -2579 */
+{9, 783131.5}, /* 06 Feb -2568 */
+{10, 820044.5}, /* 28 Feb -2467 */
+{11, 810859.5}, /* 06 Jan -2492 */
+{12, 748993.5}, /* 20 Aug -2662 */
+{13, 792492.5}, /* 23 Sep -2543 */
+{14, 789892.5}, /* 11 Aug -2550 */
+{15, 787294.5}, /* 01 Jul -2557 */
+{16, 824207.5}, /* 23 Jul -2456 */
+{17, 834779.5}, /* 03 Jul -2427 */
+{18, 838766.5}, /* 02 Jun -2416 */
+{19, 869094.5}, /* 15 Jun -2333 */
+{20, 886251.5}, /* 05 Jun -2286 */
+{21, 890238.5}, /* 05 May -2275 */
+{22, 927151.5}, /* 28 May -2174 */
+{23, 937722.5}, /* 07 May -2145 */
+{24, 941709.5}, /* 06 Apr -2134 */
+{25, 978623.5}, /* 30 Apr -2033 */
+{26, 989194.5}, /* 08 Apr -2004 */
+{27, 993181.5}, /* 09 Mar -1993 */
+{28, 1023510.5}, /* 22 Mar -1910 */
+{29, 1034081.5}, /* 01 Mar -1881 */
+{30, 972214.5}, /* 12 Oct -2051 */
+{31, 1061811.5}, /* 31 Jan -1805 */
+{32, 1006529.5}, /* 24 Sep -1957 */
+{33, 997345.5}, /* 02 Aug -1982 */
+{34, 1021088.5}, /* 04 Aug -1917 */
+{35, 1038245.5}, /* 25 Jul -1870 */
+{36, 1042231.5}, /* 23 Jun -1859 */
+{37, 1065974.5}, /* 25 Jun -1794 */
+{38, 1089716.5}, /* 26 Jun -1729 */
+{39, 1093703.5}, /* 26 May -1718 */
+{40, 1117446.5}, /* 28 May -1653 */
+{41, 1141188.5}, /* 28 May -1588 */
+{42, 1145175.5}, /* 28 Apr -1577 */
+{43, 1168918.5}, /* 29 Apr -1512 */
+{44, 1192660.5}, /* 30 Apr -1447 */
+{45, 1196647.5}, /* 30 Mar -1436 */
+{46, 1220390.5}, /* 01 Apr -1371 */
+{47, 1244132.5}, /* 02 Apr -1306 */
+{48, 1234948.5}, /* 08 Feb -1331 */
+{49, 1265277.5}, /* 22 Feb -1248 */
+{50, 1282433.5}, /* 11 Feb -1201 */
+{51, 1207395.5}, /* 02 Sep -1407 */
+{52, 1217968.5}, /* 14 Aug -1378 */
+{53, 1254881.5}, /* 06 Sep -1277 */
+{54, 1252282.5}, /* 25 Jul -1284 */
+{55, 1262855.5}, /* 06 Jul -1255 */
+{56, 1293182.5}, /* 17 Jul -1172 */
+{57, 1297169.5}, /* 17 Jun -1161 */
+{58, 1314326.5}, /* 07 Jun -1114 */
+{59, 1344654.5}, /* 19 Jun -1031 */
+{60, 1348640.5}, /* 18 May -1020 */
+{61, 1365798.5}, /* 10 May -0973 */
+{62, 1396126.5}, /* 22 May -0890 */
+{63, 1400112.5}, /* 20 Apr -0879 */
+{64, 1417270.5}, /* 11 Apr -0832 */
+{65, 1447598.5}, /* 24 Apr -0749 */
+{66, 1444999.5}, /* 12 Mar -0756 */
+{67, 1462157.5}, /* 04 Mar -0709 */
+{68, 1492485.5}, /* 16 Mar -0626 */
+{69, 1456959.5}, /* 09 Dec -0724 */
+{70, 1421434.5}, /* 05 Sep -0821 */
+{71, 1471518.5}, /* 19 Oct -0684 */
+{72, 1455748.5}, /* 16 Aug -0727 */
+{73, 1466320.5}, /* 27 Jul -0698 */
+{74, 1496648.5}, /* 08 Aug -0615 */
+{75, 1500634.5}, /* 07 Jul -0604 */
+{76, 1511207.5}, /* 18 Jun -0575 */
+{77, 1548120.5}, /* 11 Jul -0474 */
+{78, 1552106.5}, /* 09 Jun -0463 */
+{79, 1562679.5}, /* 21 May -0434 */
+{80, 1599592.5}, /* 13 Jun -0333 */
+{81, 1603578.5}, /* 12 May -0322 */
+{82, 1614150.5}, /* 22 Apr -0293 */
+{83, 1644479.5}, /* 05 May -0210 */
+{84, 1655050.5}, /* 14 Apr -0181 */
+{85, 1659037.5}, /* 14 Mar -0170 */
+{86, 1695950.5}, /* 06 Apr -0069 */
+{87, 1693351.5}, /* 23 Feb -0076 */
+{88, 1631484.5}, /* 06 Oct -0246 */
+{89, 1727666.5}, /* 04 Feb 0018 */
+{90, 1672384.5}, /* 28 Sep -0134 */
+{91, 1663200.5}, /* 06 Aug -0159 */
+{92, 1693529.5}, /* 19 Aug -0076 */
+{93, 1710685.5}, /* 09 Aug -0029 */
+{94, 1714672.5}, /* 09 Jul -0018 */
+{95, 1738415.5}, /* 11 Jul 0047 */
+{96, 1755572.5}, /* 01 Jul 0094 */
+{97, 1766144.5}, /* 11 Jun 0123 */
+{98, 1789887.5}, /* 12 Jun 0188 */
+{99, 1807044.5}, /* 03 Jun 0235 */
+{100, 1817616.5}, /* 13 May 0264 */
+{101, 1841359.5}, /* 15 May 0329 */
+{102, 1858516.5}, /* 05 May 0376 */
+{103, 1862502.5}, /* 04 Apr 0387 */
+{104, 1892831.5}, /* 17 Apr 0470 */
+{105, 1903402.5}, /* 27 Mar 0499 */
+{106, 1887633.5}, /* 23 Jan 0456 */
+{107, 1924547.5}, /* 15 Feb 0557 */
+{108, 1921948.5}, /* 04 Jan 0550 */
+{109, 1873251.5}, /* 07 Sep 0416 */
+{110, 1890409.5}, /* 30 Aug 0463 */
+{111, 1914151.5}, /* 30 Aug 0528 */
+{112, 1918138.5}, /* 31 Jul 0539 */
+{113, 1935296.5}, /* 22 Jul 0586 */
+{114, 1959038.5}, /* 23 Jul 0651 */
+{115, 1963024.5}, /* 21 Jun 0662 */
+{116, 1986767.5}, /* 23 Jun 0727 */
+{117, 2010510.5}, /* 24 Jun 0792 */
+{118, 2014496.5}, /* 24 May 0803 */
+{119, 2031654.5}, /* 15 May 0850 */
+{120, 2061982.5}, /* 27 May 0933 */
+{121, 2065968.5}, /* 25 Apr 0944 */
+{122, 2083126.5}, /* 17 Apr 0991 */
+{123, 2113454.5}, /* 29 Apr 1074 */
+{124, 2104269.5}, /* 06 Mar 1049 */
+{125, 2108256.5}, /* 04 Feb 1060 */
+{126, 2151755.5}, /* 10 Mar 1179 */
+{127, 2083302.5}, /* 10 Oct 0991 */
+{128, 2080704.5}, /* 29 Aug 0984 */
+{129, 2124203.5}, /* 03 Oct 1103 */
+{130, 2121603.5}, /* 20 Aug 1096 */
+{131, 2132176.5}, /* 01 Aug 1125 */
+{132, 2162504.5}, /* 13 Aug 1208 */
+{133, 2166490.5}, /* 13 Jul 1219 */
+{134, 2177062.5}, /* 22 Jun 1248 */
+{135, 2207390.5}, /* 05 Jul 1331 */
+{136, 2217962.5}, /* 14 Jun 1360 */
+{137, 2228534.5}, /* 25 May 1389 */
+{138, 2258862.5}, /* 06 Jun 1472 */
+{139, 2269434.5}, /* 17 May 1501 */
+{140, 2273421.5}, /* 16 Apr 1512 */
+{141, 2310334.5}, /* 19 May 1613 */
+{142, 2314320.5}, /* 17 Apr 1624 */
+{143, 2311722.5}, /* 07 Mar 1617 */
+{144, 2355221.5}, /* 11 Apr 1736 */
+{145, 2319695.5}, /* 04 Jan 1639 */
+{146, 2284169.5}, /* 19 Sep 1541 */
+{147, 2314498.5}, /* 12 Oct 1624 */
+{148, 2325069.5}, /* 21 Sep 1653 */
+{149, 2329056.5}, /* 21 Aug 1664 */
+{150, 2352799.5}, /* 24 Aug 1729 */
+{151, 2369956.5}, /* 14 Aug 1776 */
+{152, 2380528.5}, /* 26 Jul 1805 */
+{153, 2404271.5}, /* 28 Jul 1870 */
+{154, 2421428.5}, /* 19 Jul 1917 */
+{155, 2425414.5}, /* 17 Jun 1928 */
+{156, 2455743.5}, /* 01 Jul 2011 */
+{157, 2472900.5}, /* 21 Jun 2058 */
+{158, 2476886.5}, /* 20 May 2069 */
+{159, 2500629.5}, /* 23 May 2134 */
+{160, 2517786.5}, /* 13 May 2181 */
+{161, 2515187.5}, /* 01 Apr 2174 */
+{162, 2545516.5}, /* 15 Apr 2257 */
+{163, 2556087.5}, /* 25 Mar 2286 */
+{164, 2487635.5}, /* 24 Oct 2098 */
+{165, 2504793.5}, /* 16 Oct 2145 */
+{166, 2535121.5}, /* 29 Oct 2228 */
+{167, 2525936.5}, /* 06 Sep 2203 */
+{168, 2543094.5}, /* 28 Aug 2250 */
+{169, 2573422.5}, /* 10 Sep 2333 */
+{170, 2577408.5}, /* 09 Aug 2344 */
+{171, 2594566.5}, /* 01 Aug 2391 */
+{172, 2624894.5}, /* 13 Aug 2474 */
+{173, 2628880.5}, /* 12 Jul 2485 */
+{174, 2646038.5}, /* 04 Jul 2532 */
+{175, 2669780.5}, /* 05 Jul 2597 */
+{176, 2673766.5}, /* 04 Jun 2608 */
+{177, 2690924.5}, /* 27 May 2655 */
+{178, 2721252.5}, /* 09 Jun 2738 */
+{179, 2718653.5}, /* 28 Apr 2731 */
+{180, 2729226.5}, /* 08 Apr 2760 */
+};
+
+#define NSAROS_LUNAR 180
+struct saros_data saros_data_lunar[NSAROS_LUNAR] = {
+{1, 782437.5}, /* 14 Mar -2570 */
+{2, 799593.5}, /* 03 Mar -2523 */
+{3, 783824.5}, /* 30 Dec -2567 */
+{4, 754884.5}, /* 06 Oct -2646 */
+{5, 824724.5}, /* 22 Dec -2455 */
+{6, 762857.5}, /* 04 Aug -2624 */
+{7, 773430.5}, /* 16 Jul -2595 */
+{8, 810343.5}, /* 08 Aug -2494 */
+{9, 807743.5}, /* 26 Jun -2501 */
+{10, 824901.5}, /* 17 Jun -2454 */
+{11, 855229.5}, /* 29 Jun -2371 */
+{12, 859215.5}, /* 28 May -2360 */
+{13, 876373.5}, /* 20 May -2313 */
+{14, 906701.5}, /* 01 Jun -2230 */
+{15, 910687.5}, /* 30 Apr -2219 */
+{16, 927845.5}, /* 21 Apr -2172 */
+{17, 958173.5}, /* 04 May -2089 */
+{18, 962159.5}, /* 02 Apr -2078 */
+{19, 979317.5}, /* 24 Mar -2031 */
+{20, 1009645.5}, /* 05 Apr -1948 */
+{21, 1007046.5}, /* 22 Feb -1955 */
+{22, 1017618.5}, /* 02 Feb -1926 */
+{23, 1054531.5}, /* 25 Feb -1825 */
+{24, 979493.5}, /* 16 Sep -2031 */
+{25, 976895.5}, /* 06 Aug -2038 */
+{26, 1020394.5}, /* 09 Sep -1919 */
+{27, 1017794.5}, /* 28 Jul -1926 */
+{28, 1028367.5}, /* 09 Jul -1897 */
+{29, 1058695.5}, /* 21 Jul -1814 */
+{30, 1062681.5}, /* 19 Jun -1803 */
+{31, 1073253.5}, /* 30 May -1774 */
+{32, 1110167.5}, /* 23 Jun -1673 */
+{33, 1114153.5}, /* 22 May -1662 */
+{34, 1131311.5}, /* 13 May -1615 */
+{35, 1161639.5}, /* 25 May -1532 */
+{36, 1165625.5}, /* 24 Apr -1521 */
+{37, 1176197.5}, /* 03 Apr -1492 */
+{38, 1213111.5}, /* 27 Apr -1391 */
+{39, 1217097.5}, /* 26 Mar -1380 */
+{40, 1221084.5}, /* 24 Feb -1369 */
+{41, 1257997.5}, /* 18 Mar -1268 */
+{42, 1255398.5}, /* 04 Feb -1275 */
+{43, 1186946.5}, /* 07 Sep -1463 */
+{44, 1283128.5}, /* 06 Jan -1199 */
+{45, 1227845.5}, /* 29 Aug -1351 */
+{46, 1225247.5}, /* 19 Jul -1358 */
+{47, 1255575.5}, /* 31 Jul -1275 */
+{48, 1272732.5}, /* 21 Jul -1228 */
+{49, 1276719.5}, /* 21 Jun -1217 */
+{50, 1307047.5}, /* 03 Jul -1134 */
+{51, 1317619.5}, /* 13 Jun -1105 */
+{52, 1328191.5}, /* 23 May -1076 */
+{53, 1358519.5}, /* 05 Jun -0993 */
+{54, 1375676.5}, /* 26 May -0946 */
+{55, 1379663.5}, /* 25 Apr -0935 */
+{56, 1409991.5}, /* 07 May -0852 */
+{57, 1420562.5}, /* 16 Apr -0823 */
+{58, 1424549.5}, /* 16 Mar -0812 */
+{59, 1461463.5}, /* 09 Apr -0711 */
+{60, 1465449.5}, /* 08 Mar -0700 */
+{61, 1436509.5}, /* 13 Dec -0780 */
+{62, 1493179.5}, /* 08 Feb -0624 */
+{63, 1457653.5}, /* 03 Nov -0722 */
+{64, 1435298.5}, /* 20 Aug -0783 */
+{65, 1452456.5}, /* 11 Aug -0736 */
+{66, 1476198.5}, /* 12 Aug -0671 */
+{67, 1480184.5}, /* 11 Jul -0660 */
+{68, 1503928.5}, /* 14 Jul -0595 */
+{69, 1527670.5}, /* 15 Jul -0530 */
+{70, 1531656.5}, /* 13 Jun -0519 */
+{71, 1548814.5}, /* 04 Jun -0472 */
+{72, 1579142.5}, /* 17 Jun -0389 */
+{73, 1583128.5}, /* 16 May -0378 */
+{74, 1600286.5}, /* 07 May -0331 */
+{75, 1624028.5}, /* 08 May -0266 */
+{76, 1628015.5}, /* 07 Apr -0255 */
+{77, 1651758.5}, /* 09 Apr -0190 */
+{78, 1675500.5}, /* 10 Apr -0125 */
+{79, 1672901.5}, /* 27 Feb -0132 */
+{80, 1683474.5}, /* 07 Feb -0103 */
+{81, 1713801.5}, /* 19 Feb -0020 */
+{82, 1645349.5}, /* 21 Sep -0208 */
+{83, 1649336.5}, /* 22 Aug -0197 */
+{84, 1686249.5}, /* 13 Sep -0096 */
+{85, 1683650.5}, /* 02 Aug -0103 */
+{86, 1694222.5}, /* 13 Jul -0074 */
+{87, 1731136.5}, /* 06 Aug 0027 */
+{88, 1735122.5}, /* 05 Jul 0038 */
+{89, 1745694.5}, /* 15 Jun 0067 */
+{90, 1776022.5}, /* 27 Jun 0150 */
+{91, 1786594.5}, /* 07 Jun 0179 */
+{92, 1797166.5}, /* 17 May 0208 */
+{93, 1827494.5}, /* 30 May 0291 */
+{94, 1838066.5}, /* 09 May 0320 */
+{95, 1848638.5}, /* 19 Apr 0349 */
+{96, 1878966.5}, /* 01 May 0432 */
+{97, 1882952.5}, /* 31 Mar 0443 */
+{98, 1880354.5}, /* 18 Feb 0436 */
+{99, 1923853.5}, /* 24 Mar 0555 */
+{100, 1881741.5}, /* 06 Dec 0439 */
+{101, 1852801.5}, /* 11 Sep 0360 */
+{102, 1889715.5}, /* 05 Oct 0461 */
+{103, 1893701.5}, /* 03 Sep 0472 */
+{104, 1897688.5}, /* 04 Aug 0483 */
+{105, 1928016.5}, /* 16 Aug 0566 */
+{106, 1938588.5}, /* 27 Jul 0595 */
+{107, 1942575.5}, /* 26 Jun 0606 */
+{108, 1972903.5}, /* 08 Jul 0689 */
+{109, 1990059.5}, /* 27 Jun 0736 */
+{110, 1994046.5}, /* 28 May 0747 */
+{111, 2024375.5}, /* 10 Jun 0830 */
+{112, 2034946.5}, /* 20 May 0859 */
+{113, 2045518.5}, /* 29 Apr 0888 */
+{114, 2075847.5}, /* 13 May 0971 */
+{115, 2086418.5}, /* 21 Apr 1000 */
+{116, 2083820.5}, /* 11 Mar 0993 */
+{117, 2120733.5}, /* 03 Apr 1094 */
+{118, 2124719.5}, /* 02 Mar 1105 */
+{119, 2062852.5}, /* 14 Oct 0935 */
+{120, 2086596.5}, /* 16 Oct 1000 */
+{121, 2103752.5}, /* 06 Oct 1047 */
+{122, 2094568.5}, /* 14 Aug 1022 */
+{123, 2118311.5}, /* 16 Aug 1087 */
+{124, 2142054.5}, /* 17 Aug 1152 */
+{125, 2146040.5}, /* 17 Jul 1163 */
+{126, 2169783.5}, /* 18 Jul 1228 */
+{127, 2186940.5}, /* 09 Jul 1275 */
+{128, 2197512.5}, /* 18 Jun 1304 */
+{129, 2214670.5}, /* 10 Jun 1351 */
+{130, 2238412.5}, /* 10 Jun 1416 */
+{131, 2242398.5}, /* 10 May 1427 */
+{132, 2266142.5}, /* 12 May 1492 */
+{133, 2289884.5}, /* 13 May 1557 */
+{134, 2287285.5}, /* 01 Apr 1550 */
+{135, 2311028.5}, /* 13 Apr 1615 */
+{136, 2334770.5}, /* 13 Apr 1680 */
+{137, 2292659.5}, /* 17 Dec 1564 */
+{138, 2276890.5}, /* 15 Oct 1521 */
+{139, 2326974.5}, /* 09 Dec 1658 */
+{140, 2304619.5}, /* 25 Sep 1597 */
+{141, 2308606.5}, /* 25 Aug 1608 */
+{142, 2345520.5}, /* 19 Sep 1709 */
+{143, 2349506.5}, /* 18 Aug 1720 */
+{144, 2360078.5}, /* 29 Jul 1749 */
+{145, 2390406.5}, /* 11 Aug 1832 */
+{146, 2394392.5}, /* 11 Jul 1843 */
+{147, 2411550.5}, /* 02 Jul 1890 */
+{148, 2441878.5}, /* 15 Jul 1973 */
+{149, 2445864.5}, /* 13 Jun 1984 */
+{150, 2456437.5}, /* 25 May 2013 */
+{151, 2486765.5}, /* 06 Jun 2096 */
+{152, 2490751.5}, /* 07 May 2107 */
+{153, 2501323.5}, /* 16 Apr 2136 */
+{154, 2538236.5}, /* 10 May 2237 */
+{155, 2529052.5}, /* 18 Mar 2212 */
+{156, 2473771.5}, /* 08 Nov 2060 */
+{157, 2563367.5}, /* 01 Mar 2306 */
+{158, 2508085.5}, /* 21 Oct 2154 */
+{159, 2505486.5}, /* 09 Sep 2147 */
+{160, 2542400.5}, /* 03 Oct 2248 */
+{161, 2546386.5}, /* 02 Sep 2259 */
+{162, 2556958.5}, /* 12 Aug 2288 */
+{163, 2587287.5}, /* 27 Aug 2371 */
+{164, 2597858.5}, /* 05 Aug 2400 */
+{165, 2601845.5}, /* 06 Jul 2411 */
+{166, 2632173.5}, /* 18 Jul 2494 */
+{167, 2649330.5}, /* 09 Jul 2541 */
+{168, 2653317.5}, /* 08 Jun 2552 */
+{169, 2683645.5}, /* 22 Jun 2635 */
+{170, 2694217.5}, /* 01 Jun 2664 */
+{171, 2698203.5}, /* 01 May 2675 */
+{172, 2728532.5}, /* 15 May 2758 */
+{173, 2739103.5}, /* 24 Apr 2787 */
+{174, 2683822.5}, /* 16 Dec 2635 */
+{175, 2740492.5}, /* 11 Feb 2791 */
+{176, 2724722.5}, /* 09 Dec 2747 */
+{177, 2708952.5}, /* 05 Oct 2704 */
+{178, 2732695.5}, /* 07 Oct 2769 */
+{179, 2749852.5}, /* 27 Sep 2816 */
+{180, 2753839.5}, /* 28 Aug 2827 */
+};
 
 /* Computes geographic location and type of solar eclipse 
  * for a given tjd 
@@ -460,7 +831,7 @@ iter_where:
   dcore[1] *= AUNIT / 1000.0;
   if (!(retc & SE_ECL_PARTIAL) && !no_eclipse) {
     if (*dcore > 0) {
-      /*printf("ringf”rmig\n");*/
+      /*printf("annular\n");*/
       retc |= SE_ECL_ANNULAR;
     } else {
       /*printf("total\n");*/
@@ -500,7 +871,7 @@ static int32 calc_planet_star(double tjd_et, int32 ipl, char *starname, int32 if
  *              SE_ECL_NONCENTRAL
  *              if 0, no eclipse is visible at geogr. position.
  * 
- * attr[0]	fraction of solar diameter covered by moon (magnitude)
+ * attr[0]	fraction of solar diameter covered by moon
  * attr[1]	ratio of lunar diameter to solar one
  * attr[2]	fraction of solar disc covered by moon (obscuration)
  * attr[3]      diameter of core shadow in km
@@ -508,6 +879,9 @@ static int32 calc_planet_star(double tjd_et, int32 ipl, char *starname, int32 if
  * attr[5]	true altitude of sun above horizon at tjd
  * attr[6]	apparent altitude of sun above horizon at tjd
  * attr[7]	elongation of moon in degrees
+ * attr[8]	magnitude (= attr[0] or attr[1] depending on eclipse type)
+ * attr[9]	saros series number
+ * attr[10]	saros series member number
  *         declare as attr[20] at least !
  * 
  */
@@ -536,9 +910,9 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
           double geolon, double geolat, double geohgt,
           double *attr, char *serr)
 {
-  int i;
+  int i, j, k;
   int32 retc = 0;
-  double te;
+  double te, d;
   double xs[6], xm[6], ls[6], lm[6], x1[6], x2[6];
   double rmoon, rsun, rsplusrm, rsminusrm;
   double dctr;
@@ -619,24 +993,30 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
    * fraction of solar diameter covered by moon
    */
   lsun = asin(rsun / 2 * DEGTORAD) * 2;
+#if 0
   lmoon = asin(rmoon / 2 * DEGTORAD) * 2;
   lctr = asin(dctr / 2 * DEGTORAD) * 2;
-  lsunleft = asin((-dctr + rsun + rmoon) * DEGTORAD / 2) * 2;
-  if (lsun > 0)
-    attr[0] = lsunleft / lsun / 2;
-  else
+#endif
+  lsunleft = (-dctr + rsun + rmoon);
+  if (lsun > 0) {
+    attr[0] = lsunleft / rsun / 2;
+  } else {
     attr[0] = 100;
+  }
   /*
    * ratio of diameter of moon to that of sun
    */
-  if (lsun > 0)
-    attr[1] = lmoon / lsun;
+  if (rsun > 0)
+    attr[1] = rmoon / rsun;
   else
     attr[1] = 0;
   /*
    * obscuration:
    * fraction of solar disc obscured by moon
    */
+  lsun = rsun;
+  lmoon = rmoon;
+  lctr = dctr;
   if (retc == 0 || lsun == 0)
     attr[2] = 100;
   else if (retc == SE_ECL_TOTAL || retc == SE_ECL_ANNULAR)
@@ -648,11 +1028,11 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
       attr[2] = lmoon * lmoon / lsun / lsun;
     } else {
       a = (lctr * lctr + lmoon * lmoon - lsun * lsun) / a;
-	  if (a > 1) a = 1;
-	  if (a < -1) a = -1;
+      if (a > 1) a = 1;
+      if (a < -1) a = -1;
       b = (lctr * lctr + lsun * lsun - lmoon * lmoon) / b;
-	  if (b > 1) b = 1;
-	  if (b < -1) b = -1;
+      if (b > 1) b = 1;
+      if (b < -1) b = -1;
       a = acos(a);
       b = acos(b);
       sc1 = a * lmoon * lmoon / 2;
@@ -674,6 +1054,32 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
     retc |= SE_ECL_VISIBLE;	/* eclipse visible */
   attr[4] = swe_degnorm(90 - xh[0]);	/* azimuth, from north, clockwise */
   attr[5] = xh[1]; /* height */
+  if (ipl == SE_SUN && (starname == NULL || *starname == '\0')) {
+    /* magnitude of solar eclipse */
+    attr[8] = attr[0]; /* fraction of diameter occulted */
+    if (retc & (SE_ECL_TOTAL | SE_ECL_ANNULAR))
+      attr[8] = attr[1]; /* ration between diameters of sun and moon */
+    /* saros series and member */
+    for (i = 0; i < NSAROS_SOLAR; i++) {
+      d = (tjd_ut - saros_data_solar[i].tstart) / SAROS_CYCLE;
+      if (d < 0) continue;
+      j = (int) d;
+      if ((d - j) * SAROS_CYCLE < 2) {
+	attr[9] = (double) saros_data_solar[i].series_no;
+	attr[10] = (double) j + 1;
+	break;
+      }
+      k = j + 1;
+      if ((k - d) * SAROS_CYCLE < 2) {
+	attr[9] = (double) saros_data_solar[i].series_no;
+	attr[10] = (double) k + 1;
+	break;
+      }
+    }
+    if (i == NSAROS_SOLAR) {
+      attr[9] = attr[10] = -99999999;
+    }
+  }
   return retc;
 }
 
@@ -1090,7 +1496,7 @@ int32 FAR PASCAL_CONV swe_lun_occult_when_glob(
   int i, j, k, m, n, o, i1, i2;
   int32 retflag = 0, retflag2 = 0;
   double de = 6378.140, a;
-  double t, tt, tjd, tjds, dt, dtint, dta, dtb;
+  double t, tt, tjd = 0, tjds, dt, dtint, dta, dtb;
   double drad;
   double xs[6], xm[6], ls[6], lm[6];
   double rmoon, rsun, dcore[10];
@@ -1102,6 +1508,7 @@ int32 FAR PASCAL_CONV swe_lun_occult_when_glob(
   double geopos[20];
   double dtstart, dtdiv;
   int direction = 1;
+  char s[AS_MAXCH];
   int32 iflag, iflagcart;
   AS_BOOL dont_times = FALSE;
   int32 one_try = backward & SE_ECL_ONE_TRY;
@@ -1143,10 +1550,16 @@ next_try:
       tjd = t - direction * dadd2;
       break;
     } else if (i == nstartpos-1) {
-      for (j = 0; j < nstartpos; j++)
-        printf("%f ", dc[j]);
-      printf("problem planet\n");
-      exit(0);
+      /*for (j = 0; j < nstartpos; j++)
+        printf("%f ", dc[j]);*/
+      if (serr != NULL) {
+	if (starname != NULL && *starname != '\0')
+	  strcpy(s, starname);
+        else
+	  swe_get_planet_name(ipl , s);
+	sprintf(serr, "error in swe_lun_occult_when_glob(): conjunction of moon with planet %s not found\n", s);
+      }
+      return ERR;
     }
   }
   /*
@@ -2288,7 +2701,7 @@ void FAR PASCAL_CONV swe_set_lapse_rate(double lapse_rate)
  *                      * geometric horizon = plane perpendicular to gravity *
  * double geoalt;       * altitude of observer above sea level in meters *
  * double atpress;      * millibars (hectopascal) *
- * double lapse_rate;    * (dT/dh) [°K/m]
+ * double lapse_rate;    * (dT/dh) [deg K/m]
  * double attemp;       * degrees C *
  * int32  calc_flag;    * either SE_CALC_APP_TO_TRUE or
  *                      *        SE_CALC_TRUE_TO_APP
@@ -2428,7 +2841,7 @@ static double calc_astronomical_refr(double inalt,double atpress, double attemp)
  * double geoalt       * altitude of observer above sea level in meters *
  * double atpress      * atmospheric pressure millibars (hectopascal) *
  * double attemp       * atmospheric temperature degrees C *
- * double lapse_rate   * (dT/dh) [°K/m]
+ * double lapse_rate   * (dT/dh) [deg K/m]
  * returns dip in degrees
  */
 static double calc_dip(double geoalt, double atpress, double attemp, double lapse_rate)
@@ -2459,6 +2872,9 @@ static double calc_dip(double geoalt, double atpress, double attemp, double laps
  * attr[6]	apparent altitude of moon above horizon at tjd
 #endif
  * attr[7]	distance of moon from opposition in degrees
+ * attr[8]	umbral magnitude at tjd (= attr[0])
+ * attr[9]	saros series number
+ * attr[10]	saros series member number
  *         declare as attr[20] at least !
  * 
  */
@@ -2491,13 +2907,13 @@ static int32 lun_eclipse_how(
           double *dcore, 
           char *serr)
 {
-  int i;
+  int i, j, k;
   int32 retc = 0;
   double e[6], rm[6], rs[6];
   double dsm, d0, D0, s0, r0, ds, dm;
   double dctr, x1[6], x2[6];
   double f1, f2;
-  double deltat, tjd;
+  double deltat, tjd, d;
   double cosf1, cosf2;
   int32 iflag;
   for (i = 0; i < 10; i++) 
@@ -2576,12 +2992,33 @@ static int32 lun_eclipse_how(
     if (serr != NULL)
       sprintf(serr, "no lunar eclipse at tjd = %f", tjd);
   }
+  attr[8] = attr[0];
   /**************************
    * penumbral magnitude
    **************************/
   attr[1] = (D0 / 2 - r0 + RMOON) / DMOON;
   if (retc != 0)
     attr[7] = 180 - fabs(dctr);
+  /* saros series and member */
+  for (i = 0; i < NSAROS_LUNAR; i++) {
+    d = (tjd_ut - saros_data_lunar[i].tstart) / SAROS_CYCLE;
+    if (d < 0) continue;
+    j = (int) d;
+    if ((d - j) * SAROS_CYCLE < 2) {
+      attr[9] = (double) saros_data_lunar[i].series_no;
+      attr[10] = (double) j + 1;
+      break;
+    }
+    k = j + 1;
+    if ((k - d) * SAROS_CYCLE < 2) {
+      attr[9] = (double) saros_data_lunar[i].series_no;
+      attr[10] = (double) k + 1;
+      break;
+    }
+  }
+  if (i == NSAROS_LUNAR) {
+    attr[9] = attr[10] = -99999999;
+  }
   return retc;
 }
 

@@ -120,14 +120,14 @@ int FAR PASCAL_CONV swe_date_conversion(int y,
  * If gregflag = SE_GREG_CAL (1), Gregorian calendar is assumed,
  * if gregflag = SE_JUL_CAL (0),Julian calendar is assumed.
   
- The Julian day number is system of numbering all days continously
+ The Julian day number is a system of numbering all days continously
  within the time range of known human history. It should be familiar
- for every astrological or astronomical programmer. The time variable
+ to every astrological or astronomical programmer. The time variable
  in astronomical theories is usually expressed in Julian days or
  Julian centuries (36525 days per century) relative to some start day;
  the start day is called 'the epoch'.
  The Julian day number is a double representing the number of
- days since JD = 0.0 on 1 Jan -4712, 12:00 noon.
+ days since JD = 0.0 on 1 Jan -4712, 12:00 noon (in the Julian calendar).
  
  Midnight has always a JD with fraction .5, because traditionally
  the astronomical day started at noon. This was practical because
@@ -137,9 +137,6 @@ int FAR PASCAL_CONV swe_date_conversion(int y,
  
  NOTE: The Julian day number must not be confused with the Julian 
  calendar system.
- The Julian day number was introduced by Josephus Justus Scaliger
- in 1583 and named either after the Julian calendar year or
- after his father Julius Caesar Scaliger.
 
  Be aware the we always use astronomical year numbering for the years
  before Christ, not the historical year numbering.

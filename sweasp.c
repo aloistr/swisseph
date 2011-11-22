@@ -2,7 +2,7 @@
 /* SWISSEPH
    $Header: /home/dieter/sweph/RCS/sweasp.c,v 1.74 2008/06/16 10:07:20 dieter Exp dieter $
    
-  Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
+  Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 swetest -ec3 -p789 -lasp -b1.1.-580 -s30 -n200000 -lsco -ln2
 **************************************************************/
@@ -187,7 +187,7 @@ static char *infoform = "\n\
         J absolute juldate\n\
         T date formatted like 23.02.1992 \n\
         t date formatted like 920223 for 1992 february 23\n\
-        L longitude in degree ddd°mm'ss\"\n\
+        L longitude in degree ddd mm'ss\"\n\
         l longitude decimal\n\
         Z longitude ddsignmm'ss\"\n\
         S speed in longitude in degree ddd:mm:ss per day\n\
@@ -1602,13 +1602,13 @@ static char *dms(double x, long iflag)
 {
   int izod;
   long k, kdeg, kmin, ksec;
-  char c = (unsigned char) ODEGREE_CHAR;
+  char *c = ODEGREE_STRING;
   char *sp, s1[50];
   static char s[50];
   int sgn;
   *s = '\0';
   if (iflag & SEFLG_EQUATORIAL)
-    c = 'h';
+    c = "h";
   if (x < 0) {
     x = -x;
     sgn = -1;
@@ -1625,7 +1625,7 @@ static char *dms(double x, long iflag)
     sprintf(s, "%2ld %s ", kdeg, zod_nam[izod]);
   } else {
     kdeg = (long) x;
-    sprintf(s, " %3ld%c", kdeg, c);
+    sprintf(s, " %3ld%s", kdeg, c);
   }
   x -= kdeg;
   x *= 60;
@@ -1904,12 +1904,13 @@ static int find_zero(double y00, double y11, double y2, double dx,
 static char *hms(double x, long iflag)
 {
   static char s[AS_MAXCH], *sp;
-  char c = (unsigned char) ODEGREE_CHAR;
   x += 0.5 / 3600.0; /* round to 1 sec */
   strcpy(s, dms(x, BIT_ROUND_SEC));
-  sp = strchr(s, c);
+  sp = strstr(s, ODEGREE_STRING);
   if (sp != NULL) {
     *sp = ':';
+    if (strlen(ODEGREE_STRING) > 1)
+      strcpy_overlap(sp + 1, sp + strlen(ODEGREE_STRING));
     *(sp + 3) = ':';
     *(sp + 8) = '\0';
   }

@@ -142,6 +142,7 @@ static char *infodate = "\n\
 #define BIT_ROUND_SEC   1
 #define BIT_ROUND_MIN   2
 #define BIT_ZODIAC      4
+#define BIT_LZEROES     8
 
 # define ECL_LUN_PENUMBRAL       1       /* eclipse types for hocal list */
 # define ECL_LUN_PARTIAL        2
@@ -153,8 +154,8 @@ static char *infodate = "\n\
 static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi", 
                           "li", "sc", "sa", "cp", "aq", "pi"};
 
-static char *dms(double x, long iflag);
-static char *hms(double x, long iflag);
+static char *dms(double xv, int32 iflg);
+static char *hms(double x, int32 iflag);
 static long do_calc(double tjd, int ipl, long iflag, double *x, char *serr);
 static void do_printf(char *info);
 static int make_ephemeris_path(long iflag, char *argv0);
@@ -450,7 +451,11 @@ ERR) {
 	int ihou, imin, isec, isgn;
 	double dfrc;
 	swe_split_deg(jut, SE_SPLIT_DEG_ROUND_MIN, &ihou, &imin, &isec, &dfrc, &isgn);
+#if 0
 	sprintf(sout, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou, imin, ecl_type);
+#else
+	sprintf(sout, "%f, %.0f, /* %04d %02d %02d %02d.%02d %d */,\n", t_ut, (double) ecl_type, jyear, jmon, jday, ihou, imin, ecl_type);
+#endif
       } 
       do_printf(sout);
     }
@@ -580,7 +585,11 @@ geopos, tret, attr, 0, serr)) == ERR) {
 	int ihou, imin, isec, isgn;
 	double dfrc;
 	swe_split_deg(jut, SE_SPLIT_DEG_ROUND_MIN, &ihou, &imin, &isec, &dfrc, &isgn);
+#if 0
 	sprintf(sout, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou, imin, ecl_type);
+#else
+	sprintf(sout, "%f, %.0f, /* %04d %02d %02d %02d.%02d %d */\n", t_ut, (double) ecl_type, jyear, jmon, jday, ihou, imin, ecl_type);
+#endif
       } 
       do_printf(sout);
     }
@@ -657,78 +666,84 @@ static char *hms_from_tjd(double x)
   return s;
 }
 
-static char *hms(double x, long iflag)
+static char *hms(double x, int32 iflag)
 {
-  static char s[AS_MAXCH], *sp;
-  char c = (unsigned char) ODEGREE_CHAR;
+  static char s[AS_MAXCH], s2[AS_MAXCH], *sp;
+  char *c = ODEGREE_STRING;
   x += 0.5 / 36000.0; /* round to 0.1 sec */
   strcpy(s, dms(x, iflag));
-  sp = strchr(s, c);
+  sp = strstr(s, c);
   if (sp != NULL) {
     *sp = ':';
+    if (strlen(ODEGREE_STRING) > 1)
+      strcpy(s2, sp + strlen(ODEGREE_STRING));
+      strcpy(sp + 1, s2);
     *(sp + 3) = ':';
     *(sp + 8) = '\0';
   }
   return s;
 }
 
-static char *dms(double x, long iflag)
+static char *dms(double xv, int32 iflg)
 {
   int izod;
-  long k, kdeg, kmin, ksec;
-  char c = (unsigned char) ODEGREE_CHAR;
+  int32 k, kdeg, kmin, ksec;
+  char *c = ODEGREE_STRING;
   char *sp, s1[50];
   static char s[50];
   int sgn;
   *s = '\0';
-  if (iflag & SEFLG_EQUATORIAL)
-    c = 'h';
-  if (x < 0) {
-    x = -x;
+  if (iflg & SEFLG_EQUATORIAL)
+    c = "h";
+  if (xv < 0) {
+    xv = -xv;
     sgn = -1;
-  } else 
+  } else
     sgn = 1;
-  if (iflag & BIT_ROUND_MIN)
-    x += 0.5/60;
-  if (iflag & BIT_ROUND_SEC)
-    x += 0.5/3600;
-  if (iflag & BIT_ZODIAC) {
-    izod = (int) (x / 30); 
-    x = fmod(x, 30);
-    kdeg = (long) x;
-    sprintf(s, "%2ld %s ", kdeg, zod_nam[izod]);
+  if (iflg & BIT_ROUND_MIN)
+    xv = swe_degnorm(xv + 0.5/60);
+  if (iflg & BIT_ROUND_SEC)
+    xv = swe_degnorm(xv + 0.5/3600);
+  if (iflg & BIT_ZODIAC) {
+    izod = (int) (xv / 30);
+    xv = fmod(xv, 30);
+    kdeg = (int32) xv;
+    sprintf(s, "%2d %s ", kdeg, zod_nam[izod]);
   } else {
-    kdeg = (long) x;
-    sprintf(s, " %3ld%c", kdeg, c);
+    kdeg = (int32) xv;
+    sprintf(s, " %3d%s", kdeg, c);
   }
-  x -= kdeg;
-  x *= 60;
-  kmin = (long) x;
-  if ((iflag & BIT_ZODIAC) && (iflag & BIT_ROUND_MIN))
-    sprintf(s1, "%2ld", kmin);
+  xv -= kdeg;
+  xv *= 60;
+  kmin = (int32) xv;
+  if ((iflg & BIT_ZODIAC) && (iflg & BIT_ROUND_MIN))
+    sprintf(s1, "%2d", kmin);
   else
-    sprintf(s1, "%2ld'", kmin);
+    sprintf(s1, "%2d'", kmin);
   strcat(s, s1);
-  if (iflag & BIT_ROUND_MIN)
+  if (iflg & BIT_ROUND_MIN)
     goto return_dms;
-  x -= kmin;
-  x *= 60;
-  ksec = (long) x;
-  if (iflag & BIT_ROUND_SEC)
-    sprintf(s1, "%2ld\"", ksec);
+  xv -= kmin;
+  xv *= 60;
+  ksec = (int32) xv;
+  if (iflg & BIT_ROUND_SEC)
+    sprintf(s1, "%2d\"", ksec);
   else
-    sprintf(s1, "%2ld", ksec);
+    sprintf(s1, "%2d", ksec);
   strcat(s, s1);
-  if (iflag & BIT_ROUND_SEC)
+  if (iflg & BIT_ROUND_SEC)
     goto return_dms;
-  x -= ksec;
-  k = (long) (x * 10000);
-  sprintf(s1, ".%04ld", k);
+  xv -= ksec;
+  k = (int32) (xv * 10000);
+  sprintf(s1, ".%04d", k);
   strcat(s, s1);
-  return_dms:;
+return_dms:;
   if (sgn < 0) {
-    sp = strpbrk(s, "0123456789"); 
+    sp = strpbrk(s, "0123456789");
     *(sp-1) = '-';
+  }
+  if (iflg & BIT_LZEROES) {
+    while ((sp = strchr(s+2, ' ')) != NULL) *sp = '0';
   }
   return(s);
 }

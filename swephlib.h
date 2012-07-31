@@ -67,14 +67,15 @@
 /* Precession coefficients for remote past and future.
  * One of the following four defines must be true.
  */
-#define PREC_WILLIAMS_1994	TRUE	/* used by Moshier for DE404 */
+#define PREC_VONDRAK_2011	TRUE	
+#define PREC_WILLIAMS_1994	FALSE	
 #define PREC_SIMON_1994 	FALSE
 #define PREC_LASKAR_1986 	FALSE
 #define PREC_BRETAGNON_2003	FALSE	
 /* IAU precession 1976 or 2003 for recent centuries.
  * only one of the following two defines may be TRUE */
 #define PREC_IAU_1976		FALSE 	
-#define PREC_IAU_2003		TRUE  /* precession model P03 */	
+#define PREC_IAU_2003		FALSE  /* precession model P03 */	
 #define PREC_IAU_1976_CTIES          2.0 	/* J2000 +/- two centuries */
 /* we use P03 for whole ephemeris */
 #define PREC_IAU_2003_CTIES          75.0 	/* J2000 +/- 75 centuries */
@@ -122,6 +123,7 @@ extern void swi_force_app_pos_etc();
 /* obliquity of ecliptic */
 extern void swi_check_ecliptic(double tjd);
 extern double swi_epsiln(double J);
+extern void swi_ldp_peps(double J, double *dpre, double *deps);
 
 /* nutation */
 extern void swi_check_nutation(double tjd, int32 iflag);

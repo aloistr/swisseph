@@ -284,6 +284,8 @@ extern char *planet2abbr3(int planet);
 # define CALC_BIT_RAU	128	/* without/with real radius */
 # define CALC_BIT_MUST_USE_EPHE	256	/* epheserv may not use calc */
 # define CALC_BIT_MAY_USE_EPHE	512	/* calcserv may use ephread */
+# define CALC_BIT_MUST_CALC	1024	/* ephread must calc  */
+
 
 /*
  * stuff from astrolib.h

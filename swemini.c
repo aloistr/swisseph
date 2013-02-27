@@ -72,7 +72,7 @@
 
 int main()
 {
-  char *sp, sdate[AS_MAXCH], snam[40], serr[AS_MAXCH];  
+  char sdate[AS_MAXCH], snam[40], serr[AS_MAXCH];  
   int jday = 1, jmon = 1, jyear = 2000;
   double jut = 0.0;
   double tjd, te, x2[6];
@@ -81,7 +81,8 @@ int main()
   iflag = SEFLG_SPEED;
   while (TRUE) {
     printf("\nDate (d.m.y) ?");
-    gets(sdate);
+    /*gets(sdate);*/
+    if( !fgets(sdate, sizeof(sdate)-1, stdin) ) return OK;
 		/*
 		 * stop if a period . is entered
 		 */

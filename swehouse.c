@@ -356,7 +356,7 @@ static int sidereal_houses_ssypl(double tjde,
                            double *ascmc)
 {
   int i, j, retc = OK;
-  double x[6], x0[6], xvpx[6], x2[6], epst0, xnorm[6];
+  double x[6], x0[6], xvpx[6], x2[6], xnorm[6];
   double rxy, rxyz, c2, epsx, eps2000, sgn, fac, dvpx, dvpxe, x00;
   double armcx;
   struct sid_data *sip = &swed.sidd;
@@ -365,8 +365,6 @@ static int sidereal_houses_ssypl(double tjde,
     ito = 36;
   else
     ito = 12;
-  /* epsilon at t0 */
-  epst0 = swi_epsiln(sip->t0);
   eps2000 = swi_epsiln(J2000);
   /* cartesian coordinates of the zero point on the
    * the solar system rotation plane */
@@ -579,6 +577,69 @@ for (i = 1; i <=12; i++) {
   return retc;
 }
 
+/* for APC houses */
+/* n  number of house
+ * ph geographic latitude 
+ * e  ecliptic obliquity
+ * az armc
+ */
+static double apc_sector(int n, double ph, double e, double az)
+{
+   int k, is_below_hor = 0;
+   double dasc, kv, a, dret;
+   /* ascensional difference of the ascendant */
+   kv   = atan(tan(ph) * tan(e) * cos(az)/(1 + tan(ph) * tan(e) * sin(az)));
+   /* declination of the ascendant */
+   dasc = atan(sin(kv) / tan(ph));
+   /* note, at polar circles, when the mc sinks below the horizon,
+    * kv and dasc change sign in the above formulae.
+    * this is what we need, because the ascendand jumps by 180 deg */
+   /* printf("%f, %f\n", kv*RADTODEG, dasc*RADTODEG); */
+   if (n < 8) {
+     is_below_hor = 1;  /* 1 and 7 are included here */
+     k = n - 1;
+   } else {
+     k = n - 13;
+   }
+   /* az + PI/2 + kv = armc + 90 + asc. diff. = right ascension of ascendant
+    * PI/2 +- kv = semi-diurnal or seminocturnal arc of ascendant 
+    * a = right ascension of house cusp on apc circle (ascendant-parallel
+    * circle), with declination dasc */
+   if (is_below_hor) {
+     a = kv + az + PI/2 + k * (PI/2 - kv) / 3;
+   } else {
+     a = kv + az + PI/2 + k * (PI/2 + kv) / 3;
+   }
+   a = swe_radnorm(a);
+   dret = atan2(tan(dasc) * tan(ph) * sin(az) + sin(a),
+      cos(e) * (tan(dasc) * tan(ph) * cos(az) + cos(a)) + sin(e) * tan(ph) * sin(az - a));
+   dret = swe_degnorm(dret * RADTODEG);
+   return dret;
+}
+
+char *FAR PASCAL_CONV swe_house_name(int hsys)
+{
+  switch (toupper(hsys)) {
+  case 'A': return "equal";
+  case 'E': return "equal";
+  case 'B': return "Alcabitius";
+  case 'C': return "Campanus";
+  case 'G': return "Gauquelin sectors";
+  case 'H': return "horizon/azimut";
+  case 'K': return "Koch";
+  case 'M': return "Morinus";
+  case 'O': return "Porphyry";
+  case 'R': return "Regiomontanus";
+  case 'T': return "Polich/Page";
+  case 'U': return "Krusinski-Pisa-Goelzer";
+  case 'V': return "equal/Vehlow";
+  case 'W': return "equal/ whole sign";
+  case 'X': return "axial rotation system/Meridian houses";
+  case 'Y': return "APC houses";
+  default: return "Placidus";
+  }
+}
+
 static int CalcH(
 	double th, double fi, double ekl, char hsy,
 	int iteration_count, struct houses *hsp )
@@ -589,16 +650,19 @@ static int CalcH(
  *                   E  equal
  *                   B  Alcabitius
  *                   C  Campanus
+ *                   G  36 Gauquelin sectors
  *                   H  horizon / azimut
  *                   K  Koch
+ *                   M  Morinus
  *                   O  Porphyry
  *                   P  Placidus
  *                   R  Regiomontanus
+ *                   T  Polich/Page ("topocentric")
+ *                   U  Krusinski-Pisa-Goelzer
  *                   V  equal Vehlow
  *                   W  equal, whole sign
  *                   X  axial rotation system/ Meridian houses
- *                   G  36 Gauquelin sectors
- *                   U  Krusinski-Pisa
+ *                   Y  APC houses
  *             fi = geographic latitude
  *             ekl = obliquity of the ecliptic
  *             iteration_count = number of iterations in
@@ -712,7 +776,7 @@ static int CalcH(
     if (hsy == 'H') {
       for (i = 1; i <= 3; i++)
         hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
-	  for (i = 11; i <= 12; i++)
+      for (i = 11; i <= 12; i++)
         hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
       /* restore fi and th */
       if (fi > 0)
@@ -720,6 +784,10 @@ static int CalcH(
       else
 	fi = -90 - fi;
       th = swe_degnorm(th + 180);
+      acmc = swe_difdeg2n(hsp->ac, hsp->mc);
+      if (acmc < 0) {
+        hsp->ac = swe_degnorm(hsp->ac + 180);
+      }
     }
     break;
   case 'K': /* Koch houses */
@@ -848,6 +916,10 @@ porphyry:
       } /*  if */
 	  hsp->cusp[j] = swe_degnorm(hsp->cusp[j]);
     }
+    acmc = swe_difdeg2n(hsp->ac, hsp->mc);
+    if (acmc < 0) {
+      hsp->ac = swe_degnorm(hsp->ac + 180);
+    }
     break; }
   case 'M': {
     /* 
@@ -866,6 +938,10 @@ porphyry:
       x[1] = 0;
       swe_cotrans(x, x, ekl);
       hsp->cusp[j] = x[0];
+    }
+    acmc = swe_difdeg2n(hsp->ac, hsp->mc);
+    if (acmc < 0) {
+      hsp->ac = swe_degnorm(hsp->ac + 180);
     }
     break; }
   case 'B': {	/* Alcabitius */
@@ -1052,6 +1128,26 @@ porphyry:
       hsp->cusp[i+7] = swe_degnorm(hsp->cusp[i+1]+180);
     }
     break;
+  case 'Y':     /* APC houses */
+    for (i = 1; i <= 12; i++) {
+      hsp->cusp[i] = apc_sector(i, fi * DEGTORAD, ekl * DEGTORAD, th * DEGTORAD);
+    }
+    hsp->ac = hsp->cusp[1];
+    hsp->mc = hsp->cusp[10];
+    /* within polar circle, when mc sinks below horizon and 
+     * ascendant changes to western hemisphere, all cusps
+     * must be added 180 degrees. 
+     * houses will be in clockwise direction */
+    if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
+      acmc = swe_difdeg2n(hsp->ac, hsp->mc);
+      if (acmc < 0) {
+        hsp->ac = swe_degnorm(hsp->ac + 180);
+        hsp->mc = swe_degnorm(hsp->mc + 180);
+	for (i = 1; i <= 12; i++)
+	  hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
+      }
+    }
+    break;
   default:	/* Placidus houses */
 #ifndef _WINDOWS
     if (hsy != 'P')
@@ -1146,7 +1242,7 @@ porphyry:
     }
     break;
   } /* end switch */
-  if (hsy != 'G') {
+  if (hsy != 'G' && hsy != 'Y') {
     hsp->cusp [4] = swe_degnorm(hsp->cusp [10] + 180);
     hsp->cusp [5] = swe_degnorm(hsp->cusp [11] + 180);
     hsp->cusp [6] = swe_degnorm(hsp->cusp [12] + 180);
@@ -1530,7 +1626,7 @@ double FAR PASCAL_CONV swe_house_pos(
       xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
       hpos = xp[0] / 30.0 + 1;
       break;
-    case 'U': /* Krusinski-Pisa */
+    case 'U': /* Krusinski-Pisa-Goelzer */
       /* Purpose: find point where planet's house circle (meridian)
        *   cuts house plane, giving exact planet's house position.
        * Input data: ramc, geolat, asc.

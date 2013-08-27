@@ -135,6 +135,8 @@ DllImport int FAR PASCAL swe_houses_armc(
 DllImport double FAR PASCAL swe_house_pos(
         double armc, double geolon, double eps, int hsys, double *xpin, char *serr);
 
+DllImport char * FAR PASCAL swe_house_name(int hsys);
+
 DllImport int32 FAR PASCAL swe_gauquelin_sector(
 	double t_ut, int32 ipl, char *starname, int32 iflag, int32 imeth, double *geopos, double atpress, double attemp, double *dgsect, char *serr);
 
@@ -263,6 +265,15 @@ DllImport int32 FAR PASCAL swe_rise_trans(
 	       int32 epheflag, int32 rsmi,
                double *geopos, 
 	       double atpress, double attemp,
+               double *tret,
+               char *serr);
+
+DllImport int32 FAR PASCAL swe_rise_trans_true_hor(
+               double tjd_ut, int32 ipl, char *starname, 
+	       int32 epheflag, int32 rsmi,
+               double *geopos, 
+	       double atpress, double attemp,
+	       double horhgt,
                double *tret,
                char *serr);
 

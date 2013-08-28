@@ -63,7 +63,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "1.77.00"
+#define SE_VERSION      "1.79.01"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -329,11 +329,18 @@ static const double pla_diam[NDIAM] = {1392000000.0, /* Sun */
                         };
 
 
-/* Ayanamsas */
+/* Ayanamsas 
+ * For each ayanamsa, there are two values:
+ * t0       epoch of ayanamsa, TDT (ET)
+ * ayan_t0  ayanamsa value at epoch
+ */
 struct aya_init {double t0, ayan_t0;};
 static const struct aya_init ayanamsa[] = {
     {2433282.5, 24.042044444},	/* 0: Fagan/Bradley (Default) */
-    {J1900, 360 - 337.53953},   /* 1: Lahiri (Robert Hand) */
+    /*{J1900, 360 - 337.53953},   * 1: Lahiri (Robert Hand) */
+    {2435553.5, 23.250182778 - 0.004660222},   /* 1: Lahiri (derived from:
+			   * Indian Astronomical Ephemeris 1989, p. 556;
+			   * the subtracted value is nutation) */
     {J1900, 360 - 333.58695},   /* 2: De Luce (Robert Hand) */
     {J1900, 360 - 338.98556},   /* 3: Raman (Robert Hand) */
     {J1900, 360 - 341.33904},   /* 4: Ushashashi (Robert Hand) */
@@ -356,6 +363,22 @@ static const struct aya_init ayanamsa[] = {
     {J2000, 0},	                /*18: J2000 */
     {J1900, 0},	                /*19: J1900 */
     {B1950, 0},	                /*20: B1950 */
+    {1903396.8128654, 0},	/*21: Suryasiddhanta, assuming
+                                      ingress of mean Sun into Aries at point
+				      of mean equinox of date on
+				      21.3.499, noon, Ujjain (75.7684565 E)
+                                      = 7:30:31.57 UT */
+    {1903396.8128654,-0.21463395},/*22: Suryasiddhanta, assuming
+                                      ingress of mean Sun into Aries at
+				      true position of mean Sun at same epoch */
+    {1903396.7895321, 0},	/*23: Aryabhata, same date, but UT 6:56:55.57
+                                      analogous 21 */
+    {1903396.7895321,-0.23763238},/*24: Aryabhata, analogous 22 */
+    {1903396.8128654,-0.79167046},/*25: SS, Revati/zePsc at polar long. 359°50'*/
+    {1903396.8128654, 2.11070444},/*26: SS, Citra/Spica at polar long. 180° */
+    {0, 0},	                /*27: - */
+    {0, 0},	                /*28: - */
+    {0, 0},	                /*29: - */
 	};
 
 #define PLAN_DATA struct plan_data
@@ -437,6 +460,7 @@ extern int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, do
 extern int swi_moshplan2(double J, int iplm, double *pobj);
 extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, double *xsun, char *serr);
 extern FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr);
+extern void swi_str_concat(char *sout, int maxch, char *s1, char *s2);
 
 /* nutation */
 struct nut {

@@ -526,16 +526,15 @@ static int32 RiseSet(double JDNDaysUT, double *dgeo, double *datm, char *ObjectN
 */
 static double SunRA(double JDNDaysUT, int32 helflag, char *serr)
 {
-  double tjd_tt;
   int imon, iday, iyar, calflag = SE_GREG_CAL;
   double dut;
   static double tjdlast;
   static double ralast;
-  tjd_tt = 0; 
   if (JDNDaysUT == tjdlast)
     return ralast;
 #ifndef SIMULATE_VICTORVB
   if (1) { /*helflag & SE_HELFLAG_HIGH_PRECISION) {*/
+    double tjd_tt;
     double x[6];
     int32 epheflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
     int32 iflag = epheflag | SEFLG_EQUATORIAL;
@@ -1809,8 +1808,8 @@ int32 FAR PASCAL_CONV swe_heliacal_pheno_ut(double JDNDaysUT, double *dgeo, doub
   double AziS, AltS, AltS2, AziO, AltO, AltO2, GeoAltO, AppAltO, DAZact, TAVact, ParO, MagnO;
   double ARCVact, ARCLact, kact, WMoon, LMoon = 0, qYal, qCrit;
   double RiseSetO, RiseSetS, Lag, TbYallop, TfirstVR, TlastVR, TbVR;
-  double MinTAV, MinTAVact, Ta, Tc, TimeStep, TimePointer, MinTAVoud = 0, DeltaAltoud = 0, DeltaAlt, TvisVR, crosspoint;
-  double OldestDeltaAlt, OldestMinTAV, extrax, illum;
+  double MinTAV = 0, MinTAVact, Ta, Tc, TimeStep, TimePointer, MinTAVoud = 0, DeltaAltoud = 0, DeltaAlt, TvisVR, crosspoint;
+  double OldestMinTAV, extrax, illum;
   double elong, attr[30];
   double TimeCheck, LocalminCheck;
   int32 retval = OK, RS, Planet;
@@ -1906,7 +1905,6 @@ darr[30] = darr[26] + darr[27] + darr[28] + darr[29];
   /*te bepalen m.b.v. walkthrough*/
     MinTAVact = 199;
     DeltaAlt = 0; 
-    OldestDeltaAlt = 0;
     OldestMinTAV = 0;
     Ta = 0;
     Tc = 0;
@@ -1916,7 +1914,6 @@ darr[30] = darr[26] + darr[27] + darr[28] + darr[29];
     TimePointer = RiseSetS - TimeStep;
     do {
       TimePointer = TimePointer + TimeStep;
-      OldestDeltaAlt = DeltaAltoud;
       OldestMinTAV = MinTAVoud;
       MinTAVoud = MinTAVact;
       DeltaAltoud = DeltaAlt;
@@ -2058,7 +2055,7 @@ static int32 moon_event_arc_vis(double JDNDaysUTStart, double *dgeo, double *dat
   double DeltaAltoud, TimeCheck, LocalminCheck;
   double AltS, AltO, DeltaAlt = 90;
   char ObjectName[30];
-  int32 iflag, Daystep, eventtype, goingup, Planet, i, retval;
+  int32 iflag, Daystep, goingup, Planet, retval;
   int32 avkind = helflag & SE_HELFLAG_AVKIND;
   int32 epheflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
   dret[0] = JDNDaysUTStart; /* will be returned in error case */
@@ -2088,19 +2085,18 @@ static int32 moon_event_arc_vis(double JDNDaysUTStart, double *dgeo, double *dat
     TypeEvent = 1;
     Daystep = -Daystep;
   }
-  eventtype = TypeEvent + SE_BIT_DISC_CENTER;
   /* check Synodic/phase Period */
   JDNDaysUT = JDNDaysUTStart;
   /* start 30 days later if TypeEvent=4 (1) */
   if (TypeEvent == 1) JDNDaysUT = JDNDaysUT + 30;
   /* determination of new moon date */
-  i = swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
+  swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
   phase2 = x[0];
   goingup = 0;
   do {
     JDNDaysUT = JDNDaysUT + Daystep;
     phase1 = phase2;
-    i = swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
+    swe_pheno_ut(JDNDaysUT, Planet, iflag, x, serr);
     phase2 = x[0];
     if (phase2 > phase1) 
       goingup = 1;
@@ -2154,13 +2150,13 @@ static int32 heliacal_ut_arc_vis(double JDNDaysUTStart, double *dgeo, double *da
   double xin[2];
   double xaz[2];
   double dang[3];
-  double objectmagn = 0, maxlength, DayStep, DayStep0;
+  double objectmagn = 0, maxlength, DayStep;
   double JDNDaysUT, JDNDaysUTfinal, JDNDaysUTstep, JDNDaysUTstepoud, JDNarcvisUT, tjd_tt, tret, OudeDatum, JDNDaysUTinp = JDNDaysUTStart, JDNDaysUTtijd;
   double ArcusVis, ArcusVisDelta, ArcusVisPto, ArcusVisDeltaoud;
   double Trise, sunsangle, Theliacal, Tdelta, Angle;
   double TimeStep, TimePointer, OldestMinTAV, MinTAVoud, MinTAVact, extrax, TbVR = 0;
   double AziS, AltS, AziO, AltO, DeltaAlt;
-  double direct, Pressure, Temperature, RH, VR, d;
+  double direct, Pressure, Temperature, d;
   int32 epheflag, retval = OK;
   int32 iflag, Planet, eventtype;
   int32 TypeEvent = TypeEventIn;
@@ -2171,8 +2167,6 @@ static int32 heliacal_ut_arc_vis(double JDNDaysUTStart, double *dgeo, double *da
   Planet = DeterObject(ObjectName);
   Pressure = datm[0];
   Temperature = datm[1];
-  RH = datm[2];
-  VR = datm[3];
   /* determine Magnitude of star*/
   if ((retval = Magnitude(JDNDaysUTStart, dgeo, ObjectName, helflag, &objectmagn, serr)) == ERR)
     goto swe_heliacal_err;
@@ -2197,7 +2191,6 @@ static int32 heliacal_ut_arc_vis(double JDNDaysUTStart, double *dgeo, double *da
     default:
       DayStep = 64; maxlength = 256; break;
   }
-  DayStep0 = DayStep;
   /* heliacal setting */
   eventtype = TypeEvent;
   if (eventtype == 2) DayStep = -DayStep;
@@ -2414,7 +2407,11 @@ static int32 get_asc_obl(double tjd, int32 ipl, char *star, int32 iflag, double
       strcpy(s, star);
     else
       swe_get_planet_name(ipl, s);
+#ifdef USE_C99
+    snprintf(serr, AS_MAXCH, "%s is circumpolar, cannot calculate heliacal event", s);
+#else
     sprintf(serr, "%s is circumpolar, cannot calculate heliacal event", s);
+#endif
     return -2;
   }
   adp = asin(adp) / DEGTORAD;
@@ -2446,7 +2443,11 @@ static int32 get_asc_obl_old(double tjd, int32 ipl, char *star, int32 iflag, dou
       strcpy(s, star);
     else 
       swe_get_planet_name(ipl, s);
+#ifdef USE_C99
+    snprintf(serr, AS_MAXCH, "%s is circumpolar, cannot calculate heliacal event", s);
+#else
     sprintf(serr, "%s is circumpolar, cannot calculate heliacal event", s);
+#endif
     return -2;
   }
   adp = asin(adp) / DEGTORAD;
@@ -2704,9 +2705,9 @@ static int32 get_asc_obl_acronychal(double tjd_start, int32 ipl, char *star, int
 
 static int32 get_heliacal_day(double tjd, double *dgeo, double *datm, double *dobs, char *ObjectName, int32 helflag, int32 TypeEvent, double *thel, char *serr)
 {
-  int32 is_rise_or_set, ndays, retval, retval_old;
-  double direct_day, direct_time, tfac, tend, daystep, tday, vdelta, tret;
-  double darr[30], tsave, vd, dmag;
+  int32 is_rise_or_set = 0, ndays, retval, retval_old;
+  double direct_day = 0, direct_time = 0, tfac, tend, daystep, tday, vdelta, tret;
+  double darr[30], vd, dmag;
   int32 ipl = DeterObject(ObjectName);
   /* 
    * find the day and minute on which the object becomes visible 
@@ -2767,6 +2768,9 @@ static int32 get_heliacal_day(double tjd, double *dgeo, double *datm, double *do
       if (dmag > 2) {
         daystep = 15;
       }
+      if (dmag < 0) {
+	tfac = 3;
+      }
       break;
     default:
       ndays = 300; 
@@ -2810,7 +2814,6 @@ static int32 get_heliacal_day(double tjd, double *dgeo, double *datm, double *do
       continue;
     vdelta = darr[0] - darr[7];
     /* find minute of object's becoming visible */
-    tsave = tret;
     while (retval != -2 && (vd = darr[0] - darr[7]) < 0) {
       if (vd < -1.0)
 	tret += 5.0 / 1440.0 * direct_time * tfac;
@@ -2950,9 +2953,8 @@ static int32 time_limit_invisible(double tjd, double *dgeo, double *datm, double
 {
   int32 retval, retval_sv, i, ncnt = 3;
   double d = 0, darr[10], phot_scot_opic, phot_scot_opic_sv;
-  double d0 = 100.0 / 86400.0, tjd_save;
+  double d0 = 100.0 / 86400.0;
   *tret = tjd;
-  tjd_save = tjd;
   if (strcmp(ObjectName, "moon") == 0) {
     d0 *= 10;
     ncnt = 4;
@@ -2991,7 +2993,7 @@ static int32 time_limit_invisible(double tjd, double *dgeo, double *datm, double
 }
 
 static int32 get_acronychal_day(double tjd, double *dgeo, double *datm, double *dobs, char *ObjectName, int32 helflag, int32 TypeEvent, double *thel, char *serr) {
-  double tret, tret_dark, darr[30], dtret, dtret_save;
+  double tret, tret_dark, darr[30], dtret;
   /* x[6], xaz[6], alto, azio, alto_dark, azio_dark;*/
   int32 retval, is_rise_or_set, direct;
   int32 ipl = DeterObject(ObjectName);
@@ -3030,7 +3032,6 @@ static int32 get_acronychal_day(double tjd, double *dgeo, double *datm, double *
     if (retval == ERR) return ERR;
     retval = time_limit_invisible(tjd, dgeo, datm, dobs, ObjectName, helflag | SE_HELFLAG_VISLIM_NOMOON, direct, &tret, serr);
     if (retval == ERR) return ERR;
-    dtret_save = dtret;
 #if 0
     if (azalt_cart(tret_dark, dgeo, datm, ObjectName, helflag, darr, serr) == ERR)
       return ERR;
@@ -3040,7 +3041,6 @@ static int32 get_acronychal_day(double tjd, double *dgeo, double *datm, double *
 #else
     dtret = fabs(tret - tret_dark);
 #endif
-/*printf("dtret = %f - %f\n", dtret * 1440, fabs(dtret - dtret_save) * 1440);*/
   }
   if (azalt_cart(tret, dgeo, datm, "sun", helflag, darr, serr) == ERR)
     return ERR;
@@ -3204,7 +3204,7 @@ static int32 moon_event_vis_lim(double tjdstart, double *dgeo, double *datm, dou
   double tjd, trise;
   char serr[AS_MAXCH];
   char ObjectName[30];
-  int32 iflag, Daystep, eventtype, ipl, retval, helflag2, direct;
+  int32 iflag, ipl, retval, helflag2, direct;
   int32 epheflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
   dret[0] = tjdstart; /* will be returned in error case */
   if (TypeEvent == 1 || TypeEvent == 2) {
@@ -3219,8 +3219,6 @@ static int32 moon_event_vis_lim(double tjdstart, double *dgeo, double *datm, dou
     iflag |= SEFLG_NONUT|SEFLG_TRUEPOS;
   helflag2 = helflag;
   helflag2 &= ~SE_HELFLAG_HIGH_PRECISION;
-  Daystep = 1;
-  eventtype = TypeEvent + SE_BIT_DISC_CENTER;
   /* check Synodic/phase Period */
   tjd = tjdstart - 30; /* -50 makes sure, that no event is missed, 
                          * but may return an event before start date */
@@ -3351,8 +3349,13 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
    */
   if (Planet == SE_MOON) {
     if (TypeEvent == 1 || TypeEvent == 2) {
-      if (serr_ret != NULL)
+      if (serr_ret != NULL) {
+#ifdef USE_C99
+        snprintf(serr_ret, AS_MAXCH, "%s (event type %d) does not exist for the moon\n", sevent[TypeEvent], TypeEvent);
+#else
         sprintf(serr_ret, "%s (event type %d) does not exist for the moon\n", sevent[TypeEvent], TypeEvent);
+#endif
+      }
       return ERR;
     }
     tjd = tjd0;
@@ -3377,7 +3380,11 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
 	    strcpy(s, ObjectName);
 	  else
 	    swe_get_planet_name(Planet, s);
+#ifdef USE_C99
+	  snprintf(serr_ret, AS_MAXCH, "%s (event type %d) does not exist for %s\n", sevent[TypeEvent], TypeEvent, s);
+#else
 	  sprintf(serr_ret, "%s (event type %d) does not exist for %s\n", sevent[TypeEvent], TypeEvent, s);
+#endif
 	}
 	return ERR;
       }
@@ -3400,7 +3407,11 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
 	  strcpy(s, ObjectName);
 	else
 	  swe_get_planet_name(Planet, s);
+#ifdef USE_C99
+	snprintf(serr_ret, AS_MAXCH, "%s (event type %d) is not provided for %s\n", sevent[TypeEvent], TypeEvent, s);
+#else
 	sprintf(serr_ret, "%s (event type %d) is not provided for %s\n", sevent[TypeEvent], TypeEvent, s);
+#endif
       }
       return ERR;
     }

@@ -228,9 +228,15 @@ extern "C" {
 #define SE_SIDM_J2000           18
 #define SE_SIDM_J1900           19
 #define SE_SIDM_B1950           20
+#define SE_SIDM_SURYASIDDHANTA  21
+#define SE_SIDM_SURYASIDDHANTA_MSUN  22
+#define SE_SIDM_ARYABHATA       23
+#define SE_SIDM_ARYABHATA_MSUN  24
+#define SE_SIDM_SS_REVATI       25
+#define SE_SIDM_SS_CITRA        26
 #define SE_SIDM_USER            255
 
-#define SE_NSIDM_PREDEF	  	    21
+#define SE_NSIDM_PREDEF	  	    27
 
 /* used for swe_nod_aps(): */
 #define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
@@ -258,12 +264,18 @@ extern "C" {
 #define SE_ECL_PENUMBRAL	64
 #define SE_ECL_ALLTYPES_SOLAR   (SE_ECL_CENTRAL|SE_ECL_NONCENTRAL|SE_ECL_TOTAL|SE_ECL_ANNULAR|SE_ECL_PARTIAL|SE_ECL_ANNULAR_TOTAL)
 #define SE_ECL_ALLTYPES_LUNAR   (SE_ECL_TOTAL|SE_ECL_PARTIAL|SE_ECL_PENUMBRAL)
-#define SE_ECL_VISIBLE		128
-#define SE_ECL_MAX_VISIBLE	256
-#define SE_ECL_1ST_VISIBLE	512
-#define SE_ECL_2ND_VISIBLE	1024
-#define SE_ECL_3RD_VISIBLE	2048
-#define SE_ECL_4TH_VISIBLE	4096
+#define SE_ECL_VISIBLE			128
+#define SE_ECL_MAX_VISIBLE		256
+#define SE_ECL_1ST_VISIBLE		512	/* begin of partial eclipse */
+#define SE_ECL_PARTBEG_VISIBLE		512	/* begin of partial eclipse */
+#define SE_ECL_2ND_VISIBLE		1024	/* begin of total eclipse */
+#define SE_ECL_TOTBEG_VISIBLE		1024	/* begin of total eclipse */
+#define SE_ECL_3RD_VISIBLE		2048    /* end of total eclipse */
+#define SE_ECL_TOTEND_VISIBLE		2048    /* end of total eclipse */
+#define SE_ECL_4TH_VISIBLE		4096    /* end of partial eclipse */
+#define SE_ECL_PARTEND_VISIBLE		4096    /* end of partial eclipse */
+#define SE_ECL_PENUMBBEG_VISIBLE	8192    /* begin of penumbral eclipse */
+#define SE_ECL_PENUMBEND_VISIBLE	16384   /* end of penumbral eclipse */
 #define SE_ECL_ONE_TRY          (32*1024) 
 		/* check if the next conjunction of the moon with
 		 * a planet is an occultation; don't search further */
@@ -323,6 +335,7 @@ extern "C" {
  * own place for the ephemeris files.
  */
 
+#ifndef SE_EPHE_PATH
 #if MSDOS
 #ifdef PAIR_SWEPH
 #  define SE_EPHE_PATH    "\\pair\\ephe\\"
@@ -340,6 +353,7 @@ extern "C" {
 			   the long file in /users/ephe2/ast*. */
 # endif
 #endif
+#endif  /* SE_EPHE_PATH */
 
 /* defines for function swe_split_deg() (in swephlib.c) */
 # define SE_SPLIT_DEG_ROUND_SEC    1
@@ -379,6 +393,20 @@ extern "C" {
 #define SE_HELFLAG_AVKIND (SE_HELFLAG_AVKIND_VR|SE_HELFLAG_AVKIND_PTO|SE_HELFLAG_AVKIND_MIN7|SE_HELFLAG_AVKIND_MIN9)
 #define TJD_INVALID		 	99999999.0
 #define SIMULATE_VICTORVB               1
+
+#define SE_HELIACAL_LONG_SEARCH 	128
+#define SE_HELIACAL_HIGH_PRECISION 	256
+#define SE_HELIACAL_OPTICAL_PARAMS	512
+#define SE_HELIACAL_NO_DETAILS		1024
+#define SE_HELIACAL_SEARCH_1_PERIOD	(1 << 11)  /*  2048 */
+#define SE_HELIACAL_VISLIM_DARK		(1 << 12)  /*  4096 */
+#define SE_HELIACAL_VISLIM_NOMOON	(1 << 13)  /*  8192 */
+#define SE_HELIACAL_VISLIM_PHOTOPIC	(1 << 14)  /* 16384 */
+#define SE_HELIACAL_AVKIND_VR 		(1 << 15)  /* 32768 */
+#define SE_HELIACAL_AVKIND_PTO 		(1 << 16)
+#define SE_HELIACAL_AVKIND_MIN7 		(1 << 17)
+#define SE_HELIACAL_AVKIND_MIN9 		(1 << 18)
+#define SE_HELIACAL_AVKIND (SE_HELFLAG_AVKIND_VR|SE_HELFLAG_AVKIND_PTO|SE_HELFLAG_AVKIND_MIN7|SE_HELFLAG_AVKIND_MIN9)
 
 #define SE_PHOTOPIC_FLAG		0
 #define SE_SCOTOPIC_FLAG		1
@@ -588,6 +616,10 @@ ext_def( int ) swe_houses_armc(
 ext_def(double) swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr);
 
+ext_def(char *) swe_house_name(int hsys);
+
+
+
 /**************************** 
  * exports from swecl.c 
  ****************************/
@@ -654,6 +686,15 @@ ext_def (void) swe_azalt_rev(
       double *geopos,
       double *xin, 
       double *xout); 
+
+ext_def (int32) swe_rise_trans_true_hor(
+               double tjd_ut, int32 ipl, char *starname, 
+	       int32 epheflag, int32 rsmi,
+               double *geopos, 
+	       double atpress, double attemp,
+	       double horhgt,
+               double *tret,
+               char *serr);
 
 ext_def (int32) swe_rise_trans(
                double tjd_ut, int32 ipl, char *starname, 

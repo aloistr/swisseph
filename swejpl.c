@@ -206,8 +206,16 @@ static int32 fsizer(char *serr)
   /* plausibility test of these constants. Start and end date must be
    * between -20000 and +20000, segment size >= 1 and <= 200 */
   if (js->eh_ss[0] < -5583942 || js->eh_ss[1] > 9025909 || js->eh_ss[2] < 1 || js->eh_ss[2] > 200) {
-    if (serr != NULL)
-      sprintf(serr, "alleged ephemeris file (%s) has invalid format.", js->jplfname);
+    if (serr != NULL) {
+      strcpy(serr, "alleged ephemeris file has invalid format.");
+      if (strlen(serr) + strlen(js->jplfname) + 3 < AS_MAXCH) {
+#ifdef USE_C99
+	snprintf(serr, AS_MAXCH, "alleged ephemeris file (%s) has invalid format.", js->jplfname);
+#else
+	sprintf(serr, "alleged ephemeris file (%s) has invalid format.", js->jplfname);
+#endif
+      }
+    }
     return(NOT_AVAILABLE);
   }
   /* ncon = number of constants */
@@ -735,8 +743,13 @@ static int state(double et, int32 *list, int do_bary,
       && flen - nb != ksize * nrecl) {
       if (serr != NULL) {
 	sprintf(serr, "JPL ephemeris file is mutilated; length = %d instead of %d.", flen, nb);
-	if (strlen(serr) + strlen(js->jplfname) < AS_MAXCH - 1)
+	if (strlen(serr) + strlen(js->jplfname) < AS_MAXCH - 1) {
+#ifdef USE_C99
+	  snprintf(serr, AS_MAXCH, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, flen, nb);
+#else
 	  sprintf(serr, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, flen, nb);
+#endif
+	}
       }
       return(NOT_AVAILABLE);
     }

@@ -99,6 +99,7 @@ static double deltat_espenak_meeus_1620(double tjd);
 static double deltat_longterm_morrison_stephenson(double tjd);
 static double deltat_stephenson_morrison_1600(double tjd);
 static double deltat_aa(double tjd);
+static int precess0(double *R, double J, int direction );
 
 /* Reduce x modulo 360 degrees
  */
@@ -453,6 +454,225 @@ double swi_dot_prod_unit(double *x, double *y)
   return dop;
 }
 
+/* functions for precession and ecliptic obliquity according to Vondrák et alii, 2011 */
+#define AS2R (DEGTORAD / 3600.0)
+#define D2PI TWOPI
+#define EPS0 (84381.406 * AS2R)
+#define NPOL_PEPS 4
+#define NPER_PEPS 10
+#define NPOL_PECL 4
+#define NPER_PECL 8
+#define NPOL_PEQU 4
+#define NPER_PEQU 14
+
+/* for pre_peps(): */
+/* polynomials */
+static double pepol[NPOL_PEPS][2] = {
+  {+8134.017132, +84028.206305},
+  {+5043.0520035, +0.3624445},
+  {-0.00710733, -0.00004039},
+  {+0.000000271, -0.000000110}
+};
+
+/* periodics */
+static double peper[5][NPER_PEPS] = {
+  {+409.90, +396.15, +537.22, +402.90, +417.15, +288.92, +4043.00, +306.00, +277.00, +203.00},
+  {-6908.287473, -3198.706291, +1453.674527, -857.748557, +1173.231614, -156.981465, +371.836550, -216.619040, +193.691479, +11.891524},
+  {+753.872780, -247.805823, +379.471484, -53.880558, -90.109153, -353.600190, -63.115353, -28.248187, +17.703387, +38.911307},
+  {-2845.175469, +449.844989, -1255.915323, +886.736783, +418.887514, +997.912441, -240.979710, +76.541307, -36.788069, -170.964086},
+  {-1704.720302, -862.308358, +447.832178, -889.571909, +190.402846, -56.564991, -296.222622, -75.859952, +67.473503, +3.014055}
+};
+
+/* for pre_pecl(): */
+/* polynomials */
+static double pqpol[NPOL_PECL][2] = {
+  {+5851.607687, -1600.886300},
+  {-0.1189000, +1.1689818},
+  {-0.00028913, -0.00000020},
+  {+0.000000101, -0.000000437}
+};
+
+/* periodics */
+static double pqper[5][NPER_PECL] = {
+  {708.15, 2309, 1620, 492.2, 1183, 622, 882, 547},
+  {-5486.751211, -17.127623, -617.517403, 413.44294, 78.614193, -180.732815, -87.676083, 46.140315},
+  {-684.66156, 2446.28388, 399.671049, -356.652376, -186.387003, -316.80007, 198.296701, 101.135679}, /* typo in publication fixed */
+  {667.66673, -2354.886252, -428.152441, 376.202861, 184.778874, 335.321713, -185.138669, -120.97283},
+  {-5523.863691, -549.74745, -310.998056, 421.535876, -36.776172, -145.278396, -34.74445, 22.885731}
+};
+
+/* for pre_pequ(): */
+/* polynomials */
+static double xypol[NPOL_PEQU][2] = {
+  {+5453.282155, -73750.930350},
+  {+0.4252841, -0.7675452},
+  {-0.00037173, -0.00018725},
+  {-0.000000152, +0.000000231}
+};
+
+/* periodics */
+static double xyper[5][NPER_PEQU] = {
+  {256.75, 708.15, 274.2, 241.45, 2309, 492.2, 396.1, 288.9, 231.1, 1610, 620, 157.87, 220.3, 1200},
+  {-819.940624, -8444.676815, 2600.009459, 2755.17563, -167.659835, 871.855056, 44.769698, -512.313065, -819.415595, -538.071099, -189.793622, -402.922932, 179.516345, -9.814756},
+  {75004.344875, 624.033993, 1251.136893, -1102.212834, -2660.66498, 699.291817, 153.16722, -950.865637, 499.754645, -145.18821, 558.116553, -23.923029, -165.405086, 9.344131},
+  {81491.287984, 787.163481, 1251.296102, -1257.950837, -2966.79973, 639.744522, 131.600209, -445.040117, 584.522874, -89.756563, 524.42963, -13.549067, -210.157124, -44.919798},
+  {1558.515853, 7774.939698, -2219.534038, -2523.969396, 247.850422, -846.485643, -1393.124055, 368.526116, 749.045012, 444.704518, 235.934465, 374.049623, -171.33018, -22.899655}
+};
+
+void swi_ldp_peps(double tjd, double *dpre, double *deps)
+{
+  int i;
+  int npol = NPOL_PEPS;
+  int nper = NPER_PEPS;
+  double t, p, q, w, a, s, c;
+  t = (tjd - J2000) / 36525.0;
+  p = 0;
+  q = 0;
+  /* periodic terms */
+  for (i = 0; i < nper; i++) {
+    w = D2PI * t;
+    a = w / peper[0][i];
+    s = sin(a);
+    c = cos(a);
+    p += c * peper[1][i] + s * peper[3][i];
+    q += c * peper[2][i] + s * peper[4][i];
+  }
+  /* polynomial terms */
+  w = 1;
+  for (i = 0; i < npol; i++) {
+    p += pepol[i][0] * w;
+    q += pepol[i][1] * w;
+    w *= t;
+  }
+  /* both to radians */
+  p *= AS2R;
+  q *= AS2R;
+  /* return */
+  if (dpre != NULL)
+    *dpre = p;
+  if (deps != NULL)
+    *deps = q;
+}
+
+/*
+ * Long term high precision precession, 
+ * according to Vondrak/Capitaine/Wallace, "New precession expressions, valid
+ * for long time intervals", in A&A 534, A22(2011).
+ */
+/* precession of the ecliptic */
+static void pre_pecl(double tjd, double *vec) 
+{
+  int i;
+  int npol = NPOL_PECL;
+  int nper = NPER_PECL;
+  double t, p, q, w, a, s, c, z;
+  t = (tjd - J2000) / 36525.0;
+  p = 0;
+  q = 0;
+  /* periodic terms */
+  for (i = 0; i < nper; i++) {
+    w = D2PI * t;
+    a = w / pqper[0][i];
+    s = sin(a);
+    c = cos(a);
+    p += c * pqper[1][i] + s * pqper[3][i];
+    q += c * pqper[2][i] + s * pqper[4][i];
+  }
+  /* polynomial terms */
+  w = 1;
+  for (i = 0; i < npol; i++) {
+    p += pqpol[i][0] * w;
+    q += pqpol[i][1] * w;
+    w *= t;
+  }
+  /* both to radians */
+  p *= AS2R;
+  q *= AS2R;
+  /* ecliptic pole vector */
+  z = 1 - p * p - q * q;
+  if (z < 0)
+    z = 0;
+  else 
+    z = sqrt(z);
+  s = sin(EPS0);
+  c = cos(EPS0);
+  vec[0] = p;
+  vec[1] = - q * c - z * s;
+  vec[2] = - q * s + z * c;
+}
+
+/* precession of the equator */
+static void pre_pequ(double tjd, double *veq) 
+{
+  int i;
+  int npol = NPOL_PEQU;
+  int nper = NPER_PEQU;
+  double t, x, y, w, a, s, c;
+  t = (tjd - J2000) / 36525.0;
+  x = 0;
+  y = 0;
+  for (i = 0; i < nper; i++) {
+    w = D2PI * t;
+    a = w / xyper[0][i];
+    s = sin(a);
+    c = cos(a);
+    x += c * xyper[1][i] + s * xyper[3][i];
+    y += c * xyper[2][i] + s * xyper[4][i];
+  }
+  /* polynomial terms */
+  w = 1;
+  for (i = 0; i < npol; i++) {
+    x += xypol[i][0] * w;
+    y += xypol[i][1] * w;
+    w *= t;
+  }
+  x *= AS2R;
+  y *= AS2R;
+  /* equator pole vector */
+  veq[0] = x;
+  veq[1] = y;
+  w = x * x + y * y;
+  if (w < 1)
+    veq[2] = sqrt(1 - w);
+  else
+    veq[2] = 0;
+}
+
+#if 0
+static void swi_cross_prod(double *a, double *b, double *x)
+{
+  x[0] = a[1] * b[2] - a[2] * b[1];
+  x[1] = a[2] * b[0] - a[0] * b[2];
+  x[2] = a[0] * b[1] - a[1] * b[0];
+}
+#endif
+
+/* precession matrix */
+static void pre_pmat(double tjd, double *rp)
+{
+  double peqr[3], pecl[3], v[3], w, eqx[3];
+  /*equator pole */
+  pre_pequ(tjd, peqr);
+  /* ecliptic pole */
+  pre_pecl(tjd, pecl);
+  /* equinox */
+  swi_cross_prod(peqr, pecl, v);
+  w = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+  eqx[0] = v[0] / w;
+  eqx[1] = v[1] / w;
+  eqx[2] = v[2] / w;
+  swi_cross_prod(peqr, eqx, v);
+  rp[0] = eqx[0];
+  rp[1] = eqx[1];
+  rp[2] = eqx[2];
+  rp[3] = v[0];
+  rp[4] = v[1];
+  rp[5] = v[2];
+  rp[6] = peqr[0];
+  rp[7] = peqr[1];
+  rp[8] = peqr[2];
+}
+
 /* Obliquity of the ecliptic at Julian date J
  *
  * IAU Coefficients are from:
@@ -477,23 +697,25 @@ double swi_epsiln(double J)
 {
   double T, eps;
   T = (J - 2451545.0)/36525.0;
-  if (PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES )
+  if (PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES ) {
     eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
-  else if (PREC_IAU_2003 && fabs(T) <= PREC_IAU_2003_CTIES) 
+  } else if (PREC_IAU_2003 && fabs(T) <= PREC_IAU_2003_CTIES) {
     eps =  (((((-4.34e-8 * T -5.76e-7) * T +2.0034e-3) * T -1.831e-4) * T -46.836769) * T + 84381.406) * DEGTORAD / 3600.0; 
-  else if (PREC_BRETAGNON_2003)
+  } else if (PREC_BRETAGNON_2003) {
     eps =  ((((((-3e-11 * T - 2.48e-8) * T -5.23e-7) * T +1.99911e-3) * T -1.667e-4) * T -46.836051) * T + 84381.40880) * DEGTORAD / 3600.0;/* */
-  else if (PREC_SIMON_1994) 
+  } else if (PREC_SIMON_1994) {
     eps =  (((((2.5e-8 * T -5.1e-7) * T +1.9989e-3) * T -1.52e-4) * T -46.80927) * T + 84381.412) * DEGTORAD / 3600.0;/* */
-  else if (PREC_WILLIAMS_1994) 
+  } else if (PREC_WILLIAMS_1994) {
     eps =  ((((-1.0e-6 * T +2.0e-3) * T -1.74e-4) * T -46.833960) * T + 84381.409) * DEGTORAD / 3600.0;/* */
-  else { /* PREC_LASKAR_1986 */
+  } else if (PREC_LASKAR_1986) {
     T /= 10.0;
     eps = ((((((((( 2.45e-10*T + 5.79e-9)*T + 2.787e-7)*T
     + 7.12e-7)*T - 3.905e-5)*T - 2.4967e-3)*T
     - 5.138e-3)*T + 1.99925)*T - 0.0155)*T - 468.093)*T
     + 84381.448;
     eps *= DEGTORAD/3600;
+  } else { /* PREC_VONDRAK_2011 */
+    swi_ldp_peps(J, NULL, &eps);
   }
   return(eps);
 }
@@ -501,10 +723,20 @@ double swi_epsiln(double J)
 /* Precession of the equinox and ecliptic
  * from epoch Julian date J to or from J2000.0
  *
- * Program by Steve Moshier.
- * Changes in program structure by Dieter Koch.
+ * Original program by Steve Moshier.
+ * Changes in program structure and implementation of IAU 2003 (P03) and
+ * Vondrak 2011 by Dieter Koch.
  *
- * #define PREC_WILLIAMS_1994 1
+ * #define PREC_VONDRAK_2011 1
+ * J. Vondrák, N. Capitaine, and P. Wallace, "New precession expressions,
+ * valid for long time intervals", A&A 534, A22 (2011)
+ *
+ * #define PREC_IAU_2003 0
+ * N. Capitaine, P.T. Wallace, and J. Chapront, "Expressions for IAU 2000
+ * precession quantities", 2003, A&A 412, 567-568 (2003).
+ * This is a "short" term model, that can be combined with other models
+ *
+ * #define PREC_WILLIAMS_1994 0
  * James G. Williams, "Contributions to the Earth's obliquity rate,
  * precession, and nutation,"  Astron. J. 108, 711-724 (1994).
  *
@@ -520,6 +752,7 @@ double swi_epsiln(double J)
  * "Expressions for the Precession Quantities Based upon the IAU
  * (1976) System of Astronomical Constants,"  Astronomy and
  * Astrophysics 58, 1-16 (1977).
+ * This is a "short" term model, that can be combined with other models
  *
  * #define PREC_LASKAR_1986 0
  * Newer formulas that cover a much longer time span are from:
@@ -532,38 +765,17 @@ double swi_epsiln(double J)
  * and spherical variables. VSOP87 solutions," Astronomy and
  * Astrophysics 202, 309-315 (1988).
  *
- * Laskar's expansions are said by Bretagnon and Francou
- * to have "a precision of about 1" over 10000 years before
- * and after J2000.0 in so far as the precession constants p^0_A
- * and epsilon^0_A are perfectly known."
- *
  * Bretagnon and Francou's expansions for the node and inclination
  * of the ecliptic were derived from Laskar's data but were truncated
  * after the term in T**6. I have recomputed these expansions from
  * Laskar's data, retaining powers up to T**10 in the result.
  *
- * The following table indicates the differences between the result
- * of the IAU formula and Laskar's formula using four different test
- * vectors, checking at J2000 plus and minus the indicated number
- * of years.
- *
- *   Years       Arc
- * from J2000  Seconds
- * ----------  -------
- *        0	  0
- *      100	.006	
- *      200     .006
- *      500     .015
- *     1000     .28
- *     2000    6.4
- *     3000   38.
- *    10000 9400.
  */
 /* In WILLIAMS and SIMON, Laskar's terms of order higher than t^4
    have been retained, because Simon et al mention that the solution
    is the same except for the lower order terms.  */
 
-#if PREC_WILLIAMS_1994
+#if (PREC_WILLIAMS_1994 || PREC_VONDRAK_2011)  /* Vondrak only added to shut up the compiler */
 static double pAcof[] = {
  -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
  -0.235316, 0.076, 110.5407, 50287.70000 };
@@ -631,12 +843,17 @@ static double inclcof[] = {};
  */
 int swi_precess(double *R, double J, int direction )
 {
+  return precess0(R, J, direction);
+}
+
+static int precess0(double *R, double J, int direction )
+{
   double sinth, costh, sinZ, cosZ, sinz, cosz;
   double eps, sineps, coseps;
   double A, B, T, Z, z, TH, pA, W;
-  double x[3];
+  double x[3], pmat[9];
   double *p;
-  int i;
+  int i, j;
   if( J == J2000 ) 
     return(0);
   /* Each precession angle is specified by a polynomial in
@@ -661,8 +878,26 @@ int swi_precess(double *R, double J, int direction )
     Z =  ((((((-0.00000000013*T - 0.0000003040)*T - 0.000005708)*T + 0.01801752)*T + 0.3023262)*T + 2306.080472)*T + 2.72767)*DEGTORAD/3600;
     z =  ((((((-0.00000000005*T - 0.0000002486)*T - 0.000028276)*T + 0.01826676)*T + 1.0956768)*T + 2306.076070)*T - 2.72767)*DEGTORAD/3600;
     TH = ((((((0.000000000009*T + 0.00000000036)*T -0.0000001127)*T - 0.000007291)*T - 0.04182364)*T - 0.4266980)*T + 2004.190936)*T*DEGTORAD/3600;
-  } else {
+  } else if (PREC_LASKAR_1986) {
     goto laskar;
+  } else { /* PREC_VONDRAK_2011 */
+    pre_pmat(J, pmat);
+    if (direction == -1) {
+      for (i = 0, j = 0; i <= 2; i++, j = i * 3) {
+	x[i] = R[0] *  pmat[j + 0] +
+		R[1] * pmat[j + 1] +
+		R[2] * pmat[j + 2];
+      }
+    } else {
+      for (i = 0, j = 0; i <= 2; i++, j = i * 3) {
+	x[i] = R[0] * pmat[i + 0] +
+		R[1] * pmat[i + 3] +
+		R[2] * pmat[i + 6];
+      }
+    }
+    for (i = 0; i < 3; i++)
+      R[i] = x[i];
+    return(0);
   }
   sinth = sin(TH);
   costh = cos(TH);
@@ -1540,10 +1775,10 @@ static double FAR dt[TABSIZ_SPACE] = {
  56.86, 57.57, 58.31, 59.12, 59.98, 60.78, 61.63, 62.30, 62.97, 63.47,
 /* 2000.0 thru 2009.0 */
  63.83, 64.09, 64.30, 64.47, 64.57, 64.69, 64.85, 65.15, 65.46, 65.78,      
-/* 2010.0 thru 2019.0 */
- 66.07, 66.32,
-/* Extrapolated values, 2011 - 2014 */
-             67.00, 67.50, 68.00, 68.50, 69.00, 69.50,
+/* 2010.0 thru 2013.0 */
+ 66.07, 66.32, 66.60, 66.91,
+/* Extrapolated values, 2014 - 2017 */
+                             67.50, 68.00, 68.50, 69.00,
 };
 #define ESPENAK_MEEUS_2006 TRUE
 #define TAB2_SIZ	27
@@ -2090,9 +2325,11 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
       sform = "ast%d%sse%05d.%s";
       if (ipli - SE_AST_OFFSET > 99999) 
 	sform = "ast%d%ss%06d.%s";
-      sprintf(fname, sform,
-	(ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, 
-	SE_FILE_SUFFIX);
+#ifdef USE_C99
+      snprintf(fname, AS_MAXCH, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
+#else
+      sprintf(fname, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
+#endif
       return;	/* asteroids: only one file 3000 bc - 3000 ad */
       /* break; */
   }
@@ -2128,7 +2365,11 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
   else 
     strcat(fname, "_");
   icty = abs(icty);
+#ifdef USE_C99
+  snprintf(fname + strlen(fname),AS_MAXCH - strlen(fname), "%02d.%s", icty, SE_FILE_SUFFIX);
+#else
   sprintf(fname + strlen(fname), "%02d.%s", icty, SE_FILE_SUFFIX);
+#endif
 #if 0
   printf("fname  %s\n", fname); 
   fflush(stdout);
@@ -2368,7 +2609,11 @@ char *FAR PASCAL_CONV swe_cs2degstr(CSEC t, char *a)
   s = t % 60L;
   m = t / 60 % 60L;
   h = t / 3600 % 100L;	/* only 0..99 degrees */ 
+#ifdef USE_C99
+  snprintf(a, 9, "%2d%s%02d'%02d", h, ODEGREE_STRING, m, s);
+#else
   sprintf(a, "%2d%s%02d'%02d", h, ODEGREE_STRING, m, s);
+#endif
   return (a);
 } /* swe_cs2degstr() */
 
@@ -2538,11 +2783,20 @@ void swi_open_trace(char *serr)
 # else
     ipid = getpid();
 # endif
+#ifdef USE_C99
+    snprintf(sp1, AS_MAXCH, "_%d%s", ipid, sp);
+#else
     sprintf(sp1, "_%d%s", ipid, sp);
 #endif
+#endif
     if ((swi_fp_trace_c = fopen(fname, FILE_A_ACCESS)) == NULL) {
-      if (serr != NULL)
+      if (serr != NULL) {
+#ifdef USE_C99
+	snprintf(serr, AS_MAXCH, "could not open trace output file '%s'", fname);
+#else
 	sprintf(serr, "could not open trace output file '%s'", fname);
+#endif
+      }
     } else {
       fputs("#include \"sweodef.h\"\n", swi_fp_trace_c);   
       fputs("#include \"swephexp.h\"\n\n", swi_fp_trace_c);   
@@ -2570,11 +2824,20 @@ void swi_open_trace(char *serr)
 # else
     ipid = getpid();
 # endif
+#ifdef USE_C99
+    snprintf(sp1, AS_MAXCH, "_%d%s", ipid, sp);
+#else
     sprintf(sp1, "_%d%s", ipid, sp);
 #endif
+#endif
     if ((swi_fp_trace_out = fopen(fname, FILE_A_ACCESS)) == NULL) {
-      if (serr != NULL)
+      if (serr != NULL) {
+#ifdef USE_C99
+	snprintf(serr, AS_MAXCH, "could not open trace output file '%s'", fname);
+#else
 	sprintf(serr, "could not open trace output file '%s'", fname);
+#endif
+      }
     }
   }
 }

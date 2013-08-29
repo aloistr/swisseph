@@ -118,6 +118,12 @@ static char *ayanamsa_name[] = {
    "J2000",
    "J1900",
    "B1950",
+   "Suryasiddhanta",
+   "Suryasiddhanta, mean Sun",
+   "Aryabhata",
+   "Aryabhata, mean Sun",
+   "SS Citra",
+   "SS Revati",
 };
 static const int FAR pnoint2jpl[]   = PNOINT2JPL;
 
@@ -1034,6 +1040,7 @@ void FAR PASCAL_CONV swe_close(void)
   swi_close_jpl_file();
 #endif
   swed.jpl_file_is_open = FALSE;
+  swed.jpldenum = 0;
   /* close fixed stars */
   if (swed.fixfp != NULL) {
     fclose(swed.fixfp);
@@ -1837,7 +1844,11 @@ again:
 	char *spp;
 	spp = strchr(s, '.');
 	if (spp > s && *(spp-1) != 's') {	/* no 's' before '.' ? */
+#ifdef USE_C99
+	  snprintf(spp, AS_MAXCH, "s.%s", SE_FILE_SUFFIX);	/* insert an 's' */
+#else
 	  sprintf(spp, "s.%s", SE_FILE_SUFFIX);	/* insert an 's' */
+#endif
 	  goto again;
 	}
 	/*
@@ -1981,27 +1992,31 @@ FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr)
   np = swi_cutstr(s1, PATH_SEPARATOR, cpos, 20);
   for (i = 0; i < np; i++) {
     strcpy(s, cpos[i]);
-    if (strcmp(s, ".") == 0)	/* current directory */
+    if (strcmp(s, ".") == 0) { /* current directory */
       *s = '\0';
-    else {
+    } else {
       j = strlen(s);
       if (*(s + j - 1) != *DIR_GLUE && *s != '\0')
 	strcat(s, DIR_GLUE);
     }
-    strcpy(fnamp, s);
-    if (strlen(fnamp) + strlen(fname) < AS_MAXCH)
-      strcat(fnamp, fname);
-    else {
+    if (strlen(s) + strlen(fname) < AS_MAXCH) {
+      strcat(s, fname);
+    } else {
       if (serr != NULL)
 	sprintf(serr, "error: file path and name must be shorter than %d.", AS_MAXCH);
       return NULL;
     }
+    strcpy(fnamp, s);
     fp = fopen(fnamp, BFILE_R_ACCESS);
     if (fp != NULL) 
       return fp;
   }
+#ifdef USE_C99
+  snprintf(s, AS_MAXCH, "SwissEph file '%s' not found in PATH '%s'", fname, ephepath);
+#else
   sprintf(s, "SwissEph file '%s' not found in PATH '%s'", fname, ephepath);
-  s[AS_MAXCH-1] = '\0';		/* s may be longer then AS_MAXCH */
+#endif
+  s[AS_MAXCH-1] = '\0';		/* s must not be longer then AS_MAXCH */
   if (serr != NULL)
     strcpy(serr, s);
   return NULL;
@@ -2546,7 +2561,7 @@ static int app_pos_etc_plan_osc(int ipl, int ipli, int32 iflag, char *serr)
   int i, j, niter, retc;
   double xx[6], dx[3], dt, dtsave_for_defl;
   double xearth[6], xsun[6], xmoon[6];
-  double xxsv[6], xxsp[6], xobs[6], xobs2[6];
+  double xxsv[6], xxsp[3]={0}, xobs[6], xobs2[6];
   double t;
   struct plan_data *pdp = &swed.pldat[ipli];
   struct plan_data *pedp = &swed.pldat[SEI_EARTH];
@@ -2730,7 +2745,7 @@ static int app_pos_etc_plan_osc(int ipl, int ipli, int32 iflag, char *serr)
 void swi_precess_speed(double *xx, double t, int direction) 
 {
   struct epsilon *oe;
-  double fac;
+  double fac, dpre, dpre2;
   double tprec = (t - J2000) / 36525.0;
   if (direction == J2000_TO_J) {
     fac = 1;
@@ -2747,8 +2762,14 @@ void swi_precess_speed(double *xx, double t, int direction)
   swi_coortrf2(xx, xx, oe->seps, oe->ceps);
   swi_coortrf2(xx+3, xx+3, oe->seps, oe->ceps);
   swi_cartpol_sp(xx, xx);
-  xx[3] += (50.290966 + 0.0222226 * tprec) / 3600 / 365.25 * DEGTORAD * fac;
+  if (PREC_VONDRAK_2011) {
+    swi_ldp_peps(t, &dpre, NULL);
+    swi_ldp_peps(t + 1, &dpre2, NULL);
+    xx[3] += (dpre2 - dpre) * fac;
+  } else {
+    xx[3] += (50.290966 + 0.0222226 * tprec) / 3600 / 365.25 * DEGTORAD * fac;
 			/* formula from Montenbruck, German 1994, p. 18 */
+  }
   swi_polcart_sp(xx, xx);
   swi_coortrf2(xx, xx, -oe->seps, oe->ceps);
   swi_coortrf2(xx+3, xx+3, -oe->seps, oe->ceps);
@@ -3551,8 +3572,13 @@ static int get_new_segment(double tjd, int ipli, int ifno, char *serr)
     if (nco > pdp->ncoe) {
       if (serr != NULL) {
 	sprintf(serr, "error in ephemeris file: %d coefficients instead of %d. ", nco, pdp->ncoe);
-	if (strlen(serr) + strlen(fdp->fnam) < AS_MAXCH - 1)
+	if (strlen(serr) + strlen(fdp->fnam) < AS_MAXCH - 1) {
+#ifdef USE_C99
+	  snprintf(serr, AS_MAXCH, "error in ephemeris file %s: %d coefficients instead of %d. ", fdp->fnam, nco, pdp->ncoe);
+#else
 	  sprintf(serr, "error in ephemeris file %s: %d coefficients instead of %d. ", fdp->fnam, nco, pdp->ncoe);
+#endif
+	}
       }
       free(pdp->segp);
       pdp->segp = NULL;
@@ -3649,7 +3675,6 @@ static int read_const(int ifno, char *serr)
   struct plan_data *pdp;
   struct file_data *fdp = &swed.fidat[ifno];
   char *serr_file_damage = "Ephemeris file %s is damaged. ";
-  int errmsglen = strlen(serr_file_damage) + strlen(fdp->fnam);
   int nbytes_ipl = 2;
   fp = fdp->fptr;
   /************************************* 
@@ -3692,8 +3717,13 @@ static int read_const(int ifno, char *serr)
   for (sp = s; *sp != '\0'; sp++)
     *sp = tolower((int) *sp);
   if (strcmp(s2, s) != 0) {
-    if (serr != NULL)
+    if (serr != NULL) {
+#ifdef USE_C99
+      snprintf(serr, AS_MAXCH, "Ephemeris file name '%s' wrong; rename '%s' ", s2, s);
+#else
       sprintf(serr, "Ephemeris file name '%s' wrong; rename '%s' ", s2, s);
+#endif
+    }
     goto return_error;
   }
   /************************************* 
@@ -3967,13 +3997,19 @@ SEI_CURR_FPOS, freord, fendian, ifno, serr);
   }
   return(OK);
 file_damage:
-  if (serr != NULL && errmsglen < AS_MAXCH)
-    sprintf(serr, serr_file_damage, fdp->fnam);
-  else 
-    sprintf(serr, serr_file_damage, "");
+  if (serr != NULL) {
+    *serr = '\0';
+    if (strlen(serr_file_damage) + strlen(fdp->fnam) < AS_MAXCH) {
+#ifdef USE_C99
+      snprintf(serr, AS_MAXCH, serr_file_damage, fdp->fnam);
+#else
+      sprintf(serr, serr_file_damage, fdp->fnam);
+#endif
+    }
+  }
 return_error:
   fclose(fp);
-  fp = NULL;
+  fdp->fptr = NULL;
   return(ERR);
 }
 
@@ -4005,8 +4041,13 @@ static int do_fread(void *trg, int size, int count, int corrsize, FILE *fp, int3
     if (fread((void *) targ, (size_t) totsize, 1, fp) == 0) {
       if (serr != NULL) {
 	strcpy(serr, "Ephemeris file is damaged. ");
-	if (strlen(serr) + strlen(swed.fidat[ifno].fnam) < AS_MAXCH - 1)
+	if (strlen(serr) + strlen(swed.fidat[ifno].fnam) < AS_MAXCH - 1) {
+#ifdef USE_C99
+	  snprintf(serr, AS_MAXCH, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
+#else
 	  sprintf(serr, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
+#endif
+	}
       }
       fclose(fp);
       fp = NULL;
@@ -4017,8 +4058,13 @@ static int do_fread(void *trg, int size, int count, int corrsize, FILE *fp, int3
     if (fread((void *) &space[0], (size_t) totsize, 1, fp) == 0) {
       if (serr != NULL) {
 	strcpy(serr, "Ephemeris file is damaged. ");
-	if (strlen(serr) + strlen(swed.fidat[ifno].fnam) < AS_MAXCH - 1)
+	if (strlen(serr) + strlen(swed.fidat[ifno].fnam) < AS_MAXCH - 1) {
+#ifdef USE_C99
+	  snprintf(serr, AS_MAXCH, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
+#else
 	  sprintf(serr, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
+#endif
+	}
       }
       fclose(fp);
       fp = NULL;
@@ -4069,8 +4115,6 @@ static void rot_back(int ipli)
   chcfx = pdp->segp;
   chcfy = chcfx + nco;
   chcfz = chcfx + 2 * nco;
-  refepx = pdp->refep;
-  refepy = refepx + nco;
   tdiff= (t - pdp->telem) / 365250.0;
   if (ipli == SEI_MOON) {
     dn = pdp->prot + tdiff * pdp->dprot;
@@ -4089,6 +4133,8 @@ static void rot_back(int ipli)
     x[i][2] = chcfz[i];
   }
   if (pdp->iflg & SEI_FLG_ELLIPSE) {
+    refepx = pdp->refep;
+    refepy = refepx + nco;
     omtild = pdp->peri + tdiff * pdp->dperi;
     i = (int) (omtild / TWOPI);
     omtild -= i * TWOPI;
@@ -5294,8 +5340,13 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
     else if (star_nr > 0)
       continue;
     if ((sp = strchr(s, ',')) == NULL) {
-      if (serr != NULL)
+      if (serr != NULL) {
+#ifdef USE_C99
+	snprintf(serr, AS_MAXCH, "star file %s damaged at line %d", SE_STARFILE, fline);
+#else
 	sprintf(serr, "star file %s damaged at line %d", SE_STARFILE, fline);
+#endif
+      }
       retc = ERR;
       goto return_err;
     } 
@@ -5321,8 +5372,16 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
     if (strncmp(fstar, sstar, cmplen) == 0) 
       goto found;
   }
-  if (serr != NULL && strlen(star) < AS_MAXCH - 20) 
-    sprintf(serr, "star %s not found", star);
+  if (serr != NULL) {
+    sprintf(serr, "star  not found");
+    if (strlen(serr) + strlen(star) < AS_MAXCH) {
+#ifdef USE_C99
+      snprintf(serr, AS_MAXCH, "star %s not found", star);
+#else
+      sprintf(serr, "star %s not found", star);
+#endif
+    }
+  }
   retc = ERR;
   goto return_err;
   found:
@@ -5332,8 +5391,13 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
   swi_right_trim(cpos[0]);
   swi_right_trim(cpos[1]);
   if (i < 13) {
-    if (serr != NULL)
+    if (serr != NULL) {
+#ifdef USE_C99
+      snprintf(serr, AS_MAXCH, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
+#else
       sprintf(serr, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
+#endif
+    }
     retc = ERR;
     goto return_err;
   }
@@ -5354,7 +5418,13 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
     cpos[0][SE_MAX_STNAME] = '\0';
   if (strlen(cpos[1]) > SE_MAX_STNAME-1)
     cpos[1][SE_MAX_STNAME-1] = '\0';
-  sprintf(star, "%s,%s", cpos[0], cpos[1]);
+#ifdef USE_C99
+  snprintf(star, SE_MAX_STNAME, "%s,%s", cpos[0], cpos[1]);
+#else
+  strcpy(star, cpos[0]);
+  if (strlen(cpos[0]) + strlen(cpos[1]) + 1 < SE_MAX_STNAME - 1)
+    sprintf(star + strlen(star), ",%s", cpos[1]);
+#endif
   /****************************************
    * position and speed (equinox)
    ****************************************/
@@ -5661,8 +5731,11 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
    ******************************************************/
   if (swed.fixfp == NULL) {
     if ((swed.fixfp = swi_fopen(SEI_FILE_FIXSTAR, SE_STARFILE, swed.ephepath, serr)) == NULL) {
-      retc = ERR;
-      goto return_err;
+      swed.is_old_starfile = TRUE;
+      if ((swed.fixfp = swi_fopen(SEI_FILE_FIXSTAR, SE_STARFILE_OLD, swed.ephepath, NULL)) == NULL) {
+	retc = ERR;
+	goto return_err;
+      }
     }
   }
   rewind(swed.fixfp);
@@ -5696,8 +5769,13 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
     else if (star_nr > 0)
       continue;
     if ((sp = strchr(s, ',')) == NULL) {
-      if (serr != NULL)
+      if (serr != NULL) {
+#ifdef USE_C99
+	snprintf(serr, AS_MAXCH, "star file %s damaged at line %d", SE_STARFILE, fline);
+#else
 	sprintf(serr, "star file %s damaged at line %d", SE_STARFILE, fline);
+#endif
+      }
       retc = ERR;
       goto return_err;
     } 
@@ -5721,8 +5799,16 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
     if (strncmp(fstar, sstar, cmplen) == 0) 
       goto found;
   }
-  if (serr != NULL && strlen(star) < AS_MAXCH - 20) 
-    sprintf(serr, "star %s not found", star);
+  if (serr != NULL) {
+    strcpy(serr, "star  not found");
+    if (strlen(serr) + strlen(star) < AS_MAXCH) {
+#ifdef USE_C99
+      snprintf(serr, AS_MAXCH, "star %s not found", star);
+#else
+      sprintf(serr, "star %s not found", star);
+#endif
+    }
+  }
   retc = ERR;
   goto return_err;
   found:
@@ -5730,8 +5816,16 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
   swi_right_trim(cpos[0]);
   swi_right_trim(cpos[1]);
   if (i < 13) {
-    if (serr != NULL)
-      sprintf(serr, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
+    if (serr != NULL) {
+      strcpy(serr, "data of star incomplete");
+      if (strlen(serr) + strlen(cpos[0]) + strlen(cpos[1]) + 2 < AS_MAXCH) {
+#ifdef USE_C99
+	snprintf(serr, AS_MAXCH, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
+#else
+	sprintf(serr, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
+#endif
+      }
+    }
     retc = ERR;
     goto return_err;
   }
@@ -5741,7 +5835,13 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
     cpos[0][SE_MAX_STNAME] = '\0';
   if (strlen(cpos[1]) > SE_MAX_STNAME-1)
     cpos[1][SE_MAX_STNAME-1] = '\0';
-  sprintf(star, "%s,%s", cpos[0], cpos[1]);
+#ifdef USE_C99
+  snprintf(star, SE_MAX_STNAME, "%s,%s", cpos[0], cpos[1]);
+#else
+  strcpy(star, cpos[0]);
+  if (strlen(cpos[0]) + strlen(cpos[1]) + 1 < SE_MAX_STNAME - 1)
+    sprintf(star + strlen(star), ",%s", cpos[1]);
+#endif
   return OK;
   return_err:
   *mag = 0;
@@ -6238,4 +6338,14 @@ int FAR PASCAL_CONV swe_time_equ(double tjd, double *E, char *serr)
     *E -= 360;
   *E *= 4 / 1440.0;
   return OK;
+}
+
+void swi_str_concat(char *sout, int maxch, char *s1, char *s2)
+{
+  char *s1d = strdup(s1);  /* allow e. g. swi_str_concat(sout, 255, sout, sadd) */
+  char *s2d = strdup(s2);
+  strcpy(sout, s1d);
+  strncat(sout, s2d, maxch - strlen(s2d) - 1);
+  free(s1d);
+  free(s2d);
 }

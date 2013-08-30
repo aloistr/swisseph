@@ -209,11 +209,7 @@ static int32 fsizer(char *serr)
     if (serr != NULL) {
       strcpy(serr, "alleged ephemeris file has invalid format.");
       if (strlen(serr) + strlen(js->jplfname) + 3 < AS_MAXCH) {
-#ifdef USE_C99
-	snprintf(serr, AS_MAXCH, "alleged ephemeris file (%s) has invalid format.", js->jplfname);
-#else
 	sprintf(serr, "alleged ephemeris file (%s) has invalid format.", js->jplfname);
-#endif
       }
     }
     return(NOT_AVAILABLE);
@@ -744,11 +740,7 @@ static int state(double et, int32 *list, int do_bary,
       if (serr != NULL) {
 	sprintf(serr, "JPL ephemeris file is mutilated; length = %d instead of %d.", flen, nb);
 	if (strlen(serr) + strlen(js->jplfname) < AS_MAXCH - 1) {
-#ifdef USE_C99
-	  snprintf(serr, AS_MAXCH, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, flen, nb);
-#else
 	  sprintf(serr, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, flen, nb);
-#endif
 	}
       }
       return(NOT_AVAILABLE);

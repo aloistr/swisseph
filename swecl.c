@@ -1582,15 +1582,13 @@ next_try:
       /*for (j = 0; j < nstartpos; j++)
         printf("%f ", dc[j]);*/
       if (serr != NULL) {
-	if (starname != NULL && *starname != '\0')
-	  strcpy(s, starname);
-        else
+	if (starname != NULL && *starname != '\0') {
+	  *s = '\0';
+	  strncat(s, starname, 80);
+        } else {
 	  swe_get_planet_name(ipl , s);
-#ifdef USE_C99
-	snprintf(serr, AS_MAXCH, "error in swe_lun_occult_when_glob(): conjunction of moon with planet %s not found\n", s);
-#else
+        }
 	sprintf(serr, "error in swe_lun_occult_when_glob(): conjunction of moon with planet %s not found\n", s);
-#endif
       }
       return ERR;
     }

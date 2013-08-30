@@ -754,18 +754,10 @@ static int read_elements_file(int32 ipl, double tjd,
     if ((sp = strchr(s, '#')) != NULL)
       *sp = '\0';
     ncpos = swi_cutstr(s, ",", cpos, 20);
-#ifdef USE_C99
-    snprintf(serri, AS_MAXCH, "error in file %s, line %7.0f:", SE_FICTFILE, (double) iline);
-#else
     sprintf(serri, "error in file %s, line %7.0f:", SE_FICTFILE, (double) iline);
-#endif
     if (ncpos < 9) {
       if (serr != NULL) {
-#ifdef USE_C99
-        snprintf(serr, AS_MAXCH, "%s nine elements required", serri);
-#else
         sprintf(serr, "%s nine elements required", serri);
-#endif
       }
       return ERR;
     }
@@ -786,11 +778,7 @@ static int read_elements_file(int32 ipl, double tjd,
         *tjd0 = J1900;
       else if (*sp == 'j' || *sp == 'b') {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s invalid epoch", serri);
-#else
           sprintf(serr, "%s invalid epoch", serri);
-#endif
 	}
         goto return_err;
       } else
@@ -814,11 +802,7 @@ static int read_elements_file(int32 ipl, double tjd,
         *tequ = tjd;
       else if (*sp == 'j' || *sp == 'b') {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s invalid equinox", serri);
-#else
           sprintf(serr, "%s invalid equinox", serri);
-#endif
 	}
         goto return_err;
       } else
@@ -830,11 +814,7 @@ static int read_elements_file(int32 ipl, double tjd,
 	  *mano = swe_degnorm(*mano);
       if (retc == ERR) {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s mean anomaly value invalid", serri);
-#else
           sprintf(serr, "%s mean anomaly value invalid", serri);
-#endif
 	}
         goto return_err;
       }
@@ -852,11 +832,7 @@ static int read_elements_file(int32 ipl, double tjd,
       retc = check_t_terms(tt, cpos[3], sema);
       if (*sema <= 0 || retc == ERR) {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s semi-axis value invalid", serri);
-#else
           sprintf(serr, "%s semi-axis value invalid", serri);
-#endif
 	}
         goto return_err;
       }
@@ -866,11 +842,7 @@ static int read_elements_file(int32 ipl, double tjd,
       retc = check_t_terms(tt, cpos[4], ecce);
       if (*ecce >= 1 || *ecce < 0 || retc == ERR) {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s eccentricity invalid (no parabolic or hyperbolic orbits allowed)", serri);
-#else
           sprintf(serr, "%s eccentricity invalid (no parabolic or hyperbolic orbits allowed)", serri);
-#endif
 	}
         goto return_err;
       }
@@ -881,11 +853,7 @@ static int read_elements_file(int32 ipl, double tjd,
 	  *parg = swe_degnorm(*parg);
       if (retc == ERR) {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s perihelion argument value invalid", serri);
-#else
           sprintf(serr, "%s perihelion argument value invalid", serri);
-#endif
 	}
         goto return_err;
       }
@@ -897,11 +865,7 @@ static int read_elements_file(int32 ipl, double tjd,
 	  *node = swe_degnorm(*node);
       if (retc == ERR) {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s node value invalid", serri);
-#else
           sprintf(serr, "%s node value invalid", serri);
-#endif
 	}
         goto return_err;
       }
@@ -913,11 +877,7 @@ static int read_elements_file(int32 ipl, double tjd,
 	  *incl = swe_degnorm(*incl);
       if (retc == ERR) {
         if (serr != NULL) {
-#ifdef USE_C99
-          snprintf(serr, AS_MAXCH, "%s inclination value invalid", serri);
-#else
           sprintf(serr, "%s inclination value invalid", serri);
-#endif
 	}
         goto return_err;
       }
@@ -942,11 +902,7 @@ static int read_elements_file(int32 ipl, double tjd,
   }
   if (!elem_found) {
     if (serr != NULL) {
-#ifdef USE_C99
-      snprintf(serr, AS_MAXCH, "%s elements for planet %7.0f not found", serri, (double) ipl);
-#else
       sprintf(serr, "%s elements for planet %7.0f not found", serri, (double) ipl);
-#endif
     }
     goto return_err;
   }

@@ -1844,11 +1844,7 @@ again:
 	char *spp;
 	spp = strchr(s, '.');
 	if (spp > s && *(spp-1) != 's') {	/* no 's' before '.' ? */
-#ifdef USE_C99
-	  snprintf(spp, AS_MAXCH, "s.%s", SE_FILE_SUFFIX);	/* insert an 's' */
-#else
 	  sprintf(spp, "s.%s", SE_FILE_SUFFIX);	/* insert an 's' */
-#endif
 	  goto again;
 	}
 	/*
@@ -2011,11 +2007,7 @@ FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr)
     if (fp != NULL) 
       return fp;
   }
-#ifdef USE_C99
-  snprintf(s, AS_MAXCH, "SwissEph file '%s' not found in PATH '%s'", fname, ephepath);
-#else
   sprintf(s, "SwissEph file '%s' not found in PATH '%s'", fname, ephepath);
-#endif
   s[AS_MAXCH-1] = '\0';		/* s must not be longer then AS_MAXCH */
   if (serr != NULL)
     strcpy(serr, s);
@@ -3573,11 +3565,7 @@ static int get_new_segment(double tjd, int ipli, int ifno, char *serr)
       if (serr != NULL) {
 	sprintf(serr, "error in ephemeris file: %d coefficients instead of %d. ", nco, pdp->ncoe);
 	if (strlen(serr) + strlen(fdp->fnam) < AS_MAXCH - 1) {
-#ifdef USE_C99
-	  snprintf(serr, AS_MAXCH, "error in ephemeris file %s: %d coefficients instead of %d. ", fdp->fnam, nco, pdp->ncoe);
-#else
 	  sprintf(serr, "error in ephemeris file %s: %d coefficients instead of %d. ", fdp->fnam, nco, pdp->ncoe);
-#endif
 	}
       }
       free(pdp->segp);
@@ -3718,11 +3706,7 @@ static int read_const(int ifno, char *serr)
     *sp = tolower((int) *sp);
   if (strcmp(s2, s) != 0) {
     if (serr != NULL) {
-#ifdef USE_C99
-      snprintf(serr, AS_MAXCH, "Ephemeris file name '%s' wrong; rename '%s' ", s2, s);
-#else
       sprintf(serr, "Ephemeris file name '%s' wrong; rename '%s' ", s2, s);
-#endif
     }
     goto return_error;
   }
@@ -4000,11 +3984,7 @@ file_damage:
   if (serr != NULL) {
     *serr = '\0';
     if (strlen(serr_file_damage) + strlen(fdp->fnam) < AS_MAXCH) {
-#ifdef USE_C99
-      snprintf(serr, AS_MAXCH, serr_file_damage, fdp->fnam);
-#else
       sprintf(serr, serr_file_damage, fdp->fnam);
-#endif
     }
   }
 return_error:
@@ -4042,11 +4022,7 @@ static int do_fread(void *trg, int size, int count, int corrsize, FILE *fp, int3
       if (serr != NULL) {
 	strcpy(serr, "Ephemeris file is damaged. ");
 	if (strlen(serr) + strlen(swed.fidat[ifno].fnam) < AS_MAXCH - 1) {
-#ifdef USE_C99
-	  snprintf(serr, AS_MAXCH, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
-#else
 	  sprintf(serr, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
-#endif
 	}
       }
       fclose(fp);
@@ -4059,11 +4035,7 @@ static int do_fread(void *trg, int size, int count, int corrsize, FILE *fp, int3
       if (serr != NULL) {
 	strcpy(serr, "Ephemeris file is damaged. ");
 	if (strlen(serr) + strlen(swed.fidat[ifno].fnam) < AS_MAXCH - 1) {
-#ifdef USE_C99
-	  snprintf(serr, AS_MAXCH, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
-#else
 	  sprintf(serr, "Ephemeris file %s is damaged.", swed.fidat[ifno].fnam);
-#endif
 	}
       }
       fclose(fp);
@@ -5341,11 +5313,7 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
       continue;
     if ((sp = strchr(s, ',')) == NULL) {
       if (serr != NULL) {
-#ifdef USE_C99
-	snprintf(serr, AS_MAXCH, "star file %s damaged at line %d", SE_STARFILE, fline);
-#else
 	sprintf(serr, "star file %s damaged at line %d", SE_STARFILE, fline);
-#endif
       }
       retc = ERR;
       goto return_err;
@@ -5375,11 +5343,7 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
   if (serr != NULL) {
     sprintf(serr, "star  not found");
     if (strlen(serr) + strlen(star) < AS_MAXCH) {
-#ifdef USE_C99
-      snprintf(serr, AS_MAXCH, "star %s not found", star);
-#else
       sprintf(serr, "star %s not found", star);
-#endif
     }
   }
   retc = ERR;
@@ -5392,11 +5356,7 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
   swi_right_trim(cpos[1]);
   if (i < 13) {
     if (serr != NULL) {
-#ifdef USE_C99
-      snprintf(serr, AS_MAXCH, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
-#else
       sprintf(serr, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
-#endif
     }
     retc = ERR;
     goto return_err;
@@ -5418,13 +5378,9 @@ int32 FAR PASCAL_CONV swe_fixstar(char *star, double tjd, int32 iflag,
     cpos[0][SE_MAX_STNAME] = '\0';
   if (strlen(cpos[1]) > SE_MAX_STNAME-1)
     cpos[1][SE_MAX_STNAME-1] = '\0';
-#ifdef USE_C99
-  snprintf(star, SE_MAX_STNAME, "%s,%s", cpos[0], cpos[1]);
-#else
   strcpy(star, cpos[0]);
   if (strlen(cpos[0]) + strlen(cpos[1]) + 1 < SE_MAX_STNAME - 1)
     sprintf(star + strlen(star), ",%s", cpos[1]);
-#endif
   /****************************************
    * position and speed (equinox)
    ****************************************/
@@ -5770,11 +5726,7 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
       continue;
     if ((sp = strchr(s, ',')) == NULL) {
       if (serr != NULL) {
-#ifdef USE_C99
-	snprintf(serr, AS_MAXCH, "star file %s damaged at line %d", SE_STARFILE, fline);
-#else
 	sprintf(serr, "star file %s damaged at line %d", SE_STARFILE, fline);
-#endif
       }
       retc = ERR;
       goto return_err;
@@ -5802,11 +5754,7 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
   if (serr != NULL) {
     strcpy(serr, "star  not found");
     if (strlen(serr) + strlen(star) < AS_MAXCH) {
-#ifdef USE_C99
-      snprintf(serr, AS_MAXCH, "star %s not found", star);
-#else
       sprintf(serr, "star %s not found", star);
-#endif
     }
   }
   retc = ERR;
@@ -5819,11 +5767,7 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
     if (serr != NULL) {
       strcpy(serr, "data of star incomplete");
       if (strlen(serr) + strlen(cpos[0]) + strlen(cpos[1]) + 2 < AS_MAXCH) {
-#ifdef USE_C99
-	snprintf(serr, AS_MAXCH, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
-#else
 	sprintf(serr, "data of star '%s,%s' incomplete", cpos[0], cpos[1]);
-#endif
       }
     }
     retc = ERR;
@@ -5835,13 +5779,9 @@ int32 FAR PASCAL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
     cpos[0][SE_MAX_STNAME] = '\0';
   if (strlen(cpos[1]) > SE_MAX_STNAME-1)
     cpos[1][SE_MAX_STNAME-1] = '\0';
-#ifdef USE_C99
-  snprintf(star, SE_MAX_STNAME, "%s,%s", cpos[0], cpos[1]);
-#else
   strcpy(star, cpos[0]);
   if (strlen(cpos[0]) + strlen(cpos[1]) + 1 < SE_MAX_STNAME - 1)
     sprintf(star + strlen(star), ",%s", cpos[1]);
-#endif
   return OK;
   return_err:
   *mag = 0;

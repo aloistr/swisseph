@@ -2325,11 +2325,7 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
       sform = "ast%d%sse%05d.%s";
       if (ipli - SE_AST_OFFSET > 99999) 
 	sform = "ast%d%ss%06d.%s";
-#ifdef USE_C99
-      snprintf(fname, AS_MAXCH, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
-#else
       sprintf(fname, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
-#endif
       return;	/* asteroids: only one file 3000 bc - 3000 ad */
       /* break; */
   }
@@ -2365,11 +2361,7 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
   else 
     strcat(fname, "_");
   icty = abs(icty);
-#ifdef USE_C99
-  snprintf(fname + strlen(fname),AS_MAXCH - strlen(fname), "%02d.%s", icty, SE_FILE_SUFFIX);
-#else
   sprintf(fname + strlen(fname), "%02d.%s", icty, SE_FILE_SUFFIX);
-#endif
 #if 0
   printf("fname  %s\n", fname); 
   fflush(stdout);
@@ -2609,11 +2601,7 @@ char *FAR PASCAL_CONV swe_cs2degstr(CSEC t, char *a)
   s = t % 60L;
   m = t / 60 % 60L;
   h = t / 3600 % 100L;	/* only 0..99 degrees */ 
-#ifdef USE_C99
-  snprintf(a, 9, "%2d%s%02d'%02d", h, ODEGREE_STRING, m, s);
-#else
   sprintf(a, "%2d%s%02d'%02d", h, ODEGREE_STRING, m, s);
-#endif
   return (a);
 } /* swe_cs2degstr() */
 
@@ -2783,19 +2771,11 @@ void swi_open_trace(char *serr)
 # else
     ipid = getpid();
 # endif
-#ifdef USE_C99
-    snprintf(sp1, AS_MAXCH, "_%d%s", ipid, sp);
-#else
     sprintf(sp1, "_%d%s", ipid, sp);
-#endif
 #endif
     if ((swi_fp_trace_c = fopen(fname, FILE_A_ACCESS)) == NULL) {
       if (serr != NULL) {
-#ifdef USE_C99
-	snprintf(serr, AS_MAXCH, "could not open trace output file '%s'", fname);
-#else
 	sprintf(serr, "could not open trace output file '%s'", fname);
-#endif
       }
     } else {
       fputs("#include \"sweodef.h\"\n", swi_fp_trace_c);   
@@ -2824,19 +2804,11 @@ void swi_open_trace(char *serr)
 # else
     ipid = getpid();
 # endif
-#ifdef USE_C99
-    snprintf(sp1, AS_MAXCH, "_%d%s", ipid, sp);
-#else
     sprintf(sp1, "_%d%s", ipid, sp);
-#endif
 #endif
     if ((swi_fp_trace_out = fopen(fname, FILE_A_ACCESS)) == NULL) {
       if (serr != NULL) {
-#ifdef USE_C99
-	snprintf(serr, AS_MAXCH, "could not open trace output file '%s'", fname);
-#else
 	sprintf(serr, "could not open trace output file '%s'", fname);
-#endif
       }
     }
   }

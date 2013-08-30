@@ -2407,11 +2407,7 @@ static int32 get_asc_obl(double tjd, int32 ipl, char *star, int32 iflag, double
       strcpy(s, star);
     else
       swe_get_planet_name(ipl, s);
-#ifdef USE_C99
-    snprintf(serr, AS_MAXCH, "%s is circumpolar, cannot calculate heliacal event", s);
-#else
     sprintf(serr, "%s is circumpolar, cannot calculate heliacal event", s);
-#endif
     return -2;
   }
   adp = asin(adp) / DEGTORAD;
@@ -2443,11 +2439,7 @@ static int32 get_asc_obl_old(double tjd, int32 ipl, char *star, int32 iflag, dou
       strcpy(s, star);
     else 
       swe_get_planet_name(ipl, s);
-#ifdef USE_C99
-    snprintf(serr, AS_MAXCH, "%s is circumpolar, cannot calculate heliacal event", s);
-#else
     sprintf(serr, "%s is circumpolar, cannot calculate heliacal event", s);
-#endif
     return -2;
   }
   adp = asin(adp) / DEGTORAD;
@@ -3350,11 +3342,7 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
   if (Planet == SE_MOON) {
     if (TypeEvent == 1 || TypeEvent == 2) {
       if (serr_ret != NULL) {
-#ifdef USE_C99
-        snprintf(serr_ret, AS_MAXCH, "%s (event type %d) does not exist for the moon\n", sevent[TypeEvent], TypeEvent);
-#else
         sprintf(serr_ret, "%s (event type %d) does not exist for the moon\n", sevent[TypeEvent], TypeEvent);
-#endif
       }
       return ERR;
     }
@@ -3380,11 +3368,7 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
 	    strcpy(s, ObjectName);
 	  else
 	    swe_get_planet_name(Planet, s);
-#ifdef USE_C99
-	  snprintf(serr_ret, AS_MAXCH, "%s (event type %d) does not exist for %s\n", sevent[TypeEvent], TypeEvent, s);
-#else
 	  sprintf(serr_ret, "%s (event type %d) does not exist for %s\n", sevent[TypeEvent], TypeEvent, s);
-#endif
 	}
 	return ERR;
       }
@@ -3407,11 +3391,7 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
 	  strcpy(s, ObjectName);
 	else
 	  swe_get_planet_name(Planet, s);
-#ifdef USE_C99
-	snprintf(serr_ret, AS_MAXCH, "%s (event type %d) is not provided for %s\n", sevent[TypeEvent], TypeEvent, s);
-#else
 	sprintf(serr_ret, "%s (event type %d) is not provided for %s\n", sevent[TypeEvent], TypeEvent, s);
-#endif
       }
       return ERR;
     }

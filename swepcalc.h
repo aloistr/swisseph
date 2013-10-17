@@ -171,7 +171,7 @@ extern char *planet2abbr3(int planet);
  * planet index numbers, used to identify a planet in calc() and
  * other related functions.
  */
-#define CALC_ONLY_ECL_NUT -1	/* pseudo planet index for calls to calc */
+#define CALC_ONLY_ECL_NUT (-1)	/* pseudo planet index for calls to calc */
 #define SUN	0		/* used synonymously for earth too */
 #define EARTH	0
 #define MOON	1
@@ -188,12 +188,13 @@ extern char *planet2abbr3(int planet);
 #define TRUE_NODE  11
 #define CHIRON	   12
 #define LILITH	   13	
-#define CALC_N	   14	/* number of planets in placalc module */
+#define CALC_N	  14	/* number of planets in placalc module */
 
 #define CERES     14
 #define PALLAS    15
 #define JUNO      16
 #define VESTA     17
+#define EARTHHEL  18	/* heliocentric earth */
 
 #define MAXPL_NACALC	(LILITH)	/* nacalc computes SUN..LILITH */
 # define PROG_PLANET_OFFSET  50      /* progressed sun */

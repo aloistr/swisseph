@@ -773,7 +773,7 @@ int main(int argc, char *argv[])
 {
 double x[6];
 x[1] = x[2] = x[0] = 1; 
-swi_precess(x, te, 1);
+swi_precess(x, te, iflag, 1);
 }
       if (with_header && (iflag & SEFLG_SIDEREAL)) {
         double daya = swe_get_ayanamsa(te);

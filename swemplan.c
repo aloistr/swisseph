@@ -486,7 +486,7 @@ static void embofs_mosh(double tjd, double *xemb)
   /* Convert to equatorial */
   swi_coortrf2(xyz, xyz, -seps, ceps);
   /* Precess to equinox of J2000.0 */
-  swi_precess(xyz, tjd, J_TO_J2000);/**/
+  swi_precess(xyz, tjd, 0, J_TO_J2000);/**/
   /* now emb -> earth */
   for (i = 0; i <= 2; i++)
     xemb[i] -= xyz[i] / (EARTH_MOON_MRAT + 1.0);
@@ -665,13 +665,13 @@ int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, d
   xp[4] = pqr[3] * x[3] + pqr[4] * x[4];
   xp[5] = pqr[6] * x[3] + pqr[7] * x[4];
   /* transformation to equator */
-  eps = swi_epsiln(tequ);
+  eps = swi_epsiln(tequ, 0);
   swi_coortrf(xp, xp, -eps);
   swi_coortrf(xp+3, xp+3, -eps);
   /* precess to J2000 */
   if (tequ != J2000) {
-    swi_precess(xp, tequ, J_TO_J2000);
-    swi_precess(xp+3, tequ, J_TO_J2000);
+    swi_precess(xp, tequ, 0, J_TO_J2000);
+    swi_precess(xp+3, tequ, 0, J_TO_J2000);
   }
   /* to solar system barycentre */
   if (fict_ifl & FICT_GEO) {

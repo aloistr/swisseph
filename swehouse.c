@@ -122,8 +122,8 @@ int FAR PASCAL_CONV swe_houses(double tjd_ut,
   int i, retc = 0;
   double armc, eps, nutlo[2];
   double tjde = tjd_ut + swe_deltat(tjd_ut);
-  eps = swi_epsiln(tjde) * RADTODEG;
-  swi_nutation(tjde, nutlo);
+  eps = swi_epsiln(tjde, 0) * RADTODEG;
+  swi_nutation(tjde, 0, nutlo);
   for (i = 0; i < 2; i++)
     nutlo[i] *= RADTODEG;
   armc = swe_degnorm(swe_sidtime0(tjd_ut, eps + nutlo[1], nutlo[0]) * 15 + geolon);
@@ -181,8 +181,8 @@ int FAR PASCAL_CONV swe_houses_ex(double tjd_ut,
     ito = 12;
   if ((iflag & SEFLG_SIDEREAL) && !swed.ayana_is_set)
     swe_set_sid_mode(SE_SIDM_FAGAN_BRADLEY, 0, 0);
-  eps_mean = swi_epsiln(tjde) * RADTODEG;
-  swi_nutation(tjde, nutlo);
+  eps_mean = swi_epsiln(tjde, 0) * RADTODEG;
+  swi_nutation(tjde, 0, nutlo);
   for (i = 0; i < 2; i++)
     nutlo[i] *= RADTODEG;
 #ifdef TRACE
@@ -270,7 +270,7 @@ static int sidereal_houses_ecl_t0(double tjde,
   else
     ito = 12;
   /* epsilon at t0 */
-  epst0 = swi_epsiln(sip->t0);
+  epst0 = swi_epsiln(sip->t0, 0);
   /* cartesian coordinates of an imaginary moving body on the
    * the mean ecliptic of t0; we take the vernal point: */
   x[0] = x[4] = 1; 
@@ -279,10 +279,10 @@ static int sidereal_houses_ecl_t0(double tjde,
   swi_coortrf(x, x, -epst0);
   swi_coortrf(x+3, x+3, -epst0);
   /* to tjd_et */
-  swi_precess(x, sip->t0, J_TO_J2000);
-  swi_precess(x, tjde, J2000_TO_J);
-  swi_precess(x+3, sip->t0, J_TO_J2000);
-  swi_precess(x+3, tjde, J2000_TO_J);
+  swi_precess(x, sip->t0, 0, J_TO_J2000);
+  swi_precess(x, tjde, 0, J2000_TO_J);
+  swi_precess(x+3, sip->t0, 0, J_TO_J2000);
+  swi_precess(x+3, tjde, 0, J2000_TO_J);
   /* to true equator of tjd_et */
   swi_coortrf(x, x, (eps - nutlo[1]) * DEGTORAD);
   swi_coortrf(x+3, x+3, (eps - nutlo[1]) * DEGTORAD);
@@ -365,7 +365,7 @@ static int sidereal_houses_ssypl(double tjde,
     ito = 36;
   else
     ito = 12;
-  eps2000 = swi_epsiln(J2000);
+  eps2000 = swi_epsiln(J2000, 0);
   /* cartesian coordinates of the zero point on the
    * the solar system rotation plane */
   x[0] = x[4] = 1; 
@@ -380,8 +380,8 @@ static int sidereal_houses_ssypl(double tjde,
   swi_coortrf(x, x, -eps2000);
   swi_coortrf(x+3, x+3, -eps2000);
   /* to mean equator of t */
-  swi_precess(x, tjde, J2000_TO_J);
-  swi_precess(x+3, tjde, J2000_TO_J);
+  swi_precess(x, tjde, 0, J2000_TO_J);
+  swi_precess(x+3, tjde, 0, J2000_TO_J);
   /* to true equator of t */
   swi_coortrf(x, x, (eps - nutlo[1]) * DEGTORAD);
   swi_coortrf(x+3, x+3, (eps - nutlo[1]) * DEGTORAD);
@@ -426,7 +426,7 @@ static int sidereal_houses_ssypl(double tjde,
   x0[1] = x0[2] = 0; 
   /* zero point of t0 in J2000 system */
   if (sip->t0 != J2000)
-    swi_precess(x0, sip->t0, J_TO_J2000);
+    swi_precess(x0, sip->t0, 0, J_TO_J2000);
   /* zero point to ecliptic 2000 */
   swi_coortrf(x0, x0, eps2000);
   /* to solar system plane */

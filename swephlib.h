@@ -59,32 +59,104 @@
   for promoting such software, products or services.
 */
 
-
-/* Set TRUE, to include Herring's (1987) corrections to IAU 1980 
- * nutation series. AA (1996) neglects them.  */
-#define NUT_CORR_1987    	FALSE
+#define PREC_IAU_1976      1
+#define PREC_IAU_2000      2
+#define PREC_IAU_2006      3
+#define PREC_BRETAGNON_2003      4
+#define PREC_LASKAR_1986   5
+#define PREC_SIMON_1994    6
+#define PREC_WILLIAMS_1994 7
+#define PREC_VONDRAK_2011  8
 
 /* Precession coefficients for remote past and future.
  * One of the following four defines must be true.
  */
-#define PREC_VONDRAK_2011	TRUE	
-#define PREC_WILLIAMS_1994	FALSE	
-#define PREC_SIMON_1994 	FALSE
-#define PREC_LASKAR_1986 	FALSE
-#define PREC_BRETAGNON_2003	FALSE	
+#define USE_PREC_VONDRAK_2011	TRUE
+#define USE_PREC_WILLIAMS_1994	FALSE
+#define USE_PREC_SIMON_1994 	FALSE
+#define USE_PREC_LASKAR_1986 	FALSE
+#define USE_PREC_BRETAGNON_2003	FALSE
 /* IAU precession 1976 or 2003 for recent centuries.
  * only one of the following two defines may be TRUE */
-#define PREC_IAU_1976		FALSE 	
-#define PREC_IAU_2003		FALSE  /* precession model P03 */	
+#define USE_PREC_IAU_1976	FALSE
+#define USE_PREC_IAU_2000	FALSE
+#define USE_PREC_IAU_2006	FALSE  /* precession model P03 */	
 #define PREC_IAU_1976_CTIES          2.0 	/* J2000 +/- two centuries */
+#define PREC_IAU_2000_CTIES          2.0 	/* J2000 +/- two centuries */
 /* we use P03 for whole ephemeris */
-#define PREC_IAU_2003_CTIES          75.0 	/* J2000 +/- 75 centuries */
+#define PREC_IAU_2006_CTIES          75.0 	/* J2000 +/- 75 centuries */
 
 /* choose between the following nutation models */
 #define NUT_IAU_1980          FALSE
 #define NUT_IAU_2000A         FALSE   /* very time consuming ! */
 #define NUT_IAU_2000B         TRUE  /* fast, but precision of milli-arcsec */
-					 
+/* Set TRUE, to include Herring's (1987) corrections to IAU 1980 
+ * nutation series. AA (1996) neglects them.  */
+#define NUT_CORR_1987    	FALSE
+
+/* frame bias */
+#define FRAME_BIAS_IAU2006    TRUE  /* if false, frame bias iau2000 will be used
+                                     * difference is minimal. */
+
+/* For reproducing JPL Horizons to 2 mas (SEFLG_JPLHOR): 
+ * The user has to keep the following files up to date which contain
+ * the earth orientation parameters related to the IAU 1980 nutation
+ * theory. 
+ * Download the file 
+ * datacenter.iers.org/eop/-/somos/5Rgv/document/tx13iers.u24/eopc04_08.62-now
+ * and rename it as eop_1962_today.txt. For current data and estimations for
+ * the near future, also download maia.usno.navy.mil/ser7/finals.all and 
+ * rename it as eop_finals.txt */
+#define DPSI_DEPS_IAU1980_FILE_EOPC04   "eop_1962_today.txt"
+#define DPSI_DEPS_IAU1980_FILE_FINALS   "eop_finals.txt"
+#define DPSI_DEPS_IAU1980_TJD0_HORIZONS  2437684.5 
+#define HORIZONS_TJD0_DPSI_DEPS_IAU1980  2437684.5 
+#define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980   TRUE  
+/* You can set the latter false if you do not want to compile the
+ * code required to reproduce JPL Horizons.
+ * Keep it TRUE in order to reproduce JPL Horizons following
+ * IERS Conventions 1996 (1992), p. 22. Call swe_calc_ut() with 
+ * iflag|SEFLG_JPLHOR.  This options runs only, if the files 
+ * DPSI_DEPS_IAU1980_FILE_EOPC04 and DPSI_DEPS_IAU1980_FILE_FINALS
+ * are in the ephemeris path.
+ */
+
+/* If the above define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980 is FALSE or 
+ * the software does not find the earth orientation files (see above)
+ * in the ephemeris path, then SEFLG_JPLHOR will run as 
+ * SEFLG_JPLHOR_APPROX.
+ * The following define APPROXIMATE_HORIZONS_ASTRODIENST defines 
+ * the handling of SEFLG_JPLHOR_APPROX.
+ * With this flag, planetary positions are always calculated 
+ * using a recent precession/nutation model.  
+ * If APPROXIMATE_HORIZONS_ASTRODIENST is FALSE, then the 
+ * frame bias as recommended by IERS Conventions 2003 and 2010
+ * is *not* applied. Instead, dpsi_bias and deps_bias are added to 
+ * nutation. This procedure is found in some older astronomical software.
+ * Equatorial apparent positions will be close to JPL Horizons 
+ * (within a few mas) beetween 1962 and current years. Ecl. longitude 
+ * will be good, latitude bad.
+ * If APPROXIMATE_HORIZONS_ASTRODIENST is TRUE, the approximation of 
+ * JPL Horizons is even better. Frame bias matrix is applied with
+ * some correction to RA and another correction is added to epsilon.
+ */
+#define APPROXIMATE_HORIZONS_ASTRODIENST   TRUE
+
+#define USE_HORIZONS_METHOD_BEFORE_1980  TRUE   /* Horizons method before 20-jan-1962 */
+/* The latter, if combined with SEFLG_JPLHOR provides good agreement 
+ * with JPL Horizons for 1800 - today. However, Horizons uses correct
+ * dpsi and deps only after 20-jan-1962. For all dates before that
+ * it uses dpsi and deps of 20-jan-1962, which provides a continuous 
+ * ephemeris, but does not make sense otherwise. 
+ * Before 1800, even this option does not provide agreement with Horizons,
+ * because Horizons uses a different precession model (Owen 1986) 
+ * before 1800, which is not included in the Swiss Ephemeris.
+ * If this macro is FALSE then the program defaults to SEFLG_JPLHOR_APPROX
+ * outside the time range of correction data dpsi and deps.
+ * Note that this will result in a non-continuous ephemeris near
+ * 20-jan-1962 and current years.
+ */
+
 /* coordinate transformation */
 extern void swi_coortrf(double *xpo, double *xpn, double eps);
 
@@ -102,13 +174,14 @@ extern void swi_polcart_sp(double *l, double *x);
 extern void swi_polcart(double *l, double *x);
 
 /* GCRS to J2000 */
-extern void swi_bias(double *x, int32 iflag, AS_BOOL backward);
+extern void swi_bias(double *x, double tjd, int32 iflag, AS_BOOL backward);
+extern void swi_get_eop_time_range(void);
 /* GCRS to FK5 */
 extern void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward);
 
 /* precession */
-extern int swi_precess(double *R, double J, int direction );
-extern void swi_precess_speed(double *xx, double t, int direction);
+extern int swi_precess(double *R, double J, int32 iflag, int direction );
+extern void swi_precess_speed(double *xx, double t, int32 iflag, int direction);
 
 /* from sweph.c, light deflection, aberration, etc. */
 extern void swi_deflect_light(double *xx, double dt, int32 iflag);
@@ -121,13 +194,13 @@ extern int swi_get_observer(double tjd, int32 iflag,
 extern void swi_force_app_pos_etc();
 
 /* obliquity of ecliptic */
-extern void swi_check_ecliptic(double tjd);
-extern double swi_epsiln(double J);
+extern void swi_check_ecliptic(double tjd, int32 iflag);
+extern double swi_epsiln(double J, int32 iflag);
 extern void swi_ldp_peps(double J, double *dpre, double *deps);
 
 /* nutation */
 extern void swi_check_nutation(double tjd, int32 iflag);
-extern int swi_nutation(double J, double *nutlo);
+extern int swi_nutation(double J, int32 iflag, double *nutlo);
 extern void swi_nutate(double *xx, int32 iflag, AS_BOOL backward);
 
 extern void swi_mean_lunar_elements(double tjd, 
@@ -164,6 +237,8 @@ extern void swi_FK4_FK5(double *xp, double tjd);
 
 extern char *swi_strcpy(char *to, char *from);
 extern char *swi_strncpy(char *to, char *from, size_t n);
+
+extern double swi_deltat_ephe(double tjd_ut, int32 epheflag);
 
 #ifdef TRACE
 #  define TRACE_COUNT_MAX         10000

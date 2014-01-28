@@ -63,7 +63,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "1.80.00"
+#define SE_VERSION      "2.00.00"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -128,10 +128,13 @@
 #define SE_TIDAL_DE404          (-25.580)  /* was (-25.8) until V. 1.76.2 */
 #define SE_TIDAL_DE405          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
 #define SE_TIDAL_DE406          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
+#define SE_TIDAL_DE421          (-25.85)   /* JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit */
+#define SE_TIDAL_DE430          (-25.82)   /* JPL Interoffice Memorandum 9-jul-2013 on DE430 Lunar Orbit */
+#define SE_TIDAL_DE431          (-25.82)   /* waiting for information */
 
 #define SE_TIDAL_26             (-26.0)
 
-#define SE_TIDAL_DEFAULT        SE_TIDAL_DE406
+#define SE_TIDAL_DEFAULT        SE_TIDAL_DE431
 
 /*
  * earlier content
@@ -226,14 +229,19 @@
 #define MOSHPLEPH_END  	2818000.5
 #define MOSHLUEPH_START	 625000.5
 #define MOSHLUEPH_END  	2818000.5
-#define MOSHNDEPH_START	-254900.5	/* 14 Feb -5410 00:00 ET jul.cal.*/
-#define MOSHNDEPH_END  	3697000.5	/* 11 Dec 5409 00:00 ET, greg. cal */
+/*#define MOSHNDEPH_START	-254900.5 */	/* 14 Feb -5410 00:00 ET jul.cal.*/
+/*#define MOSHNDEPH_END  	3697000.5 */	/* 11 Dec 5409 00:00 ET, greg. cal */
+#define MOSHNDEPH_START	-3100015.5	/* 15 Aug -13200 00:00 ET jul.cal.*/
+#define MOSHNDEPH_END  	8000016.5       /* 15 Mar 17191 00:00 ET, greg. cal */
 /*
 #define MOSHPLEPH_START	 -225000.5
 #define MOSHPLEPH_END  	3600000.5
 #define MOSHLUEPH_START	 -225000.5
 #define MOSHLUEPH_END  	3600000.5
 */
+#define JPL_DE431_START -3027215.5 
+#define JPL_DE431_END    7930192.5
+
 #if FALSE	/*	Alois commented out, not used anywhere  */
 #define JPLEPH_START	 625307.5	/* about -3000 (DE406) */
 #define JPLEPH_END	2816848.5	/* about  3000 (DE406) */
@@ -376,9 +384,10 @@ static const struct aya_init ayanamsa[] = {
     {1903396.7895321,-0.23763238},/*24: Aryabhata, analogous 22 */
     {1903396.8128654,-0.79167046},/*25: SS, Revati/zePsc at polar long. 359°50'*/
     {1903396.8128654, 2.11070444},/*26: SS, Citra/Spica at polar long. 180° */
-    {0, 0},	                /*27: - */
-    {0, 0},	                /*28: - */
-    {0, 0},	                /*29: - */
+    {0, 0},	                /*27: True Citra (Spica always exactly at 0 Libra) */
+    {0, 0},	                /*28: True Revati (zeta Psc always exactly at 0 Aries) */
+    {0, 0},			/*29: - */
+    {0, 0},	                /*30: - */
 	};
 
 #define PLAN_DATA struct plan_data
@@ -460,7 +469,6 @@ extern int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, do
 extern int swi_moshplan2(double J, int iplm, double *pobj);
 extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, double *xsun, char *serr);
 extern FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr);
-extern void swi_str_concat(char *sout, int maxch, char *s1, char *s2);
 
 /* nutation */
 struct nut {
@@ -550,6 +558,11 @@ struct swe_data {
   char ephepath[AS_MAXCH];
   char jplfnam[AS_MAXCH];
   short jpldenum;
+  double eop_tjd_beg;
+  double eop_tjd_beg_horizons;
+  double eop_tjd_end;
+  double eop_tjd_end_add;
+  int eop_dpsi_loaded;
   AS_BOOL geopos_is_set;
   AS_BOOL ayana_is_set;
   AS_BOOL is_old_starfile;
@@ -575,6 +588,8 @@ struct swe_data {
   double ast_diam;
   int i_saved_planet_name;
   char saved_planet_name[80];
+  double dpsi[36525];  /* works for 100 years after 1962 */
+  double deps[36525];
 };
 
 extern struct swe_data FAR swed;

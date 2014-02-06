@@ -189,6 +189,8 @@ DllImport void FAR PASCAL swe_jdut1_to_utc(
 
 DllImport int FAR PASCAL swe_time_equ(
         double tjd, double *e, char *serr);
+DllImport int FAR PASCAL swe_lmt_to_lat(double tjd_lmt, double geolon, double *tjd_lat, char *serr);
+DllImport int FAR PASCAL swe_lat_to_lmt(double tjd_lat, double geolon, double *tjd_lmt, char *serr);
 
 DllImport double FAR PASCAL swe_get_tid_acc(void);
 DllImport void FAR PASCAL swe_set_tid_acc(double tidacc);
@@ -233,10 +235,9 @@ DllImport int32 FAR PASCAL swe_lun_eclipse_how(
           double *attr, 
           char *serr);
 DllImport int32 FAR PASCAL swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype, double *tret, int32 backward, char *serr);
-
+DllImport int32 FAR PASCAL swe_lun_eclipse_when_loc(double tjd_start, int32 ifl, double *geopos, double *tret, double *attr, int32 backward, char *serr);
 /* planetary phenomena */
-DllImport int32 FAR PASCAL swe_pheno(double tjd, int32 ipl, int32 iflag, 
-				double *attr, char *serr);
+DllImport int32 FAR PASCAL swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr);
 
 DllImport int32 FAR PASCAL swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr);
 

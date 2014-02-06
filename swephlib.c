@@ -1,4 +1,3 @@
-
 /* SWISSEPH
    $Header: /home/dieter/sweph/RCS/swephlib.c,v 1.75 2009/11/27 11:00:57 dieter Exp $
 
@@ -99,7 +98,6 @@ static double deltat_espenak_meeus_1620(double tjd);
 static double deltat_longterm_morrison_stephenson(double tjd);
 static double deltat_stephenson_morrison_1600(double tjd);
 static double deltat_aa(double tjd);
-static int precess0(double *R, double J, int direction );
 
 /* Reduce x modulo 360 degrees
  */
@@ -693,29 +691,65 @@ static void pre_pmat(double tjd, double *rp)
  *
  *  See precess and page B18 of the Astronomical Almanac.
  */
-double swi_epsiln(double J) 
+#define OFFSET_EPS_JPLHORIZONS (35.95) 
+#define DCOR_EPS_JPL_TJD0  2437846.5
+#define NDCOR_EPS_JPL  51
+double dcor_eps_jpl[] = {
+36.726, 36.627, 36.595, 36.578, 36.640, 36.659, 36.731, 36.765,
+36.662, 36.555, 36.335, 36.321, 36.354, 36.227, 36.289, 36.348, 36.257, 36.163,
+35.979, 35.896, 35.842, 35.825, 35.912, 35.950, 36.093, 36.191, 36.009, 35.943,
+35.875, 35.771, 35.788, 35.753, 35.822, 35.866, 35.771, 35.732, 35.543, 35.498,
+35.449, 35.409, 35.497, 35.556, 35.672, 35.760, 35.596, 35.565, 35.510, 35.394,
+35.385, 35.375, 35.415,
+};
+double swi_epsiln(double J, int32 iflag) 
 {
   double T, eps;
+  double tofs, dofs, t0, t1;
   T = (J - 2451545.0)/36525.0;
-  if (PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES ) {
+  if ((iflag & SEFLG_JPLHOR) && INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980) {
     eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
-  } else if (PREC_IAU_2003 && fabs(T) <= PREC_IAU_2003_CTIES) {
+  } else if ((iflag & SEFLG_JPLHOR_APPROX) && !APPROXIMATE_HORIZONS_ASTRODIENST) {
+    eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
+  } else if (USE_PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES ) {
+    eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
+  } else if (USE_PREC_IAU_2000 && fabs(T) <= PREC_IAU_2000_CTIES ) {
+    eps = (((1.813e-3*T-5.9e-4)*T-46.84024)*T+84381.406)*DEGTORAD/3600;
+  } else if (USE_PREC_IAU_2006 && fabs(T) <= PREC_IAU_2006_CTIES) {
     eps =  (((((-4.34e-8 * T -5.76e-7) * T +2.0034e-3) * T -1.831e-4) * T -46.836769) * T + 84381.406) * DEGTORAD / 3600.0; 
-  } else if (PREC_BRETAGNON_2003) {
+  } else if (USE_PREC_BRETAGNON_2003) {
     eps =  ((((((-3e-11 * T - 2.48e-8) * T -5.23e-7) * T +1.99911e-3) * T -1.667e-4) * T -46.836051) * T + 84381.40880) * DEGTORAD / 3600.0;/* */
-  } else if (PREC_SIMON_1994) {
+  } else if (USE_PREC_SIMON_1994) {
     eps =  (((((2.5e-8 * T -5.1e-7) * T +1.9989e-3) * T -1.52e-4) * T -46.80927) * T + 84381.412) * DEGTORAD / 3600.0;/* */
-  } else if (PREC_WILLIAMS_1994) {
+  } else if (USE_PREC_WILLIAMS_1994) {
     eps =  ((((-1.0e-6 * T +2.0e-3) * T -1.74e-4) * T -46.833960) * T + 84381.409) * DEGTORAD / 3600.0;/* */
-  } else if (PREC_LASKAR_1986) {
+  } else if (USE_PREC_LASKAR_1986) {
     T /= 10.0;
     eps = ((((((((( 2.45e-10*T + 5.79e-9)*T + 2.787e-7)*T
     + 7.12e-7)*T - 3.905e-5)*T - 2.4967e-3)*T
     - 5.138e-3)*T + 1.99925)*T - 0.0155)*T - 468.093)*T
     + 84381.448;
-    eps *= DEGTORAD/3600;
-  } else { /* PREC_VONDRAK_2011 */
+    eps *= DEGTORAD/3600.0;
+  } else { /* USE_PREC_VONDRAK_2011 */
     swi_ldp_peps(J, NULL, &eps);
+    if ((iflag & SEFLG_JPLHOR_APPROX) && APPROXIMATE_HORIZONS_ASTRODIENST) {
+      tofs = (J - DCOR_EPS_JPL_TJD0) / 365.25;
+      dofs = OFFSET_EPS_JPLHORIZONS;
+      if (tofs < 0) {
+	tofs = 0;
+	dofs = dcor_eps_jpl[0];
+      } else if (tofs >= NDCOR_EPS_JPL - 1) {
+	tofs = NDCOR_EPS_JPL;
+	dofs = dcor_eps_jpl[NDCOR_EPS_JPL - 1];
+      } else {
+	t0 = (int) tofs;
+	t1 = t0 + 1;
+	dofs = dcor_eps_jpl[(int)t0];
+	dofs = (tofs - t0) * (dcor_eps_jpl[(int)t0] - dcor_eps_jpl[(int)t1]) + dcor_eps_jpl[(int)t0];
+      }
+      dofs /= (1000.0 * 3600.0);
+      eps += dofs * DEGTORAD;
+    }
   }
   return(eps);
 }
@@ -727,26 +761,26 @@ double swi_epsiln(double J)
  * Changes in program structure and implementation of IAU 2003 (P03) and
  * Vondrak 2011 by Dieter Koch.
  *
- * #define PREC_VONDRAK_2011 1
+ * #define USE_PREC_VONDRAK_2011 1
  * J. Vondrák, N. Capitaine, and P. Wallace, "New precession expressions,
  * valid for long time intervals", A&A 534, A22 (2011)
  *
- * #define PREC_IAU_2003 0
+ * #define USE_PREC_IAU_2006 0
  * N. Capitaine, P.T. Wallace, and J. Chapront, "Expressions for IAU 2000
  * precession quantities", 2003, A&A 412, 567-568 (2003).
  * This is a "short" term model, that can be combined with other models
  *
- * #define PREC_WILLIAMS_1994 0
+ * #define USE_PREC_WILLIAMS_1994 0
  * James G. Williams, "Contributions to the Earth's obliquity rate,
  * precession, and nutation,"  Astron. J. 108, 711-724 (1994).
  *
- * #define PREC_SIMON_1994 0
+ * #define USE_PREC_SIMON_1994 0
  * J. L. Simon, P. Bretagnon, J. Chapront, M. Chapront-Touze', G. Francou,
  * and J. Laskar, "Numerical Expressions for precession formulae and
  * mean elements for the Moon and the planets," Astronomy and Astrophysics
  * 282, 663-683 (1994).  
  *
- * #define PREC_IAU_1976 0
+ * #define USE_PREC_IAU_1976 0
  * IAU Coefficients are from:
  * J. H. Lieske, T. Lederle, W. Fricke, and B. Morando,
  * "Expressions for the Precession Quantities Based upon the IAU
@@ -754,7 +788,7 @@ double swi_epsiln(double J)
  * Astrophysics 58, 1-16 (1977).
  * This is a "short" term model, that can be combined with other models
  *
- * #define PREC_LASKAR_1986 0
+ * #define USE_PREC_LASKAR_1986 0
  * Newer formulas that cover a much longer time span are from:
  * J. Laskar, "Secular terms of classical planetary theories
  * using the results of general theory," Astronomy and Astrophysics
@@ -771,133 +805,35 @@ double swi_epsiln(double J)
  * Laskar's data, retaining powers up to T**10 in the result.
  *
  */
-/* In WILLIAMS and SIMON, Laskar's terms of order higher than t^4
-   have been retained, because Simon et al mention that the solution
-   is the same except for the lower order terms.  */
 
-#if (PREC_WILLIAMS_1994 || PREC_VONDRAK_2011)  /* Vondrak only added to shut up the compiler */
-static double pAcof[] = {
- -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
- -0.235316, 0.076, 110.5407, 50287.70000 };
-static double nodecof[] = {
-  6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 1.9e-10, 
-  -3.54e-9, -1.8103e-7,  1.26e-7,  7.436169e-5,
-  -0.04207794833,  3.052115282424};
-static double inclcof[] = {
-  1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
-  -5.4000441e-11, 1.32115526e-9, -6.012e-7, -1.62442e-5,
-  0.00227850649, 0.0 };
-#endif
-
-#if PREC_SIMON_1994
-/* Precession coefficients from Simon et al: */
-static double pAcof[] = {
-  -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
-  -0.235316, 0.07732, 111.2022, 50288.200 };
-static double nodecof[] = {
-  6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 1.9e-10, 
-  -3.54e-9, -1.8103e-7, 2.579e-8, 7.4379679e-5,
-  -0.0420782900, 3.0521126906};
-static double inclcof[] = {
-  1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
-  -5.4000441e-11, 1.32115526e-9, -5.99908e-7, -1.624383e-5,
-  0.002278492868, 0.0 };
-#endif
-
-#if PREC_LASKAR_1986
-/* Precession coefficients taken from Laskar's paper: */
-static double pAcof[] = {
-  -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
-  -0.235316, 0.07732, 111.1971, 50290.966 };
-/* Node and inclination of the earth's orbit computed from
- * Laskar's data as done in Bretagnon and Francou's paper.
- * Units are radians.
- */
-static double nodecof[] = {
-  6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 6.3190131e-10, 
-  -3.48388152e-9, -1.813065896e-7, 2.75036225e-8, 7.4394531426e-5,
-  -0.042078604317, 3.052112654975 };
-static double inclcof[] = {
-  1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
-  -5.4000441e-11, 1.32115526e-9, -5.998737027e-7, -1.6242797091e-5,
-  0.002278495537, 0.0 };
-#endif
-
-#if PREC_BRETAGNON_2003
-static double pAcof[] = {};
-static double nodecof[] = {};
-static double inclcof[] = {};
-#endif
-
-/* Subroutine arguments:
- *
- * R = rectangular equatorial coordinate vector to be precessed.
- *     The result is written back into the input vector.
- * J = Julian date
- * direction =
- *      Precess from J to J2000: direction = 1
- *      Precess from J2000 to J: direction = -1
- * Note that if you want to precess from J1 to J2, you would
- * first go from J1 to J2000, then call the program again
- * to go from J2000 to J2.
- */
-int swi_precess(double *R, double J, int direction )
+static int precess_1(double *R, double J, int direction, int prec_method)
 {
-  return precess0(R, J, direction);
-}
-
-static int precess0(double *R, double J, int direction )
-{
-  double sinth, costh, sinZ, cosZ, sinz, cosz;
-  double eps, sineps, coseps;
-  double A, B, T, Z, z, TH, pA, W;
-  double x[3], pmat[9];
-  double *p;
-  int i, j;
+  double T, Z, z, TH;
+  int i;
+  double x[3];
+  double sinth, costh, sinZ, cosZ, sinz, cosz, A, B;
   if( J == J2000 ) 
     return(0);
-  /* Each precession angle is specified by a polynomial in
-   * T = Julian centuries from J2000.0.  See AA page B18.
-   */
   T = (J - J2000)/36525.0;
-  /* Use IAU formula for a few centuries.  */
-  if (PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES) {
+  if (prec_method == PREC_IAU_1976) {
     Z =  (( 0.017998*T + 0.30188)*T + 2306.2181)*T*DEGTORAD/3600;
     z =  (( 0.018203*T + 1.09468)*T + 2306.2181)*T*DEGTORAD/3600;
     TH = ((-0.041833*T - 0.42665)*T + 2004.3109)*T*DEGTORAD/3600;
-  } else if (PREC_IAU_2003 && fabs(T) <= PREC_IAU_2003_CTIES) {
-    Z =  (((((- 0.0000003173*T - 0.000005971)*T + 0.01801828)*T + 0.2988499)*T + 2306.083227)*T + 2.650545)*DEGTORAD/3600;
-    z =  (((((- 0.0000002904*T - 0.000028596)*T + 0.01826837)*T + 1.0927348)*T + 2306.077181)*T - 2.650545)*DEGTORAD/3600;
-    TH = ((((-0.00000011274*T - 0.000007089)*T - 0.04182264)*T - 0.4294934)*T + 2004.191903)*T*DEGTORAD/3600;
-    /* AA 2006 B28:
+  } else if (prec_method == PREC_IAU_2000) {
+    /* AA 2006 B28:*/
     Z =  (((((- 0.0000002*T - 0.0000327)*T + 0.0179663)*T + 0.3019015)*T + 2306.0809506)*T + 2.5976176)*DEGTORAD/3600;
     z =  (((((- 0.0000003*T - 0.000047)*T + 0.0182237)*T + 1.0947790)*T + 2306.0803226)*T - 2.5976176)*DEGTORAD/3600;
     TH = ((((-0.0000001*T - 0.0000601)*T - 0.0418251)*T - 0.4269353)*T + 2004.1917476)*T*DEGTORAD/3600;
-    */
-  } else if (PREC_BRETAGNON_2003) {
+  } else if (prec_method == PREC_IAU_2006) {
+    T = (J - J2000)/36525.0;
+    Z =  (((((- 0.0000003173*T - 0.000005971)*T + 0.01801828)*T + 0.2988499)*T + 2306.083227)*T + 2.650545)*DEGTORAD/3600;
+    z =  (((((- 0.0000002904*T - 0.000028596)*T + 0.01826837)*T + 1.0927348)*T + 2306.077181)*T - 2.650545)*DEGTORAD/3600;
+    TH = ((((-0.00000011274*T - 0.000007089)*T - 0.04182264)*T - 0.4294934)*T + 2004.191903)*T*DEGTORAD/3600;
+  } else if (prec_method == PREC_BRETAGNON_2003) {
+    TH = ((-0.041833*T - 0.42665)*T + 2004.3109)*T*DEGTORAD/3600;
     Z =  ((((((-0.00000000013*T - 0.0000003040)*T - 0.000005708)*T + 0.01801752)*T + 0.3023262)*T + 2306.080472)*T + 2.72767)*DEGTORAD/3600;
     z =  ((((((-0.00000000005*T - 0.0000002486)*T - 0.000028276)*T + 0.01826676)*T + 1.0956768)*T + 2306.076070)*T - 2.72767)*DEGTORAD/3600;
     TH = ((((((0.000000000009*T + 0.00000000036)*T -0.0000001127)*T - 0.000007291)*T - 0.04182364)*T - 0.4266980)*T + 2004.190936)*T*DEGTORAD/3600;
-  } else if (PREC_LASKAR_1986) {
-    goto laskar;
-  } else { /* PREC_VONDRAK_2011 */
-    pre_pmat(J, pmat);
-    if (direction == -1) {
-      for (i = 0, j = 0; i <= 2; i++, j = i * 3) {
-	x[i] = R[0] *  pmat[j + 0] +
-		R[1] * pmat[j + 1] +
-		R[2] * pmat[j + 2];
-      }
-    } else {
-      for (i = 0, j = 0; i <= 2; i++, j = i * 3) {
-	x[i] = R[0] * pmat[i + 0] +
-		R[1] * pmat[i + 3] +
-		R[2] * pmat[i + 6];
-      }
-    }
-    for (i = 0; i < 3; i++)
-      R[i] = x[i];
-    return(0);
   }
   sinth = sin(TH);
   costh = cos(TH);
@@ -917,8 +853,7 @@ static int precess0(double *R, double J, int direction )
     x[2] =              cosZ*sinth*R[0]
 		      - sinZ*sinth*R[1]
 		      + costh*R[2];
-  }
-  else { /* From J to J2000.0 */
+  } else { /* From J to J2000.0 */
     x[0] =    (A*cosz - sinZ*sinz)*R[0]
 	    + (A*sinz + sinZ*cosz)*R[1]
 		      + cosZ*sinth*R[2];
@@ -929,16 +864,93 @@ static int precess0(double *R, double J, int direction )
 		      - sinth*sinz*R[1]
                       + costh*R[2];
   }	
-  goto done;
-  laskar:
+  for( i=0; i<3; i++ ) 
+    R[i] = x[i];
+  return(0);
+}
+
+/* In WILLIAMS and SIMON, Laskar's terms of order higher than t^4
+   have been retained, because Simon et al mention that the solution
+   is the same except for the lower order terms.  */
+
+/* PREC_WILLIAMS_1994 */
+static double pAcof_williams[] = {
+ -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
+ -0.235316, 0.076, 110.5407, 50287.70000 };
+static double nodecof_williams[] = {
+  6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 1.9e-10, 
+  -3.54e-9, -1.8103e-7,  1.26e-7,  7.436169e-5,
+  -0.04207794833,  3.052115282424};
+static double inclcof_williams[] = {
+  1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
+  -5.4000441e-11, 1.32115526e-9, -6.012e-7, -1.62442e-5,
+  0.00227850649, 0.0 };
+
+/* PREC_SIMON_1994 */
+/* Precession coefficients from Simon et al: */
+static double pAcof_simon[] = {
+  -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
+  -0.235316, 0.07732, 111.2022, 50288.200 };
+static double nodecof_simon[] = {
+  6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 1.9e-10, 
+  -3.54e-9, -1.8103e-7, 2.579e-8, 7.4379679e-5,
+  -0.0420782900, 3.0521126906};
+static double inclcof_simon[] = {
+  1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
+  -5.4000441e-11, 1.32115526e-9, -5.99908e-7, -1.624383e-5,
+  0.002278492868, 0.0 };
+
+/* PREC_LASKAR_1986 */
+/* Precession coefficients taken from Laskar's paper: */
+static double pAcof_laskar[] = {
+  -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
+  -0.235316, 0.07732, 111.1971, 50290.966 };
+/* Node and inclination of the earth's orbit computed from
+ * Laskar's data as done in Bretagnon and Francou's paper.
+ * Units are radians.
+ */
+static double nodecof_laskar[] = {
+  6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 6.3190131e-10, 
+  -3.48388152e-9, -1.813065896e-7, 2.75036225e-8, 7.4394531426e-5,
+  -0.042078604317, 3.052112654975 };
+static double inclcof_laskar[] = {
+  1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
+  -5.4000441e-11, 1.32115526e-9, -5.998737027e-7, -1.6242797091e-5,
+  0.002278495537, 0.0 };
+
+static int precess_2(double *R, double J, int32 iflag, int direction, int prec_method)
+{
+  int i;
+  double T, z;
+  double eps, sineps, coseps;
+  double x[3];
+  double *p;
+  double A, B, pA, W;
+  double *pAcof, *inclcof, *nodecof;
+  if( J == J2000 ) 
+    return(0);
+  if (prec_method == PREC_LASKAR_1986) {
+    pAcof = pAcof_laskar;
+    nodecof = nodecof_laskar;
+    inclcof = inclcof_laskar;
+  } else if (prec_method == PREC_SIMON_1994) {
+    pAcof = pAcof_simon;
+    nodecof = nodecof_simon;
+    inclcof = inclcof_simon;
+  } else if (prec_method == PREC_WILLIAMS_1994) {
+    pAcof = pAcof_williams;
+    nodecof = nodecof_williams;
+    inclcof = inclcof_williams;
+  }
+  T = (J - J2000)/36525.0;
   /* Implementation by elementary rotations using Laskar's expansions.
    * First rotate about the x axis from the initial equator
    * to the ecliptic. (The input is equatorial.)
    */
   if( direction == 1 ) 
-    eps = swi_epsiln(J); /* To J2000 */
+    eps = swi_epsiln(J, iflag); /* To J2000 */
   else 
-    eps = swi_epsiln(J2000); /* From J2000 */
+    eps = swi_epsiln(J2000, iflag); /* From J2000 */
   sineps = sin(eps);
   coseps = cos(eps);
   x[0] = R[0];
@@ -949,8 +961,9 @@ static int precess0(double *R, double J, int direction )
   T /= 10.0; /* thousands of years */
   p = pAcof;
   pA = *p++;
-  for( i=0; i<9; i++ ) 
+  for( i=0; i<9; i++ ) {
     pA = pA * T + *p++;
+  }
   pA *= DEGTORAD/3600 * T;
   /* Node of the moving ecliptic on the J2000 ecliptic.
    */
@@ -997,21 +1010,87 @@ static int precess0(double *R, double J, int direction )
   /* Rotate about x axis to final equator.
    */
   if( direction == 1 ) 
-    eps = swi_epsiln(J2000);
+    eps = swi_epsiln(J2000, iflag);
   else 
-    eps = swi_epsiln(J);
+    eps = swi_epsiln(J, iflag);
   sineps = sin(eps);
   coseps = cos(eps);
   z = coseps * x[1] - sineps * x[2];
   x[2] = sineps * x[1] + coseps * x[2];
   x[1] = z;
-  done:
   for( i=0; i<3; i++ ) 
     R[i] = x[i];
   return(0);
 }
 
-#if NUT_IAU_1980
+static int precess_3(double *R, double J, int direction, int prec_meth)
+{
+  double T;
+  double x[3], pmat[9];
+  int i, j;
+  if( J == J2000 ) 
+    return(0);
+  /* Each precession angle is specified by a polynomial in
+   * T = Julian centuries from J2000.0.  See AA page B18.
+   */
+  T = (J - J2000)/36525.0;
+  pre_pmat(J, pmat);
+  if (direction == -1) {
+    for (i = 0, j = 0; i <= 2; i++, j = i * 3) {
+      x[i] = R[0] *  pmat[j + 0] +
+	      R[1] * pmat[j + 1] +
+	      R[2] * pmat[j + 2];
+    }
+  } else {
+    for (i = 0, j = 0; i <= 2; i++, j = i * 3) {
+      x[i] = R[0] * pmat[i + 0] +
+	      R[1] * pmat[i + 3] +
+	      R[2] * pmat[i + 6];
+    }
+  }
+  for (i = 0; i < 3; i++)
+    R[i] = x[i];
+  return(0);
+}
+
+/* Subroutine arguments:
+ *
+ * R = rectangular equatorial coordinate vector to be precessed.
+ *     The result is written back into the input vector.
+ * J = Julian date
+ * direction =
+ *      Precess from J to J2000: direction = 1
+ *      Precess from J2000 to J: direction = -1
+ * Note that if you want to precess from J1 to J2, you would
+ * first go from J1 to J2000, then call the program again
+ * to go from J2000 to J2.
+ */
+int swi_precess(double *R, double J, int32 iflag, int direction )
+{
+  double T = (J - J2000)/36525.0;
+  /* JPL Horizons uses precession IAU 1976 and nutation IAU 1980 plus
+   * some correction to nutation, arriving at extremely high precision */
+  if ((iflag & SEFLG_JPLHOR) && INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980) {
+    return precess_1(R, J, direction, PREC_IAU_1976);
+  /* Use IAU 1976 formula for a few centuries.  */
+  } else if (USE_PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES) {
+    return precess_1(R, J, direction, PREC_IAU_1976);
+  } else if (USE_PREC_IAU_2000 && fabs(T) <= PREC_IAU_2000_CTIES) {
+    return precess_1(R, J, direction, PREC_IAU_2000);
+  /* Use IAU 2006 formula for a few centuries.  */
+  } else if (USE_PREC_IAU_2006 && fabs(T) <= PREC_IAU_2006_CTIES) {
+    return precess_1(R, J, direction, PREC_IAU_2006);
+  } else if (USE_PREC_BRETAGNON_2003) {
+    return precess_1(R, J, direction, PREC_BRETAGNON_2003);
+  } else if (USE_PREC_LASKAR_1986) {
+    return precess_2(R, J, iflag, direction, PREC_LASKAR_1986);
+  } else if (USE_PREC_SIMON_1994) {
+    return precess_2(R, J, iflag, direction, PREC_SIMON_1994);
+  } else { /* USE_PREC_VONDRAK_2011 */
+    return precess_3(R, J, direction, PREC_VONDRAK_2011);
+  }
+}
+
 /* Nutation in longitude and obliquity
  * computed at Julian date J.
  *
@@ -1071,111 +1150,112 @@ static short FAR nt[] = {
 /* LS and OC are units of 0.0001"
  *LS2 and OC2 are units of 0.00001"
  *MM,MS,FF,DD,OM, LS, LS2,OC, OC2 */
- 0, 0, 0, 0, 2, 2062, 2,-895, 5,
--2, 0, 2, 0, 1, 46, 0,-24, 0,
- 2, 0,-2, 0, 0, 11, 0, 0, 0,
--2, 0, 2, 0, 2,-3, 0, 1, 0,
- 1,-1, 0,-1, 0,-3, 0, 0, 0,
- 0,-2, 2,-2, 1,-2, 0, 1, 0,
- 2, 0,-2, 0, 1, 1, 0, 0, 0,
+ 0, 0, 0, 0, 2,  2062,  2, -895,  5,
+-2, 0, 2, 0, 1,    46,  0,  -24,  0,
+ 2, 0,-2, 0, 0,    11,  0,    0,  0,
+-2, 0, 2, 0, 2,    -3,  0,    1,  0,
+ 1,-1, 0,-1, 0,    -3,  0,    0,  0,
+ 0,-2, 2,-2, 1,    -2,  0,    1,  0,
+ 2, 0,-2, 0, 1,     1,  0,    0,  0,
  0, 0, 2,-2, 2,-13187,-16, 5736,-31,
- 0, 1, 0, 0, 0, 1426,-34, 54,-1,
- 0, 1, 2,-2, 2,-517, 12, 224,-6,
- 0,-1, 2,-2, 2, 217,-5,-95, 3,
- 0, 0, 2,-2, 1, 129, 1,-70, 0,
- 2, 0, 0,-2, 0, 48, 0, 1, 0,
- 0, 0, 2,-2, 0,-22, 0, 0, 0,
- 0, 2, 0, 0, 0, 17,-1, 0, 0,
- 0, 1, 0, 0, 1,-15, 0, 9, 0,
- 0, 2, 2,-2, 2,-16, 1, 7, 0,
- 0,-1, 0, 0, 1,-12, 0, 6, 0,
--2, 0, 0, 2, 1,-6, 0, 3, 0,
- 0,-1, 2,-2, 1,-5, 0, 3, 0,
- 2, 0, 0,-2, 1, 4, 0,-2, 0,
- 0, 1, 2,-2, 1, 4, 0,-2, 0,
- 1, 0, 0,-1, 0,-4, 0, 0, 0,
- 2, 1, 0,-2, 0, 1, 0, 0, 0,
- 0, 0,-2, 2, 1, 1, 0, 0, 0,
- 0, 1,-2, 2, 0,-1, 0, 0, 0,
- 0, 1, 0, 0, 2, 1, 0, 0, 0,
--1, 0, 0, 1, 1, 1, 0, 0, 0,
- 0, 1, 2,-2, 0,-1, 0, 0, 0,
- 0, 0, 2, 0, 2,-2274,-2, 977,-5,
- 1, 0, 0, 0, 0, 712, 1,-7, 0,
- 0, 0, 2, 0, 1,-386,-4, 200, 0,
- 1, 0, 2, 0, 2,-301, 0, 129,-1,
- 1, 0, 0,-2, 0,-158, 0,-1, 0,
--1, 0, 2, 0, 2, 123, 0,-53, 0,
- 0, 0, 0, 2, 0, 63, 0,-2, 0,
- 1, 0, 0, 0, 1, 63, 1,-33, 0,
--1, 0, 0, 0, 1,-58,-1, 32, 0,
--1, 0, 2, 2, 2,-59, 0, 26, 0,
- 1, 0, 2, 0, 1,-51, 0, 27, 0,
- 0, 0, 2, 2, 2,-38, 0, 16, 0,
- 2, 0, 0, 0, 0, 29, 0,-1, 0,
- 1, 0, 2,-2, 2, 29, 0,-12, 0,
- 2, 0, 2, 0, 2,-31, 0, 13, 0,
- 0, 0, 2, 0, 0, 26, 0,-1, 0,
--1, 0, 2, 0, 1, 21, 0,-10, 0,
--1, 0, 0, 2, 1, 16, 0,-8, 0,
- 1, 0, 0,-2, 1,-13, 0, 7, 0,
--1, 0, 2, 2, 1,-10, 0, 5, 0,
- 1, 1, 0,-2, 0,-7, 0, 0, 0,
- 0, 1, 2, 0, 2, 7, 0,-3, 0,
- 0,-1, 2, 0, 2,-7, 0, 3, 0,
- 1, 0, 2, 2, 2,-8, 0, 3, 0,
- 1, 0, 0, 2, 0, 6, 0, 0, 0,
- 2, 0, 2,-2, 2, 6, 0,-3, 0,
- 0, 0, 0, 2, 1,-6, 0, 3, 0,
- 0, 0, 2, 2, 1,-7, 0, 3, 0,
- 1, 0, 2,-2, 1, 6, 0,-3, 0,
- 0, 0, 0,-2, 1,-5, 0, 3, 0,
- 1,-1, 0, 0, 0, 5, 0, 0, 0,
- 2, 0, 2, 0, 1,-5, 0, 3, 0, 
- 0, 1, 0,-2, 0,-4, 0, 0, 0,
- 1, 0,-2, 0, 0, 4, 0, 0, 0,
- 0, 0, 0, 1, 0,-4, 0, 0, 0,
- 1, 1, 0, 0, 0,-3, 0, 0, 0,
- 1, 0, 2, 0, 0, 3, 0, 0, 0,
- 1,-1, 2, 0, 2,-3, 0, 1, 0,
--1,-1, 2, 2, 2,-3, 0, 1, 0,
--2, 0, 0, 0, 1,-2, 0, 1, 0,
- 3, 0, 2, 0, 2,-3, 0, 1, 0,
- 0,-1, 2, 2, 2,-3, 0, 1, 0,
- 1, 1, 2, 0, 2, 2, 0,-1, 0,
--1, 0, 2,-2, 1,-2, 0, 1, 0,
- 2, 0, 0, 0, 1, 2, 0,-1, 0,
- 1, 0, 0, 0, 2,-2, 0, 1, 0,
- 3, 0, 0, 0, 0, 2, 0, 0, 0,
- 0, 0, 2, 1, 2, 2, 0,-1, 0,
--1, 0, 0, 0, 2, 1, 0,-1, 0,
- 1, 0, 0,-4, 0,-1, 0, 0, 0,
--2, 0, 2, 2, 2, 1, 0,-1, 0,
--1, 0, 2, 4, 2,-2, 0, 1, 0,
- 2, 0, 0,-4, 0,-1, 0, 0, 0,
- 1, 1, 2,-2, 2, 1, 0,-1, 0,
- 1, 0, 2, 2, 1,-1, 0, 1, 0,
--2, 0, 2, 4, 2,-1, 0, 1, 0,
--1, 0, 4, 0, 2, 1, 0, 0, 0,
- 1,-1, 0,-2, 0, 1, 0, 0, 0,
- 2, 0, 2,-2, 1, 1, 0,-1, 0,
- 2, 0, 2, 2, 2,-1, 0, 0, 0,
- 1, 0, 0, 2, 1,-1, 0, 0, 0,
- 0, 0, 4,-2, 2, 1, 0, 0, 0,
- 3, 0, 2,-2, 2, 1, 0, 0, 0,
- 1, 0, 2,-2, 0,-1, 0, 0, 0,
- 0, 1, 2, 0, 1, 1, 0, 0, 0,
--1,-1, 0, 2, 1, 1, 0, 0, 0,
- 0, 0,-2, 0, 1,-1, 0, 0, 0,
- 0, 0, 2,-1, 2,-1, 0, 0, 0,
- 0, 1, 0, 2, 0,-1, 0, 0, 0,
- 1, 0,-2,-2, 0,-1, 0, 0, 0,
- 0,-1, 2, 0, 1,-1, 0, 0, 0,
- 1, 1, 0,-2, 1,-1, 0, 0, 0,
- 1, 0,-2, 2, 0,-1, 0, 0, 0,
- 2, 0, 0, 2, 0, 1, 0, 0, 0,
- 0, 0, 2, 4, 2,-1, 0, 0, 0,
- 0, 1, 0, 1, 0, 1, 0, 0, 0,
+ 0, 1, 0, 0, 0,  1426,-34,   54, -1,
+ 0, 1, 2,-2, 2,  -517, 12,  224, -6,
+ 0,-1, 2,-2, 2,   217, -5,  -95,  3,
+ 0, 0, 2,-2, 1,   129,  1,  -70,  0,
+ 2, 0, 0,-2, 0,    48,  0,    1,  0,
+ 0, 0, 2,-2, 0,   -22,  0,    0,  0,
+ 0, 2, 0, 0, 0,    17, -1,    0,  0,
+ 0, 1, 0, 0, 1,   -15,  0,    9,  0,
+ 0, 2, 2,-2, 2,   -16,  1,    7,  0,
+ 0,-1, 0, 0, 1,   -12,  0,    6,  0,
+-2, 0, 0, 2, 1,    -6,  0,    3,  0,
+ 0,-1, 2,-2, 1,    -5,  0,    3,  0,
+ 2, 0, 0,-2, 1,     4,  0,   -2,  0,
+ 0, 1, 2,-2, 1,     4,  0,   -2,  0,
+ 1, 0, 0,-1, 0,    -4,  0,    0,  0,
+ 2, 1, 0,-2, 0,     1,  0,    0,  0,
+ 0, 0,-2, 2, 1,     1,  0,    0,  0,
+ 0, 1,-2, 2, 0,    -1,  0,    0,  0,
+ 0, 1, 0, 0, 2,     1,  0,    0,  0,
+-1, 0, 0, 1, 1,     1,  0,    0,  0,
+ 0, 1, 2,-2, 0,    -1,  0,    0,  0,
+ 0, 0, 2, 0, 2, -2274, -2,  977, -5,
+ 1, 0, 0, 0, 0,   712,  1,   -7,  0,
+ 0, 0, 2, 0, 1,  -386, -4,  200,  0,
+ 1, 0, 2, 0, 2,  -301,  0,  129, -1,
+ 1, 0, 0,-2, 0,  -158,  0,   -1,  0,
+-1, 0, 2, 0, 2,   123,  0,  -53,  0,
+ 0, 0, 0, 2, 0,    63,  0,   -2,  0,
+ 1, 0, 0, 0, 1,    63,  1,  -33,  0,
+-1, 0, 0, 0, 1,   -58, -1,   32,  0,
+-1, 0, 2, 2, 2,   -59,  0,   26,  0,
+ 1, 0, 2, 0, 1,   -51,  0,   27,  0,
+ 0, 0, 2, 2, 2,   -38,  0,   16,  0,
+ 2, 0, 0, 0, 0,    29,  0,   -1,  0,
+ 1, 0, 2,-2, 2,    29,  0,  -12,  0,
+ 2, 0, 2, 0, 2,   -31,  0,   13,  0,
+ 0, 0, 2, 0, 0,    26,  0,   -1,  0,
+-1, 0, 2, 0, 1,    21,  0,  -10,  0,
+-1, 0, 0, 2, 1,    16,  0,   -8,  0,
+ 1, 0, 0,-2, 1,   -13,  0,    7,  0,
+-1, 0, 2, 2, 1,   -10,  0,    5,  0,
+ 1, 1, 0,-2, 0,    -7,  0,    0,  0,
+ 0, 1, 2, 0, 2,     7,  0,   -3,  0,
+ 0,-1, 2, 0, 2,    -7,  0,    3,  0,
+ 1, 0, 2, 2, 2,    -8,  0,    3,  0,
+ 1, 0, 0, 2, 0,     6,  0,    0,  0,
+ 2, 0, 2,-2, 2,     6,  0,   -3,  0,
+ 0, 0, 0, 2, 1,    -6,  0,    3,  0,
+ 0, 0, 2, 2, 1,    -7,  0,    3,  0,
+ 1, 0, 2,-2, 1,     6,  0,   -3,  0,
+ 0, 0, 0,-2, 1,    -5,  0,    3,  0,
+ 1,-1, 0, 0, 0,     5,  0,    0,  0,
+ 2, 0, 2, 0, 1,    -5,  0,    3,  0, 
+ 0, 1, 0,-2, 0,    -4,  0,    0,  0,
+ 1, 0,-2, 0, 0,     4,  0,    0,  0,
+ 0, 0, 0, 1, 0,    -4,  0,    0,  0,
+ 1, 1, 0, 0, 0,    -3,  0,    0,  0,
+ 1, 0, 2, 0, 0,     3,  0,    0,  0,
+ 1,-1, 2, 0, 2,    -3,  0,    1,  0,
+-1,-1, 2, 2, 2,    -3,  0,    1,  0,
+-2, 0, 0, 0, 1,    -2,  0,    1,  0,
+ 3, 0, 2, 0, 2,    -3,  0,    1,  0,
+ 0,-1, 2, 2, 2,    -3,  0,    1,  0,
+ 1, 1, 2, 0, 2,     2,  0,   -1,  0,
+-1, 0, 2,-2, 1,    -2,  0,    1,  0,
+ 2, 0, 0, 0, 1,     2,  0,   -1,  0,
+ 1, 0, 0, 0, 2,    -2,  0,    1,  0,
+ 3, 0, 0, 0, 0,     2,  0,    0,  0,
+ 0, 0, 2, 1, 2,     2,  0,   -1,  0,
+-1, 0, 0, 0, 2,     1,  0,   -1,  0,
+
+ 1, 0, 0,-4, 0,    -1,  0,    0,  0,
+-2, 0, 2, 2, 2,     1,  0,   -1,  0,
+-1, 0, 2, 4, 2,    -2,  0,    1,  0,
+ 2, 0, 0,-4, 0,    -1,  0,    0,  0,
+ 1, 1, 2,-2, 2,     1,  0,   -1,  0,
+ 1, 0, 2, 2, 1,    -1,  0,    1,  0,
+-2, 0, 2, 4, 2,    -1,  0,    1,  0,
+-1, 0, 4, 0, 2,     1,  0,    0,  0,
+ 1,-1, 0,-2, 0,     1,  0,    0,  0,
+ 2, 0, 2,-2, 1,     1,  0,   -1,  0,
+ 2, 0, 2, 2, 2,    -1,  0,    0,  0,
+ 1, 0, 0, 2, 1,    -1,  0,    0,  0,
+ 0, 0, 4,-2, 2,     1,  0,    0,  0,
+ 3, 0, 2,-2, 2,     1,  0,    0,  0,
+ 1, 0, 2,-2, 0,    -1,  0,    0,  0,
+ 0, 1, 2, 0, 1,     1,  0,    0,  0,
+-1,-1, 0, 2, 1,     1,  0,    0,  0,
+ 0, 0,-2, 0, 1,    -1,  0,    0,  0,
+ 0, 0, 2,-1, 2,    -1,  0,    0,  0,
+ 0, 1, 0, 2, 0,    -1,  0,    0,  0,
+ 1, 0,-2,-2, 0,    -1,  0,    0,  0,
+ 0,-1, 2, 0, 1,    -1,  0,    0,  0,
+ 1, 1, 0,-2, 1,    -1,  0,    0,  0,
+ 1, 0,-2, 2, 0,    -1,  0,    0,  0,
+ 2, 0, 0, 2, 0,     1,  0,    0,  0,
+ 0, 0, 2, 4, 2,    -1,  0,    0,  0,
+ 0, 1, 0, 1, 0,     1,  0,    0,  0,
 #if NUT_CORR_1987 
 /* corrections to IAU 1980 nutation series by Herring 1987
  *             in 0.00001" !!!
@@ -1191,10 +1271,8 @@ static short FAR nt[] = {
 #endif
  ENDMARK,
 };
-#endif
 
-#if NUT_IAU_1980
-int swi_nutation(double J, double *nutlo)
+static int swi_nutation_iau1980(double J, double *nutlo)
 {
   /* arrays to hold sines and cosines of multiple angles */
   double ss[5][8];
@@ -1338,11 +1416,13 @@ int swi_nutation(double J, double *nutlo)
   /* Save answers, expressed in radians */
   nutlo[0] = DEGTORAD * C / 3600.0;
   nutlo[1] = DEGTORAD * D / 3600.0;
+/*  nutlo[0] += (-0.071590 / 3600.0) * DEGTORAD;
+  nutlo[1] += (-0.008000 / 3600.0) * DEGTORAD;*/
+/* nutlo[0] += (-0.047878 / 3600.0) * DEGTORAD;
+  nutlo[1] += (-0.004035 / 3600.0) * DEGTORAD;*/
   return(0);
 }
-#endif
 
-#if NUT_IAU_2000A || NUT_IAU_2000B
 /* Nutation IAU 2000A model 
  * (MHB2000 luni-solar and planetary nutation, without free core nutation)
  *
@@ -1390,7 +1470,7 @@ int swi_nutation(double J, double *nutlo)
  */
 
 #include "swenut2000a.h"
-int swi_nutation(double J, double *nutlo) 
+static int swi_nutation_iau2000ab(double J, double *nutlo) 
 {
   int i, j, k, inls;
   double M, SM, F, D, OM;
@@ -1471,8 +1551,6 @@ int swi_nutation(double J, double *nutlo)
   AD = swe_radnorm(5.198466741 + 7771.3771468121 * T);
   /* Mean longitude of the ascending node of the Moon. */
   AOM = swe_radnorm(2.18243920 - 33.757045 * T);
-  /* General accumulated precession in longitude. */
-  APA = (0.02438175 + 0.00000538691 * T) * T;
   /* Planetary longitudes, Mercury through Neptune (Souchay et al. 1999). */
   ALME = swe_radnorm(4.402608842 + 2608.7903141574 * T);
   ALVE = swe_radnorm(3.176146697 + 1021.3285546211 * T);
@@ -1482,6 +1560,8 @@ int swi_nutation(double J, double *nutlo)
   ALSA = swe_radnorm(0.874016757 +   21.3299104960 * T);
   ALUR = swe_radnorm(5.481293871 +    7.4781598567 * T);
   ALNE = swe_radnorm(5.321159000 +    3.8127774000 * T);
+  /* General accumulated precession in longitude. */
+  APA = (0.02438175 + 0.00000538691 * T) * T;
   /* planetary nutation series (in reverse order).*/
   dpsi = 0;
   deps = 0;
@@ -1511,7 +1591,7 @@ int swi_nutation(double J, double *nutlo)
   nutlo[1] += deps * O1MAS2DEG;
 #if 1
   /* changes required by adoption of P03 precession 
-   * according to Capitaine et al. A & A 412, 366 (2005) */
+   * according to Capitaine et al. A & A 412, 366 (2005) = IAU 2006 */
   dpsi = -8.1 * sin(OM) - 0.6 * sin(2 * F - 2 * D + 2 * OM);
   dpsi += T * (47.8 * sin(OM) + 3.7 * sin(2 * F - 2 * D + 2 * OM) + 0.6 * sin(2 * F + 2 * OM) - 0.6 * sin(2 * OM)); 
   deps = T * (-25.6 * cos(OM) - 1.6 * cos(2 * F - 2 * D + 2 * OM));
@@ -1523,10 +1603,152 @@ int swi_nutation(double J, double *nutlo)
   nutlo[1] *= DEGTORAD;
   return 0;
 }
+
+static double bessel(double *v, int n, double t)
+{
+  int i, iy, k;
+  double ans, p, B, d[6];
+  if (t <= 0) {
+    ans = v[0]; 
+    goto done;
+  } 
+  if (t >= n - 1) {
+    ans = v[n - 1]; 
+    goto done;
+  }
+  p = floor(t);
+  iy = (int) t;
+  /* Zeroth order estimate is value at start of year */
+  ans = v[iy];
+  k = iy + 1;
+  if (k >= n)
+    goto done;
+  /* The fraction of tabulation interval */
+  p = t - p;
+  ans += p * (v[k] - v[iy]);
+  if( (iy - 1 < 0) || (iy + 2 >= n) )
+    goto done; /* can't do second differences */
+  /* Make table of first differences */
+  k = iy - 2;
+  for (i = 0; i < 5; i++) {
+    if((k < 0) || (k + 1 >= n)) 
+      d[i] = 0;
+    else
+      d[i] = v[k+1] - v[k];
+    k += 1;
+  }
+  /* Compute second differences */
+  for (i = 0; i < 4; i++ )
+    d[i] = d[i+1] - d[i];
+  B = 0.25 * p * (p - 1.0);
+  ans += B * (d[1] + d[2]);
+#if DEMO
+  printf("B %.4lf, ans %.4lf\n", B, ans);
 #endif
+  if (iy + 2 >= n)
+    goto done;
+  /* Compute third differences */
+  for (i = 0; i < 3; i++ )
+    d[i] = d[i + 1] - d[i];
+  B = 2.0 * B / 3.0;
+  ans += (p - 0.5) * B * d[1];
+#if DEMO
+  printf("B %.4lf, ans %.4lf\n", B * (p - 0.5), ans);
+#endif
+  if ((iy - 2 < 0) || (iy + 3 > n))
+    goto done;
+  /* Compute fourth differences */
+  for (i = 0; i < 2; i++)
+    d[i] = d[i + 1] - d[i];
+  B = 0.125 * B * (p + 1.0) * (p - 2.0);
+  ans += B * (d[0] + d[1]);
+#if DEMO
+  printf("B %.4lf, ans %.4lf\n", B, ans);
+#endif
+done:
+  return ans;
+}
+
+int swi_nutation(double J, int32 iflag, double *nutlo)
+{
+#if INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980
+  int n;
+  double dpsi, deps, J2;
+#endif
+  if ((iflag & SEFLG_JPLHOR) && INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980) {
+    swi_nutation_iau1980(J, nutlo);
+  } else if (NUT_IAU_1980) {
+    swi_nutation_iau1980(J, nutlo);
+  } else if (NUT_IAU_2000A || NUT_IAU_2000B) {
+    swi_nutation_iau2000ab(J, nutlo);
+    /*if ((iflag & SEFLG_JPLHOR_APPROX) && FRAME_BIAS_APPROX_HORIZONS) {*/
+    if ((iflag & SEFLG_JPLHOR_APPROX) && !APPROXIMATE_HORIZONS_ASTRODIENST) {
+      nutlo[0] += -41.7750 / 3600.0 / 1000.0 * DEGTORAD;
+      nutlo[1] += -6.8192 / 3600.0 / 1000.0 * DEGTORAD;
+    }
+  }
+#if INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980
+  if (iflag & SEFLG_JPLHOR) {
+    n = (int) (swed.eop_tjd_end - swed.eop_tjd_beg + 0.000001);
+    J2 = J;
+    if (J < swed.eop_tjd_beg_horizons)
+      J2 = swed.eop_tjd_beg_horizons;
+    dpsi = bessel(swed.dpsi, n + 1, J2 - swed.eop_tjd_beg);
+    deps = bessel(swed.deps, n + 1, J2 - swed.eop_tjd_beg);
+    nutlo[0] += dpsi / 3600.0 * DEGTORAD;
+    nutlo[1] += deps / 3600.0 * DEGTORAD;
+#if 0
+    printf("tjd=%f, dpsi=%f, deps=%f\n", J, dpsi * 1000, deps * 1000);
+#endif
+  }
+#endif
+  return OK;
+}
+
+#define OFFSET_JPLHORIZONS (-52.3) 
+#define DCOR_RA_JPL_TJD0  2437846.5
+#define NDCOR_RA_JPL  51
+double dcor_ra_jpl[] = {
+-51.257, -51.103, -51.065, -51.503, -51.224, -50.796, -51.161, -51.181,
+-50.932, -51.064, -51.182, -51.386, -51.416, -51.428, -51.586, -51.766, -52.038, -52.370,
+-52.553, -52.397, -52.340, -52.676, -52.348, -51.964, -52.444, -52.364, -51.988, -52.212,
+-52.370, -52.523, -52.541, -52.496, -52.590, -52.629, -52.788, -53.014, -53.053, -52.902,
+-52.850, -53.087, -52.635, -52.185, -52.588, -52.292, -51.796, -51.961, -52.055, -52.134,
+-52.165, -52.141, -52.255,
+};
+
+static void swi_approx_jplhor(double *x, double tjd, int32 iflag, AS_BOOL backward) 
+{
+  double t0, t1;
+  double t = (tjd - DCOR_RA_JPL_TJD0) / 365.25;
+  double dofs = OFFSET_JPLHORIZONS;
+  if (!(iflag & SEFLG_JPLHOR_APPROX))
+    return;
+  if (!APPROXIMATE_HORIZONS_ASTRODIENST)
+    return;
+  if (t < 0) {
+    t = 0;
+    dofs = dcor_ra_jpl[0];
+  } else if (t >= NDCOR_RA_JPL - 1) {
+    t = NDCOR_RA_JPL;
+    dofs = dcor_ra_jpl[NDCOR_RA_JPL - 1];
+  } else {
+    t0 = (int) t;
+    t1 = t0 + 1;
+    dofs = dcor_ra_jpl[(int)t0];
+    dofs = (t - t0) * (dcor_ra_jpl[(int)t0] - dcor_ra_jpl[(int)t1]) + dcor_ra_jpl[(int)t0];
+  }
+  dofs /= (1000.0 * 3600.0);
+  swi_cartpol(x, x);
+  if (backward) 
+    x[0] -= dofs * DEGTORAD;
+  else
+    x[0] += dofs * DEGTORAD;
+  swi_polcart(x, x);
+}
 
 /* GCRS to J2000 */
-void swi_bias(double *x, int32 iflag, AS_BOOL backward)
+void swi_bias(double *x, double tjd, int32 iflag, AS_BOOL backward)
 {
 #if 0
   double DAS2R = 1.0 / 3600.0 * DEGTORAD;
@@ -1537,16 +1759,43 @@ void swi_bias(double *x, int32 iflag, AS_BOOL backward)
 #endif
   double xx[6], rb[3][3];
   int i;
+  /*if (FRAME_BIAS_APPROX_HORIZONS)*/
+  if ((iflag & SEFLG_JPLHOR_APPROX) && !APPROXIMATE_HORIZONS_ASTRODIENST) 
+    return;
+#if FRAME_BIAS_IAU2006 /* frame bias 2006 */
+  rb[0][0] = +0.99999999999999412;
+  rb[1][0] = -0.00000007078368961;
+  rb[2][0] = +0.00000008056213978;
+  rb[0][1] = +0.00000007078368695;
+  rb[1][1] = +0.99999999999999700;
+  rb[2][1] = +0.00000003306428553;
+  rb[0][2] = -0.00000008056214212;
+  rb[1][2] = -0.00000003306427981;
+  rb[2][2] = +0.99999999999999634;
+#else /* frame bias 2000, makes no differentc in result */
   rb[0][0] = +0.9999999999999942;
-  rb[0][1] = +0.0000000707827948;
-  rb[0][2] = -0.0000000805621738;
-  rb[1][0] = -0.0000000707827974; 
-  rb[1][1] = +0.9999999999999969;
-  rb[1][2] = -0.0000000330604088;
+  rb[1][0] = -0.0000000707827974;
   rb[2][0] = +0.0000000805621715;
+  rb[0][1] = +0.0000000707827948;
+  rb[1][1] = +0.9999999999999969;
   rb[2][1] = +0.0000000330604145;
+  rb[0][2] = -0.0000000805621738;
+  rb[1][2] = -0.0000000330604088;
   rb[2][2] = +0.9999999999999962;
+#endif
+#if 0
+rb[0][0] = +0.9999999999999968;
+rb[1][0] = +0.0000000000000000;
+rb[2][0] = +0.0000000805621715;
+rb[0][1] = -0.0000000000000027;
+rb[1][1] = +0.9999999999999994;
+rb[2][1] = +0.0000000330604145;
+rb[0][2] = -0.0000000805621715;
+rb[1][2] = -0.0000000330604145;
+rb[2][2] = +0.9999999999999962; 
+#endif
   if (backward) {
+    swi_approx_jplhor(x, tjd, iflag, TRUE);
     for (i = 0; i <= 2; i++) {
       xx[i] = x[0] * rb[i][0] +
 	      x[1] * rb[i][1] +
@@ -1566,12 +1815,12 @@ void swi_bias(double *x, int32 iflag, AS_BOOL backward)
 	      x[4] * rb[1][i] +
 	      x[5] * rb[2][i];
     }
+    swi_approx_jplhor(xx, tjd, iflag, FALSE);
   }
   for (i = 0; i <= 2; i++) x[i] = xx[i];
   if (iflag & SEFLG_SPEED)
     for (i = 3; i <= 5; i++) x[i] = xx[i];
 }
-
 
 /* GCRS to FK5 */
 void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
@@ -1616,6 +1865,38 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
   }
   for (i = 0; i <= 5; i++) x[i] = xx[i];
 }
+
+#if 0
+/* Function calculates deltat t and adjusts it to the ephemeris used.
+ * The logic is in agreement with the usage of SEFLG_ ephemeris flags:
+ * If SEFLG_JPLEPH is set but JPL ephemeris is not available, then 
+ * SEFLG_SWIEPH is tried. If it fails, then SEFLG_MOSEPH is used.
+ * With JPL ephemeris, function swe_set_jpl_file() must have been called
+ * before the first call of swi_deltat0. Otherwise it is assumed that 
+ * the ephemeris file is not available, and SEFLG_SWIEPH is used.
+ */
+double swi_deltat_ephe(double tjd_ut, int32 epheflag)
+{
+  int denum = 404; /* Moshier ephemeris */
+  int32 retval = 0, iflag;
+  double xx[6];
+  if (epheflag & SEFLG_MOSEPH) {
+    denum = 404;
+  } else if ((epheflag & SEFLG_JPLEPH) && swed.jpl_file_is_open) {
+    /* note, swe_set_jpl_file() must have been called ! */
+    denum = swed.jpldenum;
+  } else if (swed.jpldenum > 0) {
+    denum = swed.jpldenum;
+  } else {
+    iflag = SEFLG_SWIEPH|SEFLG_J2000|SEFLG_BARYCTR|SEFLG_TRUEPOS|SEFLG_ICRS;
+    retval = swe_calc(tjd_ut + swe_deltat(tjd_ut), SE_MOON, iflag, xx, NULL);
+    if (retval != ERR)
+      denum = swed.jpldenum;
+  }
+  swe_set_tid_acc((double) denum);
+  return swe_deltat(tjd_ut);
+}
+#endif
 
 /* DeltaT = Ephemeris Time - Universal Time, in days.
  * 
@@ -1712,14 +1993,15 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
  *
  * Also, there is the following file: 
  * http://maia.usno.navy.mil/ser7/deltat.data, but it is about 3 months
- * behind (on 3 feb 2009)
+ * behind (on 3 feb 2009); and predictions:
+ * http://maia.usno.navy.mil/ser7/deltat.preds
  *
- * Last update of table dt[]: Dieter Koch, 27 april 2010.
+ * Last update of table dt[]: Dieter Koch, 18 dec 2013.
  * ATTENTION: Whenever updating this table, do not forget to adjust
  * the macros TABEND and TABSIZ !
  */
 #define TABSTART 	1620
-#define TABEND 		2017
+#define TABEND 		2019
 #define TABSIZ 		(TABEND-TABSTART+1) 
 /* we make the table greater for additional values read from external file */
 #define TABSIZ_SPACE 	(TABSIZ+100)
@@ -1776,9 +2058,9 @@ static double FAR dt[TABSIZ_SPACE] = {
 /* 2000.0 thru 2009.0 */
  63.83, 64.09, 64.30, 64.47, 64.57, 64.69, 64.85, 65.15, 65.46, 65.78,      
 /* 2010.0 thru 2013.0 */
- 66.07, 66.32, 66.60, 66.91,
+ 66.07, 66.32, 66.60, 66.907,
 /* Extrapolated values, 2014 - 2017 */
-                             67.50, 68.00, 68.50, 69.00,
+                             67.267,67.90, 68.40, 69.00, 69.50, 70.00,
 };
 #define ESPENAK_MEEUS_2006 TRUE
 #define TAB2_SIZ	27
@@ -1884,22 +2166,18 @@ static double deltat_aa(double tjd)
      */
     p = floor(Y);
     iy = (int) (p - TABSTART);
-    /* Zeroth order estimate is value at start of year
-     */
+    /* Zeroth order estimate is value at start of year */
     ans = dt[iy];
     k = iy + 1;
     if( k >= tabsiz )
       goto done; /* No data, can't go on. */
-    /* The fraction of tabulation interval
-     */
+    /* The fraction of tabulation interval */
     p = Y - p;
-    /* First order interpolated value
-     */
+    /* First order interpolated value */
     ans += p*(dt[k] - dt[iy]);
     if( (iy-1 < 0) || (iy+2 >= tabsiz) )
       goto done; /* can't do second differences */
-    /* Make table of first differences
-     */
+    /* Make table of first differences */
     k = iy - 2;
     for( i=0; i<5; i++ ) {
       if( (k < 0) || (k+1 >= tabsiz) ) 
@@ -1908,8 +2186,7 @@ static double deltat_aa(double tjd)
 	d[i] = dt[k+1] - dt[k];
       k += 1;
     }
-    /* Compute second differences
-     */
+    /* Compute second differences */
     for( i=0; i<4; i++ )
       d[i] = d[i+1] - d[i];
     B = 0.25*p*(p-1.0);
@@ -1919,8 +2196,7 @@ static double deltat_aa(double tjd)
   #endif
     if( iy+2 >= tabsiz )
       goto done;
-    /* Compute third differences
-     */
+    /* Compute third differences */
     for( i=0; i<3; i++ )
       d[i] = d[i+1] - d[i];
     B = 2.0*B/3.0;
@@ -1930,8 +2206,7 @@ static double deltat_aa(double tjd)
   #endif
     if( (iy-2 < 0) || (iy+3 > tabsiz) )
       goto done;
-    /* Compute fourth differences
-     */
+    /* Compute fourth differences */
     for( i=0; i<2; i++ )
       d[i] = d[i+1] - d[i];
     B = 0.125*B*(p+1.0)*(p-2.0);
@@ -2135,17 +2410,62 @@ static double adjust_for_tidacc(double ans, double Y)
 /* returns tidal acceleration used in swe_deltat() */
 double FAR PASCAL_CONV swe_get_tid_acc()
 {
-#if 0
-  if (tid_acc == TID_ACC_DE403)
-    return 403;
-  if (tid_acc == TID_ACC_DE402)
-    return 200;
-#endif
   return tid_acc;
 }
 
+/* function sets tidal acceleration of the Moon.
+ * t_acc can be either
+ * - the value of the tidal acceleration in arcsec/cty^2
+ * - the DE number of an ephemeris; in this case the tidal acceleration
+ *   of the Moon will be set consistent with that ephemeris.
+ * - (double) SEFLG_JPLEPH or SEFLG_SWIEPH or SEFLG_MOSEPH or 0 (default);
+ *   in this case, the function finds out what ephemeris is currently
+ *   used with that ephemeris flag and will set the tidal acceleration
+ *   accordingly.
+ */
 void FAR PASCAL_CONV swe_set_tid_acc(double t_acc)
 {
+  int denum = 0;
+  int iflag;
+  double xx[6];
+  /* set t_acc for SEFLG_JPLEPH: 
+   * JPL file was set and is available */
+  if (t_acc == (double) SEFLG_JPLEPH && swed.jpl_file_is_open) {
+    denum = swed.jpldenum;
+  /* set t_acc for SEFLG_SWIEPH 
+   * or for SEFLG_JPLEPH, if JPL file was not set */
+  } else if (t_acc == 0 || t_acc == (double) SEFLG_SWIEPH || t_acc == (double) SEFLG_JPLEPH) {
+    /* if lunar ephemeris with SEFLG_SWIEPH is not open yet, try to open it */
+    if (swed.fidat[SEI_FILE_MOON].fptr == NULL) {
+      iflag = SEFLG_SWIEPH|SEFLG_J2000|SEFLG_TRUEPOS|SEFLG_ICRS;
+      swe_calc(J2000, SE_MOON, iflag, xx, NULL);
+    }
+    if (swed.fidat[SEI_FILE_MOON].fptr != NULL) {
+      denum = swed.fidat[SEI_FILE_MOON].sweph_denum;
+    /* Moon ephemeris file is not available, default to Moshier ephemeris */
+    } else {
+      denum = 404; /* DE number of Moshier ephemeris */
+    }
+  /* set t_acc for SEFLG_MOSEPH */
+  } else if (t_acc == (double) SEFLG_MOSEPH) {
+    denum = 404; /* DE number of Moshier ephemeris */
+  /* function was called for specific denum */
+  } else if (t_acc > 0) {
+    denum = (int) t_acc;
+  }
+  if (denum > 0) {
+    switch(denum) {
+      case 200: t_acc = SE_TIDAL_DE200; break;
+      case 403: t_acc = SE_TIDAL_DE403; break;
+      case 404: t_acc = SE_TIDAL_DE404; break;
+      case 405: t_acc = SE_TIDAL_DE405; break;
+      case 406: t_acc = SE_TIDAL_DE406; break;
+      case 421: t_acc = SE_TIDAL_DE421; break;
+      case 430: t_acc = SE_TIDAL_DE430; break;
+      case 431: t_acc = SE_TIDAL_DE431; break;
+      default: t_acc = SE_TIDAL_DEFAULT; break;
+    }
+  }
   tid_acc = t_acc;
 #if TRACE
   swi_open_trace(NULL);
@@ -2166,27 +2486,208 @@ void FAR PASCAL_CONV swe_set_tid_acc(double t_acc)
 #endif
 }
 
+/*
+ * The time range of DE431 requires a new calculation of sidereal time that 
+ * gives sensible results for the remote past and future.
+ * The algorithm is based on the formula of the mean earth by Simon & alii,
+ * "Precession formulae and mean elements for the Moon and the Planets",
+ * A&A 282 (1994), p. 675/678.
+ * The longitude of the mean earth relative to the mean equinox J2000
+ * is calculated and then precessed to the equinox of date, using the
+ * default precession model of the Swiss Ephmeris. Afte that,
+ * sidereal time is derived.
+ * The algoritm provides exact agreement for epoch 1 Jan. 2003 with the 
+ * definition of sidereal time as given in the IERS Convention 2010.
+ */
+#define SIDT_LTERM   TRUE
+#if SIDT_LTERM
+static double sidtime_long_term(double tjd_ut, double eps, double nut)
+{
+  double tsid = 0, tjd_et;
+  double dlon, xs[6], xobl[6], dhour;
+  double dlt = AUNIT / CLIGHT / 86400.0;
+  double t, t2, t3, t4, t5, t6;
+  tjd_et = tjd_ut + swe_deltat(tjd_ut);
+  t = (tjd_et - J2000) / 365250.0;
+  t2 = t * t; t3 = t * t2; t4 = t * t3; t5 = t * t4; t6 = t * t5;
+  /* mean longitude of earth J2000 */
+  dlon = 100.46645683 + (1295977422.83429 * t - 2.04411 * t2 - 0.00523 * t3) / 3600.0;
+  /* light time sun-earth */
+  dlon = swe_degnorm(dlon - dlt * 360.0 / 365.2425);
+  xs[0] = dlon * DEGTORAD; xs[1] = 0; xs[2] = 1;
+  /* to mean equator J2000, cartesian */
+  swe_calc_ut(J2000, SE_ECL_NUT, 0, xobl, NULL); /* fehler behandeln */
+  swi_polcart(xs, xs);
+  swi_coortrf(xs, xs, -xobl[1] * DEGTORAD);
+  /* precess to mean equinox of date */
+  swi_precess(xs, tjd_et, 0, -1);
+  /* to mean equinox of date */
+  swe_calc_ut(tjd_ut, SE_ECL_NUT, 0, xobl, NULL); /* fehler behandeln */
+  swi_coortrf(xs, xs, xobl[1] * DEGTORAD);
+  swi_cartpol(xs, xs);
+  xs[0] *= RADTODEG;
+  dhour = fmod(tjd_ut - 0.5, 1) * 360;
+  /* mean to true, if nut != 0 */ 
+  if (eps == 0)
+    xs[0] += xobl[2] * cos(xobl[0] * DEGTORAD);
+  else
+    xs[0] += nut * cos(eps * DEGTORAD);
+  /* add hour */
+  xs[0] = swe_degnorm(xs[0] + nut * cos(eps * DEGTORAD) + dhour);
+  tsid = xs[0] / 15;
+  return tsid;
+}
+#endif
+
 /* Apparent Sidereal Time at Greenwich with equation of the equinoxes
- * AA page B6
+ *  ERA-based expression for for Greenwich Sidereal Time (GST) based 
+ *  on the IAU 2006 precession and IAU 2000A_R06 nutation 
+ *  ftp://maia.usno.navy.mil/conv2010/chapter5/tab5.2e.txt
  *
  * returns sidereal time in hours.
  *
- * Caution. At epoch J2000.0, the 16 decimal precision
- * of IEEE double precision numbers
- * limits time resolution measured by Julian date
- * to approximately 24 microseconds.
- * 
  * program returns sidereal hours since sidereal midnight 
  * tjd 		julian day UT
  * eps 		obliquity of ecliptic, degrees 
  * nut 		nutation, degrees 
  */
+/*  C'_{s,j})_i     C'_{c,j})_i */
+#define SIDTNTERM 33
+static double stcf[SIDTNTERM * 2] = {
+2640.96,-0.39,
+63.52,-0.02,
+11.75,0.01,
+11.21,0.01,
+-4.55,0.00,
+2.02,0.00,
+1.98,0.00,
+-1.72,0.00,
+-1.41,-0.01,
+-1.26,-0.01,
+-0.63,0.00,
+-0.63,0.00,
+0.46,0.00,
+0.45,0.00,
+0.36,0.00,
+-0.24,-0.12,
+0.32,0.00,
+0.28,0.00,
+0.27,0.00,
+0.26,0.00,
+-0.21,0.00,
+0.19,0.00,
+0.18,0.00,
+-0.10,0.05,
+0.15,0.00,
+-0.14,0.00,
+0.14,0.00,
+-0.14,0.00,
+0.14,0.00,
+0.13,0.00,
+-0.11,0.00,
+0.11,0.00,
+0.11,0.00,
+};
+#define SIDTNARG 14
+/* l    l'   F    D   Om   L_Me L_Ve L_E  L_Ma L_J  L_Sa L_U  L_Ne p_A*/
+static int stfarg[SIDTNTERM * SIDTNARG] = {
+   0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,  -2,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,  -2,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,  -2,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,   0,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   0,   0,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   1,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   1,   0,   0,  -1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,   0,   0,  -1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   1,   2,  -2,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   1,   2,  -2,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   4,  -4,   4,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   1,  -1,   1,   0,  -8,  12,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,   2,   0,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,   2,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,  -2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   1,  -2,   2,  -3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   1,  -2,   2,  -1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   0,   0,   0,   0,   8, -13,   0,   0,   0,   0,   0,  -1,
+   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   2,   0,  -2,   0,  -1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,   0,  -2,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   1,   2,  -2,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,   0,  -2,  -1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   4,  -2,   4,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   0,   0,   2,  -2,   4,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,  -2,   0,  -3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+   1,   0,  -2,   0,  -1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+};
+static double sidtime_non_polynomial_part(double tt)
+{
+  int i, j;
+  double delm[SIDTNARG];
+  double dadd, darg;
+  /* L Mean anomaly of the Moon.*/
+  delm[0] = swe_radnorm(2.35555598 + 8328.6914269554 * tt);
+  /* LSU Mean anomaly of the Sun.*/
+  delm[1] = swe_radnorm(6.24006013 + 628.301955 * tt);
+  /* F Mean argument of the latitude of the Moon. */
+  delm[2] = swe_radnorm(1.627905234 + 8433.466158131 * tt);
+  /* D Mean elongation of the Moon from the Sun. */
+  delm[3] = swe_radnorm(5.198466741 + 7771.3771468121 * tt);
+  /* OM Mean longitude of the ascending node of the Moon. */
+  delm[4] = swe_radnorm(2.18243920 - 33.757045 * tt);
+  /* Planetary longitudes, Mercury through Neptune (Souchay et al. 1999). 
+   * LME, LVE, LEA, LMA, LJU, LSA, LUR, LNE */
+  delm[5] = swe_radnorm(4.402608842 + 2608.7903141574 * tt);
+  delm[6] = swe_radnorm(3.176146697 + 1021.3285546211 * tt);
+  delm[7] = swe_radnorm(1.753470314 +  628.3075849991 * tt);
+  delm[8] = swe_radnorm(6.203480913 +  334.0612426700 * tt);
+  delm[9] = swe_radnorm(0.599546497 +   52.9690962641 * tt);
+  delm[10] = swe_radnorm(0.874016757 +   21.3299104960 * tt);
+  delm[11] = swe_radnorm(5.481293871 +    7.4781598567 * tt);
+  delm[12] = swe_radnorm(5.321159000 +    3.8127774000 * tt);
+  /* PA General accumulated precession in longitude. */
+  delm[13] = (0.02438175 + 0.00000538691 * tt) * tt;
+  dadd = -0.87 * sin(delm[4]) * tt;
+  for (i = 0; i < SIDTNTERM; i++) {
+    darg = 0;
+    for (j = 0; j < SIDTNARG; j++) {
+      darg += stfarg[i * SIDTNARG + j] * delm[j];
+    }
+    dadd += stcf[i * 2] * sin(darg) + stcf[i * 2 + 1] * cos(darg);
+  }
+  dadd /= (3600.0 * 1000000.0);
+  return dadd;
+}
+
+#define SIDT_IERS_CONV_2010 TRUE
+/* sidtime_long_term() is not used between the following two dates */
+#define SIDT_LTERM_T0  2396758.5  /* 1 Jan 1850  */
+#define SIDT_LTERM_T1  2469807.5  /* 1 Jan 2050  */
+#define SIDT_LTERM_OFS0   (0.09081674334 / 3600)
+#define SIDT_LTERM_OFS1   (0.337962821868 / 3600)
 double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
 {
   double jd0;    	/* Julian day at midnight Universal Time */
   double secs;   	/* Time of day, UT seconds since UT midnight */
-  double eqeq, jd, tu, tt, msday;
-  double gmst;
+  double eqeq, jd, tu, tt, msday, jdrel;
+  double gmst, dadd;
+#if SIDT_LTERM
+  if (tjd <= SIDT_LTERM_T0 || tjd >= SIDT_LTERM_T1) {
+    gmst = sidtime_long_term(tjd, eps, nut);
+    if (tjd <= SIDT_LTERM_T0)
+      gmst -= SIDT_LTERM_OFS0;
+    else if (tjd >= SIDT_LTERM_T1)
+      gmst -= SIDT_LTERM_OFS1;
+    if (gmst >= 24) gmst -= 24;
+    if (gmst < 0) gmst += 24;
+    goto sidtime_done;
+  }
+#endif
   /* Julian day at given UT */
   jd = tjd;
   jd0 = floor(jd);
@@ -2200,25 +2701,40 @@ double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
   }
   secs *= 86400.0;
   tu = (jd0 - J2000)/36525.0; /* UT1 in centuries after J2000 */
-if (PREC_IAU_2003) {
-  tt = (jd0 + swe_deltat(jd0) - J2000)/36525.0; /* TT in centuries after J2000 */
-  gmst = (((-0.000000002454*tt - 0.00000199708)*tt - 0.0000002926)*tt + 0.092772110)*tt*tt + 307.4771013*(tt-tu) + 8640184.79447825*tu + 24110.5493771;
-  /* mean solar days per sidereal day at date tu;
-   * for the derivative of gmst, we can assume UT1 =~ TT */
-  msday = 1 + ((((-0.000000012270*tt - 0.00000798832)*tt - 0.0000008778)*tt + 0.185544220)*tt + 8640184.79447825)/(86400.*36525.);
-} else {
-    /* Greenwich Mean Sidereal Time at 0h UT of date */
-  gmst = (( -6.2e-6*tu + 9.3104e-2)*tu + 8640184.812866)*tu + 24110.54841;
-  /* mean solar days per sidereal day at date tu, = 1.00273790934 in 1986 */
-  msday = 1.0 + ((-1.86e-5*tu + 0.186208)*tu + 8640184.812866)/(86400.*36525.);
-}
+  if (SIDT_IERS_CONV_2010) {
+    /*  ERA-based expression for for Greenwich Sidereal Time (GST) based 
+     *  on the IAU 2006 precession */
+    jdrel = tjd - J2000;
+    tt = (tjd + swe_deltat(tjd) - J2000) / 36525.0;
+    gmst = swe_degnorm((0.7790572732640 + 1.00273781191135448 * jdrel) * 360);
+    gmst += (0.014506 + tt * (4612.156534 +  tt * (1.3915817 + tt * (-0.00000044 + tt * (-0.000029956 + tt * -0.0000000368))))) / 3600.0;
+    dadd = sidtime_non_polynomial_part(tt);
+    gmst = swe_degnorm(gmst + dadd);
+    /*printf("gmst iers=%f \n", gmst);*/
+    gmst = gmst / 15.0 * 3600.0;
+  } else if (USE_PREC_IAU_2006) {
+    tt = (jd0 + swe_deltat(jd0) - J2000)/36525.0; /* TT in centuries after J2000 */
+    gmst = (((-0.000000002454*tt - 0.00000199708)*tt - 0.0000002926)*tt + 0.092772110)*tt*tt + 307.4771013*(tt-tu) + 8640184.79447825*tu + 24110.5493771;
+    /* mean solar days per sidereal day at date tu;
+     * for the derivative of gmst, we can assume UT1 =~ TT */
+    msday = 1 + ((((-0.000000012270*tt - 0.00000798832)*tt - 0.0000008778)*tt + 0.185544220)*tt + 8640184.79447825)/(86400.*36525.);
+    gmst += msday * secs;
+  } else {  /* IAU 1976 formula */
+      /* Greenwich Mean Sidereal Time at 0h UT of date */
+    gmst = (( -6.2e-6*tu + 9.3104e-2)*tu + 8640184.812866)*tu + 24110.54841;
+    /* mean solar days per sidereal day at date tu, = 1.00273790934 in 1986 */
+    msday = 1.0 + ((-1.86e-5*tu + 0.186208)*tu + 8640184.812866)/(86400.*36525.);
+    gmst += msday * secs;
+  }
   /* Local apparent sidereal time at given UT at Greenwich */
   eqeq = 240.0 * nut * cos(eps * DEGTORAD);
-  gmst = gmst + msday*secs + eqeq  /* + 240.0*tlong */;
+  gmst = gmst + eqeq  /* + 240.0*tlong */;
   /* Sidereal seconds modulo 1 sidereal day */
   gmst = gmst - 86400.0 * floor( gmst/86400.0 );
   /* return in hours */
   gmst /= 3600;
+  goto sidtime_done;
+sidtime_done:
 #ifdef TRACE
   swi_open_trace(NULL);
   if (swi_trace_count < TRACE_COUNT_MAX) {
@@ -2250,8 +2766,8 @@ double FAR PASCAL_CONV swe_sidtime(double tjd_ut)
   int i;
   double eps, nutlo[2], tsid;
   double tjde = tjd_ut + swe_deltat(tjd_ut);
-  eps = swi_epsiln(tjde) * RADTODEG;
-  swi_nutation(tjde, nutlo);
+  eps = swi_epsiln(tjde, 0) * RADTODEG;
+  swi_nutation(tjde, 0, nutlo);
   for (i = 0; i < 2; i++)
     nutlo[i] *= RADTODEG;
   tsid = swe_sidtime0(tjd_ut, eps + nutlo[1], nutlo[0]);

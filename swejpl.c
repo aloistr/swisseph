@@ -72,6 +72,18 @@
 #include "sweph.h"
 #include "swejpl.h"
 
+#if MSDOS
+  extern __int64 __cdecl _ftelli64(FILE *);
+  extern int __cdecl _fseeki64(FILE *, __int64, int);
+  typedef __int64 off_t;
+  #define FSEEK _fseeki64
+  #define FTELL _ftelli64
+#else
+  #define _FILE_OFFSET_BITS 64
+  #define FSEEK fseeko
+  #define FTELL ftello
+#endif
+
 #define DEBUG_DO_SHOW	FALSE
 
 #ifndef NO_JPL
@@ -627,7 +639,8 @@ static int state(double et, int32 *list, int do_bary,
 	  double *pv, double *pvsun, double *nut, char *serr)
 {
   int i, j, k;
-  int32 flen, nseg, nb;
+  int32 nseg;
+  off_t flen, nb;
   double FAR *buf = js->buf;
   double aufac, s, t, intv, ts[4];
   int32 nrecl, ksize;
@@ -683,38 +696,18 @@ static int state(double et, int32 *list, int do_bary,
     if (js->do_reorder)
       reorder((char *) &lpt[0], sizeof(int32), 3);
     /* cval[]:  other constants in next record */
-    fseek(js->jplfptr, 1L * irecsz, 0);
+    FSEEK(js->jplfptr, (off_t) (1L * irecsz), 0);
     fread((void *) &js->eh_cval[0], sizeof(double), 400, js->jplfptr);
     if (js->do_reorder)
       reorder((char *) &js->eh_cval[0], sizeof(double), 400);
     /* new 26-aug-2008: verify correct block size */
-#if 0
-    sp = strstr(js->ch_cnam, "EMRAT ");
-    if (sp == NULL) {
-      if (serr != NULL) 
-	sprintf(serr, "JPL ephemeris file strange, constant name 'EMRAT' missing");
-      return ERR;
-    }
-    i = (sp - js->ch_cnam);
-    if (i % 6 != 0) {
-      if (serr != NULL) 
-	sprintf(serr, "JPL ephemeris file strange, constant name 'EMRAT' not at multiple of 6");
-      return ERR;
-    }
-    i = i / 6;	/* position of EMRAT in constant array eh_cval */
-    if (js->eh_cval[i] != js->eh_emrat) {
-      if (serr != NULL) 
-	sprintf(serr, "JPL ephemeris file error, record size failed EMRAT check");
-      return ERR;
-    }
-#endif
     for (i = 0; i < 3; ++i) 
       ipt[i + 36] = lpt[i];
     nrl = 0;
     /* is file length correct? */
     /* file length */
-    fseek(js->jplfptr, 0L, SEEK_END);
-    flen = ftell(js->jplfptr);
+    FSEEK(js->jplfptr, (off_t) 0L, SEEK_END);
+    flen = FTELL(js->jplfptr);
     /* # of segments in file */
     nseg = (int32) ((js->eh_ss[1] - js->eh_ss[0]) / js->eh_ss[2]);	
     /* sum of all cheby coeffs of all planets and segments */
@@ -736,28 +729,29 @@ static int state(double et, int32 *list, int do_bary,
 #endif
     if (flen != nb 
       /* some of our files are one record too long */
-      && flen - nb != ksize * nrecl) {
+      && flen - nb != ksize * nrecl
+      ) {
       if (serr != NULL) {
-	sprintf(serr, "JPL ephemeris file is mutilated; length = %d instead of %d.", flen, nb);
+	sprintf(serr, "JPL ephemeris file is mutilated; length = %d instead of %d.", (unsigned int) flen, (unsigned int) nb);
 	if (strlen(serr) + strlen(js->jplfname) < AS_MAXCH - 1) {
-	  sprintf(serr, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, flen, nb);
+	  sprintf(serr, "JPL ephemeris file %s is mutilated; length = %d instead of %d.", js->jplfname, (unsigned int) flen, (unsigned int) nb);
 	}
       }
       return(NOT_AVAILABLE);
     }
     /* check if start and end dates in segments are the same as in 
      * file header */
-    fseek(js->jplfptr, 2L * irecsz, 0);
+    FSEEK(js->jplfptr, (off_t) (2L * irecsz), 0);
     fread((void *) &ts[0], sizeof(double), 2, js->jplfptr);
     if (js->do_reorder)
       reorder((char *) &ts[0], sizeof(double), 2);
-    fseek(js->jplfptr, (nseg + 2 - 1) * irecsz, 0);
+    FSEEK(js->jplfptr, (off_t) ((nseg + 2 - 1) * ((off_t) irecsz)), 0);
     fread((void *) &ts[2], sizeof(double), 2, js->jplfptr);
     if (js->do_reorder)
       reorder((char *) &ts[2], sizeof(double), 2);
     if (ts[0] != js->eh_ss[0] || ts[3] != js->eh_ss[1]) {
       if (serr != NULL)
-	strcpy(serr, "JPL ephemeris file is corrupt; start/end date check failed.");
+	sprintf(serr, "JPL ephemeris file is corrupt; start/end date check failed. %.1f != %.1f || %.1f != %.1f", ts[0],js->eh_ss[0],ts[3],js->eh_ss[1]);
       return NOT_AVAILABLE;
     }
   }
@@ -781,7 +775,7 @@ static int state(double et, int32 *list, int do_bary,
   /* read correct record if not in core */
   if (nr != nrl) {
     nrl = nr;
-    if (fseek(js->jplfptr, nr * irecsz, 0) != 0) {
+    if (FSEEK(js->jplfptr, (off_t) (nr * ((off_t) irecsz)), 0) != 0) {
       if (serr != NULL) 
 	sprintf(serr, "Read error in JPL eph. at %f\n", et);
       return NOT_AVAILABLE;

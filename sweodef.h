@@ -251,7 +251,7 @@ typedef unsigned char UCHAR;
 #  define M_PI 3.14159265358979323846
 #endif
  
-#define forward static
+/* #define forward static  obsolete */
 
 #define AS_MAXCH 256    /* used for string declarations, allowing 255 char+\0 */
  

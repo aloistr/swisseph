@@ -1433,7 +1433,7 @@ static int32 cls[] = {
 -3, 0, 0, 2, 0, 0,
 };
 
-#if NUT_IAU_2000A
+/*#if NUT_IAU_2000A*/
 /* Planetary argument multipliers
  * L L' F D Om Me Ve E Ma Ju Sa Ur Ne pre */
 static int16 npl[] = {
@@ -2817,4 +2817,4 @@ static int16 icpl[] = {
 3, 0, 0, -1,
 3, 0, 0, -1,
 };
-#endif /* NUT_IAU_2000A */
+/*#endif  * NUT_IAU_2000A */

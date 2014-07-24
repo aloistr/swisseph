@@ -59,44 +59,10 @@
   for promoting such software, products or services.
 */
 
-#define PREC_IAU_1976      1
-#define PREC_IAU_2000      2
-#define PREC_IAU_2006      3
-#define PREC_BRETAGNON_2003      4
-#define PREC_LASKAR_1986   5
-#define PREC_SIMON_1994    6
-#define PREC_WILLIAMS_1994 7
-#define PREC_VONDRAK_2011  8
-
-/* Precession coefficients for remote past and future.
- * One of the following four defines must be true.
- */
-#define USE_PREC_VONDRAK_2011	TRUE
-#define USE_PREC_WILLIAMS_1994	FALSE
-#define USE_PREC_SIMON_1994 	FALSE
-#define USE_PREC_LASKAR_1986 	FALSE
-#define USE_PREC_BRETAGNON_2003	FALSE
-/* IAU precession 1976 or 2003 for recent centuries.
- * only one of the following two defines may be TRUE */
-#define USE_PREC_IAU_1976	FALSE
-#define USE_PREC_IAU_2000	FALSE
-#define USE_PREC_IAU_2006	FALSE  /* precession model P03 */	
 #define PREC_IAU_1976_CTIES          2.0 	/* J2000 +/- two centuries */
 #define PREC_IAU_2000_CTIES          2.0 	/* J2000 +/- two centuries */
 /* we use P03 for whole ephemeris */
 #define PREC_IAU_2006_CTIES          75.0 	/* J2000 +/- 75 centuries */
-
-/* choose between the following nutation models */
-#define NUT_IAU_1980          FALSE
-#define NUT_IAU_2000A         FALSE   /* very time consuming ! */
-#define NUT_IAU_2000B         TRUE  /* fast, but precision of milli-arcsec */
-/* Set TRUE, to include Herring's (1987) corrections to IAU 1980 
- * nutation series. AA (1996) neglects them.  */
-#define NUT_CORR_1987    	FALSE
-
-/* frame bias */
-#define FRAME_BIAS_IAU2006    TRUE  /* if false, frame bias iau2000 will be used
-                                     * difference is minimal. */
 
 /* For reproducing JPL Horizons to 2 mas (SEFLG_JPLHOR): 
  * The user has to keep the following files up to date which contain
@@ -111,7 +77,9 @@
 #define DPSI_DEPS_IAU1980_FILE_FINALS   "eop_finals.txt"
 #define DPSI_DEPS_IAU1980_TJD0_HORIZONS  2437684.5 
 #define HORIZONS_TJD0_DPSI_DEPS_IAU1980  2437684.5 
-#define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980   TRUE  
+/*#define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980   TRUE*/
+
+/*#define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980   TRUE  */
 /* You can set the latter false if you do not want to compile the
  * code required to reproduce JPL Horizons.
  * Keep it TRUE in order to reproduce JPL Horizons following
@@ -140,9 +108,9 @@
  * JPL Horizons is even better. Frame bias matrix is applied with
  * some correction to RA and another correction is added to epsilon.
  */
-#define APPROXIMATE_HORIZONS_ASTRODIENST   TRUE
+/*#define APPROXIMATE_HORIZONS_ASTRODIENST   TRUE */
 
-#define USE_HORIZONS_METHOD_BEFORE_1980  TRUE   /* Horizons method before 20-jan-1962 */
+/*#define USE_HORIZONS_METHOD_BEFORE_1980  TRUE   * Horizons method before 20-jan-1962 */
 /* The latter, if combined with SEFLG_JPLHOR provides good agreement 
  * with JPL Horizons for 1800 - today. However, Horizons uses correct
  * dpsi and deps only after 20-jan-1962. For all dates before that

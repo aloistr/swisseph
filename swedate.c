@@ -276,7 +276,7 @@ void FAR PASCAL_CONV swe_utc_time_zone(
  */
 
 /* Leap seconds were inserted at the end of the following days:*/
-#define NLEAP_SECONDS 24
+#define NLEAP_SECONDS 26
 #define NLEAP_SECONDS_SPACE 100
 static int leap_seconds[NLEAP_SECONDS_SPACE] = {
 19720630,
@@ -303,6 +303,8 @@ static int leap_seconds[NLEAP_SECONDS_SPACE] = {
 19981231,
 20051231,
 20081231,
+20120630,
+20150630,
 0  /* keep this 0 as end mark */
 };
 #define J1972 2441317.5
@@ -465,6 +467,7 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
   tjd_et = tjd_et_1972 + d + ((double) (nleap - NLEAP_INIT)) / 86400.0;
   d = swe_deltat(tjd_et);
   tjd_ut1 = tjd_et - swe_deltat(tjd_et - d);
+  tjd_ut1 = tjd_et - swe_deltat(tjd_ut1);
   dret[0] = tjd_et;
   dret[1] = tjd_ut1;
   return OK;
@@ -496,6 +499,7 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
   tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0; 
   d = swe_deltat(tjd_et);
   tjd_ut = tjd_et - swe_deltat(tjd_et - d);
+  tjd_ut = tjd_et - swe_deltat(tjd_ut);
   if (tjd_et < tjd_et_1972) {
     swe_revjul(tjd_ut, gregflag, iyear, imonth, iday, &d);
     *ihour = (int32) d;

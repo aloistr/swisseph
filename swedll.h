@@ -203,6 +203,8 @@ DllImport void FAR PASCAL swe_cotrans_sp(double *xpo, double *xpn, double eps);
 
 DllImport void FAR PASCAL swe_set_topo(double geolon, double geolat, double height);
 
+DllImport void FAR PASCAL swe_set_astro_models(int32 *imodel);
+
 /**************************** 
  * from swecl.c 
  ****************************/

@@ -240,9 +240,10 @@ extern "C" {
 #define SE_SIDM_SS_CITRA        26
 #define SE_SIDM_TRUE_CITRA      27
 #define SE_SIDM_TRUE_REVATI     28
+#define SE_SIDM_TRUE_PUSHYA     29
 #define SE_SIDM_USER            255
 
-#define SE_NSIDM_PREDEF	      29
+#define SE_NSIDM_PREDEF	      30
 
 /* used for swe_nod_aps(): */
 #define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
@@ -347,11 +348,7 @@ extern "C" {
 
 #ifndef SE_EPHE_PATH
 #if MSDOS
-#ifdef PAIR_SWEPH
-#  define SE_EPHE_PATH    "\\pair\\ephe\\"
-#else
 #  define SE_EPHE_PATH    "\\sweph\\ephe\\"
-#endif
 #else
 # ifdef MACOS
 #  define SE_EPHE_PATH	":ephe:"
@@ -423,19 +420,116 @@ extern "C" {
 #define SE_SCOTOPIC_FLAG		1
 #define SE_MIXEDOPIC_FLAG		2
 
-/*
- * by compiling with -DPAIR_SWEPH in the compiler options it
- * is possible to create a more compact version of SwissEph which
- * contains no code for the JPL ephemeris file and for the builtin
- * Moshier ephemeris.
- * This is quite useful for MSDOS real mode applications which need to
- * run within 640 kb.
- * The option is called PAIR_SWEPH because it was introduced for
- * Astrodienst's partner software PAIR.
+/* for swe_set_tid_acc() and ephemeris-dependent delta t:
+ * intrinsic tidal acceleration in the mean motion of the moon,
+ * not given in the parameters list of the ephemeris files but computed
+ * by Chapront/Chapront-Touzé/Francou A&A 387 (2002), p. 705.
  */
-#ifdef PAIR_SWEPH	
-# define NO_JPL
-#endif
+#define SE_TIDAL_DE200          (-23.8946)
+#define SE_TIDAL_DE403          (-25.580)  /* was (-25.8) until V. 1.76.2 */
+#define SE_TIDAL_DE404          (-25.580)  /* was (-25.8) until V. 1.76.2 */
+#define SE_TIDAL_DE405          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
+#define SE_TIDAL_DE406          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
+#define SE_TIDAL_DE421          (-25.85)   /* JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit */
+#define SE_TIDAL_DE430          (-25.82)   /* JPL Interoffice Memorandum 9-jul-2013 on DE430 Lunar Orbit */
+#define SE_TIDAL_DE431          (-25.80)   /* IPN Progress Report 42-196 • February 15, 2014, p. 15 */
+#define SE_TIDAL_26             (-26.0)
+#define SE_TIDAL_DEFAULT        SE_TIDAL_DE431
+#define SE_TIDAL_AUTOMATIC             999999
+#define SE_TIDAL_MOSEPH                SE_TIDAL_DE404
+#define SE_TIDAL_SWIEPH                SE_TIDAL_DEFAULT
+#define SE_TIDAL_JPLEPH                SE_TIDAL_DEFAULT
+
+#define SE_MODEL_PREC_LONGTERM  0
+#define SE_MODEL_PREC_SHORTTERM 1
+#define SE_MODEL_NUT            2
+#define SE_MODEL_SIDT           3
+#define SE_MODEL_BIAS           4
+#define SE_MODEL_JPLHOR_MODE    5
+#define SE_MODEL_JPLHORA_MODE   6
+#define SE_MODEL_DELTAT         7
+
+/* precession models */
+#define SEMOD_PREC_IAU_1976      1
+#define SEMOD_PREC_IAU_2000      2
+#define SEMOD_PREC_IAU_2006      3
+#define SEMOD_PREC_BRETAGNON_2003      4
+#define SEMOD_PREC_LASKAR_1986   5
+#define SEMOD_PREC_SIMON_1994    6
+#define SEMOD_PREC_WILLIAMS_1994 7
+#define SEMOD_PREC_VONDRAK_2011  8
+#define SEMOD_PREC_DEFAULT       SEMOD_PREC_VONDRAK_2011
+/* former implementations of the used 
+ * IAU 1976, 2000 and 2006 for a limited time range
+ * in combination with a different model for 
+ * long term precession. 
+#define SEMOD_PREC_DEFAULT_SHORT SEMOD_PREC_IAU_2000
+ */
+#define SEMOD_PREC_DEFAULT_SHORT SEMOD_PREC_VONDRAK_2011
+
+/* nutation models */
+#define SEMOD_NUT_IAU_1980          1
+#define SEMOD_NUT_IAU_CORR_1987     2 /* Herring's (1987) corrections to IAU 1980 
+				    * nutation series. AA (1996) neglects them.*/
+#define SEMOD_NUT_IAU_2000A         3 /* very time consuming ! */
+#define SEMOD_NUT_IAU_2000B         4 /* fast, but precision of milli-arcsec */
+#define SEMOD_NUT_DEFAULT           SEMOD_NUT_IAU_2000B  /* fast, but precision of milli-arcsec */
+
+/* methods for sidereal time */
+#define SEMOD_SIDT_LONGTERM         1
+#define SEMOD_SIDT_IERS_CONV_2010   2
+#define SEMOD_SIDT_PREC_MODEL       3
+#define SEMOD_SIDT_DEFAULT          SEMOD_SIDT_LONGTERM
+
+/* frame bias methods */
+#define SEMOD_BIAS_IAU2000          1  /* use frame bias matrix IAU 2000 */
+#define SEMOD_BIAS_IAU2006          2  /* use frame bias matrix IAU 2000 */
+#define SEMOD_BIAS_DEFAULT          SEMOD_BIAS_IAU2006
+
+/* methods of JPL Horizons (iflag & SEFLG_JPLHOR), 
+ * using daily dpsi, deps;  see explanations below */
+#define SEMOD_JPLHOR_EXTENDED_1800  1  /* daily dpsi and deps from file are 
+                                     * limited to 1962 - today. JPL uses the
+				     * first and last value for all  dates 
+				     * beyond this time range. */
+#define SEMOD_JPLHOR_NOT_EXTENDED   2  /* outside the available time range 
+                                     * 1962 - today default to SEFLG_JPLHOR_APROX */
+#define SEMOD_JPLHOR_DEFAULT        SEMOD_JPLHOR_EXTENDED_1800
+/* SEMOD_JPLHOR_EXTENDED_1800, if combined with SEFLG_JPLHOR provides good 
+ * agreement with JPL Horizons for 1800 - today. However, Horizons uses
+ * correct dpsi and deps only after 20-jan-1962. For all dates before that
+ * it uses dpsi and deps of 20-jan-1962, which provides a continuous
+ * ephemeris, but does not make sense otherwise.
+ * Before 1800, even this option does not provide agreement with Horizons,
+ * because Horizons uses a different precession model (Owen 1986)
+ * before 1800, which is not included in the Swiss Ephemeris.
+ * SEMOD_JPLHOR_NOT_EXTENDED causes the program to default to SEFLG_JPLHOR_APPROX,
+ * if the date is outside the time range 1962 - today, where values
+ * for dpsi and deps are given.
+ * Note that this will result in a non-continuous ephemeris near
+ * 20-jan-1962 and current years.
+ */
+
+/* methods of approximation of JPL Horizons (iflag & SEFLG_JPLHORA), 
+ * without dpsi, deps; see explanations below */
+#define SEMOD_JPLHORA_1     1
+#define SEMOD_JPLHORA_2     2
+#define SEMOD_JPLHORA_DEFAULT     SEMOD_JPLHORA_1
+/* With SEMOD_JPLHORA_1, planetary positions are always calculated 
+ * using a recent precession/nutation model. Frame bias matrix is applied 
+ * with some correction to RA and another correction is added to epsilon.
+ * This provides a very good approximation of JPL Horizons positions. 
+ * With SEMOD_JPLHORA_2, frame bias as r$ecommended by IERS Conventions 2003 
+ * and 2010 is *not* applied. Instead, dpsi_bias and deps_bias are added to 
+ * nutation. This procedure is found in some older astronomical software.
+ * Equatorial apparent positions will be close to JPL Horizons 
+ * (within a few mas) beetween 1962 and current years. Ecl. longitude 
+ * will be good, latitude bad. 
+ */
+
+#define SEMOD_DELTAT_ESPENAK_MEEUS_2006   1
+#define SEMOD_DELTAT_STEPHENSON_MORRISON_2004   2
+#define SEMOD_DELTAT_DEFAULT   SEMOD_DELTAT_ESPENAK_MEEUS_2006
 
 /**************************************************************
  * here follow some ugly definitions which are only required
@@ -512,9 +606,14 @@ extern "C" {
 ext_def(int32) swe_heliacal_ut(double tjdstart_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 iflag, double *dret, char *serr);
 ext_def(int32) swe_heliacal_pheno_ut(double tjd_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 helflag, double *darr, char *serr);
 ext_def(int32) swe_vis_limit_mag(double tjdut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 helflag, double *dret, char *serr);
+
 /* the following are secret, for Victor Reijs' */
 ext_def(int32) swe_heliacal_angle(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
 ext_def(int32) swe_topo_arcus_visionis(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double alt_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr);
+
+/* the following is secret, for Dieter, allows to test old models of
+ * precession, nutation, etc. Search for SE_MODEL_... in this file */
+ext_def(void) swe_set_astro_models(int32 *imodel);
 
 /**************************** 
  * exports from sweph.c 
@@ -566,6 +665,8 @@ ext_def(double) swe_get_ayanamsa(double tjd_et);
 ext_def(double) swe_get_ayanamsa_ut(double tjd_ut);
 
 ext_def( char *) swe_get_ayanamsa_name(int32 isidmode);
+
+/*ext_def(void) swe_set_timeout(int32 tsec);*/
 
 /**************************** 
  * exports from swedate.c 

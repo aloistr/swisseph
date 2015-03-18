@@ -63,7 +63,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.00.00"
+#define SE_VERSION      "2.01.00"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -118,23 +118,6 @@
 #define SE_NAME_PLUTO_PICKERING "Pickering"
 #define SE_NAME_VULCAN          "Vulcan"
 #define SE_NAME_WHITE_MOON      "White Moon"
-
-/* for delta t: intrinsic tidal acceleration in the mean motion of the moon,
- * not given in the parameters list of the ephemeris files but computed
- * by Chapront/Chapront-Touzé/Francou A&A 387 (2002), p. 705.
- */
-#define SE_TIDAL_DE200          (-23.8946)
-#define SE_TIDAL_DE403          (-25.580)  /* was (-25.8) until V. 1.76.2 */
-#define SE_TIDAL_DE404          (-25.580)  /* was (-25.8) until V. 1.76.2 */
-#define SE_TIDAL_DE405          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
-#define SE_TIDAL_DE406          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
-#define SE_TIDAL_DE421          (-25.85)   /* JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit */
-#define SE_TIDAL_DE430          (-25.82)   /* JPL Interoffice Memorandum 9-jul-2013 on DE430 Lunar Orbit */
-#define SE_TIDAL_DE431          (-25.82)   /* waiting for information */
-
-#define SE_TIDAL_26             (-26.0)
-
-#define SE_TIDAL_DEFAULT        SE_TIDAL_DE431
 
 /*
  * earlier content
@@ -209,13 +192,18 @@
 
 #define SEI_NEPHFILES   7
 #define SEI_CURR_FPOS   -1
+#define SEI_NMODELS 20
+
+#define SEI_ECL_GEOALT_MAX   25000.0
+#define SEI_ECL_GEOALT_MIN   (-500.0)
 
 /* Chiron's orbit becomes chaotic 
  * before 720 AD and after 4606 AD, because of close encounters
  * with Saturn. Accepting a maximum error of 5 degrees, 
  * the ephemeris is good between the following dates:
  */
-#define CHIRON_START    1958470.5  	/* 1.1.650 */
+/*#define CHIRON_START    1958470.5  	* 1.1.650 old limit until v. 2.00 */
+#define CHIRON_START    1967601.5  	/* 1.1.675 */
 #define CHIRON_END      3419437.5  	/* 1.1.4650 */
 
 /* Pholus's orbit is unstable as well, because he sometimes
@@ -223,7 +211,9 @@
  * Accepting a maximum error of 5 degrees,
  * the ephemeris is good after the following date:
  */
-#define PHOLUS_START    314845.5  	/* 1.1.-3850 */
+/* #define PHOLUS_START    314845.5  	* 1.1.-3850  old limit until v. 2.00 */
+#define PHOLUS_START    640648.5	/* 1.1.-2958 jul */
+#define PHOLUS_END      4390617.5  	/* 1.1.7309 */
 
 #define MOSHPLEPH_START	 625000.5
 #define MOSHPLEPH_END  	2818000.5
@@ -272,6 +262,9 @@
 /* #define SUN_EARTH_MRAT  328900.561400           Su/(Ea+Mo) AA 2006 K7 */
 #define SUN_EARTH_MRAT  332946.050895           /* Su / (Ea only) AA 2006 K7 */   
 #define EARTH_MOON_MRAT (1 / 0.0123000383)	/* AA 2006, K7 */
+#if 0
+#define EARTH_MOON_MRAT 81.30056907419062	/* de431 */
+#endif
 #if 0
 #define EARTH_MOON_MRAT 81.30056		/* de406 */
 #endif
@@ -384,9 +377,9 @@ static const struct aya_init ayanamsa[] = {
     {1903396.7895321,-0.23763238},/*24: Aryabhata, analogous 22 */
     {1903396.8128654,-0.79167046},/*25: SS, Revati/zePsc at polar long. 359°50'*/
     {1903396.8128654, 2.11070444},/*26: SS, Citra/Spica at polar long. 180° */
-    {0, 0},	                /*27: True Citra (Spica always exactly at 0 Libra) */
-    {0, 0},	                /*28: True Revati (zeta Psc always exactly at 0 Aries) */
-    {0, 0},			/*29: - */
+    {0, 0},	                /*27: True Citra (Spica exactly at 0 Libra) */
+    {0, 0},	                /*28: True Revati (zeta Psc exactly at 0 Aries) */
+    {0, 0},			/*29: True Pushya (delta Cnc exactly a 16 Cancer */
     {0, 0},	                /*30: - */
 	};
 
@@ -469,6 +462,7 @@ extern int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, do
 extern int swi_moshplan2(double J, int iplm, double *pobj);
 extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, double *xsun, char *serr);
 extern FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr);
+extern void swi_set_tid_acc(double tjd_ut, int iflag, int denum);
 
 /* nutation */
 struct nut {
@@ -551,6 +545,9 @@ struct sid_data {
   double t0;
 };
 
+/* dpsi and deps loaded for 100 years after 1962 */
+#define SWE_DATA_DPSI_DEPS  36525   
+
 struct swe_data {
   AS_BOOL ephe_path_is_set;
   short jpl_file_is_open;
@@ -588,8 +585,12 @@ struct swe_data {
   double ast_diam;
   int i_saved_planet_name;
   char saved_planet_name[80];
-  double dpsi[36525];  /* works for 100 years after 1962 */
-  double deps[36525];
+  //double dpsi[36525];  /* works for 100 years after 1962 */
+  //double deps[36525];
+  double *dpsi;
+  double *deps;
+  int32 astro_models[SEI_NMODELS];
+  int32 timeout;
 };
 
 extern struct swe_data FAR swed;

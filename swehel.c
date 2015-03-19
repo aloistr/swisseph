@@ -402,6 +402,7 @@ static int32 calc_rise_and_set(double tjd_start, int32 ipl, double *dgeo, double
   double tjd0 = tjd_start, tjdrise;
   double tjdnoon = (int) tjd0 - dgeo[0] / 15.0 / 24.0;
   int32 iflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
+  int32 epheflag = iflag;
   iflag |= SEFLG_EQUATORIAL;
   if (!(helflag & SE_HELFLAG_HIGH_PRECISION)) 
     iflag |= SEFLG_NONUT|SEFLG_TRUEPOS;
@@ -460,14 +461,16 @@ else
   /* now calculate more accurate rising and setting times.
    * use vertical speed in order to determine crossing of the horizon  
    * refraction of 34' and solar disk diameter of 16' = 50' = 0.84 deg */
-  iflag = SEFLG_SPEED|SEFLG_EQUATORIAL;
+  iflag = epheflag|SEFLG_SPEED|SEFLG_EQUATORIAL;
   if (ipl == SE_MOON)
     iflag |= SEFLG_TOPOCTR;
   if (!(helflag & SE_HELFLAG_HIGH_PRECISION)) 
     iflag |= SEFLG_NONUT|SEFLG_TRUEPOS;
   for (i = 0; i < 2; i++) {
-    if (swe_calc_ut(tjdrise, ipl, iflag, xx, serr) == ERR) 
+    if (swe_calc_ut(tjdrise, ipl, iflag, xx, serr) == ERR) {
+      /*fprintf(stderr, "hev4 tjd=%f, ipl=%d, iflag=%d\n", tjdrise, ipl, iflag);*/
       return ERR;
+    }
     swe_azalt(tjdrise, SE_EQU2HOR, dgeo, datm[0], datm[1], xx, xaz);
     xx[0] -= xx[3] * dfac; 
     xx[1] -= xx[4] * dfac;
@@ -1432,7 +1435,9 @@ int32 FAR PASCAL_CONV swe_vis_limit_mag(double tjdut, double *dgeo, double *datm
 {
   int32 retval = OK, i, scotopic_flag = 0;
   double AltO, AziO, AltM, AziM, AltS, AziS;
-  double sunra = SunRA(tjdut, helflag, serr);
+  double sunra;
+  swi_set_tid_acc(tjdut, helflag, 0);
+  sunra = SunRA(tjdut, helflag, serr);
   default_heliacal_parameters(datm, dgeo, dobs, helflag);
   swe_set_topo(dgeo[0], dgeo[1], dgeo[2]);
   for (i = 0; i < 7; i++)
@@ -1557,7 +1562,9 @@ static int32 TopoArcVisionis(double Magn, double *dobs, double AltO, double AziO
 
 int32 FAR PASCAL_CONV swe_topo_arcus_visionis(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double alt_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr)
 {
-  double sunra = SunRA(tjdut, helflag, serr);
+  double sunra;
+  swi_set_tid_acc(tjdut, helflag, 0);
+  sunra = SunRA(tjdut, helflag, serr);
   if (serr != NULL && *serr != '\0')
     return ERR;
   return TopoArcVisionis(mag, dobs, alt_obj, azi_obj, alt_moon, azi_moon, tjdut, azi_sun, sunra, dgeo[1], dgeo[2], datm, helflag, dret, serr);
@@ -1648,6 +1655,12 @@ static int32 HeliacalAngle(double Magn, double *dobs, double AziO, double AltM, 
 
 int32 FAR PASCAL_CONV swe_heliacal_angle(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr)
 {
+  if (dgeo[2] < SEI_ECL_GEOALT_MIN || dgeo[2] > SEI_ECL_GEOALT_MAX) {
+    if (serr != NULL)
+      sprintf(serr, "location for heliacal events must be between %.0f and %.0f m above sea", SEI_ECL_GEOALT_MIN, SEI_ECL_GEOALT_MAX);
+    return ERR;
+  }
+  swi_set_tid_acc(tjdut, helflag, 0);
   return HeliacalAngle(mag, dobs, azi_obj, alt_moon, azi_moon, tjdut, azi_sun, dgeo, datm, helflag, dret, serr);
 }
 
@@ -1815,8 +1828,15 @@ int32 FAR PASCAL_CONV swe_heliacal_pheno_ut(double JDNDaysUT, double *dgeo, doub
   int32 retval = OK, RS, Planet;
   AS_BOOL noriseO = FALSE;
   char ObjectName[AS_MAXCH];
-  double sunra = SunRA(JDNDaysUT, helflag, serr);
+  double sunra;
   int32 iflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
+  if (dgeo[2] < SEI_ECL_GEOALT_MIN || dgeo[2] > SEI_ECL_GEOALT_MAX) {
+    if (serr != NULL)
+      sprintf(serr, "location for heliacal events must be between %.0f and %.0f m above sea", SEI_ECL_GEOALT_MIN, SEI_ECL_GEOALT_MAX);
+    return ERR;
+  }
+  swi_set_tid_acc(JDNDaysUT, helflag, 0);
+  sunra = SunRA(JDNDaysUT, helflag, serr);
   /* note, the fixed stars functions rewrite the star name. The input string 
      may be too short, so we have to make sure we have enough space */
   strcpy_VBsafe(ObjectName, ObjectNameIn);
@@ -2753,8 +2773,9 @@ static int32 get_heliacal_day(double tjd, double *dgeo, double *datm, double *do
       break; 
     case -1:
       ndays = 300;
-      if (call_swe_fixstar_mag(ObjectName, &dmag, serr) == ERR)
+      if (call_swe_fixstar_mag(ObjectName, &dmag, serr) == ERR) {
 	return ERR;
+      }
       daystep = 15;
       tfac = 10;
       if (dmag > 2) {
@@ -2776,8 +2797,9 @@ static int32 get_heliacal_day(double tjd, double *dgeo, double *datm, double *do
        (direct_day > 0 && tday < tend) || (direct_day < 0 && tday > tend);
        tday += daystep * direct_day) {
     vdelta = -100; 
-    if ((retval = my_rise_trans(tday, SE_SUN, "", is_rise_or_set, helflag, dgeo, datm, &tret, serr)) == ERR)
+    if ((retval = my_rise_trans(tday, SE_SUN, "", is_rise_or_set, helflag, dgeo, datm, &tret, serr)) == ERR) {
       return ERR;
+    }
     /* sun does not rise: try next day */
     if (retval == -2) {
       retval_old = retval;
@@ -3137,8 +3159,9 @@ static int32 heliacal_ut_vis_lim(double tjd_start, double *dgeo, double *datm, d
 	goto swe_heliacal_err; /* retval may be -2 or ERR */
     } else {
       /* find date of conjunction of object with sun */
-      if ((retval = find_conjunct_sun(tjd, ipl, helflag, TypeEvent, &tjd, serr)) == ERR)
+      if ((retval = find_conjunct_sun(tjd, ipl, helflag, TypeEvent, &tjd, serr)) == ERR) {
 	goto swe_heliacal_err;
+      }
     }
     /* find the day and minute on which the object becomes visible */
     retval = get_heliacal_day(tjd, dgeo, datm, dobs, ObjectName, helflag2, TypeEvent, &tday, serr); 
@@ -3326,6 +3349,12 @@ int32 FAR PASCAL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, doubl
   double tjd0 = JDNDaysUTStart, tjd, dsynperiod, tjdmax, tadd;
   int32 MaxCountSynodicPeriod = MAX_COUNT_SYNPER;
   char *sevent[7] = {"", "morning first", "evening last", "evening first", "morning last", "acronychal rising", "acronychal setting"};
+  if (dgeo[2] < SEI_ECL_GEOALT_MIN || dgeo[2] > SEI_ECL_GEOALT_MAX) {
+    if (serr_ret != NULL)
+      sprintf(serr_ret, "location for heliacal events must be between %.0f and %.0f m above sea", SEI_ECL_GEOALT_MIN, SEI_ECL_GEOALT_MAX);
+    return ERR;
+  }
+  swi_set_tid_acc(JDNDaysUTStart, helflag, 0);
   if (helflag & SE_HELFLAG_LONG_SEARCH)
     MaxCountSynodicPeriod = MAX_COUNT_SYNPER_MAX;
 /*  if (helflag & SE_HELFLAG_SEARCH_1_PERIOD)

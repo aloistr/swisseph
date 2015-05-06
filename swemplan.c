@@ -63,7 +63,7 @@
 #include "swephexp.h"
 #include "sweph.h"
 #include "swephlib.h"
-#include "swemptab.c"
+#include "swemptab.h"
 
 #define TIMESCALE 3652500.0
 
@@ -759,7 +759,7 @@ static int read_elements_file(int32 ipl, double tjd,
       if (serr != NULL) {
         sprintf(serr, "%s nine elements required", serri);
       }
-      return ERR;
+      goto return_err;
     }
     iplan++;
     if (iplan != ipl)

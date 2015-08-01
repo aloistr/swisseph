@@ -405,7 +405,7 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
    */
   if (tjd_ut1 < J1972) {
     dret[1] = swe_julday(iyear, imonth, iday, dhour, gregflag);
-    dret[0] = dret[1] + swe_deltat(dret[1]);
+    dret[0] = dret[1] + swe_deltat_ex(dret[1], -1, NULL);
     return OK;
   }
   /* 
@@ -432,10 +432,10 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
    * input time as UT1, not as UTC. How do we find out? 
    * Check, if delta_t - nleap - 32.184 > 0.9
    */
-  d = swe_deltat(tjd_ut1) * 86400.0;
+  d = swe_deltat_ex(tjd_ut1, -1, NULL) * 86400.0;
   if (d - (double) nleap - 32.184 >= 1.0) {
     dret[1] = tjd_ut1 + dhour / 24.0;
-    dret[0] = dret[1] + swe_deltat(dret[1]);
+    dret[0] = dret[1] + swe_deltat_ex(dret[1], -1, NULL);
     return OK;
   }
   /* 
@@ -465,9 +465,9 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
   /* ET (TT) */
   tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0;
   tjd_et = tjd_et_1972 + d + ((double) (nleap - NLEAP_INIT)) / 86400.0;
-  d = swe_deltat(tjd_et);
-  tjd_ut1 = tjd_et - swe_deltat(tjd_et - d);
-  tjd_ut1 = tjd_et - swe_deltat(tjd_ut1);
+  d = swe_deltat_ex(tjd_et, -1, NULL);
+  tjd_ut1 = tjd_et - swe_deltat_ex(tjd_et - d, -1, NULL);
+  tjd_ut1 = tjd_et - swe_deltat_ex(tjd_ut1, -1, NULL);
   dret[0] = tjd_et;
   dret[1] = tjd_ut1;
   return OK;
@@ -497,9 +497,9 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
    * if tjd_et is before 1 jan 1972 UTC, return UT1
    */
   tjd_et_1972 = J1972 + (32.184 + NLEAP_INIT) / 86400.0; 
-  d = swe_deltat(tjd_et);
-  tjd_ut = tjd_et - swe_deltat(tjd_et - d);
-  tjd_ut = tjd_et - swe_deltat(tjd_ut);
+  d = swe_deltat_ex(tjd_et, -1, NULL);
+  tjd_ut = tjd_et - swe_deltat_ex(tjd_et - d, -1, NULL);
+  tjd_ut = tjd_et - swe_deltat_ex(tjd_ut, -1, NULL);
   if (tjd_et < tjd_et_1972) {
     swe_revjul(tjd_ut, gregflag, iyear, imonth, iday, &d);
     *ihour = (int32) d;
@@ -554,8 +554,8 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
    * input time as UT1, not as UTC. How do we find out? 
    * Check, if delta_t - nleap - 32.184 > 0.9
    */
-  d = swe_deltat(tjd_et);
-  d = swe_deltat(tjd_et - d);
+  d = swe_deltat_ex(tjd_et, -1, NULL);
+  d = swe_deltat_ex(tjd_et - d, -1, NULL);
   if (d * 86400.0 - (double) (nleap + NLEAP_INIT) - 32.184 >= 1.0) {
     swe_revjul(tjd_et - d, SE_GREG_CAL, iyear, imonth, iday, &d);
     *ihour = (int32) d;
@@ -586,6 +586,7 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
  */
 void FAR PASCAL_CONV swe_jdut1_to_utc(double tjd_ut, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
 {
-  double tjd_et = tjd_ut + swe_deltat(tjd_ut);
+  double tjd_et = tjd_ut + swe_deltat_ex(tjd_ut, -1, NULL);
   swe_jdet_to_utc(tjd_et, gregflag, iyear, imonth, iday, ihour, imin, dsec);
 }
+

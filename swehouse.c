@@ -121,7 +121,7 @@ int FAR PASCAL_CONV swe_houses(double tjd_ut,
 {
   int i, retc = 0;
   double armc, eps, nutlo[2];
-  double tjde = tjd_ut + swe_deltat(tjd_ut);
+  double tjde = tjd_ut + swe_deltat_ex(tjd_ut, -1, NULL);
   eps = swi_epsiln(tjde, 0) * RADTODEG;
   swi_nutation(tjde, 0, nutlo);
   for (i = 0; i < 2; i++)
@@ -172,7 +172,7 @@ int FAR PASCAL_CONV swe_houses_ex(double tjd_ut,
 {
   int i, retc = 0;
   double armc, eps_mean, nutlo[2];
-  double tjde = tjd_ut + swe_deltat(tjd_ut);
+  double tjde = tjd_ut + swe_deltat_ex(tjd_ut, iflag, NULL);
   struct sid_data *sip = &swed.sidd;
   int ito;
   if (toupper(hsys) == 'G')

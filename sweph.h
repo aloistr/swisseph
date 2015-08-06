@@ -63,7 +63,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.01.00"
+#define SE_VERSION      "2.02.00"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -462,7 +462,9 @@ extern int swi_moshplan(double tjd, int ipli, AS_BOOL do_save, double *xpret, do
 extern int swi_moshplan2(double J, int iplm, double *pobj);
 extern int swi_osc_el_plan(double tjd, double *xp, int ipl, int ipli, double *xearth, double *xsun, char *serr);
 extern FILE *swi_fopen(int ifno, char *fname, char *ephepath, char *serr);
-extern void swi_set_tid_acc(double tjd_ut, int iflag, int denum);
+extern int32 swi_init_swed_if_start(void);
+extern int32 swi_set_tid_acc(double tjd_ut, int32 iflag, int32 denum, char *serr);
+extern int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, double *tid_acc, char *serr);
 
 /* nutation */
 struct nut {
@@ -548,21 +550,26 @@ struct sid_data {
 /* dpsi and deps loaded for 100 years after 1962 */
 #define SWE_DATA_DPSI_DEPS  36525   
 
+/* if this is changed, then also update initialisation in sweph.c */
 struct swe_data {
   AS_BOOL ephe_path_is_set;
   short jpl_file_is_open;
   FILE *fixfp;		/* fixed stars file pointer */
   char ephepath[AS_MAXCH];
   char jplfnam[AS_MAXCH];
-  short jpldenum;
+  int32 jpldenum;
+  int32 last_epheflag;
+  AS_BOOL geopos_is_set;
+  AS_BOOL ayana_is_set;
+  AS_BOOL is_old_starfile;
   double eop_tjd_beg;
   double eop_tjd_beg_horizons;
   double eop_tjd_end;
   double eop_tjd_end_add;
   int eop_dpsi_loaded;
-  AS_BOOL geopos_is_set;
-  AS_BOOL ayana_is_set;
-  AS_BOOL is_old_starfile;
+  double tid_acc;
+  AS_BOOL is_tid_acc_manual;
+  AS_BOOL init_dt_done;
   struct file_data fidat[SEI_NEPHFILES];
   struct gen_const gcdat;
   struct plan_data pldat[SEI_NPLANETS];

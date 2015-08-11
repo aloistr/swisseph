@@ -431,8 +431,9 @@ extern "C" {
 #define SE_TIDAL_DE405          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
 #define SE_TIDAL_DE406          (-25.826)  /* was (-25.7376) until V. 1.76.2 */
 #define SE_TIDAL_DE421          (-25.85)   /* JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit */
+#define SE_TIDAL_DE422          (-25.85)   /* JPL Interoffice Memorandum 14-mar-2008 on DE421 Lunar Orbit */
 #define SE_TIDAL_DE430          (-25.82)   /* JPL Interoffice Memorandum 9-jul-2013 on DE430 Lunar Orbit */
-#define SE_TIDAL_DE431          (-25.80)   /* IPN Progress Report 42-196 • February 15, 2014, p. 15 */
+#define SE_TIDAL_DE431          (-25.80)   /* IPN Progress Report 42-196 • February 15, 2014, p. 15; was (-25.82) in V. 2.00.00 */
 #define SE_TIDAL_26             (-26.0)
 #define SE_TIDAL_DEFAULT        SE_TIDAL_DE431
 #define SE_TIDAL_AUTOMATIC             999999
@@ -479,7 +480,9 @@ extern "C" {
 #define SEMOD_SIDT_LONGTERM         1
 #define SEMOD_SIDT_IERS_CONV_2010   2
 #define SEMOD_SIDT_PREC_MODEL       3
+#define SEMOD_SIDT_IAU_1976         4
 #define SEMOD_SIDT_DEFAULT          SEMOD_SIDT_LONGTERM
+//#define SEMOD_SIDT_DEFAULT          SEMOD_SIDT_IERS_CONV_2010
 
 /* frame bias methods */
 #define SEMOD_BIAS_IAU2000          1  /* use frame bias matrix IAU 2000 */
@@ -660,9 +663,11 @@ ext_def (void) swe_set_topo(double geolon, double geolat, double geoalt);
 ext_def(void) swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0);
 
 /* get ayanamsa */
+ext_def(int32) swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr);
+ext_def(int32) swe_get_ayanamsa_ex_ut(double tjd_ut, int32 iflag, double *daya, char *serr);
 ext_def(double) swe_get_ayanamsa(double tjd_et);
-
 ext_def(double) swe_get_ayanamsa_ut(double tjd_ut);
+
 
 ext_def( char *) swe_get_ayanamsa_name(int32 isidmode);
 
@@ -838,6 +843,7 @@ ext_def (int32) swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
 
 /* delta t */
 ext_def( double ) swe_deltat(double tjd);
+ext_def(double) swe_deltat_ex(double tjd, int32 iflag, char *serr);
 
 /* equation of time */
 ext_def(int32) swe_time_equ(double tjd, double *te, char *serr);

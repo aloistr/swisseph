@@ -118,6 +118,7 @@ DllImport int32 FAR PASCAL swe_fixstar_mag(
 DllImport double FAR PASCAL swe_sidtime0(double tjd_ut, double ecl, double nut);
 DllImport double FAR PASCAL swe_sidtime(double tjd_ut);
 
+DllImport double FAR PASCAL swe_deltat_ex(double tjd, int32 iflag, char *serr);
 DllImport double FAR PASCAL swe_deltat(double tjd);
 
 DllImport int FAR PASCAL swe_houses(
@@ -143,8 +144,10 @@ DllImport int32 FAR PASCAL swe_gauquelin_sector(
 DllImport void FAR PASCAL swe_set_sid_mode(
         int32 sid_mode, double t0, double ayan_t0);
 
-DllImport double FAR PASCAL swe_get_ayanamsa(double tjd_et);
+DllImport int32 FAR PASCAL swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr);
+DllImport int32 FAR PASCAL swe_get_ayanamsa_ex_ut(double tjd_ut, int32 iflag, double *daya, char *serr);
 
+DllImport double FAR PASCAL swe_get_ayanamsa(double tjd_et);
 DllImport double FAR PASCAL swe_get_ayanamsa_ut(double tjd_ut);
 
 DllImport char *FAR PASCAL swe_get_ayanamsa_name(int32 isidmode);

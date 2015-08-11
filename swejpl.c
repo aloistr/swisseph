@@ -723,10 +723,6 @@ static int state(double et, int32 *list, int do_bary,
     nb *= 8;
     /* add size of header and constants section */
     nb += 2 * ksize * nrecl;
-#if 0
-    printf("hallo %d %d\n", nb, flen);
-    printf("hallo %d %d\n", nb-flen, ksize);
-#endif
     if (flen != nb 
       /* some of our files are one record too long */
       && flen - nb != ksize * nrecl

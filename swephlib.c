@@ -89,16 +89,15 @@ FILE *swi_fp_trace_out = NULL;
 int32 swi_trace_count = 0;
 #endif
 
-static double tid_acc = SE_TIDAL_DEFAULT;
-static AS_BOOL is_tid_acc_manual = FALSE;
-static AS_BOOL init_dt_done = FALSE;
 static void init_crc32(void);
 static int init_dt(void);
-static double adjust_for_tidacc(double ans, double Y);
-static double deltat_espenak_meeus_1620(double tjd);
+static double adjust_for_tidacc(double ans, double Y, double tid_acc);
+static double deltat_espenak_meeus_1620(double tjd, double tid_acc);
 static double deltat_longterm_morrison_stephenson(double tjd);
-static double deltat_stephenson_morrison_1600(double tjd);
-static double deltat_aa(double tjd);
+static double deltat_stephenson_morrison_1600(double tjd, double tid_acc);
+static double deltat_aa(double tjd, double tid_acc);
+
+#define SEFLG_EPHMASK   (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH)
 
 /* Reduce x modulo 360 degrees
  */
@@ -1456,10 +1455,6 @@ static int swi_nutation_iau1980(double J, double *nutlo)
   /* Save answers, expressed in radians */
   nutlo[0] = DEGTORAD * C / 3600.0;
   nutlo[1] = DEGTORAD * D / 3600.0;
-/*  nutlo[0] += (-0.071590 / 3600.0) * DEGTORAD;
-  nutlo[1] += (-0.008000 / 3600.0) * DEGTORAD;*/
-/* nutlo[0] += (-0.047878 / 3600.0) * DEGTORAD;
-  nutlo[1] += (-0.004035 / 3600.0) * DEGTORAD;*/
   return(0);
 }
 
@@ -2072,19 +2067,19 @@ static double FAR dt[TABSIZ_SPACE] = {
 21.16, 22.25, 22.41, 23.03, 23.49, 23.62, 23.86, 24.49, 24.34, 24.08,
 24.02, 24.00, 23.87, 23.95, 23.86, 23.93, 23.73, 23.92, 23.96, 24.02,
 /* 1940.0 thru 1979.0 */
- 24.33, 24.83, 25.30, 25.70, 26.24, 26.77, 27.28, 27.78, 28.25, 28.71,
- 29.15, 29.57, 29.97, 30.36, 30.72, 31.07, 31.35, 31.68, 32.18, 32.68,
- 33.15, 33.59, 34.00, 34.47, 35.03, 35.73, 36.54, 37.43, 38.29, 39.20,
- 40.18, 41.17, 42.23, 43.37, 44.49, 45.48, 46.46, 47.52, 48.53, 49.59,
+24.33, 24.83, 25.30, 25.70, 26.24, 26.77, 27.28, 27.78, 28.25, 28.71,
+29.15, 29.57, 29.97, 30.36, 30.72, 31.07, 31.35, 31.68, 32.18, 32.68,
+33.15, 33.59, 34.00, 34.47, 35.03, 35.73, 36.54, 37.43, 38.29, 39.20,
+40.18, 41.17, 42.23, 43.37, 44.49, 45.48, 46.46, 47.52, 48.53, 49.59,
 /* 1980.0 thru 1999.0 */
- 50.54, 51.38, 52.17, 52.96, 53.79, 54.34, 54.87, 55.32, 55.82, 56.30,
- 56.86, 57.57, 58.31, 59.12, 59.98, 60.78, 61.63, 62.30, 62.97, 63.47,
+50.54, 51.38, 52.17, 52.96, 53.79, 54.34, 54.87, 55.32, 55.82, 56.30,
+56.86, 57.57, 58.31, 59.12, 59.98, 60.78, 61.63, 62.30, 62.97, 63.47,
 /* 2000.0 thru 2009.0 */
- 63.83, 64.09, 64.30, 64.47, 64.57, 64.69, 64.85, 65.15, 65.46, 65.78,      
+63.83, 64.09, 64.30, 64.47, 64.57, 64.69, 64.85, 65.15, 65.46, 65.78,      
 /* 2010.0 thru 2015.0 */
- 66.07, 66.32, 66.60, 66.907,67.281,67.644,
+66.07, 66.32, 66.60, 66.907,67.281,67.644,
 /* Extrapolated values, 2016 - 2019 */
-                                           68.01, 68.50, 69.00, 69.50,
+					 68.01, 68.50, 69.00, 69.50,
 };
 /*#define DELTAT_ESPENAK_MEEUS_2006 TRUE*/
 #define TAB2_SIZ	27
@@ -2096,23 +2091,49 @@ static double FAR dt[TABSIZ_SPACE] = {
 /* Table for -1000 through 1600, from Morrison & Stephenson (2004).  */
 static short FAR dt2[TAB2_SIZ] = {
 /*-1000  -900  -800  -700  -600  -500  -400  -300  -200  -100*/
-  25400,23700,22000,21000,19040,17190,15530,14080,12790,11640,
+25400,23700,22000,21000,19040,17190,15530,14080,12790,11640,
 /*    0   100   200   300   400   500   600   700   800   900*/
-  10580, 9600, 8640, 7680, 6700, 5710, 4740, 3810, 2960, 2200,
+10580, 9600, 8640, 7680, 6700, 5710, 4740, 3810, 2960, 2200,
 /* 1000  1100  1200  1300  1400  1500  1600,                 */
-   1570, 1090,  740,  490,  320,  200,  120,  
+ 1570, 1090,  740,  490,  320,  200,  120,  
 };
 /* returns DeltaT (ET - UT) in days
- * double tjd 	= 	julian day in UT
- */
+* double tjd 	= 	julian day in UT
+* delta t is adjusted to the tidal acceleration that is compatible 
+* with the ephemeris flag contained in iflag and with the ephemeris
+* files made accessible through swe_set_ephe_path() or swe_set_jplfile().
+* If iflag = -1, then the default tidal acceleration is ussed (i.e.
+* that of DE431).
+*/
 #define DEMO 0
-double FAR PASCAL_CONV swe_deltat(double tjd)
+static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
 {
   double ans = 0;
   double B, Y, Ygreg, dd;
   int iy;
+  int32 retc;
   int deltat_model = swed.astro_models[SE_MODEL_DELTAT];
+  double tid_acc;
+  int32 denumret;
+  int32 epheflag, otherflag;
   if (deltat_model == 0) deltat_model = SEMOD_DELTAT_DEFAULT;
+  epheflag = iflag & SEFLG_EPHMASK;
+  otherflag = iflag & ~SEFLG_EPHMASK;
+  /* with iflag == -1, we use default tid_acc */
+  if (iflag == -1) {
+    retc = swi_get_tid_acc(tjd, 0, 9999, &denumret, &tid_acc, serr); /* for default tid_acc */
+  /* otherwise we use tid_acc consistent with epheflag */
+  } else {
+    if (swi_init_swed_if_start() == 1 && !(epheflag && SEFLG_MOSEPH)) {
+      if (serr != NULL) 
+	strcpy(serr, "Please call swe_set_ephe_path() or swe_set_jplfile() before calling swe_deltat_ex()");
+      retc = swi_set_tid_acc(tjd, epheflag, 0, NULL);  /* _set_ saves tid_acc in swed */
+    } else {
+      retc = swi_set_tid_acc(tjd, epheflag, 0, serr);  /* _set_ saves tid_acc in swed */
+    }
+    tid_acc = swed.tid_acc;
+  }
+  iflag = otherflag | retc;
   /* read additional values from swedelta.txt */
   /*AS_BOOL use_espenak_meeus = DELTAT_ESPENAK_MEEUS_2006;*/
   Y = 2000.0 + (tjd - J2000)/365.25;
@@ -2124,9 +2145,10 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
    * However, they use the long-term formula of Morrison & Stephenson,
    * which can be used even for the remoter past.
    */
-  /*if (use_espenak_meeus && tjd < 2317746.13090277789) {*/
+  /*if (use_espenak_meeus && tjd < 2317746.13090277789) */
   if (deltat_model == SEMOD_DELTAT_ESPENAK_MEEUS_2006 && tjd < 2317746.13090277789) {
-    return deltat_espenak_meeus_1620(tjd);
+    *deltat = deltat_espenak_meeus_1620(tjd, tid_acc);
+    return iflag;
   }
   /* If the macro DELTAT_ESPENAK_MEEUS_2006 is FALSE:
    * Before 1620, we follow Stephenson & Morrsion 2004. For the tabulated 
@@ -2134,7 +2156,8 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
    */
   if (Y < TABSTART) {
     if (Y < TAB2_END) {
-      return deltat_stephenson_morrison_1600(tjd);
+      *deltat = deltat_stephenson_morrison_1600(tjd, tid_acc);
+      return iflag;
     } else {
       /* between 1600 and 1620:
        * linear interpolation between 
@@ -2145,8 +2168,9 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
 	dd = (Y - TAB2_END) / B;
 	/*ans = dt2[iy] + dd * (dt[0] / 100.0 - dt2[iy]);*/
 	ans = dt2[iy] + dd * (dt[0] - dt2[iy]);
-	ans = adjust_for_tidacc(ans, Ygreg);
-	return ans / 86400.0;
+	ans = adjust_for_tidacc(ans, Ygreg, tid_acc);
+	*deltat = ans / 86400.0;
+	return iflag;
       }
     }
   }
@@ -2155,7 +2179,8 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
    * See AA page K11.
    */
   if (Y >= TABSTART) {
-    return deltat_aa(tjd);
+    *deltat = deltat_aa(tjd, tid_acc);
+    return iflag;
   }
 #ifdef TRACE
   swi_open_trace(NULL);
@@ -2163,7 +2188,8 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
     if (swi_fp_trace_c != NULL) {
       fputs("\n/*SWE_DELTAT*/\n", swi_fp_trace_c);
       fprintf(swi_fp_trace_c, "  tjd = %.9f;", tjd);
-      fprintf(swi_fp_trace_c, " t = swe_deltat(tjd);\n");
+      fprintf(swi_fp_trace_c, "  iflag = %d;", tjd);
+      fprintf(swi_fp_trace_c, " t = swe_deltat_ex(tjd, iflag, NULL);\n");
       fputs("  printf(\"swe_deltat: %f\\t%f\\t\\n\", ", swi_fp_trace_c);
       fputs("tjd, t);\n", swi_fp_trace_c);
       fflush(swi_fp_trace_c);
@@ -2174,10 +2200,24 @@ double FAR PASCAL_CONV swe_deltat(double tjd)
     }
   }
 #endif
-  return ans / 86400.0;
+  *deltat = ans / 86400.0;
+  return iflag;
 }
 
-static double deltat_aa(double tjd)
+double FAR PASCAL_CONV swe_deltat_ex(double tjd, int32 iflag, char *serr)
+{
+  double deltat;
+  calc_deltat(tjd, iflag, &deltat, serr);
+  return deltat;
+}
+
+double FAR PASCAL_CONV swe_deltat(double tjd)
+{
+  int32 iflag = swi_guess_ephe_flag();
+  return swe_deltat_ex(tjd, iflag, NULL); /* with default tidal acceleration/default ephemeris */
+}
+
+static double deltat_aa(double tjd, double tid_acc)
 {
   double ans = 0, ans2, ans3;
   double p, B, B2, Y, dd;
@@ -2218,9 +2258,9 @@ static double deltat_aa(double tjd)
       d[i] = d[i+1] - d[i];
     B = 0.25*p*(p-1.0);
     ans += B*(d[1] + d[2]);
-  #if DEMO
+#if DEMO
     printf( "B %.4lf, ans %.4lf\n", B, ans );
-  #endif
+#endif
     if( iy+2 >= tabsiz )
       goto done;
     /* Compute third differences */
@@ -2228,9 +2268,9 @@ static double deltat_aa(double tjd)
       d[i] = d[i+1] - d[i];
     B = 2.0*B/3.0;
     ans += (p-0.5)*B*d[1];
-  #if DEMO
+#if DEMO
     printf( "B %.4lf, ans %.4lf\n", B*(p-0.5), ans );
-  #endif
+#endif
     if( (iy-2 < 0) || (iy+3 > tabsiz) )
       goto done;
     /* Compute fourth differences */
@@ -2238,11 +2278,11 @@ static double deltat_aa(double tjd)
       d[i] = d[i+1] - d[i];
     B = 0.125*B*(p+1.0)*(p-2.0);
     ans += B*(d[0] + d[1]);
-  #if DEMO
+#if DEMO
     printf( "B %.4lf, ans %.4lf\n", B, ans );
-  #endif
+#endif
     done:
-    ans = adjust_for_tidacc(ans, Y);
+    ans = adjust_for_tidacc(ans, Y, tid_acc);
     return ans / 86400.0;
   }
   /* today - : 
@@ -2266,12 +2306,12 @@ static double deltat_aa(double tjd)
 
 static double deltat_longterm_morrison_stephenson(double tjd)
 {
-  double Ygreg =  2000.0 + (tjd - J2000)/365.2425;
-  double u = (Ygreg  - 1820) / 100.0;
-  return (-20 + 32 * u * u);
+double Ygreg =  2000.0 + (tjd - J2000)/365.2425;
+double u = (Ygreg  - 1820) / 100.0;
+return (-20 + 32 * u * u);
 }
 
-static double deltat_stephenson_morrison_1600(double tjd)
+static double deltat_stephenson_morrison_1600(double tjd, double tid_acc)
 {
   double ans = 0, ans2, ans3;
   double p, B, dd;
@@ -2287,17 +2327,17 @@ static double deltat_stephenson_morrison_1600(double tjd)
     /*B = (Y - LTERM_EQUATION_YSTART) * 0.01;
     ans = -20 + LTERM_EQUATION_COEFF * B * B;*/
     ans = deltat_longterm_morrison_stephenson(tjd);
-    ans = adjust_for_tidacc(ans, Y);
+    ans = adjust_for_tidacc(ans, Y, tid_acc);
     /* transition from formula to table over 100 years */
     if (Y >= TAB2_START - 100) {
       /* starting value of table dt2: */
-      ans2 = adjust_for_tidacc(dt2[0], TAB2_START);
+      ans2 = adjust_for_tidacc(dt2[0], TAB2_START, tid_acc);
       /* value of formula at epoch TAB2_START */
       /* B = (TAB2_START - LTERM_EQUATION_YSTART) * 0.01;
       ans3 = -20 + LTERM_EQUATION_COEFF * B * B;*/
       tjd0 = (TAB2_START - 2000) * 365.2425 + J2000;
       ans3 = deltat_longterm_morrison_stephenson(tjd0);
-      ans3 = adjust_for_tidacc(ans3, Y);
+      ans3 = adjust_for_tidacc(ans3, Y, tid_acc);
       dd = ans3 - ans2;
       B = (Y - (TAB2_START - 100)) * 0.01;
       /* fit to starting point of table dt2. */
@@ -2313,13 +2353,13 @@ static double deltat_stephenson_morrison_1600(double tjd)
     dd = (Yjul - (TAB2_START + TAB2_STEP * iy)) / TAB2_STEP;
     ans = dt2[iy] + (dt2[iy+1] - dt2[iy]) * dd;
     /* correction for tidal acceleration used by our ephemeris */
-    ans = adjust_for_tidacc(ans, Y);
+    ans = adjust_for_tidacc(ans, Y, tid_acc);
   }
   ans /= 86400.0;
   return ans;
 }
 
-static double deltat_espenak_meeus_1620(double tjd)
+static double deltat_espenak_meeus_1620(double tjd, double tid_acc)
 {
   double ans = 0;
   double Ygreg;
@@ -2362,69 +2402,69 @@ static double deltat_espenak_meeus_1620(double tjd)
     u = Ygreg - 2000;
     ans = ((((0.00002373599 * u + 0.000651814) * u + 0.0017275) * u - 0.060374) * u + 0.3345) * u + 63.86;
   }
-  ans = adjust_for_tidacc(ans, Ygreg);
+  ans = adjust_for_tidacc(ans, Ygreg, tid_acc);
   ans /= 86400.0;
   return ans;
 }
 
 /* Read delta t values from external file.
- * record structure: year(whitespace)delta_t in 0.01 sec.
- */
+* record structure: year(whitespace)delta_t in 0.01 sec.
+*/
 static int init_dt(void)
 {
-  FILE *fp;
-  int year;
-  int tab_index;
-  int tabsiz;
-  int i;
-  char s[AS_MAXCH];
-  char *sp;
-  if (!init_dt_done) {
-    init_dt_done = TRUE;
-    /* no error message if file is missing */
-    if ((fp = swi_fopen(-1, "swe_deltat.txt", swed.ephepath, NULL)) == NULL
-      && (fp = swi_fopen(-1, "sedeltat.txt", swed.ephepath, NULL)) == NULL)
-      return TABSIZ; 
-    while(fgets(s, AS_MAXCH, fp) != NULL) {
-      sp = s;
-      while (strchr(" \t", *sp) != NULL && *sp != '\0') 
-        sp++;	/* was *sp++  fixed by Alois 2-jul-2003 */
-      if (*sp == '#' || *sp == '\n')
-        continue;
-      year = atoi(s);
-      tab_index = year - TABSTART;
-      /* table space is limited. no error msg, if exceeded */
-      if (tab_index >= TABSIZ_SPACE)
-        continue; 
-      sp += 4;
-      while (strchr(" \t", *sp) != NULL && *sp != '\0')
-        sp++;	/* was *sp++  fixed by Alois 2-jul-2003 */
-      /*dt[tab_index] = (short) (atof(sp) * 100 + 0.5);*/
-      dt[tab_index] = atof(sp);
-    }
-    fclose(fp);
+FILE *fp;
+int year;
+int tab_index;
+int tabsiz;
+int i;
+char s[AS_MAXCH];
+char *sp;
+if (!swed.init_dt_done) {
+  swed.init_dt_done = TRUE;
+  /* no error message if file is missing */
+  if ((fp = swi_fopen(-1, "swe_deltat.txt", swed.ephepath, NULL)) == NULL
+    && (fp = swi_fopen(-1, "sedeltat.txt", swed.ephepath, NULL)) == NULL)
+    return TABSIZ; 
+  while(fgets(s, AS_MAXCH, fp) != NULL) {
+    sp = s;
+    while (strchr(" \t", *sp) != NULL && *sp != '\0') 
+      sp++;	/* was *sp++  fixed by Alois 2-jul-2003 */
+    if (*sp == '#' || *sp == '\n')
+      continue;
+    year = atoi(s);
+    tab_index = year - TABSTART;
+    /* table space is limited. no error msg, if exceeded */
+    if (tab_index >= TABSIZ_SPACE)
+      continue; 
+    sp += 4;
+    while (strchr(" \t", *sp) != NULL && *sp != '\0')
+      sp++;	/* was *sp++  fixed by Alois 2-jul-2003 */
+    /*dt[tab_index] = (short) (atof(sp) * 100 + 0.5);*/
+    dt[tab_index] = atof(sp);
   }
-  /* find table size */
-  tabsiz = 2001 - TABSTART + 1;
-  for (i = tabsiz - 1; i < TABSIZ_SPACE; i++) {
-    if (dt[i] == 0) 
-      break;
-    else
-      tabsiz++;
-  }
-  tabsiz--;
-  return tabsiz;
+  fclose(fp);
+}
+/* find table size */
+tabsiz = 2001 - TABSTART + 1;
+for (i = tabsiz - 1; i < TABSIZ_SPACE; i++) {
+  if (dt[i] == 0) 
+    break;
+  else
+    tabsiz++;
+}
+tabsiz--;
+return tabsiz;
 }
 
 /* Astronomical Almanac table is corrected by adding the expression
- *     -0.000091 (ndot + 26)(year-1955)^2  seconds
+*     -0.000091 (ndot + 26)(year-1955)^2  seconds
  * to entries prior to 1955 (AA page K8), where ndot is the secular
  * tidal term in the mean motion of the Moon.
  *
  * Entries after 1955 are referred to atomic time standards and
  * are not affected by errors in Lunar or planetary theory.
  */
-static double adjust_for_tidacc(double ans, double Y)
+static double adjust_for_tidacc(double ans, double Y, double tid_acc)
 {
   double B;
   if( Y < 1955.0 ) {
@@ -2434,62 +2474,87 @@ static double adjust_for_tidacc(double ans, double Y)
   return ans;
 }
 
-/* returns tidal acceleration used in swe_deltat() */
+/* returns tidal acceleration used in swe_deltat() and swe_deltat_ex() */
 double FAR PASCAL_CONV swe_get_tid_acc()
 {
-  return tid_acc;
+  return swed.tid_acc;
 }
 
 /* function sets tidal acceleration of the Moon.
  * t_acc can be either
  * - the value of the tidal acceleration in arcsec/cty^2
- * - the DE number of an ephemeris; in this case the tidal acceleration
  *   of the Moon will be set consistent with that ephemeris.
  * - SE_TIDAL_AUTOMATIC, 
  */
 void FAR PASCAL_CONV swe_set_tid_acc(double t_acc)
 {
   if (t_acc == SE_TIDAL_AUTOMATIC) {
-    tid_acc = SE_TIDAL_DEFAULT;
-    is_tid_acc_manual = FALSE;
+    swed.tid_acc = SE_TIDAL_DEFAULT;
+    swed.is_tid_acc_manual = FALSE;
     return;
   }
-  tid_acc = t_acc;
-  is_tid_acc_manual = TRUE;
+  swed.tid_acc = t_acc;
+  swed.is_tid_acc_manual = TRUE;
 }
 
-void swi_set_tid_acc(double tjd_ut, int iflag, int denum)
+int32 swi_guess_ephe_flag()
+{
+  int32 iflag = SEFLG_MOSEPH;
+  /* if jpl file is open, assume SEFLG_JPLEPH */
+  if (swed.jpl_file_is_open) {
+    iflag = SEFLG_JPLEPH;
+  /* if semo* or sepl* file were found already, assume SEFLG_SWIEPH */
+  } else if (*swed.fidat[SEI_FILE_MOON].fnam != '\0' || *swed.fidat[SEI_FILE_PLANET].fnam != '\0') {
+    iflag = SEFLG_SWIEPH;
+  /* if swe_set_ephe_path() has not been called yet, call it now to check the availability
+   * of semo* file. If it is available, assume SEFLG_SWIEPH */
+  } else if (!swed.ephe_path_is_set) {
+    swe_set_ephe_path(NULL);
+    if (*swed.fidat[SEI_FILE_MOON].fnam != '\0')
+      iflag = SEFLG_SWIEPH;
+  /* ... otherwise assume SEFLG_MOSEPH */
+  }
+  return iflag;
+}
+
+int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, double *tid_acc, char *serr)
 {
   double xx[6], tjd_et;
-  int retval = 0;
-  /* manual tid_acc overrides automatic tid_acc */
-  if (is_tid_acc_manual)
-    return;
+  iflag &= SEFLG_EPHMASK;
+  if (swed.is_tid_acc_manual) {
+    *tid_acc = swed.tid_acc;
+    return iflag;
+  }
   if (denum == 0) {
     if (iflag & SEFLG_MOSEPH) {
-      tid_acc = SE_TIDAL_DE404;
-      return;
+      *tid_acc = SE_TIDAL_DE404;
+      *denumret = 404;
+      return iflag;
     }
     if (iflag & SEFLG_JPLEPH) {
       if (swed.jpl_file_is_open) {
 	denum = swed.jpldenum;
       } else {
-	tjd_et = tjd_ut + swe_deltat(tjd_ut);
+	tjd_et = tjd_ut; /* + swe_deltat_ex(tjd_ut, 0, NULL); we do not add 
+	                    delta t, because it would result in a recursive 
+			    call of swi_set_tid_acc() */
 	iflag = SEFLG_JPLEPH|SEFLG_J2000|SEFLG_TRUEPOS|SEFLG_ICRS|SEFLG_BARYCTR;
-	retval = swe_calc(tjd_et, SE_JUPITER, iflag, xx, NULL);
-	if (swed.jpl_file_is_open && (retval & SEFLG_JPLEPH)) {
+	iflag = swe_calc(tjd_et, SE_JUPITER, iflag, xx, serr);
+	if (swed.jpl_file_is_open && (iflag & SEFLG_JPLEPH)) {
 	  denum = swed.jpldenum;
 	}
       }
     }
     /* SEFLG_SWIEPH wanted or SEFLG_JPLEPH failed: */
     if (denum == 0) {
-      tjd_et = tjd_ut + swe_deltat(tjd_ut);
+      tjd_et = tjd_ut; /* + swe_deltat_ex(tjd_ut, 0, NULL); we do not add 
+                          delta t, because it would result in a recursive 
+			  call of swi_set_tid_acc() */
       if (swed.fidat[SEI_FILE_MOON].fptr == NULL ||
           tjd_et < swed.fidat[SEI_FILE_MOON].tfstart + 1 ||
 	  tjd_et > swed.fidat[SEI_FILE_MOON].tfend - 1) {
 	iflag = SEFLG_SWIEPH|SEFLG_J2000|SEFLG_TRUEPOS|SEFLG_ICRS;
-	swe_calc(tjd_et, SE_MOON, iflag, xx, NULL);
+	iflag = swe_calc(tjd_et, SE_MOON, iflag, xx, serr);
       }
       if (swed.fidat[SEI_FILE_MOON].fptr != NULL) {
 	denum = swed.fidat[SEI_FILE_MOON].sweph_denum;
@@ -2500,33 +2565,47 @@ void swi_set_tid_acc(double tjd_ut, int iflag, int denum)
     }
   }
   switch(denum) {
-    case 200: tid_acc = SE_TIDAL_DE200; break;
-    case 403: tid_acc = SE_TIDAL_DE403; break;
-    case 404: tid_acc = SE_TIDAL_DE404; break;
-    case 405: tid_acc = SE_TIDAL_DE405; break;
-    case 406: tid_acc = SE_TIDAL_DE406; break;
-    case 421: tid_acc = SE_TIDAL_DE421; break;
-    case 430: tid_acc = SE_TIDAL_DE430; break;
-    case 431: tid_acc = SE_TIDAL_DE431; break;
-    default: tid_acc = SE_TIDAL_DEFAULT; break;
+    case 200: *tid_acc = SE_TIDAL_DE200; break;
+    case 403: *tid_acc = SE_TIDAL_DE403; break;
+    case 404: *tid_acc = SE_TIDAL_DE404; break;
+    case 405: *tid_acc = SE_TIDAL_DE405; break;
+    case 406: *tid_acc = SE_TIDAL_DE406; break;
+    case 421: *tid_acc = SE_TIDAL_DE421; break;
+    case 422: *tid_acc = SE_TIDAL_DE422; break;
+    case 430: *tid_acc = SE_TIDAL_DE430; break;
+    case 431: *tid_acc = SE_TIDAL_DE431; break;
+    default: denum = SE_DE_NUMBER; *tid_acc = SE_TIDAL_DEFAULT; break;
   }
+  *denumret = denum;
+  iflag &= SEFLG_EPHMASK;
+  return iflag;
+}
+
+int32 swi_set_tid_acc(double tjd_ut, int32 iflag, int32 denum, char *serr)
+{
+  int32 retc = iflag;
+  /* manual tid_acc overrides automatic tid_acc */
+  if (swed.is_tid_acc_manual)
+    return retc;
+  retc = swi_get_tid_acc(tjd_ut, iflag, denum, &(swed.jpldenum), &(swed.tid_acc), serr);
 #if TRACE
   swi_open_trace(NULL);
   if (swi_trace_count < TRACE_COUNT_MAX) {
     if (swi_fp_trace_c != NULL) {
       fputs("\n/*SWE_SET_TID_ACC*/\n", swi_fp_trace_c);
-      fprintf(swi_fp_trace_c, "  t = %.9f;\n", tid_acc);
+      fprintf(swi_fp_trace_c, "  t = %.9f;\n", swed.tid_acc);
       fprintf(swi_fp_trace_c, "  swe_set_tid_acc(t);\n");
       fputs("  printf(\"swe_set_tid_acc: %f\\t\\n\", ", swi_fp_trace_c);
       fputs("t);\n", swi_fp_trace_c);
       fflush(swi_fp_trace_c);
     }
     if (swi_fp_trace_out != NULL) {
-      fprintf(swi_fp_trace_out, "swe_set_tid_acc: %f\t\n", tid_acc);
+      fprintf(swi_fp_trace_out, "swe_set_tid_acc: %f\t\n", swed.tid_acc);
       fflush(swi_fp_trace_out);
     }
   }
 #endif
+  return retc;
 }
 
 /*
@@ -2550,9 +2629,7 @@ static double sidtime_long_term(double tjd_ut, double eps, double nut)
   double dlon, xs[6], xobl[6], dhour, nutlo[2];
   double dlt = AUNIT / CLIGHT / 86400.0;
   double t, t2, t3, t4, t5, t6;
-  eps *= RADTODEG;
-  nut *= RADTODEG;
-  tjd_et = tjd_ut + swe_deltat(tjd_ut);
+  tjd_et = tjd_ut + swe_deltat_ex(tjd_ut, -1, NULL);
   t = (tjd_et - J2000) / 365250.0;
   t2 = t * t; t3 = t * t2; t4 = t * t3; t5 = t * t4; t6 = t * t5;
   /* mean longitude of earth J2000 */
@@ -2562,7 +2639,7 @@ static double sidtime_long_term(double tjd_ut, double eps, double nut)
   xs[0] = dlon * DEGTORAD; xs[1] = 0; xs[2] = 1;
   /* to mean equator J2000, cartesian */
   xobl[0] = 23.45; xobl[1] = 23.45;
-  xobl[1] = swi_epsiln(J2000 + swe_deltat(J2000), 0) * RADTODEG;
+  xobl[1] = swi_epsiln(J2000 + swe_deltat_ex(J2000, -1, NULL), 0) * RADTODEG;
   swi_polcart(xs, xs);
   swi_coortrf(xs, xs, -xobl[1] * DEGTORAD);
   /* precess to mean equinox of date */
@@ -2717,10 +2794,8 @@ static double sidtime_non_polynomial_part(double tt)
 /* sidtime_long_term() is not used between the following two dates */
 #define SIDT_LTERM_T0  2396758.5  /* 1 Jan 1850  */
 #define SIDT_LTERM_T1  2469807.5  /* 1 Jan 2050  */
-//#define SIDT_LTERM_OFS0   (0.09081674334 / 3600)
-//#define SIDT_LTERM_OFS1   (0.337962821868 / 3600)
-#define SIDT_LTERM_OFS0   ( 0.032828635 / 15.0)
-#define SIDT_LTERM_OFS1   (-0.065393299 / 15.0)
+#define SIDT_LTERM_OFS0   (0.000378172 / 15.0)
+#define SIDT_LTERM_OFS1   (0.001385646 / 15.0)
 double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
 {
   double jd0;    	/* Julian day at midnight Universal Time */
@@ -2731,6 +2806,7 @@ double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
   int sidt_model = swed.astro_models[SE_MODEL_SIDT];
   if (prec_model_short == 0) prec_model_short = SEMOD_PREC_DEFAULT_SHORT;
   if (sidt_model == 0) sidt_model = SEMOD_SIDT_DEFAULT;
+  swi_init_swed_if_start();
   if (1 && sidt_model == SEMOD_SIDT_LONGTERM) {
     if (tjd <= SIDT_LTERM_T0 || tjd >= SIDT_LTERM_T1) {
       gmst = sidtime_long_term(tjd, eps, nut);
@@ -2756,11 +2832,11 @@ double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
   }
   secs *= 86400.0;
   tu = (jd0 - J2000)/36525.0; /* UT1 in centuries after J2000 */
-  if (sidt_model == SEMOD_SIDT_IERS_CONV_2010) {
+  if (sidt_model == SEMOD_SIDT_IERS_CONV_2010 || sidt_model == SEMOD_SIDT_LONGTERM) {
     /*  ERA-based expression for for Greenwich Sidereal Time (GST) based 
      *  on the IAU 2006 precession */
     jdrel = tjd - J2000;
-    tt = (tjd + swe_deltat(tjd) - J2000) / 36525.0;
+    tt = (tjd + swe_deltat_ex(tjd, -1, NULL) - J2000) / 36525.0;
     gmst = swe_degnorm((0.7790572732640 + 1.00273781191135448 * jdrel) * 360);
     gmst += (0.014506 + tt * (4612.156534 +  tt * (1.3915817 + tt * (-0.00000044 + tt * (-0.000029956 + tt * -0.0000000368))))) / 3600.0;
     dadd = sidtime_non_polynomial_part(tt);
@@ -2769,12 +2845,13 @@ double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
     gmst = gmst / 15.0 * 3600.0;
   /* sidt_model == SEMOD_SIDT_PREC_MODEL, older standards according to precession model */
   } else if (prec_model_short >= SEMOD_PREC_IAU_2006) {
-    tt = (jd0 + swe_deltat(jd0) - J2000)/36525.0; /* TT in centuries after J2000 */
+    tt = (jd0 + swe_deltat_ex(jd0, -1, NULL) - J2000)/36525.0; /* TT in centuries after J2000 */
     gmst = (((-0.000000002454*tt - 0.00000199708)*tt - 0.0000002926)*tt + 0.092772110)*tt*tt + 307.4771013*(tt-tu) + 8640184.79447825*tu + 24110.5493771;
     /* mean solar days per sidereal day at date tu;
      * for the derivative of gmst, we can assume UT1 =~ TT */
     msday = 1 + ((((-0.000000012270*tt - 0.00000798832)*tt - 0.0000008778)*tt + 0.185544220)*tt + 8640184.79447825)/(86400.*36525.);
     gmst += msday * secs;
+  /* SEMOD_SIDT_IAU_1976 */
   } else {  /* IAU 1976 formula */
       /* Greenwich Mean Sidereal Time at 0h UT of date */
     gmst = (( -6.2e-6*tu + 9.3104e-2)*tu + 8640184.812866)*tu + 24110.54841;
@@ -2821,7 +2898,10 @@ double FAR PASCAL_CONV swe_sidtime(double tjd_ut)
 {
   int i;
   double eps, nutlo[2], tsid;
-  double tjde = tjd_ut + swe_deltat(tjd_ut);
+  double tjde;
+  /* delta t adjusted to default tidal acceleration of the moon */
+  tjde = tjd_ut + swe_deltat_ex(tjd_ut, -1, NULL); 
+  swi_init_swed_if_start();
   eps = swi_epsiln(tjde, 0) * RADTODEG;
   swi_nutation(tjde, 0, nutlo);
   for (i = 0; i < 2; i++)
@@ -3282,6 +3362,7 @@ void swi_FK5_FK4(double *xp, double tjd)
 void FAR PASCAL_CONV swe_set_astro_models(int32 *imodel)
 {
   int *pmodel = &(swed.astro_models[0]);
+  swi_init_swed_if_start();
   memcpy(pmodel, imodel, SEI_NMODELS * sizeof(int32));
 }
 

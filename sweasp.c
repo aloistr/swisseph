@@ -318,7 +318,7 @@ static char *hms(double x, long iflag);
 #define NPLX	30
 
 #ifdef _WINDOWS
-int PASCAL WinMain(HANDLE hInstance, HANDLE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int WinMain(HANDLE hInstance, HANDLE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 #else
 int main(int argc, char *argv[])
 #endif

@@ -1,10 +1,9 @@
 /* SWISSEPH
-   $Header: /home/dieter/sweph/RCS/swemptab.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
+   $Header: /home/dieter/sweph/RCS/swemptab.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
 
    ATTENTION: this source file is not to be compiled separately,
    as it is #included by swemplan
-
-**************************************************************/
+ */
 /* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
   
   License conditions
@@ -76,7 +75,7 @@ Days per record = 4.0
   2500.0 to   3000.0:   0.42   0.13   0.16 
   3000.0 to   3000.8:  0.252  0.087  0.115 
 */
-static double FAR mertabl[] = {
+static double mertabl[] = {
           35.85255,        -163.26379, 53810162857.56026,      908082.18475,
 
            0.05214,          -0.07712,
@@ -363,7 +362,7 @@ static double FAR mertabl[] = {
           -0.00013,          -0.00986,
 
 };
-static double FAR mertabb[] = {
+static double mertabb[] = {
           68.33369,         422.77623,       -2057.26405,       -2522.29068,
 
           -0.00030,          -0.00009,
@@ -650,7 +649,7 @@ static double FAR mertabb[] = {
           -0.01665,          -0.00199,
 
 };
-static double FAR mertabr[] = {
+static double mertabr[] = {
           -8.30490,         -11.68232,          86.54880,        4361.05018,
 
            0.00002,          -0.00001,
@@ -938,7 +937,7 @@ static double FAR mertabr[] = {
 
 };
 
-static signed char FAR merargs[] = {
+static signed char merargs[] = {
   0,  3,
   3,  1,  1,-10,  3, 11,  4,  0,
   2,  2,  5, -5,  6,  2,
@@ -1072,7 +1071,7 @@ static signed char FAR merargs[] = {
  -1
 };
 /* Total terms = 130, small = 128 */
-static struct plantbl FAR mer404 = {
+static struct plantbl mer404 = {
   { 11, 14, 10, 11,  4,  5,  2,  0,  0,},
  6,
  merargs,
@@ -1100,7 +1099,7 @@ Days per record = 4.0
   2500.0 to   3000.0:   0.30   0.15   0.10 
   3000.0 to   3000.8:  0.116  0.062  0.058 
 */
-static double FAR ventabl[] = {
+static double ventabl[] = {
            9.08078,          55.42416, 21066413644.98911,      655127.20186,
 
            0.00329,           0.10408,
@@ -1328,7 +1327,7 @@ static double FAR ventabl[] = {
           -0.00004,           0.00645,
 
 };
-static double FAR ventabb[] = {
+static double ventabb[] = {
          -23.91858,          31.44154,          25.93273,         -67.68643,
 
           -0.00171,           0.00123,
@@ -1556,7 +1555,7 @@ static double FAR ventabb[] = {
            0.00002,           0.00020,
 
 };
-static double FAR ventabr[] = {
+static double ventabr[] = {
           -0.24459,           3.72698,          -6.67281,           5.24378,
 
            0.00030,           0.00003,
@@ -1785,7 +1784,7 @@ static double FAR ventabr[] = {
 
 };
 
-static signed char FAR venargs[] = {
+static signed char venargs[] = {
   0,  3,
   2,  2,  5, -5,  6,  0,
   3,  2,  2,  1,  3, -8,  4,  0,
@@ -1897,7 +1896,7 @@ static signed char FAR venargs[] = {
  -1
 };
 /* Total terms = 108, small = 107 */
-static struct plantbl FAR ven404 = {
+static struct plantbl ven404 = {
   {  5, 14, 13,  8,  4,  5,  1,  0,  0,},
  5,
  venargs,
@@ -1924,7 +1923,7 @@ Days per record = 6.0
   3000.0 to   3000.8:  0.074  0.048  0.044 
 */
 
-static double FAR eartabl[] = {
+static double eartabl[] = {
          -65.54655,        -232.74963, 12959774227.57587,      361678.59587,
 
            2.52679,          -4.93511,           2.46852,          -8.88928,
@@ -2216,7 +2215,7 @@ static double FAR eartabl[] = {
            0.00002,          -0.00623,
 
 };
-static double FAR eartabb[] = {
+static double eartabb[] = {
          -41.97860,         -48.43539,          74.72897,           0.00075,
 
           -0.12774,          -0.10188,          -0.00943,          -0.04574,
@@ -2508,7 +2507,7 @@ static double FAR eartabb[] = {
            0.00025,           0.00021,
 
 };
-static double FAR eartabr[] = {
+static double eartabr[] = {
            0.64577,          -2.90183,         -14.50280,          28.85196,
 
            0.08672,          -0.05643,           0.02353,          -0.00404,
@@ -2801,7 +2800,7 @@ static double FAR eartabr[] = {
 
 };
 
-static signed char FAR earargs[] = {
+static signed char earargs[] = {
   0,  3,
   3,  4,  3, -8,  4,  3,  5,  2,
   2,  2,  5, -5,  6,  1,
@@ -2940,7 +2939,7 @@ static signed char FAR earargs[] = {
  -1
 };
 /* Total terms = 135, small = 134 */
-static struct plantbl FAR ear404 = {
+static struct plantbl ear404 = {
   {  1,  9, 14, 17,  5,  5,  2,  1,  0,},
  4,
  earargs,
@@ -2967,7 +2966,7 @@ Days per record = 4.0
   3000.0 to   3000.8:  0.182  0.125  0.087 
 */
 
-static double FAR martabl[] = {
+static double martabl[] = {
        43471.66140,       21291.11063,        2033.37848,  6890507597.78366,
      1279543.73631,
 
@@ -3409,7 +3408,7 @@ static double FAR martabl[] = {
           -0.00723,          -0.01536,
 
 };
-static double FAR martabb[] = {
+static double martabb[] = {
         -364.49380,         -47.17612,        -554.97858,        -430.63121,
          596.44312,
 
@@ -3851,7 +3850,7 @@ static double FAR martabb[] = {
            0.00826,          -0.00524,
 
 };
-static double FAR martabr[] = {
+static double martabr[] = {
         -816.07287,        -381.41365,         -33.69436,         177.22955,
            0.18630,
 
@@ -4294,7 +4293,7 @@ static double FAR martabr[] = {
 
 };
 
-static signed char FAR marargs[] = {
+static signed char marargs[] = {
   0,  4,
   3,  4,  3, -8,  4,  3,  5,  2,
   3,  5,  2, -6,  3, -4,  4,  0,
@@ -4499,7 +4498,7 @@ static signed char FAR marargs[] = {
  -1
 };
 /* Total terms = 201, small = 199 */
-static struct plantbl FAR mar404 = {
+static struct plantbl mar404 = {
   {  0,  5, 12, 24,  9,  7,  3,  2,  0,},
  5,
  marargs,
@@ -4528,7 +4527,7 @@ Days per record = 131.0
   2500.0 to   3000.0:   0.70   0.09   0.36 
   3000.0 to   3000.4:  0.526  0.023  0.190 
 */
-static double FAR juptabl[] = {
+static double juptabl[] = {
       153429.13855,      130818.16897,       18120.42948,       -8463.12663,
        -5058.91447,  1092566021.02148,      123671.25097,
 
@@ -4874,7 +4873,7 @@ static double FAR juptabl[] = {
            0.00011,           0.12033,
 
 };
-static double FAR juptabb[] = {
+static double juptabb[] = {
          548.59659,         594.29629,         219.97664,          59.71822,
           23.62157,          40.77732,         227.07380,
 
@@ -5220,7 +5219,7 @@ static double FAR juptabb[] = {
           -0.00006,           0.00001,
 
 };
-static double FAR juptabr[] = {
+static double juptabr[] = {
         -734.58857,       -1081.04460,        -551.65750,        -148.79782,
          -25.23171,         164.64781,         248.64813,
 
@@ -5567,7 +5566,7 @@ static double FAR juptabr[] = {
 
 };
 
-static signed char FAR jupargs[] = {
+static signed char jupargs[] = {
   0,  6,
   3,  2,  5, -6,  6,  3,  7,  0,
   2,  2,  5, -5,  6,  6,
@@ -5713,7 +5712,7 @@ static signed char FAR jupargs[] = {
  -1
 };
 /* Total terms = 142, small = 140 */
-static struct plantbl FAR jup404 = {
+static struct plantbl jup404 = {
   {  0,  0,  1,  0,  9, 16,  7,  5,  0,},
  6,
  jupargs,
@@ -5742,7 +5741,7 @@ Days per record = 131.0
   2500.0 to   3000.0:   0.63   0.22   0.53 
   3000.0 to   3000.4:  0.047  0.073  0.086 
 */
-static double FAR sattabl[] = {
+static double sattabl[] = {
      1788381.26240,     2460423.68044,     1370113.15868,      415406.99187,
        72040.39885,       12669.58806,   439960754.85333,      180256.80433,
 
@@ -6231,7 +6230,7 @@ static double FAR sattabl[] = {
           -0.00010,           0.06547,
 
 };
-static double FAR sattabb[] = {
+static double sattabb[] = {
      -567865.62548,     -796277.29029,     -410804.00791,      -91793.12562,
        -6268.13975,         398.64391,        -710.67442,         175.29456,
 
@@ -6720,7 +6719,7 @@ static double FAR sattabb[] = {
           -0.00003,          -0.00013,
 
 };
-static double FAR sattabr[] = {
+static double sattabr[] = {
       -38127.94034,      -48221.08524,      -20986.93487,       -3422.75861,
           -8.97362,          53.34259,        -404.15708,          -0.05434,
 
@@ -7210,7 +7209,7 @@ static double FAR sattabr[] = {
 
 };
 
-static signed char FAR satargs[] = {
+static signed char satargs[] = {
   0,  7,
   3,  2,  5, -6,  6,  3,  7,  0,
   2,  2,  5, -5,  6,  5,
@@ -7429,7 +7428,7 @@ static signed char FAR satargs[] = {
  -1
 };
 /* Total terms = 215, small = 211 */
-static struct plantbl FAR sat404 = {
+static struct plantbl sat404 = {
   {  0,  0,  1,  0,  8, 18,  9,  5,  0,},
  7,
  satargs,
@@ -7458,7 +7457,7 @@ Days per record = 131.0
   2500.0 to   3000.0:   0.34   0.06   0.32 
   3000.0 to   3000.4:  0.406  0.035  0.172 
 */
-static double FAR uratabl[] = {
+static double uratabl[] = {
           21.56000,       -4652.06828,   154246324.90417,     1130486.05080,
 
          330.11531,       -3020.20235,
@@ -7842,7 +7841,7 @@ static double FAR uratabl[] = {
           -0.01517,           0.03748,
 
 };
-static double FAR uratabb[] = {
+static double uratabb[] = {
            0.00000,         107.91527,          83.39404,        -124.29804,
 
           -7.73277,          -3.99442,
@@ -8226,7 +8225,7 @@ static double FAR uratabb[] = {
            0.00005,           0.00003,
 
 };
-static double FAR  uratabr[] = {
+static double uratabr[] = {
            0.00000,         -53.23277,         -44.70609,         -62.54432,
 
          -19.15218,           0.10867,
@@ -8611,7 +8610,7 @@ static double FAR  uratabr[] = {
 
 };
 
-static signed char FAR uraargs[] = {
+static signed char uraargs[] = {
   0,  3,
   2,  1,  7, -2,  8,  0,
   2,  2,  7, -4,  8,  0,
@@ -8792,7 +8791,7 @@ static signed char FAR uraargs[] = {
  -1
 };
 /* Total terms = 177, small = 171 */
-static struct plantbl FAR ura404 = {
+static struct plantbl ura404 = {
   {  0,  0,  0,  0,  5, 10,  9, 12,  0,},
  6,
  uraargs,
@@ -8821,7 +8820,7 @@ Days per record = 131.0
   2500.0 to   3000.0:   0.43   0.25   0.46 
   3000.0 to   3000.4:  0.122  0.071  0.260 
 */
-static double FAR neptabl[] = {
+static double neptabl[] = {
        -1376.86480,         730.38970,    78655362.50948,     1095691.38676,
 
         -196.19023,        2086.77782,
@@ -8943,7 +8942,7 @@ static double FAR neptabl[] = {
           -0.28141,           0.25061,          -0.20293,           0.79930,
 
 };
-static double FAR neptabb[] = {
+static double neptabb[] = {
         -391.05987,        -243.95958,         -23.83558,          58.13857,
 
            5.04859,          -3.93183,
@@ -9065,7 +9064,7 @@ static double FAR neptabb[] = {
            0.00106,           0.00025,           0.00013,          -0.00019,
 
 };
-static double FAR neptabr[] = {
+static double neptabr[] = {
         -767.68936,        -460.59576,         -52.41861,        -273.85897,
 
           59.52489,           1.85006,
@@ -9188,7 +9187,7 @@ static double FAR neptabr[] = {
 
 };
 
-static signed char FAR nepargs[] = {
+static signed char nepargs[] = {
   0,  3,
   2,  1,  7, -2,  8,  0,
   3,  3,  5, -8,  6,  3,  8,  0,
@@ -9251,7 +9250,7 @@ static signed char FAR nepargs[] = {
  -1
 };
 /* Total terms = 59, small = 58 */
-static struct plantbl FAR nep404 = {
+static struct plantbl nep404 = {
   {  0,  0,  0,  0,  3,  8,  7,  9,  0,},
  3,
  nepargs,
@@ -9280,7 +9279,7 @@ Days per record = 131.0
   2500.0 to   3000.0:   1.09   0.70   0.46 
   3000.0 to   3000.4:  0.871  0.395  0.051 
 */
-static double FAR plutabl[] = {
+static double plutabl[] = {
     74986469.33577,   100898343.73690,    48199471.54076,     9520076.03177,
       690431.67340,     -427355.12716,    52266623.77862,      860190.70714,
 
@@ -9671,7 +9670,7 @@ static double FAR plutabl[] = {
           -0.06243,           0.04306,
 
 };
-static double FAR plutabb[] = {
+static double plutabb[] = {
    -35042727.30412,   -49049197.81293,   -25374963.60995,    -5761406.03035,
      -467370.57540,       14040.11453,        2329.15763,      -13978.69390,
 
@@ -10062,7 +10061,7 @@ static double FAR plutabb[] = {
            0.05985,           0.04130,
 
 };
-static double FAR plutabr[] = {
+static double plutabr[] = {
     17990649.12487,    24806479.30874,    12690953.00645,     2892671.69562,
       249947.71316,       -5138.71425,        1142.68629,        6075.25751,
 
@@ -10454,7 +10453,7 @@ static double FAR plutabr[] = {
 
 };
 
-static signed char FAR pluargs[] = {
+static signed char pluargs[] = {
   0,  7,
   2,  3,  7, -9,  9,  0,
   2,  4,  7,-12,  9,  0,
@@ -10631,7 +10630,7 @@ static signed char FAR pluargs[] = {
  -1
 };
 /* Total terms = 173, small = 156 */
-static struct plantbl FAR plu404 = {
+static struct plantbl plu404 = {
   {  0,  0,  0,  0,  2,  2,  9, 13, 13,},
  7,
  pluargs,

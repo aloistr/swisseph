@@ -187,7 +187,7 @@ static void mean_elements(void);
 static void mean_elements_pl(void);
 static double mods3600(double x);
 static void ecldat_equ2000(double tjd, double *xpm);
-static void chewm(short *pt, int nlines, int nangles, 
+static void chewm(const short *pt, int nlines, int nangles, 
   				     int typflg, double *ans );
 static void sscc(int k, double arg, int n );
 static void moon1(void);
@@ -203,7 +203,7 @@ static void moon4(void);
  * See references to the array z[] later on in the program.
  * The 71 coefficients were estimated from 42,529 Lunar positions.
  */
-static double z[] = {
+static const double z[] = {
 -1.225346551567e+001, /* F, t^2 */
 -1.096676093208e-003, /* F, t^3 */
 -2.165750777942e-006, /* F, t^4 */
@@ -282,7 +282,7 @@ static double z[] = {
  * interval from -3000 to +3000.
  * The coefficients were estimated from 34,247 Lunar positions.
  */
-static double FAR z[] = {
+static const double z[] = {
 /* The following are scaled in arc seconds, time in Julian centuries.
    They replace the corresponding terms in the mean elements.  */
 -1.312045233711e+01, /* F, t^2 */
@@ -317,7 +317,7 @@ static double FAR z[] = {
 /* Perturbation tables
  */
 #define NLR 118
-static short FAR LR[8*NLR] = {
+static const short LR[8*NLR] = {
 /*
                Longitude    Radius
  D  l' l  F    1"  .0001"  1km  .0001km */
@@ -445,7 +445,7 @@ static short FAR LR[8*NLR] = {
 
 #ifdef MOSH_MOON_200
 #define NMB 56
-static short FAR MB[6*NMB] = {
+static const short MB[6*NMB] = {
 /*
                Latitude
  D  l' l  F    1"  .0001" */
@@ -509,7 +509,7 @@ static short FAR MB[6*NMB] = {
 };
 #else
 #define NMB 77
-static short FAR MB[6*NMB] = {
+static const short MB[6*NMB] = {
 /*
                Latitude
  D  l' l  F    1"  .0001" */
@@ -595,7 +595,7 @@ static short FAR MB[6*NMB] = {
 #endif	/* ! MOSH_MOON_200 */
 
 #define NLRT 38
-static short FAR LRT[8*NLRT] = {
+static const short LRT[8*NLRT] = {
 /*
 Multiply by T
                Longitude    Radius
@@ -642,7 +642,7 @@ Multiply by T
 };
 
 #define NBT 16
-static short FAR BT[5*NBT] = {
+static const short BT[5*NBT] = {
 /*
 Multiply by T
              Latitude
@@ -667,7 +667,7 @@ Multiply by T
 };
 
 #define NLRT2 25
-static short FAR LRT2[6*NLRT2] = {
+static const short LRT2[6*NLRT2] = {
 /*
 Multiply by T^2
            Longitude    Radius
@@ -701,7 +701,7 @@ Multiply by T^2
 };
 
 #define NBT2 12
-static short FAR BT2[5*NBT2] = {
+static const short BT2[5*NBT2] = {
 /*
 Multiply by T^2
            Latitiude
@@ -723,7 +723,7 @@ Multiply by T^2
 
 /* corrections for mean lunar node in degrees, from -13100 to 17200,
  * in 100-year steps. corrections are set to 0 between the years 0 and 3000 */
-static double mean_node_corr[] = {
+static const double mean_node_corr[] = {
 -2.56,
 -2.473, -2.392347, -2.316425, -2.239639, -2.167764, -2.095100, -2.024810, -1.957622, -1.890097, -1.826389,
 -1.763335, -1.701047, -1.643016, -1.584186, -1.527309, -1.473352, -1.418917, -1.367736, -1.317202, -1.267269,
@@ -765,7 +765,7 @@ static double mean_node_corr[] = {
 
 /* corrections for mean lunar apsides in degrees, from -13100 to 17200,
  * in 100-year steps. corrections are set to 0 between the years 0 and 3000 */
-static double mean_apsis_corr[] = {
+static const double mean_apsis_corr[] = {
 7.525,
 7.290, 7.057295, 6.830813, 6.611723, 6.396775, 6.189569, 5.985968, 5.788342, 5.597304, 5.410167,
 5.229946, 5.053389, 4.882187, 4.716494, 4.553532, 4.396734, 4.243718, 4.094282, 3.950865, 3.810366,
@@ -809,39 +809,39 @@ static double mean_apsis_corr[] = {
  * to the same instant.  The distinction between them
  * is required by altaz().
  */
-static double FAR ss[5][8]; 
-static double FAR cc[5][8];
+static TLS double ss[5][8]; 
+static TLS double cc[5][8];
 
-static double l;		/* Moon's ecliptic longitude */
-static double B;		/* Ecliptic latitude */
+static TLS double l;		/* Moon's ecliptic longitude */
+static TLS double B;		/* Ecliptic latitude */
 
-static double moonpol[3];
+static TLS double moonpol[3];
 
 /* Orbit calculation begins.
  */
-static double SWELP;
-static double M;
-static double MP;
-static double D;
-static double NF;
-static double T;
-static double T2;
+static TLS double SWELP;
+static TLS double M;
+static TLS double MP;
+static TLS double D;
+static TLS double NF;
+static TLS double T;
+static TLS double T2;
 
-static double T3;
-static double T4;
-static double f;
-static double g;
-static double Ve;
-static double Ea;
-static double Ma;
-static double Ju;
-static double Sa;
-static double cg;
-static double sg;
-static double l1;
-static double l2;
-static double l3;
-static double l4;
+static TLS double T3;
+static TLS double T4;
+static TLS double f;
+static TLS double g;
+static TLS double Ve;
+static TLS double Ea;
+static TLS double Ma;
+static TLS double Ju;
+static TLS double Sa;
+static TLS double cg;
+static TLS double sg;
+static TLS double l1;
+static TLS double l2;
+static TLS double l3;
+static TLS double l4;
 
 /* Calculate geometric coordinates of Moon
  * without light time or nutation correction.
@@ -1626,7 +1626,7 @@ int swi_mean_apog(double J, double *pol, char *serr)
 
 /* Program to step through the perturbation table
  */
-static void chewm(short *pt, int nlines, int nangles, int typflg, double *ans )
+static void chewm(const short *pt, int nlines, int nangles, int typflg, double *ans )
 {
   int i, j, k, k1, m;
   double cu, su, cv, sv, ff;

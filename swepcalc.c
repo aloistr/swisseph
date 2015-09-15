@@ -80,13 +80,13 @@ Placalc compatibility interface for Swiss Ephemeris.
 local globals, not exported 
 ************************************************************/
 
-static int plac2swe[] = {SE_SUN, SE_MOON, SE_MERCURY, SE_VENUS, SE_MARS, SE_JUPITER, SE_SATURN, SE_URANUS, SE_NEPTUNE, SE_PLUTO, SE_MEAN_NODE, SE_TRUE_NODE, SE_CHIRON, SE_MEAN_APOG, SE_CERES, SE_PALLAS, SE_JUNO, SE_VESTA,};
+static const int plac2swe[] = {SE_SUN, SE_MOON, SE_MERCURY, SE_VENUS, SE_MARS, SE_JUPITER, SE_SATURN, SE_URANUS, SE_NEPTUNE, SE_PLUTO, SE_MEAN_NODE, SE_TRUE_NODE, SE_CHIRON, SE_MEAN_APOG, SE_CERES, SE_PALLAS, SE_JUNO, SE_VESTA,};
 
 /* If there occurs an internal error in placalc, a message is 
  * written into the string variable perrtx.
  * The message can be read with placalc_get_errtext();
  */
-static char perrtx[AS_MAXCH];
+static TLS char perrtx[AS_MAXCH];
 static double ekl, nut;
 
 /*
@@ -94,7 +94,7 @@ static double ekl, nut;
  * required for relative distances rgeo, where the distance is given
  * as 100 when a planet is closest and as 0 when farthest from earth.
  */
-static double rmima[CALC_N][2] = {	
+static const double rmima[CALC_N][2] = {	
 	{ 0.98296342,  1.01704665},
 	{ 0.00238267,  0.00271861},
 	{ 0.54900496,  1.45169607},
@@ -497,7 +497,7 @@ char *planet2abbr3(int planet)
 
 char *placalc_set_ephepath(char *path)
 {
-  static char *epath;
+  static TLS char *epath;
   if (path == NULL) return epath;
   if (epath != NULL)
     free((void *) epath);

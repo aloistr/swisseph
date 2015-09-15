@@ -86,10 +86,10 @@
 # include "swephexp.h"
 # include "sweph.h"
 
-static AS_BOOL init_leapseconds_done = FALSE;
+static TLS AS_BOOL init_leapseconds_done = FALSE;
 
 
-int FAR PASCAL_CONV swe_date_conversion(int y,
+int swe_date_conversion(int y,
 		     int m,
 		     int d,		/* day, month, year */
 		     double uttime, 	/* UT in hours (decimal) */
@@ -161,7 +161,7 @@ int FAR PASCAL_CONV swe_date_conversion(int y,
 		    and notifies errors like 32 January.
  ****************************************************************/
 
-double FAR PASCAL_CONV swe_julday(int year, int month, int day, double hour, int gregflag) 
+double swe_julday(int year, int month, int day, double hour, int gregflag) 
 {
   double jd;
   double u,u0,u1,u2;
@@ -202,7 +202,7 @@ double FAR PASCAL_CONV swe_julday(int year, int month, int day, double hour, int
   Original author Mark Pottenger, Los Angeles.
   with bug fix for year < -4711 16-aug-88 Alois Treindl
 *************************************************************************/
-void FAR PASCAL_CONV swe_revjul (double jd, int gregflag,
+void swe_revjul (double jd, int gregflag,
 	     int *jyear, int *jmon, int *jday, double *jut)
 {
   double u0,u1,u2,u3,u4;
@@ -236,7 +236,7 @@ void FAR PASCAL_CONV swe_revjul (double jd, int gregflag,
  * For conversion from local time to utc, use +d_timezone.
  * For conversion from utc to local time, use -d_timezone.
  */
-void FAR PASCAL_CONV swe_utc_time_zone(
+void swe_utc_time_zone(
         int32 iyear, int32 imonth, int32 iday,
         int32 ihour, int32 imin, double dsec,
         double d_timezone,
@@ -278,7 +278,7 @@ void FAR PASCAL_CONV swe_utc_time_zone(
 /* Leap seconds were inserted at the end of the following days:*/
 #define NLEAP_SECONDS 26
 #define NLEAP_SECONDS_SPACE 100
-static int leap_seconds[NLEAP_SECONDS_SPACE] = {
+static TLS int leap_seconds[NLEAP_SECONDS_SPACE] = {
 19720630,
 19721231,
 19731231,
@@ -376,7 +376,7 @@ static int init_leapsec(void)
  *   the leap seconds table (or the Swiss Ephemeris version) is not updated
  *   for a long time.
 */
-int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32 ihour, int32 imin, double dsec, int32 gregflag, double *dret, char *serr)
+int32 swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32 ihour, int32 imin, double dsec, int32 gregflag, double *dret, char *serr)
 {
   double tjd_ut1, tjd_et, tjd_et_1972, dhour, d;
   int iyear2, imonth2, iday2;
@@ -487,7 +487,7 @@ int32 FAR PASCAL_CONV swe_utc_to_jd(int32 iyear, int32 imonth, int32 iday, int32
  *   the leap seconds table (or the Swiss Ephemeris version) has not been
  *   updated for a long time.
  */
-void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
+void swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
 {
   int i;
   int second_60 = 0;
@@ -584,7 +584,7 @@ void FAR PASCAL_CONV swe_jdet_to_utc(double tjd_et, int32 gregflag, int32 *iyear
  *   the leap seconds table (or the Swiss Ephemeris version) has not been
  *   updated for a long time.
  */
-void FAR PASCAL_CONV swe_jdut1_to_utc(double tjd_ut, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
+void swe_jdut1_to_utc(double tjd_ut, int32 gregflag, int32 *iyear, int32 *imonth, int32 *iday, int32 *ihour, int32 *imin, double *dsec) 
 {
   double tjd_et = tjd_ut + swe_deltat_ex(tjd_ut, -1, NULL);
   swe_jdet_to_utc(tjd_et, gregflag, iyear, imonth, iday, ihour, imin, dsec);

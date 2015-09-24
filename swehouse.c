@@ -112,7 +112,7 @@ static int sidereal_houses_ssypl(double tjde,
  * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
  * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
  */
-int FAR PASCAL_CONV swe_houses(double tjd_ut,
+int swe_houses(double tjd_ut,
 				double geolat,
 				double geolon,
 				int hsys,
@@ -162,7 +162,7 @@ int FAR PASCAL_CONV swe_houses(double tjd_ut,
  * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
  * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
  */
-int FAR PASCAL_CONV swe_houses_ex(double tjd_ut,
+int swe_houses_ex(double tjd_ut,
                                 int32 iflag, 
 				double geolat,
 				double geolon,
@@ -497,7 +497,7 @@ static int sidereal_houses_trad(double tjde,
  * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
  * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
  */
-int FAR PASCAL_CONV swe_houses_armc(
+int swe_houses_armc(
 				double armc,
 				double geolat,
 				double eps,
@@ -556,7 +556,7 @@ int FAR PASCAL_CONV swe_houses_armc(
       fprintf(swi_fp_trace_out, "swe_houses_armc: %f\t%f\t%f\t%c\t\n", armc, geolat, eps, hsys);
       fprintf(swi_fp_trace_out, "retc = %d\n", retc);
       fputs("cusp:\n", swi_fp_trace_out);
-      for (i = 0; i < 12; i++)
+      for (i = 1; i <= 12; i++)
 	fprintf(swi_fp_trace_out, "  %d\t%f\n", i, cusp[i]);
       fputs("ascmc:\n", swi_fp_trace_out);
       for (i = 0; i < 10; i++)
@@ -617,7 +617,7 @@ static double apc_sector(int n, double ph, double e, double az)
    return dret;
 }
 
-char *FAR PASCAL_CONV swe_house_name(int hsys)
+char *swe_house_name(int hsys)
 {
   switch (toupper(hsys)) {
   case 'A': return "equal";
@@ -1376,7 +1376,7 @@ static double Asc2 (double x, double f, double sine, double cose)
  *   equal, Porphyry, Alcabitius, Koch, Krusinski (all others should work).
  * The Swiss Ephemeris currently does not handle these cases.
  */
-double FAR PASCAL_CONV swe_house_pos(
+double swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr)
 {
   double xp[6], xeq[6], ra, de, mdd, mdn, sad, san;

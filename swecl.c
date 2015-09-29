@@ -72,7 +72,7 @@ static int find_zero(double y00, double y11, double y2, double dx,
 			double *dxret, double *dxret2);
 static double calc_dip(double geoalt, double atpress, double attemp, double lapse_rate);
 static double calc_astronomical_refr(double geoalt,double atpress, double attemp);
-static double const_lapse_rate = SE_LAPSE_RATE;  /* for refraction */
+static TLS double const_lapse_rate = SE_LAPSE_RATE;  /* for refraction */
 
 #if 0
 #define DSUN 	(1391978489.9 / AUNIT)	/* this value is consistent with
@@ -549,7 +549,7 @@ struct saros_data saros_data_lunar[NSAROS_LUNAR] = {
  * attr[7]	angular distance of moon from sun in degrees
  *         declare as attr[20] at least !
  */
-int32 FAR PASCAL_CONV swe_sol_eclipse_where(
+int32 swe_sol_eclipse_where(
 		double tjd_ut, 
                 int32 ifl,
 		double *geopos, 
@@ -568,7 +568,7 @@ int32 FAR PASCAL_CONV swe_sol_eclipse_where(
   return retflag;
 }
 
-int32 FAR PASCAL_CONV swe_lun_occult_where(
+int32 swe_lun_occult_where(
 		double tjd_ut, 
                 int32 ipl,
                 char *starname,
@@ -896,7 +896,7 @@ static int32 calc_planet_star(double tjd_et, int32 ipl, char *starname, int32 if
  *         declare as attr[20] at least !
  * 
  */
-int32 FAR PASCAL_CONV swe_sol_eclipse_how(
+int32 swe_sol_eclipse_how(
           double tjd_ut, 
           int32 ifl,
           double *geopos,
@@ -1148,7 +1148,7 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
  *         declare as tret[10] at least!
  *
  */
-int32 FAR PASCAL_CONV swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype,
+int32 swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype,
      double *tret, int32 backward, char *serr)
 {
   int i, j, k, m, n, o, i1 = 0, i2 = 0;
@@ -1535,7 +1535,7 @@ end_search_global:
  *         declare as tret[10] at least!
  *
  */
-int32 FAR PASCAL_CONV swe_lun_occult_when_glob(
+int32 swe_lun_occult_when_glob(
      double tjd_start, int32 ipl, char *starname, int32 ifl, int32 ifltype,
      double *tret, int32 backward, char *serr)
 {
@@ -1982,7 +1982,7 @@ end_search_global:
  * attr[10]	saros series member number
  *         declare as attr[20] at least !
  */
-int32 FAR PASCAL_CONV swe_sol_eclipse_when_loc(double tjd_start, int32 ifl,
+int32 swe_sol_eclipse_when_loc(double tjd_start, int32 ifl,
      double *geopos, double *tret, double *attr, int32 backward, char *serr)
 {
   int32 retflag = 0, retflag2 = 0;
@@ -2034,7 +2034,7 @@ int32 FAR PASCAL_CONV swe_sol_eclipse_when_loc(double tjd_start, int32 ifl,
  *
  * for all other parameters, see function swe_sol_eclipse_when_loc().
  */
-int32 FAR PASCAL_CONV swe_lun_occult_when_loc(double tjd_start, int32 ipl, char *starname, int32 ifl,
+int32 swe_lun_occult_when_loc(double tjd_start, int32 ipl, char *starname, int32 ifl,
      double *geopos, double *tret, double *attr, int32 backward, char *serr)
 {
   int32 retflag = 0, retflag2 = 0;
@@ -2748,7 +2748,7 @@ next_try:
  * if a non-zero height above sea is given, atpress is estimated.
  *   geohgt	  height of observer above sea (optional)
  */
-void FAR PASCAL_CONV swe_azalt(
+void swe_azalt(
       double tjd_ut,
       int32  calc_flag,
       double *geopos,
@@ -2799,7 +2799,7 @@ void FAR PASCAL_CONV swe_azalt(
  *   iflag        either SE_HOR2ECL or SE_HOR2EQU
  *   xin[2]       azimut and true altitude, in degrees 
  */
-void FAR PASCAL_CONV swe_azalt_rev(
+void swe_azalt_rev(
       double tjd_ut,
       int32  calc_flag,
       double *geopos,
@@ -2847,7 +2847,7 @@ void FAR PASCAL_CONV swe_azalt_rev(
  * int32  calc_flag;	* either SE_CALC_APP_TO_TRUE or 
  *                      *        SE_CALC_TRUE_TO_APP
  */
-double FAR PASCAL_CONV swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag)
+double swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag)
 {
   double a, refr;
   double pt_factor = atpress / 1010.0 * 283.0 / (273.0 + attemp);
@@ -2946,7 +2946,7 @@ double FAR PASCAL_CONV swe_refrac(double inalt, double atpress, double attemp, i
   }
 }
 
-void FAR PASCAL_CONV swe_set_lapse_rate(double lapse_rate) 
+void swe_set_lapse_rate(double lapse_rate) 
 {
   const_lapse_rate = lapse_rate;
 }
@@ -2993,7 +2993,7 @@ void FAR PASCAL_CONV swe_set_lapse_rate(double lapse_rate)
  *
  * The body is above the horizon if the dret[0] != dret[1]
  */
-double FAR PASCAL_CONV swe_refrac_extended(double inalt, double geoalt, double atpress, double attemp, double lapse_rate, int32 calc_flag, double *dret)
+double swe_refrac_extended(double inalt, double geoalt, double atpress, double attemp, double lapse_rate, int32 calc_flag, double *dret)
 {
   double refr;
   double trualt;
@@ -3143,7 +3143,7 @@ static double calc_dip(double geoalt, double atpress, double attemp, double laps
  *         declare as attr[20] at least !
  * 
  */
-int32 FAR PASCAL_CONV swe_lun_eclipse_how(
+int32 swe_lun_eclipse_how(
           double tjd_ut, 
           int32 ifl,
           double *geopos, 
@@ -3330,7 +3330,7 @@ static int32 lun_eclipse_how(
  * tret[6]	time of penumbral phase begin
  * tret[7]	time of penumbral phase end
  */
-int32 FAR PASCAL_CONV swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype,
+int32 swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype,
      double *tret, int32 backward, char *serr)
 {
   int i, j, m, n, o, i1 = 0, i2 = 0;
@@ -3585,7 +3585,7 @@ next_try:
  * attr[10]     saros series member number
  *         declare as attr[20] at least !
  */
-int32 FAR PASCAL_CONV swe_lun_eclipse_when_loc(double tjd_start, int32 ifl, 
+int32 swe_lun_eclipse_when_loc(double tjd_start, int32 ifl, 
      double *geopos, double *tret, double *attr, int32 backward, char *serr)
 {
   int32 retflag = 0, retflag2 = 0, retc;
@@ -3701,19 +3701,32 @@ next_lun_ecl:
  */
 #define EULER 2.718281828459
 #define NMAG_ELEM  (SE_VESTA + 1)
-static double mag_elem[NMAG_ELEM][4] = {
+#define MAG_IAU_1986
+static const double mag_elem[NMAG_ELEM][4] = {
                 /* DTV-Atlas Astronomie, p. 32 */
-                {-26.86, 0, 0, 0},
-                {-12.55, 0, 0, 0},
+                {-26.86, 0, 0, 0}, /* Sun */
+                {-12.55, 0, 0, 0}, /* Moon */
+#ifdef MAG_IAU_1986
                 /* IAU 1986 */
-                {-0.42, 3.80, -2.73, 2.00},
-                {-4.40, 0.09, 2.39, -0.65},
+                {-0.42, 3.80, -2.73, 2.00}, /* Mercury */
+                {-4.40, 0.09, 2.39, -0.65}, /* Venus */
                 {- 1.52, 1.60, 0, 0},   /* Mars */
                 {- 9.40, 0.5, 0, 0},    /* Jupiter */
                 {- 8.88, -2.60, 1.25, 0.044},   /* Saturn */
                 {- 7.19, 0.0, 0, 0},    /* Uranus */
                 {- 6.87, 0.0, 0, 0},    /* Neptune */
                 {- 1.00, 0.0, 0, 0},    /* Pluto */
+#else
+                /* IAU ???? */
+                {-0.60, 0.0498, -0.000488, 0.00000302}, /* Mercury */
+                {-5.18, 0.0103, 0.000057, 0.00000013}, /* Venus */
+                {- 1.52, 0.016, 0, 0},   /* Mars */
+                {- 9.40, 0.005, 0, 0},    /* Jupiter */
+                {- 8.88, 0.044, 0, 0},   /* Saturn */
+                {- 7.19, 0.0028, 0, 0},    /* Uranus */
+                {- 6.87, 0.041, 0, 0},    /* Neptune */
+                {- 1.00, 0.041, 0, 0},    /* Pluto */
+#endif
                 {99, 0, 0, 0},          /* nodes and apogees */
                 {99, 0, 0, 0},
                 {99, 0, 0, 0},
@@ -3727,7 +3740,7 @@ static double mag_elem[NMAG_ELEM][4] = {
                 {5.33, 0.32, 0, 0},     /* Juno */
                 {3.20, 0.32, 0, 0},     /* Vesta */
                 };
-int32 FAR PASCAL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr)
+int32 swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr)
 {
   int i;
   double xx[6], xx2[6], xxs[6], lbr[6], lbr2[6], dt = 0, dd;
@@ -3862,11 +3875,19 @@ int32 FAR PASCAL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr
                   + mag_elem[ipl][3] * du
                   + mag_elem[ipl][0];
     } else if (ipl < SE_CHIRON) {
+#ifdef MAG_IAU_1986
       attr[4] = 5 * log10(lbr2[2] * lbr[2])
                   + mag_elem[ipl][1] * attr[0] /100.0
                   + mag_elem[ipl][2] * attr[0] * attr[0] / 10000.0
                   + mag_elem[ipl][3] * attr[0] * attr[0] * attr[0] / 1000000.0
                   + mag_elem[ipl][0];
+#else
+      attr[4] = 5 * log10(lbr2[2] * lbr[2])
+                  + mag_elem[ipl][1] * attr[0]
+                  + mag_elem[ipl][2] * attr[0] * attr[0]
+                  + mag_elem[ipl][3] * attr[0] * attr[0] * attr[0]
+                  + mag_elem[ipl][0];
+#endif
     } else if (ipl < NMAG_ELEM || ipl > SE_AST_OFFSET) { /* asteroids */
       ph1 = pow(EULER, -3.33 * pow(tan(attr[0] * DEGTORAD / 2), 0.63));
       ph2 = pow(EULER, -1.87 * pow(tan(attr[0] * DEGTORAD / 2), 1.22));
@@ -3942,7 +3963,7 @@ int32 FAR PASCAL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr
   return OK;
 }
 
-int32 FAR PASCAL_CONV swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr)
+int32 swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr)
 {
   double deltat;
   int32 retflag = OK;
@@ -4025,7 +4046,7 @@ double rdi_twilight(int32 rsmi)
  * serr[256]	error string
  * function return value -2 means that the body does not rise or set */
 #define SEFLG_EPHMASK	(SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH)
-int32 FAR PASCAL_CONV swe_rise_trans(
+int32 swe_rise_trans(
                double tjd_ut, int32 ipl, char *starname,
 	       int32 epheflag, int32 rsmi,
                double *geopos, 
@@ -4038,7 +4059,7 @@ int32 FAR PASCAL_CONV swe_rise_trans(
 
 /* same as swe_rise_trans(), but allows to define the height of the horizon
  * at the point of the rising or setting (horhgt) */
-int32 FAR PASCAL_CONV swe_rise_trans_true_hor(
+int32 swe_rise_trans_true_hor(
                double tjd_ut, int32 ipl, char *starname,
 	       int32 epheflag, int32 rsmi,
                double *geopos, 
@@ -4613,7 +4634,7 @@ barycentric position.
  *                 be returned instead of the aphelia.
  */
 /* mean elements for Mercury - Neptune from VSOP87 (mean equinox of date) */
-static double el_node[8][4] = 
+static const double el_node[8][4] = 
   {{ 48.330893,  1.1861890,  0.00017587,  0.000000211,}, /* Mercury */
   { 76.679920,  0.9011190,  0.00040665, -0.000000080,}, /* Venus   */
   {  0       ,  0        ,  0         ,  0          ,}, /* Earth   */
@@ -4623,7 +4644,7 @@ static double el_node[8][4] =
   { 74.005947,  0.5211258,  0.00133982,  0.000018516,}, /* Uranus  */
   {131.784057,  1.1022057,  0.00026006, -0.000000636,}, /* Neptune */
   };
-static double el_peri[8][4] = 
+static const double el_peri[8][4] = 
   {{ 77.456119,  1.5564775,  0.00029589,  0.000000056,}, /* Mercury */
   {131.563707,  1.4022188, -0.00107337, -0.000005315,}, /* Venus   */
   {102.937348,  1.7195269,  0.00045962,  0.000000499,}, /* Earth   */
@@ -4633,7 +4654,7 @@ static double el_peri[8][4] =
   {173.005159,  1.4863784,  0.00021450,  0.000000433,}, /* Uranus  */
   { 48.123691,  1.4262677,  0.00037918, -0.000000003,}, /* Neptune */
   };
-static double el_incl[8][4] = 
+static const double el_incl[8][4] = 
   {{  7.004986,  0.0018215, -0.00001809,  0.000000053,}, /* Mercury */
   {  3.394662,  0.0010037, -0.00000088, -0.000000007,}, /* Venus   */
   {  0,         0,          0,           0          ,}, /* Earth   */
@@ -4643,7 +4664,7 @@ static double el_incl[8][4] =
   {  0.773196,  0.0007744,  0.00003749, -0.000000092,}, /* Uranus  */
   {  1.769952, -0.0093082, -0.00000708,  0.000000028,}, /* Neptune */
   };
-static double el_ecce[8][4] = 
+static const double el_ecce[8][4] = 
   {{  0.20563175,  0.000020406, -0.0000000284, -0.00000000017,}, /* Mercury */
   {  0.00677188, -0.000047766,  0.0000000975,  0.00000000044,}, /* Venus   */
   {  0.01670862, -0.000042037, -0.0000001236,  0.00000000004,}, /* Earth   */
@@ -4653,7 +4674,7 @@ static double el_ecce[8][4] =
   {  0.04629590, -0.000027337,  0.0000000790,  0.00000000025,}, /* Uranus  */
   {  0.00898809,  0.000006408, -0.0000000008, -0.00000000005,}, /* Neptune */
   };
-static double el_sema[8][4] = 
+static const double el_sema[8][4] = 
   {{  0.387098310,  0.0,  0.0,  0.0,}, /* Mercury */
   {  0.723329820,  0.0,  0.0,  0.0,}, /* Venus   */
   {  1.000001018,  0.0,  0.0,  0.0,}, /* Earth   */
@@ -4664,7 +4685,7 @@ static double el_sema[8][4] =
   { 30.110386869, -0.0000001663,  0.00000000069,  0.0,}, /* Neptune */
   };
 /* Ratios of mass of Sun to masses of the planets */
-static double plmass[9] = {
+static const double plmass[9] = {
     6023600,        /* Mercury */
      408523.5,      /* Venus */
      328900.5,      /* Earth and Moon */
@@ -4675,8 +4696,8 @@ static double plmass[9] = {
       19314,        /* Neptune */
   130000000,        /* Pluto */
 };
-static int ipl_to_elem[15] = {2, 0, 0, 1, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 2,};
-int32 FAR PASCAL_CONV swe_nod_aps(double tjd_et, int32 ipl, int32 iflag, 
+static const int ipl_to_elem[15] = {2, 0, 0, 1, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 2,};
+int32 swe_nod_aps(double tjd_et, int32 ipl, int32 iflag, 
                       int32  method,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
@@ -4702,7 +4723,7 @@ int32 FAR PASCAL_CONV swe_nod_aps(double tjd_et, int32 ipl, int32 iflag,
   struct plan_data pldat;
   double *xsun = psbdp->x;
   double *xear = pedp->x;
-  double *ep;
+  const double *ep;
   double Gmsm, dzmin;
   double rxy, rxyz, fac, sgn;
   double sinnode, cosnode, sinincl, cosincl, sinu, cosu, sinE, cosE, cosE2;
@@ -5189,11 +5210,11 @@ int32 FAR PASCAL_CONV swe_nod_aps(double tjd_et, int32 ipl, int32 iflag,
     if (iflag & SEFLG_SIDEREAL) {
       /* project onto ecliptic t0 */
       if (swed.sidd.sid_mode & SE_SIDBIT_ECL_T0) {
-        if (swi_trop_ra2sid_lon(x2000, pldat.xreturn+6, pldat.xreturn+18, iflag, serr) != OK)
+        if (swi_trop_ra2sid_lon(x2000, pldat.xreturn+6, pldat.xreturn+18, iflag) != OK)
           return ERR;
       /* project onto solar system equator */
       } else if (swed.sidd.sid_mode & SE_SIDBIT_SSY_PLANE) {
-        if (swi_trop_ra2sid_lon_sosy(x2000, pldat.xreturn+6, pldat.xreturn+18, iflag, serr) != OK)
+        if (swi_trop_ra2sid_lon_sosy(x2000, pldat.xreturn+6, iflag) != OK)
           return ERR;
       } else {
       /* traditional algorithm */
@@ -5255,7 +5276,7 @@ int32 FAR PASCAL_CONV swe_nod_aps(double tjd_et, int32 ipl, int32 iflag,
   return OK;
 }
 
-int32 FAR PASCAL_CONV swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag, 
+int32 swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag, 
                       int32  method,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
@@ -5285,7 +5306,7 @@ int32 FAR PASCAL_CONV swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
  * dgsect is return area (pointer to a double)
  * serr is pointer to error string, may be NULL
  */
-int32 FAR PASCAL_CONV swe_gauquelin_sector(double t_ut, int32 ipl, char *starname, int32 iflag, int32 imeth, double *geopos, double atpress, double attemp, double *dgsect, char *serr) 
+int32 swe_gauquelin_sector(double t_ut, int32 ipl, char *starname, int32 iflag, int32 imeth, double *geopos, double atpress, double attemp, double *dgsect, char *serr) 
 {
   AS_BOOL rise_found = TRUE;
   AS_BOOL set_found = TRUE;

@@ -84,9 +84,9 @@
 
 #ifdef TRACE
 void swi_open_trace(char *serr);
-FILE *swi_fp_trace_c = NULL;
-FILE *swi_fp_trace_out = NULL;
-int32 swi_trace_count = 0;
+TLS FILE *swi_fp_trace_c = NULL;
+TLS FILE *swi_fp_trace_out = NULL;
+TLS int32 swi_trace_count = 0;
 #endif
 
 static void init_crc32(void);
@@ -101,7 +101,7 @@ static double deltat_aa(double tjd, double tid_acc);
 
 /* Reduce x modulo 360 degrees
  */
-double FAR PASCAL_CONV swe_degnorm(double x)
+double swe_degnorm(double x)
 {
   double y;
   y = fmod(x, 360.0);
@@ -112,7 +112,7 @@ double FAR PASCAL_CONV swe_degnorm(double x)
 
 /* Reduce x modulo TWOPI degrees
  */
-double FAR PASCAL_CONV swe_radnorm(double x)
+double swe_radnorm(double x)
 {
   double y;
   y = fmod(x, TWOPI);
@@ -121,7 +121,7 @@ double FAR PASCAL_CONV swe_radnorm(double x)
   return(y);
 }
 
-double FAR PASCAL_CONV swe_deg_midp(double x1, double x0)
+double swe_deg_midp(double x1, double x0)
 {
   double d, y;
   d = swe_difdeg2n(x1, x0);	/* arc from x0 to x1 */
@@ -129,7 +129,7 @@ double FAR PASCAL_CONV swe_deg_midp(double x1, double x0)
   return(y);
 }
 
-double FAR PASCAL_CONV swe_rad_midp(double x1, double x0)
+double swe_rad_midp(double x1, double x0)
 {
   return DEGTORAD * swe_deg_midp(x1 * RADTODEG, x0 * RADTODEG);
 }
@@ -218,7 +218,7 @@ double swi_edcheb(double x, double *coef, int ncf)
  * xpo, xpn are arrays of 3 doubles containing position.
  * attention: input must be in degrees!
  */
-void FAR PASCAL_CONV swe_cotrans(double *xpo, double *xpn, double eps)
+void swe_cotrans(double *xpo, double *xpn, double eps)
 {
   int i;
   double x[6], e = eps * DEGTORAD;
@@ -246,7 +246,7 @@ void FAR PASCAL_CONV swe_cotrans(double *xpo, double *xpn, double eps)
  * xpo, xpn are arrays of 6 doubles containing position and speed.
  * attention: input must be in degrees!
  */
-void FAR PASCAL_CONV swe_cotrans_sp(double *xpo, double *xpn, double eps)
+void swe_cotrans_sp(double *xpo, double *xpn, double eps)
 {
   int i;
   double x[6], e = eps * DEGTORAD;
@@ -465,7 +465,7 @@ double swi_dot_prod_unit(double *x, double *y)
 
 /* for pre_peps(): */
 /* polynomials */
-static double pepol[NPOL_PEPS][2] = {
+static const double pepol[NPOL_PEPS][2] = {
   {+8134.017132, +84028.206305},
   {+5043.0520035, +0.3624445},
   {-0.00710733, -0.00004039},
@@ -473,7 +473,7 @@ static double pepol[NPOL_PEPS][2] = {
 };
 
 /* periodics */
-static double peper[5][NPER_PEPS] = {
+static const double peper[5][NPER_PEPS] = {
   {+409.90, +396.15, +537.22, +402.90, +417.15, +288.92, +4043.00, +306.00, +277.00, +203.00},
   {-6908.287473, -3198.706291, +1453.674527, -857.748557, +1173.231614, -156.981465, +371.836550, -216.619040, +193.691479, +11.891524},
   {+753.872780, -247.805823, +379.471484, -53.880558, -90.109153, -353.600190, -63.115353, -28.248187, +17.703387, +38.911307},
@@ -483,7 +483,7 @@ static double peper[5][NPER_PEPS] = {
 
 /* for pre_pecl(): */
 /* polynomials */
-static double pqpol[NPOL_PECL][2] = {
+static const double pqpol[NPOL_PECL][2] = {
   {+5851.607687, -1600.886300},
   {-0.1189000, +1.1689818},
   {-0.00028913, -0.00000020},
@@ -491,7 +491,7 @@ static double pqpol[NPOL_PECL][2] = {
 };
 
 /* periodics */
-static double pqper[5][NPER_PECL] = {
+static const double pqper[5][NPER_PECL] = {
   {708.15, 2309, 1620, 492.2, 1183, 622, 882, 547},
   {-5486.751211, -17.127623, -617.517403, 413.44294, 78.614193, -180.732815, -87.676083, 46.140315},
   {-684.66156, 2446.28388, 399.671049, -356.652376, -186.387003, -316.80007, 198.296701, 101.135679}, /* typo in publication fixed */
@@ -501,7 +501,7 @@ static double pqper[5][NPER_PECL] = {
 
 /* for pre_pequ(): */
 /* polynomials */
-static double xypol[NPOL_PEQU][2] = {
+static const double xypol[NPOL_PEQU][2] = {
   {+5453.282155, -73750.930350},
   {+0.4252841, -0.7675452},
   {-0.00037173, -0.00018725},
@@ -509,7 +509,7 @@ static double xypol[NPOL_PEQU][2] = {
 };
 
 /* periodics */
-static double xyper[5][NPER_PEQU] = {
+static const double xyper[5][NPER_PEQU] = {
   {256.75, 708.15, 274.2, 241.45, 2309, 492.2, 396.1, 288.9, 231.1, 1610, 620, 157.87, 220.3, 1200},
   {-819.940624, -8444.676815, 2600.009459, 2755.17563, -167.659835, 871.855056, 44.769698, -512.313065, -819.415595, -538.071099, -189.793622, -402.922932, 179.516345, -9.814756},
   {75004.344875, 624.033993, 1251.136893, -1102.212834, -2660.66498, 699.291817, 153.16722, -950.865637, 499.754645, -145.18821, 558.116553, -23.923029, -165.405086, 9.344131},
@@ -891,46 +891,46 @@ static int precess_1(double *R, double J, int direction, int prec_method)
    is the same except for the lower order terms.  */
 
 /* SEMOD_PREC_WILLIAMS_1994 */
-static double pAcof_williams[] = {
+static const double pAcof_williams[] = {
  -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
  -0.235316, 0.076, 110.5407, 50287.70000 };
-static double nodecof_williams[] = {
+static const double nodecof_williams[] = {
   6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 1.9e-10, 
   -3.54e-9, -1.8103e-7,  1.26e-7,  7.436169e-5,
   -0.04207794833,  3.052115282424};
-static double inclcof_williams[] = {
+static const double inclcof_williams[] = {
   1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
   -5.4000441e-11, 1.32115526e-9, -6.012e-7, -1.62442e-5,
   0.00227850649, 0.0 };
 
 /* SEMOD_PREC_SIMON_1994 */
 /* Precession coefficients from Simon et al: */
-static double pAcof_simon[] = {
+static const double pAcof_simon[] = {
   -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
   -0.235316, 0.07732, 111.2022, 50288.200 };
-static double nodecof_simon[] = {
+static const double nodecof_simon[] = {
   6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 1.9e-10, 
   -3.54e-9, -1.8103e-7, 2.579e-8, 7.4379679e-5,
   -0.0420782900, 3.0521126906};
-static double inclcof_simon[] = {
+static const double inclcof_simon[] = {
   1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
   -5.4000441e-11, 1.32115526e-9, -5.99908e-7, -1.624383e-5,
   0.002278492868, 0.0 };
 
 /* SEMOD_PREC_LASKAR_1986 */
 /* Precession coefficients taken from Laskar's paper: */
-static double pAcof_laskar[] = {
+static const double pAcof_laskar[] = {
   -8.66e-10, -4.759e-8, 2.424e-7, 1.3095e-5, 1.7451e-4, -1.8055e-3,
   -0.235316, 0.07732, 111.1971, 50290.966 };
 /* Node and inclination of the earth's orbit computed from
  * Laskar's data as done in Bretagnon and Francou's paper.
  * Units are radians.
  */
-static double nodecof_laskar[] = {
+static const double nodecof_laskar[] = {
   6.6402e-16, -2.69151e-15, -1.547021e-12, 7.521313e-12, 6.3190131e-10, 
   -3.48388152e-9, -1.813065896e-7, 2.75036225e-8, 7.4394531426e-5,
   -0.042078604317, 3.052112654975 };
-static double inclcof_laskar[] = {
+static const double inclcof_laskar[] = {
   1.2147e-16, 7.3759e-17, -8.26287e-14, 2.503410e-13, 2.4650839e-11, 
   -5.4000441e-11, 1.32115526e-9, -5.998737027e-7, -1.6242797091e-5,
   0.002278495537, 0.0 };
@@ -941,9 +941,9 @@ static int precess_2(double *R, double J, int32 iflag, int direction, int prec_m
   double T, z;
   double eps, sineps, coseps;
   double x[3];
-  double *p;
+  const double *p;
   double A, B, pA, W;
-  double *pAcof, *inclcof, *nodecof;
+  const double *pAcof, *inclcof, *nodecof;
   if( J == J2000 ) 
     return(0);
   if (prec_method == SEMOD_PREC_LASKAR_1986) {
@@ -1181,7 +1181,7 @@ int swi_precess(double *R, double J, int32 iflag, int direction )
  * .0123	.0880		.0224	.0905
  * .0386	.1808		.0895	.1129
  */
-static short FAR nt[] = {  
+static const short nt[] = {  
 /* LS and OC are units of 0.0001"
  *LS2 and OC2 are units of 0.00001"
  *MM,MS,FF,DD,OM, LS, LS2,OC, OC2 */
@@ -1320,7 +1320,7 @@ static int swi_nutation_iau1980(double J, double *nutlo)
   double C, D;
   int i, j, k, k1, m, n;
   int ns[5];
-  short *p;
+  const short *p;
   int nut_model = swed.astro_models[SE_MODEL_NUT];
   if (nut_model == 0) nut_model = SEMOD_NUT_DEFAULT;
   /* Julian centuries from 2000 January 1.5,
@@ -2024,7 +2024,7 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
 #define TABSIZ 		(TABEND-TABSTART+1) 
 /* we make the table greater for additional values read from external file */
 #define TABSIZ_SPACE 	(TABSIZ+100)
-static double FAR dt[TABSIZ_SPACE] = {
+static TLS double dt[TABSIZ_SPACE] = {
 /* 1620.0 thru 1659.0 */
 124.00, 119.00, 115.00, 110.00, 106.00, 102.00, 98.00, 95.00, 91.00, 88.00,
 85.00, 82.00, 79.00, 77.00, 74.00, 72.00, 70.00, 67.00, 65.00, 63.00,
@@ -2089,7 +2089,7 @@ static double FAR dt[TABSIZ_SPACE] = {
 #define LTERM_EQUATION_YSTART	1820
 #define LTERM_EQUATION_COEFF	32
 /* Table for -1000 through 1600, from Morrison & Stephenson (2004).  */
-static short FAR dt2[TAB2_SIZ] = {
+static const short dt2[TAB2_SIZ] = {
 /*-1000  -900  -800  -700  -600  -500  -400  -300  -200  -100*/
 25400,23700,22000,21000,19040,17190,15530,14080,12790,11640,
 /*    0   100   200   300   400   500   600   700   800   900*/
@@ -2124,7 +2124,7 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
     retc = swi_get_tid_acc(tjd, 0, 9999, &denumret, &tid_acc, serr); /* for default tid_acc */
   /* otherwise we use tid_acc consistent with epheflag */
   } else {
-    if (swi_init_swed_if_start() == 1 && !(epheflag && SEFLG_MOSEPH)) {
+    if (swi_init_swed_if_start() == 1 && !(epheflag & SEFLG_MOSEPH)) {
       if (serr != NULL) 
 	strcpy(serr, "Please call swe_set_ephe_path() or swe_set_jplfile() before calling swe_deltat_ex()");
       retc = swi_set_tid_acc(tjd, epheflag, 0, NULL);  /* _set_ saves tid_acc in swed */
@@ -2204,14 +2204,14 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
   return iflag;
 }
 
-double FAR PASCAL_CONV swe_deltat_ex(double tjd, int32 iflag, char *serr)
+double swe_deltat_ex(double tjd, int32 iflag, char *serr)
 {
   double deltat;
   calc_deltat(tjd, iflag, &deltat, serr);
   return deltat;
 }
 
-double FAR PASCAL_CONV swe_deltat(double tjd)
+double swe_deltat(double tjd)
 {
   int32 iflag = swi_guess_ephe_flag();
   return swe_deltat_ex(tjd, iflag, NULL); /* with default tidal acceleration/default ephemeris */
@@ -2475,7 +2475,7 @@ static double adjust_for_tidacc(double ans, double Y, double tid_acc)
 }
 
 /* returns tidal acceleration used in swe_deltat() and swe_deltat_ex() */
-double FAR PASCAL_CONV swe_get_tid_acc()
+double swe_get_tid_acc()
 {
   return swed.tid_acc;
 }
@@ -2486,7 +2486,7 @@ double FAR PASCAL_CONV swe_get_tid_acc()
  *   of the Moon will be set consistent with that ephemeris.
  * - SE_TIDAL_AUTOMATIC, 
  */
-void FAR PASCAL_CONV swe_set_tid_acc(double t_acc)
+void swe_set_tid_acc(double t_acc)
 {
   if (t_acc == SE_TIDAL_AUTOMATIC) {
     swed.tid_acc = SE_TIDAL_DEFAULT;
@@ -2499,20 +2499,12 @@ void FAR PASCAL_CONV swe_set_tid_acc(double t_acc)
 
 int32 swi_guess_ephe_flag()
 {
-  int32 iflag = SEFLG_MOSEPH;
+  int32 iflag = SEFLG_SWIEPH;
   /* if jpl file is open, assume SEFLG_JPLEPH */
   if (swed.jpl_file_is_open) {
     iflag = SEFLG_JPLEPH;
-  /* if semo* or sepl* file were found already, assume SEFLG_SWIEPH */
-  } else if (*swed.fidat[SEI_FILE_MOON].fnam != '\0' || *swed.fidat[SEI_FILE_PLANET].fnam != '\0') {
+  } else {
     iflag = SEFLG_SWIEPH;
-  /* if swe_set_ephe_path() has not been called yet, call it now to check the availability
-   * of semo* file. If it is available, assume SEFLG_SWIEPH */
-  } else if (!swed.ephe_path_is_set) {
-    swe_set_ephe_path(NULL);
-    if (*swed.fidat[SEI_FILE_MOON].fnam != '\0')
-      iflag = SEFLG_SWIEPH;
-  /* ... otherwise assume SEFLG_MOSEPH */
   }
   return iflag;
 }
@@ -2584,10 +2576,11 @@ int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, 
 int32 swi_set_tid_acc(double tjd_ut, int32 iflag, int32 denum, char *serr)
 {
   int32 retc = iflag;
+  int32 denumret;
   /* manual tid_acc overrides automatic tid_acc */
   if (swed.is_tid_acc_manual)
     return retc;
-  retc = swi_get_tid_acc(tjd_ut, iflag, denum, &(swed.jpldenum), &(swed.tid_acc), serr);
+  retc = swi_get_tid_acc(tjd_ut, iflag, denum, &denumret, &(swed.tid_acc), serr);
 #if TRACE
   swi_open_trace(NULL);
   if (swi_trace_count < TRACE_COUNT_MAX) {
@@ -2679,7 +2672,7 @@ static double sidtime_long_term(double tjd_ut, double eps, double nut)
  */
 /*  C'_{s,j})_i     C'_{c,j})_i */
 #define SIDTNTERM 33
-static double stcf[SIDTNTERM * 2] = {
+static const double stcf[SIDTNTERM * 2] = {
 2640.96,-0.39,
 63.52,-0.02,
 11.75,0.01,
@@ -2716,7 +2709,7 @@ static double stcf[SIDTNTERM * 2] = {
 };
 #define SIDTNARG 14
 /* l    l'   F    D   Om   L_Me L_Ve L_E  L_Ma L_J  L_Sa L_U  L_Ne p_A*/
-static int stfarg[SIDTNTERM * SIDTNARG] = {
+static const int stfarg[SIDTNTERM * SIDTNARG] = {
    0,   0,   0,   0,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,
    0,   0,   0,   0,   2,   0,   0,   0,   0,   0,   0,   0,   0,   0,
    0,   0,   2,  -2,   3,   0,   0,   0,   0,   0,   0,   0,   0,   0,
@@ -2796,7 +2789,7 @@ static double sidtime_non_polynomial_part(double tt)
 #define SIDT_LTERM_T1  2469807.5  /* 1 Jan 2050  */
 #define SIDT_LTERM_OFS0   (0.000378172 / 15.0)
 #define SIDT_LTERM_OFS1   (0.001385646 / 15.0)
-double FAR PASCAL_CONV swe_sidtime0( double tjd, double eps, double nut )
+double swe_sidtime0( double tjd, double eps, double nut )
 {
   double jd0;    	/* Julian day at midnight Universal Time */
   double secs;   	/* Time of day, UT seconds since UT midnight */
@@ -2894,7 +2887,7 @@ sidtime_done:
  * tjd must be UT !!!
  * for more informsation, see comment with swe_sidtime0()
  */
-double FAR PASCAL_CONV swe_sidtime(double tjd_ut)
+double swe_sidtime(double tjd_ut)
 {
   int i;
   double eps, nutlo[2], tsid;
@@ -3069,7 +3062,7 @@ char *swi_right_trim(char *s)
  * The CRCs this code generates agree with the vendor-supplied Verilog models
  * of several of the popular FDDI "MAC" chips.
  */
-static uint32 crc32_table[256];
+static TLS uint32 crc32_table[256];
 /* Initialized first time "crc32()" is called. If you prefer, you can
  * statically initialize it at compile time. [Another exercise.]
  */
@@ -3111,7 +3104,7 @@ static void init_crc32(void)
 /************************************
 normalize argument into interval [0..DEG360]
 *************************************/
-centisec FAR PASCAL_CONV swe_csnorm(centisec p)
+centisec swe_csnorm(centisec p)
 {
   if (p < 0) 
     do { p += DEG360; } while (p < 0);
@@ -3124,12 +3117,12 @@ centisec FAR PASCAL_CONV swe_csnorm(centisec p)
 distance in centisecs p1 - p2
 normalized to [0..360[
 **************************************/
-centisec FAR PASCAL_CONV swe_difcsn (centisec p1, centisec p2)
+centisec swe_difcsn (centisec p1, centisec p2)
 { 
   return (swe_csnorm(p1 - p2));
 }
 
-double FAR PASCAL_CONV swe_difdegn (double p1, double p2)
+double swe_difdegn (double p1, double p2)
 { 
   return (swe_degnorm(p1 - p2));
 }
@@ -3138,21 +3131,21 @@ double FAR PASCAL_CONV swe_difdegn (double p1, double p2)
 distance in centisecs p1 - p2
 normalized to [-180..180[
 **************************************/
-centisec FAR PASCAL_CONV swe_difcs2n(centisec p1, centisec p2)
+centisec swe_difcs2n(centisec p1, centisec p2)
 { centisec dif;
   dif = swe_csnorm(p1 - p2);
   if (dif  >= DEG180) return (dif - DEG360);
   return (dif);
 }
 
-double FAR PASCAL_CONV swe_difdeg2n(double p1, double p2)
+double swe_difdeg2n(double p1, double p2)
 { double dif;
   dif = swe_degnorm(p1 - p2);
   if (dif  >= 180.0) return (dif - 360.0);
   return (dif);
 }
 
-double FAR PASCAL_CONV swe_difrad2n(double p1, double p2)
+double swe_difrad2n(double p1, double p2)
 { double dif;
   dif = swe_radnorm(p1 - p2);
   if (dif  >= TWOPI / 2) return (dif - TWOPI);
@@ -3162,7 +3155,7 @@ double FAR PASCAL_CONV swe_difrad2n(double p1, double p2)
 /*************************************
 round second, but at 29.5959 always down
 *************************************/ 
-centisec FAR PASCAL_CONV swe_csroundsec(centisec x)	
+centisec swe_csroundsec(centisec x)	
 {
   centisec t;
   t = (x + 50) / 100 *100L;	/* round to seconds */
@@ -3174,7 +3167,7 @@ centisec FAR PASCAL_CONV swe_csroundsec(centisec x)
 /*************************************
 double to int32 with rounding, no overflow check
 *************************************/ 
-int32 FAR PASCAL_CONV swe_d2l(double x)		
+int32 swe_d2l(double x)		
 {
   if (x >=0)
     return ((int32) (x + 0.5));
@@ -3185,12 +3178,12 @@ int32 FAR PASCAL_CONV swe_d2l(double x)
 /*
  * monday = 0, ... sunday = 6
  */
-int FAR PASCAL_CONV swe_day_of_week(double jd)
+int swe_day_of_week(double jd)
 {
   return (((int) floor (jd - 2433282 - 1.5) %7) + 7) % 7;
 }
 
-char *FAR PASCAL_CONV swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZero, char *a)
+char *swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZero, char *a)
 /* does not suppress zeros in hours or minutes */
 {
   /* static char a[9];*/
@@ -3214,7 +3207,7 @@ char *FAR PASCAL_CONV swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZero, char
   return (a);
   } /* swe_cs2timestr() */
 
-char *FAR PASCAL_CONV swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *sp)
+char *swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *sp)
 {
   char a[10];	/* must be initialized at each call */
   char *aa;
@@ -3244,7 +3237,7 @@ char *FAR PASCAL_CONV swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *sp)
   return (sp);
 } /* swe_cs2lonlatstr() */
 
-char *FAR PASCAL_CONV swe_cs2degstr(CSEC t, char *a)
+char *swe_cs2degstr(CSEC t, char *a)
   /* does  suppress leading zeros in degrees */
 {
   /* char a[9];	 must be initialized at each call */
@@ -3267,7 +3260,7 @@ char *FAR PASCAL_CONV swe_cs2degstr(CSEC t, char *a)
  *              or +/- sign
  *  
  *********************************************************/
-void FAR PASCAL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn)
+void swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn)
 {
   double dadd = 0;
   *isgn = 1;
@@ -3359,7 +3352,7 @@ void swi_FK5_FK4(double *xp, double tjd)
   swi_polcart(xp, xp);
 }
 
-void FAR PASCAL_CONV swe_set_astro_models(int32 *imodel)
+void swe_set_astro_models(int32 *imodel)
 {
   int *pmodel = &(swed.astro_models[0]);
   swi_init_swed_if_start();
@@ -3367,7 +3360,7 @@ void FAR PASCAL_CONV swe_set_astro_models(int32 *imodel)
 }
 
 #if 0
-void FAR PASCAL_CONV swe_get_prec_nut_models(int *imodel)
+void swe_get_prec_nut_models(int *imodel)
 {
   int *pmodel = &(swed.astro_models[0]);
   memcpy(imodel, pmodel, SEI_NMODELS * sizeof(int));

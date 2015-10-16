@@ -157,8 +157,8 @@ extern int32 swi_guess_ephe_flag();
 extern void swi_deflect_light(double *xx, double dt, int32 iflag);
 extern void swi_aberr_light(double *xx, double *xe, int32 iflag);
 extern int swi_plan_for_osc_elem(int32 iflag, double tjd, double *xx);
-extern int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, int32 iflag, char *serr);
-extern int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, double *xoutr, int32 iflag, char *serr);
+extern int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, int32 iflag);
+extern int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, int32 iflag);
 extern int swi_get_observer(double tjd, int32 iflag, 
 	AS_BOOL do_save, double *xobs, char *serr);
 extern void swi_force_app_pos_etc();
@@ -212,13 +212,13 @@ extern double swi_deltat_ephe(double tjd_ut, int32 epheflag);
 
 #ifdef TRACE
 #  define TRACE_COUNT_MAX         10000
-  extern FILE *swi_fp_trace_c;
-  extern FILE *swi_fp_trace_out;
+  extern TLS FILE *swi_fp_trace_c;
+  extern TLS FILE *swi_fp_trace_out;
+  extern TLS int32 swi_trace_count;
   extern void swi_open_trace(char *serr);
-  extern int32 swi_trace_count;
-  static char *fname_trace_c = "swetrace.c";
-  static char *fname_trace_out = "swetrace.txt";
+  static const char *fname_trace_c = "swetrace.c";
+  static const char *fname_trace_out = "swetrace.txt";
 #ifdef FORCE_IFLAG
-  static char *fname_force_flg = "force.flg";
+  static const char *fname_force_flg = "force.flg";
 #endif
 #endif /* TRACE */

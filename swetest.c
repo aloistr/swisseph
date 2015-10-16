@@ -609,8 +609,8 @@ static int hpos_meth = 0;
 static double geopos[10];
 static double attr[20], tret[20], datm[4], dobs[6];
 static int32 iflag = 0, iflag2;              /* external flag: helio, geo... */
-static char *hs_nam[] = {"undef",
-	"Ascendant", "MC", "ARMC", "Vertex"};
+static char *hs_nam[] = 
+{"undef", "Ascendant", "MC", "ARMC", "Vertex"};
 static int direction = 1;
 static AS_BOOL direction_flag = FALSE;
 static int32 helflag = 0;
@@ -1197,7 +1197,7 @@ int main(int argc, char *argv[])
         printf("\nET: %.9f", te);
 	if (iflag & SEFLG_SIDEREAL) {
 	  if (swe_get_ayanamsa_ex(te, iflag, &daya, serr) == ERR) {
-	    printf("   erroor in swe_get_ayanamsa_ex(): %s\n", serr);
+	    printf("   error in swe_get_ayanamsa_ex(): %s\n", serr);
 	    exit(1);
 	  }
 	  printf("   ayanamsa = %s (%s)", dms(daya, round_flag), swe_get_ayanamsa_name(sid_mode));
@@ -1233,7 +1233,7 @@ int main(int argc, char *argv[])
         with_header = FALSE;
       if (do_ayanamsa) {
 	if (swe_get_ayanamsa_ex(te, iflag, &daya, serr) == ERR) {
-	  printf("   erroor in swe_get_ayanamsa_ex(): %s\n", serr);
+	  printf("   error in swe_get_ayanamsa_ex(): %s\n", serr);
 	  exit(1);
 	}
 	fputs("Ayanamsa", stdout);

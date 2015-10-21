@@ -80,10 +80,14 @@
  * Sun Studio C/C++, IBM XL C/C++, GNU C and Intel C/C++ (Linux systems) -> __thread
  * Borland, VC++ -> __declspec(thread)
  */
+#if !defined( __APPLE__ ) && !defined(WIN32) && !defined(DOS32)
 #if defined( __GNUC__ )
 #define TLS     __thread
 #else
 #define TLS     __declspec(thread)
+#endif
+#else
+#define TLS
 #endif
 
 #ifdef _WIN32		/* Microsoft VC 5.0 does not define MSDOS anymore */

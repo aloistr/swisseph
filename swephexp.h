@@ -569,10 +569,25 @@ extern "C" {
 
 /* DLL defines */
 #ifdef MAKE_DLL
-  /* To export symbols in the new DLL model of Win32, Microsoft 
-     recommends the following approach */ 
-  #define EXP32  __declspec( dllexport )
+  #if defined (PASCAL) || defined(__stdcall)
+    #define CALL_CONV __stdcall 
+  #else
+    #define CALL_CONV 
+  #endif
+  #ifdef MAKE_DLL16 /* 16bit DLL */
+    /* We compiled the 16bit DLL for Windows 3.x using Borland C/C++ Ver:3.x
+       and the -WD or -WDE compiler switch. */
+    #define EXP16 __export 
+    #define EXP32 
+  #else /* 32bit DLL */
+    /* To export symbols in the new DLL model of Win32, Microsoft 
+       recommends the following approach */ 
+    #define EXP16 
+    #define EXP32  __declspec( dllexport )
+  #endif
 #else 
+  #define CALL_CONV 
+  #define EXP16 
   #define EXP32 
 #endif  
 
@@ -582,7 +597,7 @@ extern "C" {
  * exported functions
  ***********************************************************/
 
-#define ext_def(x)	extern EXP32 x 
+#define ext_def(x)	extern EXP32 x CALL_CONV EXP16
 			/* ext_def(x) evaluates to x on Unix */
 
 ext_def(int32) swe_heliacal_ut(double tjdstart_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 iflag, double *dret, char *serr);

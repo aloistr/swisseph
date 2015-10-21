@@ -101,7 +101,7 @@ static double deltat_aa(double tjd, double tid_acc);
 
 /* Reduce x modulo 360 degrees
  */
-double swe_degnorm(double x)
+double CALL_CONV swe_degnorm(double x)
 {
   double y;
   y = fmod(x, 360.0);
@@ -112,7 +112,7 @@ double swe_degnorm(double x)
 
 /* Reduce x modulo TWOPI degrees
  */
-double swe_radnorm(double x)
+double CALL_CONV swe_radnorm(double x)
 {
   double y;
   y = fmod(x, TWOPI);
@@ -121,7 +121,7 @@ double swe_radnorm(double x)
   return(y);
 }
 
-double swe_deg_midp(double x1, double x0)
+double CALL_CONV swe_deg_midp(double x1, double x0)
 {
   double d, y;
   d = swe_difdeg2n(x1, x0);	/* arc from x0 to x1 */
@@ -129,7 +129,7 @@ double swe_deg_midp(double x1, double x0)
   return(y);
 }
 
-double swe_rad_midp(double x1, double x0)
+double CALL_CONV swe_rad_midp(double x1, double x0)
 {
   return DEGTORAD * swe_deg_midp(x1 * RADTODEG, x0 * RADTODEG);
 }
@@ -218,7 +218,7 @@ double swi_edcheb(double x, double *coef, int ncf)
  * xpo, xpn are arrays of 3 doubles containing position.
  * attention: input must be in degrees!
  */
-void swe_cotrans(double *xpo, double *xpn, double eps)
+void CALL_CONV swe_cotrans(double *xpo, double *xpn, double eps)
 {
   int i;
   double x[6], e = eps * DEGTORAD;
@@ -246,7 +246,7 @@ void swe_cotrans(double *xpo, double *xpn, double eps)
  * xpo, xpn are arrays of 6 doubles containing position and speed.
  * attention: input must be in degrees!
  */
-void swe_cotrans_sp(double *xpo, double *xpn, double eps)
+void CALL_CONV swe_cotrans_sp(double *xpo, double *xpn, double eps)
 {
   int i;
   double x[6], e = eps * DEGTORAD;
@@ -2204,14 +2204,14 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
   return iflag;
 }
 
-double swe_deltat_ex(double tjd, int32 iflag, char *serr)
+double CALL_CONV swe_deltat_ex(double tjd, int32 iflag, char *serr)
 {
   double deltat;
   calc_deltat(tjd, iflag, &deltat, serr);
   return deltat;
 }
 
-double swe_deltat(double tjd)
+double CALL_CONV swe_deltat(double tjd)
 {
   int32 iflag = swi_guess_ephe_flag();
   return swe_deltat_ex(tjd, iflag, NULL); /* with default tidal acceleration/default ephemeris */
@@ -2475,7 +2475,7 @@ static double adjust_for_tidacc(double ans, double Y, double tid_acc)
 }
 
 /* returns tidal acceleration used in swe_deltat() and swe_deltat_ex() */
-double swe_get_tid_acc()
+double CALL_CONV swe_get_tid_acc()
 {
   return swed.tid_acc;
 }
@@ -2486,7 +2486,7 @@ double swe_get_tid_acc()
  *   of the Moon will be set consistent with that ephemeris.
  * - SE_TIDAL_AUTOMATIC, 
  */
-void swe_set_tid_acc(double t_acc)
+void CALL_CONV swe_set_tid_acc(double t_acc)
 {
   if (t_acc == SE_TIDAL_AUTOMATIC) {
     swed.tid_acc = SE_TIDAL_DEFAULT;
@@ -2789,7 +2789,7 @@ static double sidtime_non_polynomial_part(double tt)
 #define SIDT_LTERM_T1  2469807.5  /* 1 Jan 2050  */
 #define SIDT_LTERM_OFS0   (0.000378172 / 15.0)
 #define SIDT_LTERM_OFS1   (0.001385646 / 15.0)
-double swe_sidtime0( double tjd, double eps, double nut )
+double CALL_CONV swe_sidtime0( double tjd, double eps, double nut )
 {
   double jd0;    	/* Julian day at midnight Universal Time */
   double secs;   	/* Time of day, UT seconds since UT midnight */
@@ -2887,7 +2887,7 @@ sidtime_done:
  * tjd must be UT !!!
  * for more informsation, see comment with swe_sidtime0()
  */
-double swe_sidtime(double tjd_ut)
+double CALL_CONV swe_sidtime(double tjd_ut)
 {
   int i;
   double eps, nutlo[2], tsid;
@@ -3104,7 +3104,7 @@ static void init_crc32(void)
 /************************************
 normalize argument into interval [0..DEG360]
 *************************************/
-centisec swe_csnorm(centisec p)
+centisec CALL_CONV swe_csnorm(centisec p)
 {
   if (p < 0) 
     do { p += DEG360; } while (p < 0);
@@ -3117,12 +3117,12 @@ centisec swe_csnorm(centisec p)
 distance in centisecs p1 - p2
 normalized to [0..360[
 **************************************/
-centisec swe_difcsn (centisec p1, centisec p2)
+centisec CALL_CONV swe_difcsn (centisec p1, centisec p2)
 { 
   return (swe_csnorm(p1 - p2));
 }
 
-double swe_difdegn (double p1, double p2)
+double CALL_CONV swe_difdegn (double p1, double p2)
 { 
   return (swe_degnorm(p1 - p2));
 }
@@ -3131,21 +3131,21 @@ double swe_difdegn (double p1, double p2)
 distance in centisecs p1 - p2
 normalized to [-180..180[
 **************************************/
-centisec swe_difcs2n(centisec p1, centisec p2)
+centisec CALL_CONV swe_difcs2n(centisec p1, centisec p2)
 { centisec dif;
   dif = swe_csnorm(p1 - p2);
   if (dif  >= DEG180) return (dif - DEG360);
   return (dif);
 }
 
-double swe_difdeg2n(double p1, double p2)
+double CALL_CONV swe_difdeg2n(double p1, double p2)
 { double dif;
   dif = swe_degnorm(p1 - p2);
   if (dif  >= 180.0) return (dif - 360.0);
   return (dif);
 }
 
-double swe_difrad2n(double p1, double p2)
+double CALL_CONV swe_difrad2n(double p1, double p2)
 { double dif;
   dif = swe_radnorm(p1 - p2);
   if (dif  >= TWOPI / 2) return (dif - TWOPI);
@@ -3155,7 +3155,7 @@ double swe_difrad2n(double p1, double p2)
 /*************************************
 round second, but at 29.5959 always down
 *************************************/ 
-centisec swe_csroundsec(centisec x)	
+centisec CALL_CONV swe_csroundsec(centisec x)	
 {
   centisec t;
   t = (x + 50) / 100 *100L;	/* round to seconds */
@@ -3167,7 +3167,7 @@ centisec swe_csroundsec(centisec x)
 /*************************************
 double to int32 with rounding, no overflow check
 *************************************/ 
-int32 swe_d2l(double x)		
+int32 CALL_CONV swe_d2l(double x)		
 {
   if (x >=0)
     return ((int32) (x + 0.5));
@@ -3178,12 +3178,12 @@ int32 swe_d2l(double x)
 /*
  * monday = 0, ... sunday = 6
  */
-int swe_day_of_week(double jd)
+int CALL_CONV swe_day_of_week(double jd)
 {
   return (((int) floor (jd - 2433282 - 1.5) %7) + 7) % 7;
 }
 
-char *swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZero, char *a)
+char *CALL_CONV swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZero, char *a)
 /* does not suppress zeros in hours or minutes */
 {
   /* static char a[9];*/
@@ -3207,7 +3207,7 @@ char *swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZero, char *a)
   return (a);
   } /* swe_cs2timestr() */
 
-char *swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *sp)
+char *CALL_CONV swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *sp)
 {
   char a[10];	/* must be initialized at each call */
   char *aa;
@@ -3237,7 +3237,7 @@ char *swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *sp)
   return (sp);
 } /* swe_cs2lonlatstr() */
 
-char *swe_cs2degstr(CSEC t, char *a)
+char *CALL_CONV swe_cs2degstr(CSEC t, char *a)
   /* does  suppress leading zeros in degrees */
 {
   /* char a[9];	 must be initialized at each call */
@@ -3260,7 +3260,7 @@ char *swe_cs2degstr(CSEC t, char *a)
  *              or +/- sign
  *  
  *********************************************************/
-void swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn)
+void CALL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn)
 {
   double dadd = 0;
   *isgn = 1;
@@ -3352,7 +3352,7 @@ void swi_FK5_FK4(double *xp, double tjd)
   swi_polcart(xp, xp);
 }
 
-void swe_set_astro_models(int32 *imodel)
+void CALL_CONV swe_set_astro_models(int32 *imodel)
 {
   int *pmodel = &(swed.astro_models[0]);
   swi_init_swed_if_start();
@@ -3360,7 +3360,7 @@ void swe_set_astro_models(int32 *imodel)
 }
 
 #if 0
-void swe_get_prec_nut_models(int *imodel)
+void CALL_CONV swe_get_prec_nut_models(int *imodel)
 {
   int *pmodel = &(swed.astro_models[0]);
   memcpy(imodel, pmodel, SEI_NMODELS * sizeof(int));

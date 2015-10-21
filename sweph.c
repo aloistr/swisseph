@@ -183,7 +183,6 @@ static double meff(double r);
 static void denormalize_positions(double *x0, double *x1, double *x2);
 static void calc_speed(double *x0, double *x1, double *x2, double dt);
 static int32 plaus_iflag(int32 iflag, int32 ipl, double tjd, char *serr);
-void swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0);
 static int app_pos_rest(struct plan_data *pdp, int32 iflag, 
     double *xx, double *x2000, struct epsilon *oe, char *serr);
 static int open_jpl_file(double *ss, char *fname, char *fpath, char *serr);
@@ -195,7 +194,7 @@ static void trace_swe_fixstar(int swtch, char *star, double tjd, int32 iflag, do
 static void trace_swe_get_planet_name(int swtch, int ipl, char *s);
 #endif
 
-char *swe_version(char *s)
+char *CALL_CONV swe_version(char *s)
 {
   strcpy(s, SE_VERSION);
   return s;
@@ -214,7 +213,7 @@ char *swe_version(char *s)
  * program tests only.
  * -> If no speed flag has been specified, no speed will be returned.
  */
-int32 swe_calc(double tjd, int ipl, int32 iflag, 
+int32 CALL_CONV swe_calc(double tjd, int ipl, int32 iflag, 
 	double *xx, char *serr) 
 {
   int i, j;
@@ -431,7 +430,7 @@ return_error:
   return ERR; 
 }
 
-int32 swe_calc_ut(double tjd_ut, int32 ipl, int32 iflag, 
+int32 CALL_CONV swe_calc_ut(double tjd_ut, int32 ipl, int32 iflag, 
 	double *xx, char *serr) 
 {
   double deltat;
@@ -1134,7 +1133,7 @@ static void swi_close_keep_topo_etc(void)
 /* closes all open files, frees space of planetary data, 
  * deletes memory of all computed positions 
  */
-void swe_close(void) 
+void CALL_CONV swe_close(void) 
 {
   int i;
   /* close SWISSEPH files */
@@ -1209,7 +1208,7 @@ void swe_close(void)
  * won't return planet positions previously computed from other
  * ephemerides
  */
-void swe_set_ephe_path(char *path) 
+void CALL_CONV swe_set_ephe_path(char *path) 
 {
   int i, iflag;
   char s[AS_MAXCH];
@@ -1365,7 +1364,7 @@ void load_dpsi_deps(void)
  * won't return planet positions previously computed from other
  * ephemerides
  */
-void swe_set_jpl_file(char *fname)
+void CALL_CONV swe_set_jpl_file(char *fname)
 {
   char *sp;
   int retc;
@@ -2693,7 +2692,7 @@ static int app_pos_rest(struct plan_data *pdp, int32 iflag,
   return OK;
 }
 
-void swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
+void CALL_CONV swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
 {
   struct sid_data *sip = &swed.sidd;
   swi_init_swed_if_start();
@@ -2724,7 +2723,7 @@ void swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
   swi_force_app_pos_etc();
 }
 
-int32 swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
+int32 CALL_CONV swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
 {
   double x[6], eps;
   struct sid_data *sip = &swed.sidd;
@@ -2787,7 +2786,7 @@ int32 swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
   return iflag;
 }
 
-int32 swe_get_ayanamsa_ex_ut(double tjd_ut, int32 iflag, double *daya, char *serr)
+int32 CALL_CONV swe_get_ayanamsa_ex_ut(double tjd_ut, int32 iflag, double *daya, char *serr)
 {
   double deltat;
   int32 retflag = OK;
@@ -2811,7 +2810,7 @@ int32 swe_get_ayanamsa_ex_ut(double tjd_ut, int32 iflag, double *daya, char *ser
  * longitude of the vernal point of t referred to the
  * ecliptic of t0.
  */
-double swe_get_ayanamsa(double tjd_et)
+double CALL_CONV swe_get_ayanamsa(double tjd_et)
 {
   double daya;
   int32 iflag = swi_guess_ephe_flag();
@@ -2819,7 +2818,7 @@ double swe_get_ayanamsa(double tjd_et)
   return daya;
 }
 
-double swe_get_ayanamsa_ut(double tjd_ut)
+double CALL_CONV swe_get_ayanamsa_ut(double tjd_ut)
 {
   double daya;
   int32 iflag = swi_guess_ephe_flag();
@@ -5647,7 +5646,7 @@ static int32 plaus_iflag(int32 iflag, int32 ipl, double tjd, char *serr)
  * x		pointer for returning the ecliptic coordinates
  * serr		error return string
 **********************************************************/
-int32 swe_fixstar(char *star, double tjd, int32 iflag, 
+int32 CALL_CONV swe_fixstar(char *star, double tjd, int32 iflag, 
   double *xx, char *serr)
 {
   int i;
@@ -6120,7 +6119,7 @@ if (0) {
   return retc;
 }
 
-int32 swe_fixstar_ut(char *star, double tjd_ut, int32 iflag, 
+int32 CALL_CONV swe_fixstar_ut(char *star, double tjd_ut, int32 iflag, 
   double *xx, char *serr)
 {
   double deltat;
@@ -6153,7 +6152,7 @@ int32 swe_fixstar_ut(char *star, double tjd_ut, int32 iflag,
  * mag 		pointer to a double, for star magnitude
  * serr		error return string
 **********************************************************/
-int32 swe_fixstar_mag(char *star, double *mag, char *serr)
+int32 CALL_CONV swe_fixstar_mag(char *star, double *mag, char *serr)
 {
   int i;
   int star_nr = 0;
@@ -6279,7 +6278,7 @@ int32 swe_fixstar_mag(char *star, double *mag, char *serr)
 }
 
 #if 0
-int swe_fixstar(char *star, double tjd, int32 iflag, double *xx, char *serr)
+int CALL_CONV swe_fixstar(char *star, double tjd, int32 iflag, double *xx, char *serr)
 {
   int i, j;
   int32 iflgcoor = SEFLG_EQUATORIAL | SEFLG_XYZ | SEFLG_RADIANS;
@@ -6318,7 +6317,7 @@ int swe_fixstar(char *star, double tjd, int32 iflag, double *xx, char *serr)
 #endif
 
 
-char *swe_get_planet_name(int ipl, char *s) 
+char *CALL_CONV swe_get_planet_name(int ipl, char *s) 
 {
   int i;
   int32 retc;
@@ -6494,7 +6493,7 @@ char *swe_get_planet_name(int ipl, char *s)
   return s;
 }
 
-const char *swe_get_ayanamsa_name(int32 isidmode) 
+const char *CALL_CONV swe_get_ayanamsa_name(int32 isidmode) 
 {
   isidmode %= SE_SIDBITS;
   if (isidmode < SE_NSIDM_PREDEF)
@@ -6616,7 +6615,7 @@ static void trace_swe_get_planet_name(int swtch, int ipl, char *s)
 #endif
 
 /* set geographic position and altitude of observer */
-void swe_set_topo(double geolon, double geolat, double geoalt)
+void CALL_CONV swe_set_topo(double geolon, double geolat, double geoalt)
 {
   swi_init_swed_if_start();
   swed.topd.geolon = geolon;
@@ -6747,7 +6746,7 @@ int swi_get_observer(double tjd, int32 iflag,
  * E = LAT - LMT
  * Input variable tjd is UT.
  */
-int32 swe_time_equ(double tjd_ut, double *E, char *serr)
+int32 CALL_CONV swe_time_equ(double tjd_ut, double *E, char *serr)
 {
   int32 retval;
   double t, dt, x[6];
@@ -6775,7 +6774,7 @@ int32 swe_time_equ(double tjd_ut, double *E, char *serr)
   return OK;
 }
 
-int32 swe_lmt_to_lat(double tjd_lmt, double geolon, double *tjd_lat, char *serr)
+int32 CALL_CONV swe_lmt_to_lat(double tjd_lmt, double geolon, double *tjd_lat, char *serr)
 {
   int32 retval;
   double E, tjd_lmt0;
@@ -6785,7 +6784,7 @@ int32 swe_lmt_to_lat(double tjd_lmt, double geolon, double *tjd_lat, char *serr)
   return retval;
 }
 
-int32 swe_lat_to_lmt(double tjd_lat, double geolon, double *tjd_lmt, char *serr)
+int32 CALL_CONV swe_lat_to_lmt(double tjd_lat, double geolon, double *tjd_lmt, char *serr)
 {
   int32 retval;
   double E, tjd_lmt0;
@@ -6833,7 +6832,7 @@ static int open_jpl_file(double *ss, char *fname, char *fpath, char *serr)
 }
 
 #if 0
-void swe_set_timeout(int32 tsec)
+void CALL_CONV swe_set_timeout(int32 tsec)
 {
   if (tsec < 0) tsec = 0;
   swed.timeout = tsec;
@@ -6841,7 +6840,7 @@ void swe_set_timeout(int32 tsec)
 #endif
 
 #if 0
-int swe_time_equ(double tjd_ut, double *E, char *serr)
+int CALL_CONV swe_time_equ(double tjd_ut, double *E, char *serr)
  /* Algorithm according to Meeus, German, p. 190ff.*/
   double L0, dpsi, eps, x[6], nutlo[2];
   double tau = (tjd - J2000) / 365250;

@@ -549,7 +549,7 @@ struct saros_data saros_data_lunar[NSAROS_LUNAR] = {
  * attr[7]	angular distance of moon from sun in degrees
  *         declare as attr[20] at least !
  */
-int32 swe_sol_eclipse_where(
+int32 CALL_CONV swe_sol_eclipse_where(
 		double tjd_ut, 
                 int32 ifl,
 		double *geopos, 
@@ -568,7 +568,7 @@ int32 swe_sol_eclipse_where(
   return retflag;
 }
 
-int32 swe_lun_occult_where(
+int32 CALL_CONV swe_lun_occult_where(
 		double tjd_ut, 
                 int32 ipl,
                 char *starname,
@@ -896,7 +896,7 @@ static int32 calc_planet_star(double tjd_et, int32 ipl, char *starname, int32 if
  *         declare as attr[20] at least !
  * 
  */
-int32 swe_sol_eclipse_how(
+int32 CALL_CONV swe_sol_eclipse_how(
           double tjd_ut, 
           int32 ifl,
           double *geopos,
@@ -1148,7 +1148,7 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
  *         declare as tret[10] at least!
  *
  */
-int32 swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype,
+int32 CALL_CONV swe_sol_eclipse_when_glob(double tjd_start, int32 ifl, int32 ifltype,
      double *tret, int32 backward, char *serr)
 {
   int i, j, k, m, n, o, i1 = 0, i2 = 0;
@@ -1535,7 +1535,7 @@ end_search_global:
  *         declare as tret[10] at least!
  *
  */
-int32 swe_lun_occult_when_glob(
+int32 CALL_CONV swe_lun_occult_when_glob(
      double tjd_start, int32 ipl, char *starname, int32 ifl, int32 ifltype,
      double *tret, int32 backward, char *serr)
 {
@@ -1982,7 +1982,7 @@ end_search_global:
  * attr[10]	saros series member number
  *         declare as attr[20] at least !
  */
-int32 swe_sol_eclipse_when_loc(double tjd_start, int32 ifl,
+int32 CALL_CONV swe_sol_eclipse_when_loc(double tjd_start, int32 ifl,
      double *geopos, double *tret, double *attr, int32 backward, char *serr)
 {
   int32 retflag = 0, retflag2 = 0;
@@ -2034,7 +2034,7 @@ int32 swe_sol_eclipse_when_loc(double tjd_start, int32 ifl,
  *
  * for all other parameters, see function swe_sol_eclipse_when_loc().
  */
-int32 swe_lun_occult_when_loc(double tjd_start, int32 ipl, char *starname, int32 ifl,
+int32 CALL_CONV swe_lun_occult_when_loc(double tjd_start, int32 ipl, char *starname, int32 ifl,
      double *geopos, double *tret, double *attr, int32 backward, char *serr)
 {
   int32 retflag = 0, retflag2 = 0;
@@ -2748,7 +2748,7 @@ next_try:
  * if a non-zero height above sea is given, atpress is estimated.
  *   geohgt	  height of observer above sea (optional)
  */
-void swe_azalt(
+void CALL_CONV swe_azalt(
       double tjd_ut,
       int32  calc_flag,
       double *geopos,
@@ -2799,7 +2799,7 @@ void swe_azalt(
  *   iflag        either SE_HOR2ECL or SE_HOR2EQU
  *   xin[2]       azimut and true altitude, in degrees 
  */
-void swe_azalt_rev(
+void CALL_CONV swe_azalt_rev(
       double tjd_ut,
       int32  calc_flag,
       double *geopos,
@@ -2847,7 +2847,7 @@ void swe_azalt_rev(
  * int32  calc_flag;	* either SE_CALC_APP_TO_TRUE or 
  *                      *        SE_CALC_TRUE_TO_APP
  */
-double swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag)
+double CALL_CONV swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag)
 {
   double a, refr;
   double pt_factor = atpress / 1010.0 * 283.0 / (273.0 + attemp);
@@ -2946,7 +2946,7 @@ double swe_refrac(double inalt, double atpress, double attemp, int32 calc_flag)
   }
 }
 
-void swe_set_lapse_rate(double lapse_rate) 
+void CALL_CONV swe_set_lapse_rate(double lapse_rate) 
 {
   const_lapse_rate = lapse_rate;
 }
@@ -2993,7 +2993,7 @@ void swe_set_lapse_rate(double lapse_rate)
  *
  * The body is above the horizon if the dret[0] != dret[1]
  */
-double swe_refrac_extended(double inalt, double geoalt, double atpress, double attemp, double lapse_rate, int32 calc_flag, double *dret)
+double CALL_CONV swe_refrac_extended(double inalt, double geoalt, double atpress, double attemp, double lapse_rate, int32 calc_flag, double *dret)
 {
   double refr;
   double trualt;
@@ -3143,7 +3143,7 @@ static double calc_dip(double geoalt, double atpress, double attemp, double laps
  *         declare as attr[20] at least !
  * 
  */
-int32 swe_lun_eclipse_how(
+int32 CALL_CONV swe_lun_eclipse_how(
           double tjd_ut, 
           int32 ifl,
           double *geopos, 
@@ -3330,7 +3330,7 @@ static int32 lun_eclipse_how(
  * tret[6]	time of penumbral phase begin
  * tret[7]	time of penumbral phase end
  */
-int32 swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype,
+int32 CALL_CONV swe_lun_eclipse_when(double tjd_start, int32 ifl, int32 ifltype,
      double *tret, int32 backward, char *serr)
 {
   int i, j, m, n, o, i1 = 0, i2 = 0;
@@ -3585,7 +3585,7 @@ next_try:
  * attr[10]     saros series member number
  *         declare as attr[20] at least !
  */
-int32 swe_lun_eclipse_when_loc(double tjd_start, int32 ifl, 
+int32 CALL_CONV swe_lun_eclipse_when_loc(double tjd_start, int32 ifl, 
      double *geopos, double *tret, double *attr, int32 backward, char *serr)
 {
   int32 retflag = 0, retflag2 = 0, retc;
@@ -3717,15 +3717,6 @@ static const double mag_elem[NMAG_ELEM][4] = {
                 {- 6.87, 0.0, 0, 0},    /* Neptune */
                 {- 1.00, 0.0, 0, 0},    /* Pluto */
 #else
-                /* IAU ???? */
-                {-0.60, 0.0498, -0.000488, 0.00000302}, /* Mercury */
-                {-5.18, 0.0103, 0.000057, 0.00000013}, /* Venus */
-                {- 1.52, 0.016, 0, 0},   /* Mars */
-                {- 9.40, 0.005, 0, 0},    /* Jupiter */
-                {- 8.88, 0.044, 0, 0},   /* Saturn */
-                {- 7.19, 0.0028, 0, 0},    /* Uranus */
-                {- 6.87, 0.041, 0, 0},    /* Neptune */
-                {- 1.00, 0.041, 0, 0},    /* Pluto */
 #endif
                 {99, 0, 0, 0},          /* nodes and apogees */
                 {99, 0, 0, 0},
@@ -3740,7 +3731,7 @@ static const double mag_elem[NMAG_ELEM][4] = {
                 {5.33, 0.32, 0, 0},     /* Juno */
                 {3.20, 0.32, 0, 0},     /* Vesta */
                 };
-int32 swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr)
+int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr)
 {
   int i;
   double xx[6], xx2[6], xxs[6], lbr[6], lbr2[6], dt = 0, dd;
@@ -3882,11 +3873,6 @@ int32 swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr)
                   + mag_elem[ipl][3] * attr[0] * attr[0] * attr[0] / 1000000.0
                   + mag_elem[ipl][0];
 #else
-      attr[4] = 5 * log10(lbr2[2] * lbr[2])
-                  + mag_elem[ipl][1] * attr[0]
-                  + mag_elem[ipl][2] * attr[0] * attr[0]
-                  + mag_elem[ipl][3] * attr[0] * attr[0] * attr[0]
-                  + mag_elem[ipl][0];
 #endif
     } else if (ipl < NMAG_ELEM || ipl > SE_AST_OFFSET) { /* asteroids */
       ph1 = pow(EULER, -3.33 * pow(tan(attr[0] * DEGTORAD / 2), 0.63));
@@ -3963,7 +3949,7 @@ int32 swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char *serr)
   return OK;
 }
 
-int32 swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr)
+int32 CALL_CONV swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr)
 {
   double deltat;
   int32 retflag = OK;
@@ -4046,7 +4032,7 @@ double rdi_twilight(int32 rsmi)
  * serr[256]	error string
  * function return value -2 means that the body does not rise or set */
 #define SEFLG_EPHMASK	(SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH)
-int32 swe_rise_trans(
+int32 CALL_CONV swe_rise_trans(
                double tjd_ut, int32 ipl, char *starname,
 	       int32 epheflag, int32 rsmi,
                double *geopos, 
@@ -4059,7 +4045,7 @@ int32 swe_rise_trans(
 
 /* same as swe_rise_trans(), but allows to define the height of the horizon
  * at the point of the rising or setting (horhgt) */
-int32 swe_rise_trans_true_hor(
+int32 CALL_CONV swe_rise_trans_true_hor(
                double tjd_ut, int32 ipl, char *starname,
 	       int32 epheflag, int32 rsmi,
                double *geopos, 
@@ -4697,7 +4683,7 @@ static const double plmass[9] = {
   130000000,        /* Pluto */
 };
 static const int ipl_to_elem[15] = {2, 0, 0, 1, 3, 4, 5, 6, 7, 0, 0, 0, 0, 0, 2,};
-int32 swe_nod_aps(double tjd_et, int32 ipl, int32 iflag, 
+int32 CALL_CONV swe_nod_aps(double tjd_et, int32 ipl, int32 iflag, 
                       int32  method,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
@@ -5276,7 +5262,7 @@ int32 swe_nod_aps(double tjd_et, int32 ipl, int32 iflag,
   return OK;
 }
 
-int32 swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag, 
+int32 CALL_CONV swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag, 
                       int32  method,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
@@ -5306,7 +5292,7 @@ int32 swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
  * dgsect is return area (pointer to a double)
  * serr is pointer to error string, may be NULL
  */
-int32 swe_gauquelin_sector(double t_ut, int32 ipl, char *starname, int32 iflag, int32 imeth, double *geopos, double atpress, double attemp, double *dgsect, char *serr) 
+int32 CALL_CONV swe_gauquelin_sector(double t_ut, int32 ipl, char *starname, int32 iflag, int32 imeth, double *geopos, double atpress, double attemp, double *dgsect, char *serr) 
 {
   AS_BOOL rise_found = TRUE;
   AS_BOOL set_found = TRUE;

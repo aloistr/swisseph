@@ -112,7 +112,7 @@ static int sidereal_houses_ssypl(double tjde,
  * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
  * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
  */
-int swe_houses(double tjd_ut,
+int CALL_CONV swe_houses(double tjd_ut,
 				double geolat,
 				double geolon,
 				int hsys,
@@ -162,7 +162,7 @@ int swe_houses(double tjd_ut,
  * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
  * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
  */
-int swe_houses_ex(double tjd_ut,
+int CALL_CONV swe_houses_ex(double tjd_ut,
                                 int32 iflag, 
 				double geolat,
 				double geolon,
@@ -497,7 +497,7 @@ static int sidereal_houses_trad(double tjde,
  * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
  * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
  */
-int swe_houses_armc(
+int CALL_CONV swe_houses_armc(
 				double armc,
 				double geolat,
 				double eps,
@@ -617,7 +617,7 @@ static double apc_sector(int n, double ph, double e, double az)
    return dret;
 }
 
-char *swe_house_name(int hsys)
+char *CALL_CONV swe_house_name(int hsys)
 {
   switch (toupper(hsys)) {
   case 'A': return "equal";
@@ -1376,7 +1376,7 @@ static double Asc2 (double x, double f, double sine, double cose)
  *   equal, Porphyry, Alcabitius, Koch, Krusinski (all others should work).
  * The Swiss Ephemeris currently does not handle these cases.
  */
-double swe_house_pos(
+double CALL_CONV swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr)
 {
   double xp[6], xeq[6], ra, de, mdd, mdn, sad, san;

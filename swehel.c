@@ -1376,7 +1376,7 @@ static double VisLimMagn(double *dobs, double AltO, double AziO, double AltM, do
  *  |1  OK, scotopic vision
  *  |2  OK, near limit photopic/scotopic
 */
-int32 swe_vis_limit_mag(double tjdut, double *dgeo, double *datm, double *dobs, char *ObjectName, int32 helflag, double *dret, char *serr)
+int32 CALL_CONV swe_vis_limit_mag(double tjdut, double *dgeo, double *datm, double *dobs, char *ObjectName, int32 helflag, double *dret, char *serr)
 {
   int32 retval = OK, i, scotopic_flag = 0;
   double AltO, AziO, AltM, AziM, AltS, AziS;
@@ -1512,7 +1512,7 @@ static int32 TopoArcVisionis(double Magn, double *dobs, double AltO, double AziO
   return OK;
 }
 
-int32 swe_topo_arcus_visionis(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double alt_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr)
+int32 CALL_CONV swe_topo_arcus_visionis(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double alt_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr)
 {
   double sunra;
   swi_set_tid_acc(tjdut, helflag, 0, serr);
@@ -1605,7 +1605,7 @@ static int32 HeliacalAngle(double Magn, double *dobs, double AziO, double AltM, 
   return OK;
 }
 
-int32 swe_heliacal_angle(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr)
+int32 CALL_CONV swe_heliacal_angle(double tjdut, double *dgeo, double *datm, double *dobs, int32 helflag, double mag, double azi_obj, double azi_sun, double azi_moon, double alt_moon, double *dret, char *serr)
 {
   if (dgeo[2] < SEI_ECL_GEOALT_MIN || dgeo[2] > SEI_ECL_GEOALT_MAX) {
     if (serr != NULL)
@@ -1768,7 +1768,7 @@ static void strcpy_VBsafe(char *sout, char *sin)
 '28=CVAact [deg] 'new
 '29=MSk [-]
 */
-int32 swe_heliacal_pheno_ut(double JDNDaysUT, double *dgeo, double *datm, double *dobs, char *ObjectNameIn, int32 TypeEvent, int32 helflag, double *darr, char *serr)
+int32 CALL_CONV swe_heliacal_pheno_ut(double JDNDaysUT, double *dgeo, double *datm, double *dobs, char *ObjectNameIn, int32 TypeEvent, int32 helflag, double *darr, char *serr)
 {
   double AziS, AltS, AltS2, AziO, AltO, AltO2, GeoAltO, AppAltO, DAZact, TAVact, ParO, MagnO;
   double ARCVact, ARCLact, kact, WMoon, LMoon = 0, qYal, qCrit;
@@ -3237,7 +3237,7 @@ static int32 heliacal_ut(double JDNDaysUTStart, double *dgeo, double *datm, doub
 '                   dret[2]: end of visibility (Julian day number; 0 if SE_HELFLAG_AV)
 ' see http://www.iol.ie/~geniet/eng/atmoastroextinction.htm
 */
-int32 swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, double *datm, double *dobs, char *ObjectNameIn, int32 TypeEvent, int32 helflag, double *dret, char *serr_ret)
+int32 CALL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, double *datm, double *dobs, char *ObjectNameIn, int32 TypeEvent, int32 helflag, double *dret, char *serr_ret)
 {
   int32 retval, Planet, itry;
   char ObjectName[AS_MAXCH], serr[AS_MAXCH], s[AS_MAXCH];

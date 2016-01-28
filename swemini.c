@@ -78,6 +78,7 @@ int main()
   double tjd, te, x2[6];
   int32 iflag, iflgret;
   int p;
+  swe_set_ephe_path(NULL);
   iflag = SEFLG_SPEED;
   while (TRUE) {
     printf("\nDate (d.m.y) ?");

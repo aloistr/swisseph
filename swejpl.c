@@ -75,8 +75,6 @@
 #include "swejpl.h"
 
 #if MSDOS
-  extern __int64 __cdecl _ftelli64(FILE *);
-  extern int __cdecl _fseeki64(FILE *, __int64, int);
   typedef __int64 off_t;
   #define FSEEK _fseeki64
   #define FTELL _ftelli64

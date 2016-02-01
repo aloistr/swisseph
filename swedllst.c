@@ -35,6 +35,7 @@ BOOL WINAPI DllMain(HANDLE hInst,
 {
   switch(ul_reason_for_call) {
     case DLL_PROCESS_ATTACH:
+      dllhandle = hInst;	// used by swe_version()
       break;
     case DLL_PROCESS_DETACH:
       swe_close();

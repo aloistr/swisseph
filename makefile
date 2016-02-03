@@ -18,14 +18,14 @@ REV=1.30
 SWEVERSION=2.05
 
 MOSH = swemmoon.o swemplan.o
-SWEPH = sweph.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o 
+SWEPH = sweph.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o swehouse.o swecl.o 
 SWEPHA = swepha.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o
-SWEOBJ = sweph.o swephlib.o swejpl.o \
-	swemmoon.o swemplan.o swedate.o 
+SWEOBJ = swecl.o sweph.o swephlib.o swejpl.o \
+	swemmoon.o swemplan.o swedate.o swehouse.o 
 
 PUBSOURCE = LICENSE swedll.h swemmoon.c swepcalc.h sweph.h swephlib.h \
-	swepcalc.c swepdate.c swephexp.h swetest.c \
-	swemplan.c sweph.c \
+	swehouse.c swepcalc.c swepdate.c swephexp.h swetest.c \
+	swehouse.h swemplan.c sweph.c swecl.c \
 	swedate.c swejpl.c swemptab.c \
 	swedate.h swejpl.h sweodef.h swephlib.c swemini.c seorbel.txt \
 	sefstars.txt swenut2000a.h seleapsec.txt \
@@ -126,6 +126,9 @@ voc: voc.o $(SWEPH)
 
 cccrypt: cccrypt.o $(SWEPH)
 	cc $(OP) -o cccrypt cccrypt.o $(SWEPH) -lastro -lm
+
+sweclips: sweclips.o $(SWEPH)
+	cc $(OP) -o sweclips sweclips.o $(SWEPH) -lastro -lm
 
 swetest1: swetest1.o $(SWEPH)
 	cc $(OP) -o swetest1 swetest1.o $(SWEPH) -lastro -lm
@@ -239,6 +242,8 @@ moshmoon.o: sweodef.h swephexp.h swedll.h sweph.h swephlib.h
 printmod.o: /users/alois/lib/astrolib.h swepcalc.h swephexp.h sweodef.h \
 	swedll.h /users/alois/lib/iso12ps.h
 st.o: ourdef.h swephexp.h sweodef.h swedll.h
+swecl.o: swejpl.h sweodef.h swephexp.h swedll.h sweph.h swephlib.h
+sweclips.o: sweodef.h swephexp.h swedll.h
 swedate.o: swephexp.h sweodef.h swedll.h
 sweephe4.o: swephexp.h sweodef.h swedll.h sweephe4.h swepcalc.h \
 	/users/alois/lib/astrolib.h ourfiles.h

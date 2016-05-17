@@ -68,6 +68,8 @@ struct houses {
 	  double coasc1;
 	  double coasc2;
 	  double polasc;
+	  double sundec;	// declination of Sun for Sunshine houses
+	  char serr[AS_MAXCH];
 	};
 
 #define HOUSES 	struct houses
@@ -76,9 +78,9 @@ struct houses {
 #define degtocs(x)    (d2l((x) * DEG))
 #define cstodeg(x)    (double)((x) * CS2DEG)
 
-#define sind(x) sin(x * DEGTORAD)
-#define cosd(x) cos(x * DEGTORAD)
-#define tand(x) tan(x * DEGTORAD)
+#define sind(x) sin((x) * DEGTORAD)
+#define cosd(x) cos((x) * DEGTORAD)
+#define tand(x) tan((x) * DEGTORAD)
 #define asind(x) (asin(x) * RADTODEG)
 #define acosd(x) (acos(x) * RADTODEG)
 #define atand(x) (atan(x) * RADTODEG)

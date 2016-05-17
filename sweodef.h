@@ -80,7 +80,7 @@
  * Sun Studio C/C++, IBM XL C/C++, GNU C and Intel C/C++ (Linux systems) -> __thread
  * Borland, VC++ -> __declspec(thread)
  */
-#if !defined( __APPLE__ ) && !defined(WIN32) && !defined(DOS32)
+#if !defined(TLSOFF) && !defined( __APPLE__ ) && !defined(WIN32) && !defined(DOS32)
 #if defined( __GNUC__ )
 #define TLS     __thread
 #else
@@ -266,8 +266,12 @@ typedef unsigned char UCHAR;
 
 #define AS_MAXCH 256    /* used for string declarations, allowing 255 char+\0 */
  
+/*
 #define DEGTORAD 0.0174532925199433
 #define RADTODEG 57.2957795130823
+*/
+#define RADTODEG (180.0 / M_PI)
+#define DEGTORAD (M_PI / 180.0)
  
 typedef int32    centisec;       /* centiseconds used for angles and times */
 #define CS	(centisec)	/* use for casting */
@@ -286,8 +290,10 @@ typedef int32    centisec;       /* centiseconds used for angles and times */
 #define DEG270  (270 * DEG)
 #define DEG360  (360 * DEG)
  
-#define CSTORAD  4.84813681109536E-08 /* centisec to rad: pi / 180 /3600/100 */
-#define RADTOCS  2.06264806247096E+07 /* rad to centisec 180*3600*100/pi */
+/* #define CSTORAD  4.84813681109536E-08  centisec to rad: pi / 180 /3600/100 */
+/* #define RADTOCS  2.06264806247096E+07  rad to centisec 180*3600*100/pi */
+#define CSTORAD	(DEGTORAD / 360000.0)
+#define RADTOCS (RADTODEG * 360000.0)
  
 #define CS2DEG	(1.0/360000.0)	/* centisec to degree */
 

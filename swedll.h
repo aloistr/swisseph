@@ -97,6 +97,7 @@ DllImport int32 CALL_CONV_IMP swe_topo_arcus_visionis(double tjdut, double *dgeo
 DllImport double CALL_CONV_IMP swe_degnorm(double deg);
 
 DllImport char * CALL_CONV_IMP swe_version(char *);
+DllImport char * CALL_CONV_IMP swe_get_library_path(char *);
 
 DllImport int32 CALL_CONV_IMP swe_calc( 
         double tjd, int ipl, int32 iflag, 
@@ -203,6 +204,7 @@ DllImport int  CALL_CONV_IMP swe_lat_to_lmt(double tjd_lat, double geolon, doubl
 
 DllImport double  CALL_CONV_IMP swe_get_tid_acc(void);
 DllImport void  CALL_CONV_IMP swe_set_tid_acc(double tidacc);
+DllImport void  CALL_CONV_IMP swe_set_delta_t_userdef(double dt);
 DllImport void  CALL_CONV_IMP swe_set_ephe_path(char *path);
 DllImport void  CALL_CONV_IMP swe_set_jpl_file(char *fname);
 DllImport void  CALL_CONV_IMP swe_close(void);
@@ -300,6 +302,10 @@ DllImport int32  CALL_CONV_IMP swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 if
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
                       char *serr);
+
+DllImport int32 CALL_CONV_IMP swe_get_orbital_elements(double tjd_et, int32 ipl, int32 iflag, double *dret, char *serr);
+
+DllImport int32 CALL_CONV_IMP swe_orbit_max_min_true_distance(double tjd_et, int32 ipl, int32 iflag, double *dmax, double *dmin, double *dtrue, char *serr);
 
 /******************************************************* 
  * other functions from swephlib.c;

@@ -183,21 +183,26 @@ extern "C" {
 #define SEFLG_SWIEPH    2       /* use SWISSEPH ephemeris */
 #define SEFLG_MOSEPH    4       /* use Moshier ephemeris */
 
-#define SEFLG_HELCTR	8      /* return heliocentric position */
-#define SEFLG_TRUEPOS	16     /* return true positions, not apparent */
+#define SEFLG_HELCTR	8      /* heliocentric position */
+#define SEFLG_TRUEPOS	16     /* true/geometric position, not apparent position */
 #define SEFLG_J2000	32     /* no precession, i.e. give J2000 equinox */
 #define SEFLG_NONUT	64     /* no nutation, i.e. mean equinox of date */
-#define SEFLG_SPEED3	128     /* speed from 3 positions (do not use it,
-                                  SEFLG_SPEED is faster and more precise.) */
-#define SEFLG_SPEED	256     /* high precision speed  */
-#define SEFLG_NOGDEFL	512     /* turn off gravitational deflection */
-#define SEFLG_NOABERR	1024    /* turn off 'annual' aberration of light */
+#define SEFLG_SPEED3	128    /* speed from 3 positions (do not use it,
+                                * SEFLG_SPEED is faster and more precise.) */
+#define SEFLG_SPEED	256    /* high precision speed  */
+#define SEFLG_NOGDEFL	512    /* turn off gravitational deflection */
+#define SEFLG_NOABERR	1024   /* turn off 'annual' aberration of light */
+#define SEFLG_ASTROMETRIC (SEFLG_NOABERR|SEFLG_NOGDEFL) /* astrometric position,
+                                * i.e. with light-time, but without aberration and
+			        * light deflection */
 #define SEFLG_EQUATORIAL (2*1024)    /* equatorial positions are wanted */
-#define SEFLG_XYZ	(4*1024)    /* cartesian, not polar, coordinates */
-#define SEFLG_RADIANS	(8*1024)    /* coordinates in radians, not degrees */
-#define SEFLG_BARYCTR	(16*1024)   /* barycentric positions */
-#define SEFLG_TOPOCTR	(32*1024)   /* topocentric positions */
-#define SEFLG_SIDEREAL	(64*1024)   /* sidereal positions */
+#define SEFLG_XYZ	(4*1024)     /* cartesian, not polar, coordinates */
+#define SEFLG_RADIANS	(8*1024)     /* coordinates in radians, not degrees */
+#define SEFLG_BARYCTR	(16*1024)    /* barycentric position */
+#define SEFLG_TOPOCTR	(32*1024)    /* topocentric position */
+#define SEFLG_ORBEL_AA SEFLG_TOPOCTR /* used for Astronomical Almanac mode in 
+                                      * calculation of Kepler elipses */
+#define SEFLG_SIDEREAL	(64*1024)    /* sidereal position */
 #define SEFLG_ICRS	(128*1024)   /* ICRS (DE406 reference frame) */
 #define SEFLG_DPSIDEPS_1980	(256*1024) /* reproduce JPL Horizons 
                                       * 1962 - today to 0.002 arcsec. */
@@ -209,6 +214,8 @@ extern "C" {
 #define SE_SIDBIT_ECL_T0        256
 /* for projection onto solar system plane */
 #define SE_SIDBIT_SSY_PLANE     512
+/* with user-defined ayanamsha, t0 is UT */
+#define SE_SIDBIT_USER_UT       1024
 
 /* sidereal modes (ayanamsas) */
 #define SE_SIDM_FAGAN_BRADLEY    0
@@ -241,9 +248,19 @@ extern "C" {
 #define SE_SIDM_TRUE_CITRA      27
 #define SE_SIDM_TRUE_REVATI     28
 #define SE_SIDM_TRUE_PUSHYA     29
-#define SE_SIDM_USER            255
+#define SE_SIDM_GALCENT_RGILBRAND 30
+#define SE_SIDM_GALEQU_IAU1958  31
+#define SE_SIDM_GALEQU_TRUE     32
+#define SE_SIDM_GALEQU_MULA     33
+#define SE_SIDM_GALALIGN_MARDYKS 34
+#define SE_SIDM_TRUE_MULA       35
+#define SE_SIDM_GALCENT_MULA_WILHELM       36
+#define SE_SIDM_ARYABHATA_522   37
+#define SE_SIDM_BABYL_BRITTON   38
+//#define SE_SIDM_MANJULA         38
+#define SE_SIDM_USER            255 /* user-defined ayanamsha, t0 is TT */
 
-#define SE_NSIDM_PREDEF	      30
+#define SE_NSIDM_PREDEF	        39
 
 /* used for swe_nod_aps(): */
 #define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
@@ -392,12 +409,14 @@ extern "C" {
 #define SE_HELFLAG_SEARCH_1_PERIOD	(1 << 11)  /*  2048 */
 #define SE_HELFLAG_VISLIM_DARK		(1 << 12)  /*  4096 */
 #define SE_HELFLAG_VISLIM_NOMOON	(1 << 13)  /*  8192 */
+/* the following undocumented defines are for test reasons only */
 #define SE_HELFLAG_VISLIM_PHOTOPIC	(1 << 14)  /* 16384 */
-#define SE_HELFLAG_AV	 		(1 << 15)  /* 32768 */
-#define SE_HELFLAG_AVKIND_VR 		(1 << 15)  /* 32768 */
-#define SE_HELFLAG_AVKIND_PTO 		(1 << 16)
-#define SE_HELFLAG_AVKIND_MIN7 		(1 << 17)
-#define SE_HELFLAG_AVKIND_MIN9 		(1 << 18)
+#define SE_HELFLAG_VISLIM_SCOTOPIC	(1 << 15)  /* 32768 */
+#define SE_HELFLAG_AV	 		(1 << 16)  /* 65536 */
+#define SE_HELFLAG_AVKIND_VR 		(1 << 16)  /* 65536 */
+#define SE_HELFLAG_AVKIND_PTO 		(1 << 17)
+#define SE_HELFLAG_AVKIND_MIN7 		(1 << 18)
+#define SE_HELFLAG_AVKIND_MIN9 		(1 << 19)
 #define SE_HELFLAG_AVKIND (SE_HELFLAG_AVKIND_VR|SE_HELFLAG_AVKIND_PTO|SE_HELFLAG_AVKIND_MIN7|SE_HELFLAG_AVKIND_MIN9)
 #define TJD_INVALID		 	99999999.0
 #define SIMULATE_VICTORVB               1
@@ -440,6 +459,9 @@ extern "C" {
 #define SE_TIDAL_MOSEPH                SE_TIDAL_DE404
 #define SE_TIDAL_SWIEPH                SE_TIDAL_DEFAULT
 #define SE_TIDAL_JPLEPH                SE_TIDAL_DEFAULT
+
+/* for function swe_set_delta_t_userdef() */
+#define SE_DELTAT_AUTOMATIC             (-1E-10)
 
 #define SE_MODEL_PREC_LONGTERM  0
 #define SE_MODEL_PREC_SHORTTERM 1
@@ -543,6 +565,9 @@ extern "C" {
  ************************************************************/
 #if defined(MAKE_DLL) || defined(USE_DLL) || defined(_WINDOWS)
 #  include <windows.h>
+extern HANDLE dllhandle;        // set by swedllst::DllMain, 
+				// defined in sweph.c
+				// used by GetModuleFilename in sweph.c
 #endif
 
 #ifdef USE_DLL
@@ -566,6 +591,7 @@ extern "C" {
 #    define FREE _ffree
 #  endif
 #endif
+
 
 /* DLL defines */
 #ifdef MAKE_DLL
@@ -617,6 +643,7 @@ ext_def(void) swe_set_astro_models(int32 *imodel);
  ****************************/
 
 ext_def(char *) swe_version(char *);
+ext_def(char *) swe_get_library_path(char *);
 
 /* planets, moon, nodes etc. */
 ext_def( int32 ) swe_calc(
@@ -829,7 +856,10 @@ ext_def (int32) swe_nod_aps_ut(double tjd_ut, int32 ipl, int32 iflag,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
                       char *serr);
+ext_def (int32) swe_get_orbital_elements(
+  double tjd_et, int32 ipl, int32 iflag, double *dret, char *serr);
 
+ext_def (int32) swe_orbit_max_min_true_distance(double tjd_et, int32 ipl, int32 iflag, double *dmax, double *dmin, double *dtrue, char *serr);
 
 /**************************** 
  * exports from swephlib.c 
@@ -855,6 +885,10 @@ ext_def( void ) swe_cotrans_sp(double *xpo, double *xpn, double eps);
 /* tidal acceleration to be used in swe_deltat() */
 ext_def( double ) swe_get_tid_acc(void);
 ext_def( void ) swe_set_tid_acc(double t_acc);
+
+/* set a user defined delta t to be returned by functions
+ * swe_deltat() and swe_deltat_ex() */
+ext_def (void) swe_set_delta_t_userdef(double dt);
 
 ext_def( double ) swe_degnorm(double x);
 ext_def( double ) swe_radnorm(double x);

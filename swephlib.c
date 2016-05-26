@@ -80,6 +80,7 @@
 #include "swephlib.h"
 #if MSDOS
 # include <process.h>
+# define strdup _strdup
 #endif
 
 #ifdef TRACE
@@ -322,7 +323,14 @@ void swi_cartpol(double *x, double *l)
   rxy = sqrt(rxy);
   ll[0] = atan2(x[1], x[0]);
   if (ll[0] < 0.0) ll[0] += TWOPI;
-  ll[1] = atan(x[2] / rxy);
+  if (rxy == 0) {
+    if (x[2] >= 0)
+      ll[1] = PI / 2;
+    else
+      ll[1] = -(PI / 2);
+  } else {
+    ll[1] = atan(x[2] / rxy);
+  }
   l[0] = ll[0];
   l[1] = ll[1];
   l[2] = ll[2];
@@ -2076,10 +2084,12 @@ static TLS double dt[TABSIZ_SPACE] = {
 56.86, 57.57, 58.31, 59.12, 59.98, 60.78, 61.63, 62.30, 62.97, 63.47,
 /* 2000.0 thru 2009.0 */
 63.83, 64.09, 64.30, 64.47, 64.57, 64.69, 64.85, 65.15, 65.46, 65.78,      
-/* 2010.0 thru 2015.0 */
-66.07, 66.32, 66.60, 66.907,67.281,67.644,
-/* Extrapolated values, 2016 - 2019 */
-					 68.01, 68.50, 69.00, 69.50,
+/* 2010.0 thru 2016.0 */
+/* newest value of 2016 was taken from:
+ * http://maia.usno.navy.mil/ser7/deltat.data*/
+66.07, 66.32, 66.60, 66.907,67.281,67.644,68.1024,
+/* Extrapolated values, 2017 - 2019 */
+					          68.50, 69.00, 69.50,
 };
 /*#define DELTAT_ESPENAK_MEEUS_2006 TRUE*/
 #define TAB2_SIZ	27
@@ -2188,7 +2198,7 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
     if (swi_fp_trace_c != NULL) {
       fputs("\n/*SWE_DELTAT*/\n", swi_fp_trace_c);
       fprintf(swi_fp_trace_c, "  tjd = %.9f;", tjd);
-      fprintf(swi_fp_trace_c, "  iflag = %d;", tjd);
+      fprintf(swi_fp_trace_c, "  iflag = %d;", iflag);
       fprintf(swi_fp_trace_c, " t = swe_deltat_ex(tjd, iflag, NULL);\n");
       fputs("  printf(\"swe_deltat: %f\\t%f\\t\\n\", ", swi_fp_trace_c);
       fputs("tjd, t);\n", swi_fp_trace_c);
@@ -2207,6 +2217,8 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
 double CALL_CONV swe_deltat_ex(double tjd, int32 iflag, char *serr)
 {
   double deltat;
+  if (swed.delta_t_userdef_is_set)
+    return swed.delta_t_userdef;
   calc_deltat(tjd, iflag, &deltat, serr);
   return deltat;
 }
@@ -2495,6 +2507,16 @@ void CALL_CONV swe_set_tid_acc(double t_acc)
   }
   swed.tid_acc = t_acc;
   swed.is_tid_acc_manual = TRUE;
+}
+
+void CALL_CONV swe_set_delta_t_userdef(double dt)
+{
+  if (dt == SE_DELTAT_AUTOMATIC) {
+    swed.delta_t_userdef_is_set = FALSE; 
+  } else {
+    swed.delta_t_userdef_is_set = TRUE;
+    swed.delta_t_userdef = dt;
+  }
 }
 
 int32 swi_guess_ephe_flag()
@@ -3332,24 +3354,29 @@ double swi_kepler(double E, double M, double ecce)
 
 void swi_FK4_FK5(double *xp, double tjd)
 {
+  AS_BOOL correct_speed = TRUE;
   if (xp[0] == 0 && xp[1] == 0 && xp[2] == 0)
     return;
-  swi_cartpol(xp, xp);
+  /* with zero speed, we assume that it should be really zero */
+  if (xp[3] == 0)
+    correct_speed = FALSE;
+  swi_cartpol_sp(xp, xp);
   /* according to Expl.Suppl., p. 167f. */
   xp[0] += (0.035 + 0.085 * (tjd - B1950) / 36524.2198782) / 3600 * 15 * DEGTORAD;
-  xp[3] += (0.085 / 36524.2198782) / 3600 * 15 * DEGTORAD;
-  swi_polcart(xp, xp);
+  if (correct_speed)
+    xp[3] += (0.085 / 36524.2198782) / 3600 * 15 * DEGTORAD;
+  swi_polcart_sp(xp, xp);
 }
 
 void swi_FK5_FK4(double *xp, double tjd)
 {
   if (xp[0] == 0 && xp[1] == 0 && xp[2] == 0)
     return;
-  swi_cartpol(xp, xp);
+  swi_cartpol_sp(xp, xp);
   /* according to Expl.Suppl., p. 167f. */
   xp[0] -= (0.035 + 0.085 * (tjd - B1950) / 36524.2198782) / 3600 * 15 * DEGTORAD;
   xp[3] -= (0.085 / 36524.2198782) / 3600 * 15 * DEGTORAD;
-  swi_polcart(xp, xp);
+  swi_polcart_sp(xp, xp);
 }
 
 void CALL_CONV swe_set_astro_models(int32 *imodel)

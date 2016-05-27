@@ -63,7 +63,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.04"
+#define SE_VERSION      "2.05.01"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -332,56 +332,81 @@ static const double pla_diam[NDIAM] = {1392000000.0, /* Sun */
 
 /* Ayanamsas 
  * For each ayanamsa, there are two values:
- * t0       epoch of ayanamsa, TDT (ET)
+ * t0       epoch of ayanamsa, TDT (can be ET or UT)
+ * t0_is_UT true, if t0 is UT
  * ayan_t0  ayanamsa value at epoch
  */
-struct aya_init {double t0, ayan_t0;};
+struct aya_init {double t0, ayan_t0; AS_BOOL t0_is_UT;};
 static const struct aya_init ayanamsa[] = {
-    {2433282.5, 24.042044444},	/* 0: Fagan/Bradley (Default) */
-    /*{J1900, 360 - 337.53953},   * 1: Lahiri (Robert Hand) */
-    {2435553.5, 23.250182778 - 0.004660222},   /* 1: Lahiri (derived from:
-			   * Indian Astronomical Ephemeris 1989, p. 556;
-			   * the subtracted value is nutation) */
-    {J1900, 360 - 333.58695},   /* 2: De Luce (Robert Hand) */
-    {J1900, 360 - 338.98556},   /* 3: Raman (Robert Hand) */
-    {J1900, 360 - 341.33904},   /* 4: Ushashashi (Robert Hand) */
-    {J1900, 360 - 337.636111},  /* 5: Krishnamurti (Robert Hand) */
-    {J1900, 360 - 333.0369024}, /* 6: Djwhal Khool; (Graham Dawson)  
-                                 *    Aquarius entered on 1 July 2117 */
-    {J1900, 360 - 338.917778},  /* 7: Yukteshwar; (David Cochrane) */
-    {J1900, 360 - 338.634444},  /* 8: JN Bhasin; (David Cochrane) */
-    {1684532.5, -3.36667},      /* 9: Babylonian, Kugler 1 */
-    {1684532.5, -4.76667},      /*10: Babylonian, Kugler 2 */
-    {1684532.5, -5.61667},      /*11: Babylonian, Kugler 3 */
-    {1684532.5, -4.56667},      /*12: Babylonian, Huber */
-    {1673941, -5.079167},       /*13: Babylonian, Mercier;
-                                 *    eta Piscium culminates with zero point */
-    {1684532.5, -4.44088389},   /*14: t0 is defined by Aldebaran at 15 Taurus */
-    {1674484, -9.33333},        /*15: Hipparchos */
-    {1927135.8747793, 0},       /*16: Sassanian */
-    /*{1746443.513, 0},          *17: Galactic Center at 0 Sagittarius */
-    {1746447.518, 0},           /*17: Galactic Center at 0 Sagittarius */
-    {J2000, 0},	                /*18: J2000 */
-    {J1900, 0},	                /*19: J1900 */
-    {B1950, 0},	                /*20: B1950 */
-    {1903396.8128654, 0},	/*21: Suryasiddhanta, assuming
-                                      ingress of mean Sun into Aries at point
-				      of mean equinox of date on
-				      21.3.499, noon, Ujjain (75.7684565 E)
-                                      = 7:30:31.57 UT */
-    {1903396.8128654,-0.21463395},/*22: Suryasiddhanta, assuming
-                                      ingress of mean Sun into Aries at
-				      true position of mean Sun at same epoch */
-    {1903396.7895321, 0},	/*23: Aryabhata, same date, but UT 6:56:55.57
-                                      analogous 21 */
-    {1903396.7895321,-0.23763238},/*24: Aryabhata, analogous 22 */
-    {1903396.8128654,-0.79167046},/*25: SS, Revati/zePsc at polar long. 359°50'*/
-    {1903396.8128654, 2.11070444},/*26: SS, Citra/Spica at polar long. 180° */
-    {0, 0},	                /*27: True Citra (Spica exactly at 0 Libra) */
-    {0, 0},	                /*28: True Revati (zeta Psc exactly at 0 Aries) */
-    {0, 0},			/*29: True Pushya (delta Cnc exactly a 16 Cancer */
-    {0, 0},	                /*30: - */
-	};
+{2433282.5, 24.042044444, FALSE},    /* 0: Fagan/Bradley (Default) */
+/*{J1900, 360 - 337.53953},   * 1: Lahiri (Robert Hand) */
+{2435553.5, 23.250182778 - 0.004660222, FALSE}, 
+                                     /* 1: Lahiri (derived from: Indian
+				      * Astronomical Ephemeris 1989, p. 556;
+				      * the subtracted value is nutation) */
+{J1900, 360 - 333.58695, FALSE},     /* 2: Robert DeLuce (Constellational Astrology ... p. 5 */
+{J1900, 360 - 338.98556, FALSE},     /* 3: B.V. Raman (Robert Hand) */
+{J1900, 360 - 341.33904, FALSE},     /* 4: Usha/Shashi (Robert Hand) */
+{J1900, 360 - 337.636111, FALSE},    /* 5: Krishnamurti (Robert Hand) */
+{J1900, 360 - 333.0369024, FALSE},   /* 6: Djwhal Khool; (Graham Dawson)  
+                                      *    Aquarius entered on 1 July 2117 */
+{J1900, 360 - 338.917778, FALSE},    /* 7: Shri Yukteshwar; (David Cochrane) */
+//{2412543.5, 20.91, TRUE},          /* 7: Shri Yukteshwar; (Holy Science, p. xx) */
+{J1900, 360 - 338.634444, FALSE},    /* 8: J.N. Bhasin; (David Cochrane) */
+{1684532.5, -3.36667, TRUE},         /* 9: Babylonian, Kugler 1 */
+{1684532.5, -4.76667, TRUE},         /*10: Babylonian, Kugler 2 */
+{1684532.5, -5.61667, TRUE},         /*11: Babylonian, Kugler 3 */
+{1684532.5, -4.46667, TRUE},         /*12: Babylonian, Huber */
+/*{1684532.5, -4.56667, TRUE},         *12: Babylonian, Huber (Swisseph has been wrong for many years!) */
+{1673941, -5.079167, TRUE},          /*13: Babylonian, Mercier;
+                                      *    eta Piscium culminates with zero point */
+{1684532.5, -4.44088389, TRUE},      /*14: t0 is defined by Aldebaran at 15 Taurus */
+{1674484, -9.33333, TRUE},           /*15: Hipparchos */
+{1927135.8747793, 0, TRUE},          /*16: Sassanian */
+//{1746412.236, 0, FALSE},             /*17: Galactic Center at 0 Sagittarius */
+{0, 0, FALSE},                       /*17: Galactic Center at 0 Sagittarius */
+{J2000, 0, FALSE},	             /*18: J2000 */
+{J1900, 0, FALSE},	             /*19: J1900 */
+{B1950, 0, FALSE},	             /*20: B1950 */
+{1903396.8128654, 0, TRUE},	     /*21: Suryasiddhanta, assuming
+                                       ingress of mean Sun into Aries at point
+				       of mean equinox of date on
+				       21.3.499, noon, Ujjain (75.7684565 E)
+                                       = 7:30:31.57 UT */
+{1903396.8128654,-0.21463395, TRUE}, /*22: Suryasiddhanta, assuming
+				       ingress of mean Sun into Aries at
+				       true position of mean Sun at same epoch */
+{1903396.7895321, 0, TRUE},	     /*23: Aryabhata, same date, but UT 6:56:55.57
+				       analogous 21 */
+{1903396.7895321,-0.23763238, TRUE}, /*24: Aryabhata, analogous 22 */
+{1903396.8128654,-0.79167046, TRUE}, /*25: SS, Revati/zePsc at polar long. 359°50'*/
+{1903396.8128654, 2.11070444, TRUE}, /*26: SS, Citra/Spica at polar long. 180° */
+{0, 0, FALSE},	                     /*27: True Citra (Spica exactly at 0 Libra) */
+{0, 0, FALSE},	                     /*28: True Revati (zeta Psc exactly at 29°50' Pisces) */
+{0, 0, FALSE},			     /*29: True Pushya (delta Cnc exactly a 16 Cancer */
+{0, 0, FALSE},                       /*30: R. Gil Brand; Galactic Center at golden section
+                                       between 0 Sco and 0 Aqu; note: 0° Aqu/Leo is
+				       the symmetric axis of rulerships */
+{0, 0, FALSE},	                     /*31: Galactic Equator IAU 1958, i.e. galactic/ecliptic
+                                       intersection point based on galactic coordinate system */
+{0, 0, FALSE},	                     /*32: Galactic Equator True, i.e. galactic/ecliptic 
+                                       intersection point based on the galactic pole as given in:
+				       Liu/Zhu/Zhang, „Reconsidering the galactic 
+				       coordinate system“, A & A No. AA2010, Oct. 2010 */
+{0, 0, FALSE},	                     /*33: Galactic Equator Mula, i.e. galactic/ecliptic 
+                                       intersection point in the middle of lunar mansion Mula */
+{2451079.734892000, 30, FALSE},	     /*34: Skydram/Galactic Alignment (R. Mardyks); 
+                                       autumn equinox aligned with Galactic Equator/Pole */
+{0, 0, FALSE},	                     /*35: Chandra Hari */
+{0, 0, FALSE},	                     /*36: Dhruva Galactic Centre Middle of Mula (Ernst Wilhelm) */
+{1911797.740782065, 0, TRUE},	     /*37: Kali 3623 = 522 CE, Ujjain (75.7684565), 
+                                      *    based on Kali midnight and SS year length */
+{1721057.5, -3.2, TRUE},             /*38: Babylonian (Britton 2010) */
+/*{2061539.789532065, 6.83333333, TRUE}, *38: Manjula's Laghumanasa, 10 March 932,
+                                      *    12 PM LMT Ujjain (75.7684565 E),
+				      *    ayanamsha = 6°50' */
+{0, 0, FALSE},	                     /*39: - */
+    };
 
 #define PLAN_DATA struct plan_data
 
@@ -466,6 +491,8 @@ extern int32 swi_init_swed_if_start(void);
 extern int32 swi_set_tid_acc(double tjd_ut, int32 iflag, int32 denum, char *serr);
 extern int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, double *tid_acc, char *serr);
 
+double swi_armc_to_mc(double armc, double eps);
+
 /* nutation */
 struct nut {
   double tnut;
@@ -545,6 +572,7 @@ struct sid_data {
   int32 sid_mode;
   double ayan_t0;
   double t0;
+  AS_BOOL t0_is_UT;
 };
 
 /* dpsi and deps loaded for 100 years after 1962 */
@@ -570,6 +598,9 @@ struct swe_data {
   double tid_acc;
   AS_BOOL is_tid_acc_manual;
   AS_BOOL init_dt_done;
+  AS_BOOL swed_is_initialised;
+  AS_BOOL delta_t_userdef_is_set;
+  double delta_t_userdef;
   struct file_data fidat[SEI_NEPHFILES];
   struct gen_const gcdat;
   struct plan_data pldat[SEI_NPLANETS];

@@ -195,9 +195,24 @@ extern char *planet2abbr3(int planet);
 #define JUNO      16
 #define VESTA     17
 #define EARTHHEL  18	/* heliocentric earth */
+#define PFORTUNAE 19
 
 #define MAXPL_NACALC	(LILITH)	/* nacalc computes SUN..LILITH */
-# define PROG_PLANET_OFFSET  50      /* progressed sun */
+
+/*
+ * progressed planets have the same index (up to MC)
+ * but with offset 50
+ */
+# define PROG_PLANET_OFFSET	50	/* progressed sun */
+# define PROG_OFF	50	
+# define PROG_SUN	(SUN + PROG_OFF)
+# define PROG_MOON	(MOON + PROG_OFF)
+# define PROG_MERCURY	(MERCURY + PROG_OFF)
+# define PROG_VENUS	(VENUS + PROG_OFF)
+# define PROG_MARS	(MARS + PROG_OFF)
+# define PROG_AC	(AC + PROG_OFF)
+# define PROG_ASC	(AC + PROG_OFF)
+# define PROG_MC	(MC + PROG_OFF)
 
 /*
  * houses and axes get also a 'planet' index number, but they
@@ -207,15 +222,15 @@ extern char *planet2abbr3(int planet);
  * Axes and houses cannot be computed with calls to calc(); they must
  * be computed with the housasp module functions.
  */
-# define AC	   19
-# define ASC	   19
-# define MC	   20
-# define CALC_N_MC  21	/* number of normal natal factors */
+# define AC	   20
+# define ASC	   20
+# define MC	   21
+# define CALC_N_MC  22	/* number of normal natal factors */
 
-# define FIRST_HSNR 21
-# define LAST_HSNR 32
+# define FIRST_HSNR 22
+# define LAST_HSNR 33
 # define NO_OF_HOUSES 12
-#define MAX_PL_INDEX 32
+#define MAX_PL_INDEX 34
 /*
  * in a bitlist flag each planet is represented by a bit;
  * all 14 defined planets can be called at once with
@@ -376,6 +391,8 @@ extern int day_of_week(double t);
  * and so on. asp_bit(asp) deleivers the mask.
  */
 #define ALL_ASP_BITS	1022	/* bit mask with all aspect bits set */
+#define ALL_ASP_BITSQ	(1022|bit(ASP_QINT)|bit(ASP_BQIN))	/* bit mask with all aspect bits incl. quintiles/biquint. */
+#define ALL_ASP_NO30	(HARD_ASP_BITS | asp_bit(ASP_SEXT)|asp_bit(ASP_QCNX)|asp_bit(ASP_SMSQ)|asp_bit(ASP_SQSQ))
 #define STRONG_ASP_BITS	62	/* bit mask with strong aspect bits set */
 #define HARD_ASP_BITS	14	/* bit mask with hard aspect bits set */
 

@@ -196,6 +196,10 @@ extern char *planet2abbr3(int planet);
 #define VESTA     17
 #define EARTHHEL  18	/* heliocentric earth */
 #define PFORTUNAE 19
+/* next numbers after 19 are reserved for AC, MC, houses, signs;
+ * see further below */
+#define MEAN_NODE_S 46
+#define TRUE_NODE_S 47
 
 #define MAXPL_NACALC	(LILITH)	/* nacalc computes SUN..LILITH */
 
@@ -230,7 +234,10 @@ extern char *planet2abbr3(int planet);
 # define FIRST_HSNR 22
 # define LAST_HSNR 33
 # define NO_OF_HOUSES 12
-#define MAX_PL_INDEX 34
+# define FIRST_SGNR 34
+#define MAX_PL_INDEX 34 /* don't reckon signs */
+# define LAST_SGNR 45
+# define NO_OF_SIGNS 12
 /*
  * in a bitlist flag each planet is represented by a bit;
  * all 14 defined planets can be called at once with

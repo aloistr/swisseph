@@ -228,6 +228,7 @@ static double OpticFactor(double Bback, double kX, double *dobs, double JDNDaysU
   double OpticDia = dobs[4];
   double OpticTrans = dobs[5];
   AS_BOOL is_scotopic = FALSE;
+  JDNDaysUT = JDNDaysUT; /* currently not used, statement prevents compiler warning */
   SNi = SN;
   if (SNi <= 0.00000001) SNi = 0.00000001;
   /* 23 jaar as standard from Garstang*/
@@ -552,6 +553,8 @@ static double SunRA(double JDNDaysUT, int32 helflag, char *serr)
   double dut;
   static TLS double tjdlast;
   static TLS double ralast;
+  helflag = helflag; /* statement prevents compiler warning */
+  *serr = '\0';
   if (JDNDaysUT == tjdlast)
     return ralast;
 #ifndef SIMULATE_VICTORVB
@@ -1163,12 +1166,15 @@ static double MoonsBrightness(double dist, double phasemoon)
 ' AziS [deg]
 ' MoonPhase [deg]
 */
-static double MoonPhase(double AltM, double AziM, double AziS)
+static double MoonPhase(double AltM, double AziM, double AltS, double AziS)
 {
   double AltMi = AltM * DEGTORAD;
+  double AltSi = AltS * DEGTORAD;
   double AziMi = AziM * DEGTORAD;
   double AziSi = AziS * DEGTORAD;
-  return 180 - acos(cos(AziSi - AziMi) * cos(AltMi + 0.95 * DEGTORAD)) / DEGTORAD;
+  double MoonAvgPar = 0.95;
+// return 180 - acos(cos(AziSi - AziMi) * cos(AltMi + MoonAvgPar * DEGTORAD) * cos(AltSi) + sin(AltSi) * sin(AltMi + MoonAvgPar * DEGTORAD)) / DEGTORAD;
+  return 180 - acos(cos(AziSi - AziMi - MoonAvgPar * DEGTORAD) * cos(AltMi + MoonAvgPar * DEGTORAD) * cos(AltSi) + sin(AltSi) * sin(AltMi + MoonAvgPar * DEGTORAD)) / DEGTORAD;
 }
 
 /*###################################################################
@@ -1179,16 +1185,22 @@ static double Bm(double AltO, double AziO, double AltM, double AziM, double AltS
   double M0 = -11.05;
   double Bm = 0;
   double RM, kXM, kX, C3, FM, phasemoon, MM;
-  if (AltM > -0.26) {
+  double lunar_radius = 0.25 * DEGTORAD;
+  AS_BOOL object_is_moon = FALSE;
+  if (AltO == AltM && AziO == AziM)
+    object_is_moon = TRUE;
+  if (AltM > -0.26 && !object_is_moon) { // second condition added by Dieter, SE2.06
   /* moon only adds light when (partly) above horizon
    * From Schaefer , Archaeoastronomy, XV, 2000, page 129*/
     RM = DistanceAngle(AltO * DEGTORAD, AziO * DEGTORAD, AltM * DEGTORAD, AziM * DEGTORAD) / DEGTORAD;
+    if (RM <= lunar_radius) // addition by Dieter for objects behind the Moon, SE2.06
+      RM = lunar_radius;
     kXM = Deltam(AltM, AltS, sunra, Lat, HeightEye, datm, helflag, serr);
     kX = Deltam(AltO, AltS, sunra, Lat, HeightEye, datm, helflag, serr);
     C3 = pow(10, -0.4 * kXM);
     FM = (62000000.0) / RM / RM + pow(10, 6.15 - RM / 40) + pow(10, 5.36) * (1.06 + pow(cos(RM * DEGTORAD), 2));
     Bm = FM * C3 + 440000 * (1 - C3);
-    phasemoon = MoonPhase(AltM, AziM, AziS);
+    phasemoon = MoonPhase(AltM, AziM, AltS, AziS);
     MM = MoonsBrightness(MoonDistance, phasemoon);
     Bm = Bm * pow(10, -0.4 * (MM - M0 + 43.27));
     Bm = Bm * (1 - pow(10, -0.4 * kX));
@@ -1253,6 +1265,7 @@ static double Bday(double AltO, double AziO, double AltS, double AziS, double su
 static double Bcity(double Value, double Press)
 {
   double Bcity = Value;
+  Press = Press; /* unused; statement prevents compiler warning */
   Bcity = mymax(Bcity, 0);
   return Bcity;
 }
@@ -1426,6 +1439,14 @@ if (0) {
   return -16.57 - 2.5 * (log(Th) / log10);
 }
 
+static char *tolower_string(char *str)
+{
+  char *sp;
+  for (sp = str; *sp != '\0'; sp++)
+    *sp = tolower(*sp);
+  return str;
+}
+
 /* Limiting magnitude in dark skies 
  * function returns:
  * -1   Error
@@ -1441,6 +1462,7 @@ int32 CALL_CONV swe_vis_limit_mag(double tjdut, double *dgeo, double *datm, doub
   double sunra;
   for (i = 0; i < 7; i++)
     dret[i] = 0;
+  tolower_string(ObjectName);
   if (DeterObject(ObjectName) == SE_SUN) {
     if (serr != NULL) {
       strcpy(serr, "it makes no sense to call swe_vis_limit_mag() for the Sun");
@@ -1851,6 +1873,7 @@ int32 CALL_CONV swe_heliacal_pheno_ut(double JDNDaysUT, double *dgeo, double *da
   /* note, the fixed stars functions rewrite the star name. The input string 
      may be too short, so we have to make sure we have enough space */
   strcpy_VBsafe(ObjectName, ObjectNameIn);
+  tolower_string(ObjectName);
   default_heliacal_parameters(datm, dgeo, dobs, helflag);
   swe_set_topo(dgeo[0], dgeo[1], dgeo[2]);
   retval = ObjectLoc(JDNDaysUT, dgeo, datm, "sun", 1, helflag, &AziS, serr);
@@ -3369,6 +3392,7 @@ int32 CALL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, double *dat
   /* note, the fixed stars functions rewrite the star name. The input string 
      may be too short, so we have to make sure we have enough space */
   strcpy_VBsafe(ObjectName, ObjectNameIn);
+  tolower_string(ObjectName);
   default_heliacal_parameters(datm, dgeo, dobs, helflag);
   swe_set_topo(dgeo[0], dgeo[1], dgeo[2]);
   Planet = DeterObject(ObjectName);

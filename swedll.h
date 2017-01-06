@@ -81,8 +81,17 @@ extern "C" {
 # endif
 #endif
 
+/* DLL defines
+  Define UNDECO_DLL for un-decorated dll
+  verify compiler option __cdecl for un-decorated and __stdcall for decorated */
+/*#define UNDECO_DLL */
+
 #if defined (PASCAL) || defined(__stdcall)
-  #define CALL_CONV_IMP __stdcall 
+  #if defined UNDECO_DLL
+    #define CALL_CONV_IMP __cdecl
+  #else
+    #define CALL_CONV_IMP __stdcall
+  #endif 
 #else
   #define CALL_CONV_IMP 
 #endif
@@ -214,7 +223,8 @@ DllImport void  CALL_CONV_IMP swe_cotrans_sp(double *xpo, double *xpn, double ep
 
 DllImport void  CALL_CONV_IMP swe_set_topo(double geolon, double geolat, double height);
 
-DllImport void  CALL_CONV_IMP swe_set_astro_models(int32 *imodel);
+DllImport void CALL_CONV_IMP swe_set_astro_models(char *samod, int32 iflag);
+DllImport void CALL_CONV_IMP swe_get_astro_models(char *samod, char *sdet, int32 iflag);
 
 /**************************** 
  * from swecl.c 

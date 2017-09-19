@@ -1794,7 +1794,8 @@ double CALL_CONV swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr)
 {
   double xp[6], xeq[6], ra, de, mdd, mdn, sad, san;
-  double hpos, sinad, ad, a, admc, adp, samc, demc, asc, mc, acmc, tant;
+  double hpos, sinad, ad, a, admc, adp, samc, asc, mc, acmc, tant;
+  //double demc;
   double fh, ra0, tanfi, fac, dfac, tanx;
   double x[3], xasc[3], raep, raaz, oblaz, xtemp; /* BK 21.02.2006 */
   double hcusp[36], ascmc[10];
@@ -2003,7 +2004,7 @@ if (1) {
      * if possible; make sure house positions 4 - 9 only appear on western
      * hemisphere */
     case 'K': // Koch
-      demc = atand(sind(armc) * tand(eps));
+      //demc = atand(sind(armc) * tand(eps));
       is_invalid = FALSE;
       is_circumpolar = FALSE;
       /* object is within a circumpolar circle */
@@ -2459,16 +2460,13 @@ static int sunshine_solution_makransky(double ramc, double lat, double ecl, stru
   double md;
   double zd;	// zenith distance of house circle, along prime vertical
   double pole, q, w, a, b, c, f, cu, r, rah;
-  double sinlat, coslat, tanlat, sindec, cosdec, tandec, sinecl, cosecl;
+  double sinlat, coslat, tanlat, tandec, sinecl;
   double dec = hsp->sundec;
   sinlat = sind(lat);
   coslat = cosd(lat);
   tanlat = tand(lat);
-  sindec = sind(dec);
-  cosdec = cosd(dec);
   tandec = tand(dec);
   sinecl = sind(ecl);
-  cosecl = cosd(ecl);
   int ih;
   // if (90 - fabs(lat) <= ecl) {
   //   strcpy(hsp->serr, "Sunshine in polar circle not allowed");
@@ -2601,8 +2599,8 @@ static int sunshine_solution_makransky(double ramc, double lat, double ecl, stru
 static int sunshine_solution_treindl(double ramc, double lat, double ecl, struct houses *hsp)
 {
   double xh[13];
-  double mcdec, sinlat, coslat, sindec, cosdec, tandec, sinecl, cosecl;
-  double xhs, pole, a, cosa, alph, alpha2, c, cosc, b, sinzd, zd, rax, equa, hc;
+  double mcdec, sinlat, coslat, cosdec, tandec, sinecl, cosecl;
+  double xhs, pole, a, cosa, alph, alpha2, c, cosc, b, sinzd, zd, rax, hc;
   int ih, retval = OK;
   AS_BOOL mc_under_horizon;
   double dec = hsp->sundec;
@@ -2612,7 +2610,6 @@ static int sunshine_solution_treindl(double ramc, double lat, double ecl, struct
   // }
   sinlat = sind(lat);
   coslat = cosd(lat);
-  sindec = sind(dec);
   cosdec = cosd(dec);
   tandec = tand(dec);
   sinecl = sind(ecl);
@@ -2673,7 +2670,6 @@ static int sunshine_solution_treindl(double ramc, double lat, double ecl, struct
     // night side: triangle north point
     // sides: 90 - lat, angle zd
     rax = atand(coslat * tand(zd));
-    equa = acosd(sinlat * sinzd);	// not used
     // compute pole height (distance of house circle pole from equator
     // with triangle at west point
     pole = asind(sinzd * sinlat);

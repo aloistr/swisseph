@@ -77,52 +77,18 @@
 #define DPSI_DEPS_IAU1980_FILE_FINALS   "eop_finals.txt"
 #define DPSI_DEPS_IAU1980_TJD0_HORIZONS  2437684.5 
 #define HORIZONS_TJD0_DPSI_DEPS_IAU1980  2437684.5 
-/*#define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980   TRUE*/
+#define DPSI_IAU1980_TJD0	(64.284 / 1000.0)  // arcsec
+#define DEPS_IAU1980_TJD0	(6.151 / 1000.0)   // arcsec
 
-/*#define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980   TRUE  */
-/* You can set the latter false if you do not want to compile the
- * code required to reproduce JPL Horizons.
- * Keep it TRUE in order to reproduce JPL Horizons following
- * IERS Conventions 1996 (1992), p. 22. Call swe_calc_ut() with 
- * iflag|SEFLG_JPLHOR.  This options runs only, if the files 
- * DPSI_DEPS_IAU1980_FILE_EOPC04 and DPSI_DEPS_IAU1980_FILE_FINALS
- * are in the ephemeris path.
- */
-
-/* If the above define INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980 is FALSE or 
- * the software does not find the earth orientation files (see above)
+/* The above files must be available in order to reproduce JPL Horizons 
+ * in agreement with IERS Conventions 1996 (1992), p. 22. 
+ * Call swe_calc_ut() with iflag|SEFLG_JPLHOR.  
+ * This options works only, if the files DPSI_DEPS_IAU1980_FILE_EOPC04 
+ * and DPSI_DEPS_IAU1980_FILE_FINALS are in the ephemeris path.
+ *
+ * If the software does not find the earth orientation files 
  * in the ephemeris path, then SEFLG_JPLHOR will run as 
  * SEFLG_JPLHOR_APPROX.
- * The following define APPROXIMATE_HORIZONS_ASTRODIENST defines 
- * the handling of SEFLG_JPLHOR_APPROX.
- * With this flag, planetary positions are always calculated 
- * using a recent precession/nutation model.  
- * If APPROXIMATE_HORIZONS_ASTRODIENST is FALSE, then the 
- * frame bias as recommended by IERS Conventions 2003 and 2010
- * is *not* applied. Instead, dpsi_bias and deps_bias are added to 
- * nutation. This procedure is found in some older astronomical software.
- * Equatorial apparent positions will be close to JPL Horizons 
- * (within a few mas) beetween 1962 and current years. Ecl. longitude 
- * will be good, latitude bad.
- * If APPROXIMATE_HORIZONS_ASTRODIENST is TRUE, the approximation of 
- * JPL Horizons is even better. Frame bias matrix is applied with
- * some correction to RA and another correction is added to epsilon.
- */
-/*#define APPROXIMATE_HORIZONS_ASTRODIENST   TRUE */
-
-/*#define USE_HORIZONS_METHOD_BEFORE_1980  TRUE   * Horizons method before 20-jan-1962 */
-/* The latter, if combined with SEFLG_JPLHOR provides good agreement 
- * with JPL Horizons for 1800 - today. However, Horizons uses correct
- * dpsi and deps only after 20-jan-1962. For all dates before that
- * it uses dpsi and deps of 20-jan-1962, which provides a continuous 
- * ephemeris, but does not make sense otherwise. 
- * Before 1800, even this option does not provide agreement with Horizons,
- * because Horizons uses a different precession model (Owen 1986) 
- * before 1800, which is not included in the Swiss Ephemeris.
- * If this macro is FALSE then the program defaults to SEFLG_JPLHOR_APPROX
- * outside the time range of correction data dpsi and deps.
- * Note that this will result in a non-continuous ephemeris near
- * 20-jan-1962 and current years.
  */
 
 /* coordinate transformation */

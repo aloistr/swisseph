@@ -75,10 +75,11 @@
 #include "swejpl.h"
 
 #if MSDOS
-  typedef __int64 off_t;
+  typedef __int64 off_t64;
   #define FSEEK _fseeki64
   #define FTELL _ftelli64
 #else
+  typedef off_t off_t64;
   #define FSEEK fseeko
   #define FTELL ftello
 #endif
@@ -638,7 +639,7 @@ static int state(double et, int32 *list, int do_bary,
 {
   int i, j, k;
   int32 nseg;
-  off_t flen, nb;
+  off_t64 flen, nb;
   double *buf = js->buf;
   double aufac, s, t, intv, ts[4];
   int32 nrecl, ksize;
@@ -694,7 +695,7 @@ static int state(double et, int32 *list, int do_bary,
     if (js->do_reorder)
       reorder((char *) &lpt[0], sizeof(int32), 3);
     /* cval[]:  other constants in next record */
-    FSEEK(js->jplfptr, (off_t) (1L * irecsz), 0);
+    FSEEK(js->jplfptr, (off_t64) (1L * irecsz), 0);
     fread((void *) &js->eh_cval[0], sizeof(double), 400, js->jplfptr);
     if (js->do_reorder)
       reorder((char *) &js->eh_cval[0], sizeof(double), 400);
@@ -704,7 +705,7 @@ static int state(double et, int32 *list, int do_bary,
     nrl = 0;
     /* is file length correct? */
     /* file length */
-    FSEEK(js->jplfptr, (off_t) 0L, SEEK_END);
+    FSEEK(js->jplfptr, (off_t64) 0L, SEEK_END);
     flen = FTELL(js->jplfptr);
     /* # of segments in file */
     nseg = (int32) ((js->eh_ss[1] - js->eh_ss[0]) / js->eh_ss[2]);	
@@ -735,11 +736,11 @@ static int state(double et, int32 *list, int do_bary,
     }
     /* check if start and end dates in segments are the same as in 
      * file header */
-    FSEEK(js->jplfptr, (off_t) (2L * irecsz), 0);
+    FSEEK(js->jplfptr, (off_t64) (2L * irecsz), 0);
     fread((void *) &ts[0], sizeof(double), 2, js->jplfptr);
     if (js->do_reorder)
       reorder((char *) &ts[0], sizeof(double), 2);
-    FSEEK(js->jplfptr, (off_t) ((nseg + 2 - 1) * ((off_t) irecsz)), 0);
+    FSEEK(js->jplfptr, (off_t64) ((nseg + 2 - 1) * ((off_t64) irecsz)), 0);
     fread((void *) &ts[2], sizeof(double), 2, js->jplfptr);
     if (js->do_reorder)
       reorder((char *) &ts[2], sizeof(double), 2);
@@ -769,7 +770,7 @@ static int state(double et, int32 *list, int do_bary,
   /* read correct record if not in core */
   if (nr != nrl) {
     nrl = nr;
-    if (FSEEK(js->jplfptr, (off_t) (nr * ((off_t) irecsz)), 0) != 0) {
+    if (FSEEK(js->jplfptr, (off_t64) (nr * ((off_t64) irecsz)), 0) != 0) {
       if (serr != NULL) 
 	sprintf(serr, "Read error in JPL eph. at %f\n", et);
       return NOT_AVAILABLE;

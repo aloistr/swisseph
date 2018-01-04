@@ -87,9 +87,10 @@ static char *infocmd1 = "\n\
         -bj...  begin date as an absolute Julian day number; e.g. -bj2415020.5\n\
         -j...   same as -bj\n\
         -tHH.MMSS  input time (as Ephemeris Time)\n\
-        -ut     input date is Universal Time\n\
+        -ut     input date is Universal Time (UT1)\n\
 	-utHH:MM:SS input time (as Universal Time)\n\
 	-utHH.MMSS input time (as Universal Time)\n\
+	-utcHH.MM:SS input time (as Universal Time Coordinated UTC)\n\
      output time for eclipses, occultations, risings/settings is UT by default\n\
         -lmt    output date/time is LMT (with -geopos)\n\
         -lat    output date/time is LAT (with -geopos)\n\
@@ -108,6 +109,10 @@ static char *infocmd1 = "\n\
                 number is given, the default is 20.\n\
         -sN     timestep N days, default 1. This option is only meaningful\n\
                 when combined with option -n.\n\
+                If an 'y' is appended, the time step is in years instead of days, \n\
+                for example -s10y for a time step of 10 years.\n\
+                If an 'mo' is appended, the time step is in months instead of days, \n\
+                for example -s3mo for a time step of 3 months.\n\
                 If an 'm' is appended, the time step is in minutes instead of days, \n\
                 for example -s15m for a time step of 15 minutes.\n\
                 If an 's' is appended, the time step is in seconds instead of days, \n\
@@ -378,6 +383,7 @@ static char *infoplan = "\n\
         o obliquity of ecliptic\n\
 	q delta t\n\
 	y time equation\n\
+	b ayanamsha\n\
         A mean lunar apogee (Lilith, Black Moon) \n\
         B osculating lunar apogee \n\
         c intp. lunar apogee \n\
@@ -606,10 +612,12 @@ static char *infoexamp = "\n\
 #define DIFF_MIDP	'D'
 #define MODE_HOUSE	1
 #define MODE_LABEL	2
+#define MODE_AYANAMSA	4
 
 #define SEARCH_RANGE_LUNAR_CYCLES 20000
 
-#define OUTPUT_EXTRA_PRECISION 0
+#define OUTPUT_EXTRA_PRECISION 1
+#define LEN_SOUT    1000 // length of output string variable
 
 static char se_pname[AS_MAXCH];
 static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi", 
@@ -643,6 +651,7 @@ static char serr_save[AS_MAXCH], serr_warn[AS_MAXCH];
 static int gregflag = SE_GREG_CAL;
 static int diff_mode = 0;
 static AS_BOOL universal_time = FALSE;
+static AS_BOOL universal_time_utc = FALSE;
 static int32 round_flag = 0;
 static int32 time_flag = 0;
 static AS_BOOL short_output = FALSE;
@@ -662,19 +671,24 @@ static int direction = 1;
 static AS_BOOL direction_flag = FALSE;
 static AS_BOOL step_in_minutes = FALSE;
 static AS_BOOL step_in_seconds = FALSE;
+static AS_BOOL step_in_years = FALSE;
+static AS_BOOL step_in_months = FALSE;
 static int32 helflag = 0;
 static double tjd = 2415020.5;
 static int32 nstep = 1, istep;
 static int32 search_flag = 0;
-static char sout[AS_MAXCH];
+static char sout[LEN_SOUT];
 static int32 whicheph = SEFLG_SWIEPH;   
 static char *psp;
 static int32 norefrac = 0;
 static int32 disccenter = 0;
 static int32 discbottom = 0;
 /* for test of old models only */
-static int32 astro_models[20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+static char *astro_models;
 static int do_set_astro_models = FALSE;
+static char smod[2000];
+static AS_BOOL inut = FALSE; /* for Astrodienst internal feature */
+static AS_BOOL have_gap_parameter = FALSE; 
 
 #define SP_LUNAR_ECLIPSE	1
 #define SP_SOLAR_ECLIPSE	2
@@ -727,6 +741,7 @@ int main(int argc, char *argv[])
   int32 sid_mode = SE_SIDM_FAGAN_BRADLEY;
   double t2, tstep = 1, thour = 0;
   double delt;
+  double tid_acc = 0;
   datm[0] = 1013.25; datm[1] = 15; datm[2] = 40; datm[3] = 0;
   dobs[0] = 0; dobs[1] = 0;
   dobs[2] = 0; dobs[3] = 0; dobs[4] = 0; dobs[5] = 0;
@@ -738,7 +753,14 @@ int main(int argc, char *argv[])
   strcpy(ephepath, "");
   strcpy(fname, SE_FNAME_DFT);
   for (i = 1; i < argc; i++) {
-    if (strncmp(argv[i], "-ut", 3) == 0) {
+    if (strncmp(argv[i], "-utc", 4) == 0) {
+      universal_time = TRUE;
+      universal_time_utc = TRUE;
+      if (strlen(argv[i]) > 4) {
+        *stimein = '\0';
+	strncat(stimein, argv[i] + 4, 30);
+      }
+    } else if (strncmp(argv[i], "-ut", 3) == 0) {
       universal_time = TRUE;
       if (strlen(argv[i]) > 3) {
         *stimein = '\0';
@@ -911,17 +933,13 @@ int main(int argc, char *argv[])
     } else if (strcmp(argv[i], "-metr") == 0) {
       special_event = SP_MERIDIAN_TRANSIT;
       have_geopos = TRUE;
-    /* secret test feature for dieter */
-    } else if (strncmp(argv[i], "-prec",5) == 0) {
-      j = 0;
-      astro_models[j] = atoi(argv[i]+5);
-      sp = argv[i];
-      while((sp2 = strchr(sp, ',')) != NULL) {
-        sp = sp2 + 1;
-	j++;
-	astro_models[j] = atoi(sp);
-      }
+    /* undocumented test feature */
+    } else if (strncmp(argv[i], "-amod",5) == 0) {
+      astro_models = argv[i] + 5;
       do_set_astro_models = TRUE;
+    /* undocumented test feature */
+    } else if (strncmp(argv[i], "-tidacc",7) == 0) {
+      tid_acc = atof(argv[i] + 7);
     } else if (strncmp(argv[i], "-hev", 4) == 0) {
       special_event = SP_HELIACAL;
       search_flag = 0;
@@ -977,6 +995,8 @@ int main(int argc, char *argv[])
       /* name or number of fixed star */
       *star = '\0';
       strncat(star, argv[i] + 2, sizeof(star) - 1);
+    } else if (strcmp(argv[i], "-nut") == 0) {
+      inut = TRUE;
     } else if (strncmp(argv[i], "-n", 2) == 0) {
       nstep = atoi(argv[i]+2);
       if (nstep == 0)
@@ -991,11 +1011,18 @@ int main(int argc, char *argv[])
         step_in_minutes = TRUE;
       if (*(argv[i] + strlen(argv[i]) -1) == 's')
         step_in_seconds = TRUE;
+      if (*(argv[i] + strlen(argv[i]) -1) == 'y')
+        step_in_years = TRUE;
+      if (*(argv[i] + strlen(argv[i]) -1) == 'o') {
+        step_in_minutes = FALSE;
+        step_in_months = TRUE;
+      }
     } else if (strncmp(argv[i], "-b", 2) == 0) {
       begindate = argv[i] + 2;
     } else if (strncmp(argv[i], "-f", 2) == 0) {
       fmt = argv[i] + 2;
     } else if (strncmp(argv[i], "-g", 2) == 0) {
+      have_gap_parameter = TRUE;
       gap = argv[i] + 2;
       if (*gap == '\0') gap = "\t";
     } else if (strncmp(argv[i], "-d", 2) == 0
@@ -1053,28 +1080,30 @@ int main(int argc, char *argv[])
       special_event == SP_HELIACAL
       ) {
     ipl = letter_to_ipl(*plsel);
-    if (*plsel == 'f') 
+    if (*plsel == 'f') {
       ipl = SE_FIXSTAR;
-    else
+    } else {
+      if (*plsel == 's')
+	ipl = atoi(sastno) + 10000;
       *star = '\0';
+    }
     if (special_event == SP_OCCULTATION && ipl == 1)
       ipl = 2; /* no occultation of moon by moon */
   }
   if (*stimein != '\0') {
+    t = 0;
     if ((sp = strchr(stimein, ':')) != NULL) {
-      *sp = '.';
-      if ((sp = strchr(stimein, ':')) != NULL) {
-	strcpy(s2, sp + 1);
-	strcpy(sp, s2);
+      if ((sp2 = strchr(sp + 1, ':')) != NULL) {
+        t += atof(sp2 + 1) / 60.0;
       }
+      t += atoi(sp + 1);
+      t /= 60.0;
     }
-    thour = atof(stimein);
-    thour += (thour < 0 ? -.00005 : .00005);
-    /* h.mmss -> decimal */
-    t =  fmod(thour, 1) * 100;
-    j = (int) t;
-    t = (int)(fmod(t, 1) * 100);
-    thour = (int) thour + j / 60.0 + t / 3600.0;
+    if (atoi(stimein) < 0)
+      t = -t;
+    t += atoi(stimein);
+    //t += 0.0000000001;
+    thour = t;
   }
 #if HPUNIX
   gethostname (hostname, 80);
@@ -1105,15 +1134,22 @@ int main(int argc, char *argv[])
   if (whicheph & SEFLG_JPLEPH)
     swe_set_jpl_file(fname);
   /* the following is only a test feature */
-  if (do_set_astro_models)
-    swe_set_astro_models(astro_models); /* secret test feature for dieter */
+  if (do_set_astro_models) {
+    swe_set_astro_models(astro_models, iflag); /* secret test feature for dieter */
+    swe_get_astro_models(astro_models, smod, iflag);
+  }
+#if 1
+  if (inut) /* Astrodienst internal feature */
+    swe_set_interpolate_nut(TRUE);
+#endif
   if ((iflag & SEFLG_SIDEREAL) || do_ayanamsa) 
     swe_set_sid_mode(sid_mode, 0, 0);
   geopos[0] = top_long;
   geopos[1] = top_lat;
   geopos[2] = top_elev;
   swe_set_topo(top_long, top_lat, top_elev);
-  /*swe_set_tid_acc(-25.82);  * to test delta t output */
+  if (tid_acc != 0) 
+    swe_set_tid_acc(tid_acc); 
   while (TRUE) {
     serr[0] = serr_save[0] = serr_warn[0] = '\0';
     if (begindate == NULL) {
@@ -1199,8 +1235,21 @@ int main(int argc, char *argv[])
       else if (strstr(sp, "greg") != NULL)
         gregflag = SE_GREG_CAL;
       jut = 0;
-      tjd = swe_julday(jyear,jmon,jday,jut,gregflag);        
-      tjd += thour / 24.0;
+      if (universal_time_utc) {
+	int ih = 0, im = 0;
+	double ds = 0.0;
+	if (*stimein != '\0') {
+	  sscanf(stimein, "%d:%d:%lf", &ih, &im, &ds);
+	}
+        if (swe_utc_to_jd(jyear,jmon,jday, ih, im, ds, gregflag, tret, serr) == ERR) {
+	  printf(" error in swe_utc_to_jd(): %s\n", serr);
+	  exit(-1);
+	}
+	tjd = tret[1];
+      } else {
+	tjd = swe_julday(jyear,jmon,jday,jut,gregflag);        
+	tjd += thour / 24.0;
+      }
     }
     if (special_event > 0) {
       do_special_event(tjd, ipl, star, special_event, special_mode, geopos, datm, dobs, serr) ;
@@ -1213,6 +1262,17 @@ int main(int argc, char *argv[])
         t = tjd + (istep -1) * tstep / 1440;
       if (step_in_seconds) 
         t = tjd + (istep -1) * tstep / 86400;
+      if (step_in_years) {
+	swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
+	t = swe_julday(jyear + (istep - 1) * tstep, jmon, jday, jut, gregflag);
+      }
+      if (step_in_months) {
+	swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
+	jmon += (istep - 1) * tstep;
+	jyear += (int) ((jmon - 1) / 12);
+	jmon = ((jmon - 1) % 12) + 1;
+	t = swe_julday(jyear, jmon, jday, jut, gregflag);
+      }
       if (t < 2299160.5)
         gregflag = SE_JUL_CAL;
       else
@@ -1231,19 +1291,23 @@ int main(int argc, char *argv[])
           printf(" greg.");
         else
           printf(" jul.");
-	t2 = jut + (jut < 0 ? -.5 : .5) / 3600.;
+	//t2 = jut + (jut < 0 ? -.5 : .5) / 3600.;
+	t2 = jut;
         printf("  % 2d:", (int) t2); 
         t2 = (t2 - (int32) t2) * 60;
         printf("%02d:", (int) t2); 
         t2 = (t2 - (int32) t2) * 60;
-        printf("%02d", (int) t2); 
+	if (t2 - (int32) t2 < 0.000001) 
+	  printf("%02d", (int) t2); 
+	else
+	  printf("%05.3f", t2); 
         if (universal_time) {
 	  if (time_flag & BIT_TIME_LMT)
 	    printf(" LMT");
 	  else
 	    printf(" UT");
         } else {
-          printf(" ET");
+          printf(" TT");
 	}
 	printf("\t\tversion %s", swe_version(sout));
       }
@@ -1311,10 +1375,15 @@ int main(int argc, char *argv[])
 	  printf("   error in swe_get_ayanamsa_ex(): %s\n", serr);
 	  exit(1);
 	}
+#if 0
 	fputs("Ayanamsa", stdout);
 	fputs(gap, stdout);
 	fputs(dms(daya, round_flag), stdout);
 	fputs("\n", stdout);
+#else
+	x[0] = daya;
+        print_line(MODE_AYANAMSA, TRUE);
+#endif
 	/*printf("Ayanamsa%s%s\n", gap, dms(daya, round_flag));*/
 	continue;
       }
@@ -1382,8 +1451,9 @@ int main(int argc, char *argv[])
 	  swe_get_planet_name(ipl, se_pname);
         }
 	if (*psp == 'q') {/* delta t */
-	  x[0] = swe_deltat_ex(te, iflag, serr) * 86400;
+	  x[0] = swe_deltat_ex(tut, iflag, serr) * 86400;
 	  x[1] = x[2] = x[3] = 0;
+	  x[1] = x[0] / 3600.0; // to hours
 	  strcpy(se_pname, "Delta T");
 	}
 	if (*psp == 'x') {/* sidereal time */
@@ -1406,6 +1476,14 @@ int main(int argc, char *argv[])
 	  x[0] *= 86400; /* in seconds */;
 	  x[1] = x[2] = x[3] = 0;
 	  strcpy(se_pname, "Time Equ.");
+	}
+	if (*psp == 'b') {/* ayanamsha */
+	  if (swe_get_ayanamsa_ex(te, iflag, &(x[0]), serr) == ERR) {
+	    printf("   error in swe_get_ayanamsa_ex(): %s\n", serr);
+	    iflgret = -1;
+	  }
+	  x[1] = 0;
+	  strcpy(se_pname, "Ayanamsha");
 	}
         if (iflgret < 0) { 
           if (strcmp(serr, serr_save) != 0 
@@ -1554,6 +1632,9 @@ int main(int argc, char *argv[])
 	  if (hpos_meth >= 2 && toupper(ihsy) == 'G') {
 	    swe_gauquelin_sector(tut, ipl, star2, iflag, hpos_meth, geopos, 0, 0, &hposj, serr);
 	  } else {
+	    double cusp[100];
+	    if (ihsy == 'i' || ihsy == 'I')
+	      iflgret = swe_houses_ex(t,iflag, top_lat, top_long, ihsy, cusp, cusp+13);
 	    hposj = swe_house_pos(armc, geopos[1], xobl[0], ihsy, xsv, serr);
 	  }
 	  if (toupper(ihsy) == 'G')
@@ -1634,6 +1715,13 @@ int main(int argc, char *argv[])
 	      gpos[2] = 0;
 	      swe_azalt(t, SE_ECL2HOR, gpos, datm[0], datm[1], x, xaz);
 	    }
+	    if (strpbrk(fmt, "gGj") != NULL) {
+	      hposj = swe_house_pos(armc, geopos[1], xobl[0], ihsy, x, serr);
+	      if (toupper(ihsy) == 'G')
+		hpos = (hposj - 1) * 10;
+	      else
+		hpos = (hposj - 1) * 30;
+	    }
 	    print_line(MODE_HOUSE, is_first);
 	    is_first = FALSE;
 	    if (! list_hor) line_count++;
@@ -1655,6 +1743,9 @@ int main(int argc, char *argv[])
   }             /* while 1 */
   /* close open files and free allocated space */
   end_main:
+  if (do_set_astro_models) {
+    printf(smod);
+  }
   swe_close();
   return  OK;
 }
@@ -1717,6 +1808,7 @@ static int print_line(int mode, AS_BOOL is_first)
   char pnam[30];
   AS_BOOL is_house = ((mode & MODE_HOUSE) != 0);
   AS_BOOL is_label = ((mode & MODE_LABEL) != 0);
+  AS_BOOL is_ayana = ((mode & MODE_AYANAMSA) != 0);
   int32 iflgret, dar;
   // build planet name column, just in case
   if (is_house) {
@@ -1738,7 +1830,8 @@ static int print_line(int mode, AS_BOOL is_first)
     sprintf(slon, "%-14s", "long.");
   }
   for (sp = fmt; *sp != '\0'; sp++) {
-    if (is_house && strchr("bBsSrRxXuUQnNfF+-*/=", *sp) != NULL) continue;
+    if (is_house && strchr("bBsSrRxXuUQnNfFj+-*/=", *sp) != NULL) continue;
+    if (is_ayana && strchr("bBsSrRxXuUQnNfFj+-*/=", *sp) != NULL) continue;
     if (sp != fmt)
       fputs(gap,stdout);
     if (sp == fmt && list_hor && !is_first && strchr("yYJtT", *sp) == NULL)
@@ -1778,6 +1871,8 @@ static int print_line(int mode, AS_BOOL is_first)
 	  } else {
 	    printf("%-15s", hs_nam[ipl - nhouses]);
 	  }
+	} else if (is_ayana) {
+	  printf("Ayanamsha       ");
 	} else if (diff_mode == DIFF_DIFF) {
 	  printf("%.3s-%.3s", spnam, spnam2);
 	} else if (diff_mode == DIFF_MIDP) {
@@ -1826,15 +1921,17 @@ static int print_line(int mode, AS_BOOL is_first)
 	break;
     case 'L':
         if (is_label) { printf(slon); break; }
-	if (*psp == 'q' || *psp == 'y') /* delta t or time equation */
-	  goto ldec;
+	if (psp != NULL && (*psp == 'q' || *psp == 'y')) { /* delta t or time equation */
+	  printf("%# 11.7f", x[0]);
+	  printf("s");
+	  break;
+	}
 	fputs(dms(x[0], round_flag),stdout);
 	break;
     case 'l':
         if (is_label) { printf(slon); break; }
-	ldec:
 #if OUTPUT_EXTRA_PRECISION 
-	printf("%# 11.9f", x[0]);
+	printf("%# 11.11f", x[0]);
 #else
 	printf("%# 11.7f", x[0]);
 #endif
@@ -1869,7 +1966,11 @@ static int print_line(int mode, AS_BOOL is_first)
 		break;
 	      case 'l':   /* speed! */
 		if (is_label) { printf("lon/day"); break; }
-		printf("%11.7f", x[3]);
+#if OUTPUT_EXTRA_PRECISION 
+		printf("%# 11.9f", x[3]);
+#else
+		printf("%# 11.7f", x[3]);
+#endif
 		break;
 	      case 'B':   /* speed! */
 		if (is_label) { printf("lat/day"); break; }
@@ -1877,7 +1978,11 @@ static int print_line(int mode, AS_BOOL is_first)
 		break;
 	      case 'b':   /* speed! */
 		if (is_label) { printf("lat/day"); break; }
-		printf("%11.7f", x[4]);
+#if OUTPUT_EXTRA_PRECISION 
+		printf("%# 11.9f", x[4]);
+#else
+		printf("%# 11.7f", x[4]);
+#endif
 		break;
 	      case 'A':   /* speed! */
 		if (is_label) { printf("RA/day"); break; }
@@ -1885,7 +1990,11 @@ static int print_line(int mode, AS_BOOL is_first)
 		break;
 	      case 'a':   /* speed! */
 		if (is_label) { printf("RA/day"); break; }
-		printf("%11.7f", xequ[3]);
+#if OUTPUT_EXTRA_PRECISION 
+		printf("%# 11.9f", xequ[3]);
+#else
+		printf("%# 11.7f", xequ[3]);
+#endif
 		break;
 	      case 'D':   /* speed! */
 		if (is_label) { printf("dcl/day"); break; }
@@ -1893,7 +2002,11 @@ static int print_line(int mode, AS_BOOL is_first)
 		break;
 	      case 'd':   /* speed! */
 		if (is_label) { printf("dcl/day"); break; }
-		printf("%11.7f", xequ[4]);
+#if OUTPUT_EXTRA_PRECISION 
+		printf("%# 11.9f", xequ[4]);
+#else
+		printf("%# 11.7f", xequ[4]);
+#endif
 		break;
 	      case 'R':   /* speed! */
 	      case 'r':   /* speed! */
@@ -1955,17 +2068,26 @@ static int print_line(int mode, AS_BOOL is_first)
 	  fputs(dms(x[3], round_flag),stdout);
 	} else {
 	  if (is_label) { printf("deg/day"); break; }
+#if OUTPUT_EXTRA_PRECISION 
+	  printf("%# 11.17f", x[3]);
+#else
 	  printf("%# 11.7f", x[3]);
+#endif
 	}
 	break;
     case 'B':
 	if (is_label) { printf("lat.    "); break; }
+	if (*psp == 'q') { /* delta t */
+	  printf("%# 11.7f", x[1]);
+	  printf("h");
+	  break;
+	}
 	fputs(dms(x[1], round_flag),stdout);
 	break;
     case 'b':
 	if (is_label) { printf("lat.    "); break; }
 #if OUTPUT_EXTRA_PRECISION 
-	printf("%# 11.9f", x[1]);
+	printf("%# 11.11f", x[1]);
 #else
 	printf("%# 11.7f", x[1]);
 #endif
@@ -1977,7 +2099,7 @@ static int print_line(int mode, AS_BOOL is_first)
     case 'a':     /* right ascension */
 	if (is_label) { printf("RA      "); break; }
 #if OUTPUT_EXTRA_PRECISION 
-	printf("%# 11.9f", xequ[0]);
+	printf("%# 11.11f", xequ[0]);
 #else
 	printf("%# 11.7f", xequ[0]);
 #endif
@@ -1989,7 +2111,7 @@ static int print_line(int mode, AS_BOOL is_first)
     case 'd':     /* declination */
 	if (is_label) { printf("decl      "); break; }
 #if OUTPUT_EXTRA_PRECISION 
-	printf("%# 11.9f", xequ[1]);
+	printf("%# 11.11f", xequ[1]);
 #else
 	printf("%# 11.7f", xequ[1]);
 #endif
@@ -2295,6 +2417,7 @@ static int letter_to_ipl(int letter)
   case 'q': /* swetest: delta t */
   case 'y': /* swetest: time equation */
   case 'x': /* swetest: sidereal time */
+  case 'b': /* swetest: ayanamsha */
   case 's': /* swetest: an asteroid, with number given in -xs[number] */
   case 'z': /* swetest: a fictitious body, number given in -xz[number] */
   case 'd': /* swetest: default (main) factors 0123456789mtABC */
@@ -2340,72 +2463,144 @@ static int32 orbital_elements(double tjd_et, int32 ipl, int32 iflag, char *serr)
   return OK;
 }
 
+static void insert_gap_string_for_tabs(char *sout, char *gap)
+{
+  char *sp;
+  char s[LEN_SOUT];
+  if (!have_gap_parameter)
+    return;
+  while((sp = strchr(sout, '\t')) != NULL && strlen(sout) + strlen(gap) < LEN_SOUT) {
+    strcpy(s, sp + 1);
+    strcpy(sp, gap);
+    strcat(sp, s);
+  }
+}
+
+static void print_rise_set_line(double trise, double tset, double *geopos, char *serr) {
+  double t0;
+  int retc;
+  *sout = '\0';
+  if (trise != 0) retc = ut_to_lmt_lat(trise, geopos, &(trise), serr);
+  if (tset != 0) retc = ut_to_lmt_lat(tset, geopos, &(tset), serr);
+  strcpy(sout, "rise     ");
+  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
+  if (trise == 0) {
+    strcat(sout, "         -                     ");
+  } else {
+    swe_revjul(trise, gregflag, &jyear, &jmon, &jday, &jut);
+    sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
+  }
+  strcat(sout, "set      ");
+  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
+  if (tset == 0 ) {
+  strcat(sout, "         -                     ");
+  } else {
+    swe_revjul(tset, gregflag, &jyear, &jmon, &jday, &jut);
+    sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
+  }
+  if (trise != 0 && tset != 0) {
+    if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
+    sprintf(sout + strlen(sout), "dt =");
+    if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
+    t0 = (tset - trise) * 24;
+    sprintf(sout + strlen(sout), "%s", hms(t0, BIT_LZEROES));
+  }
+  strcat(sout, "\n");
+  if (have_gap_parameter) insert_gap_string_for_tabs(sout, gap);
+  do_printf(sout);
+}
+
 static int32 call_rise_set(double t_ut, int32 ipl, char *star, int32 whicheph, int32 special_mode, double *geopos, char *serr)
 {
-  int ii;
+  int ii, rval, loop_count;
   int32 rsmi = 0;
-  double tret[10], tret1sv = 0;
-  double t0, t1;
+  double dayfrac = 0.0001;
+  double tret[10], trise, tset, tnext, tret1sv = 0;
+  AS_BOOL do_rise, do_set;
+  AS_BOOL last_was_empty = FALSE;
   int32 retc = OK;
+  int rsmior = 0;
+  if (norefrac) rsmior |= SE_BIT_NO_REFRACTION;
+  if (disccenter) rsmior |= SE_BIT_DISC_CENTER;
+  if (discbottom) rsmior |= SE_BIT_DISC_BOTTOM;
+  if (fabs(geopos[1]) < 60 && ipl >= SE_SUN && ipl <= SE_PLUTO) 
+    dayfrac = 0.01;
   swe_set_topo(geopos[0], geopos[1], geopos[2]); 
   do_printf("\n");
-  /* loop over days */
-  for (ii = 0; ii < nstep; ii++, t_ut = tret1sv + 0.1) {
-    *sout = '\0';
-    /* swetest -rise
-     * calculate and print rising and setting */
-    if (special_event == SP_RISE_SET) {
-      /* rising */
-      rsmi = SE_CALC_RISE;
-      if (norefrac) rsmi |= SE_BIT_NO_REFRACTION;
-      if (disccenter) rsmi |= SE_BIT_DISC_CENTER;
-      if (discbottom) rsmi |= SE_BIT_DISC_BOTTOM;
-      if (swe_rise_trans(t_ut, ipl, star, whicheph, rsmi, geopos, datm[0], datm[1], &(tret[0]), serr) != OK) {
-	do_printf(serr);
-	exit(0);
-      } 
-      /* setting */
-      rsmi = SE_CALC_SET;
-      if (norefrac) rsmi |= SE_BIT_NO_REFRACTION;
-      if (disccenter) rsmi |= SE_BIT_DISC_CENTER;
-      if (discbottom) rsmi |= SE_BIT_DISC_BOTTOM;
-      if (swe_rise_trans(t_ut, ipl, star, whicheph, rsmi, geopos, datm[0], datm[1], &(tret[1]), serr) != OK) {
-	do_printf(serr);
-	exit(0);
-      } 
-      tret1sv = tret[1];
-      if (time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) {
-	retc = ut_to_lmt_lat(tret[0], geopos, &(tret[0]), serr);
-	retc = ut_to_lmt_lat(tret[1], geopos, &(tret[1]), serr);
+  tnext = t_ut;
+  // the code is designed for looping with -nxxx over many days, during which
+  // the object might become circumpolar, or never rise at all.
+  while (special_event == SP_RISE_SET && tnext < t_ut + nstep) {
+    // the following 'if' avoids unnecessary calculations for circumpolar 
+    // objects. even without it, the output would be correct, but 
+    // could be considerably slower.
+    if (last_was_empty && (star == NULL || *star == '\0')) {
+      rval = swe_calc_ut(tnext, ipl, whicheph|SEFLG_EQUATORIAL, tret, serr);
+      if (rval >= 0 ) {
+        double edist = geopos[1] + tret[1];
+        double edist2 = geopos[1] - tret[1];
+        if ((edist - 2 > 90 || edist + 2 < -90) 
+        || (edist2 - 2 > 90 || edist2 + 2 < -90)) {
+	  tnext += 1;
+	  continue;
+	}
       }
-      t0 = 0; t1 = 0;
-      strcpy(sout, "rise     ");
-      if (tret[0] == 0 || tret[0] > tret[1]) {
-        strcat(sout, "         -                     ");
-      } else {
-	t0 = tret[0];
-	swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
-	sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
-      }
-      strcat(sout, "set      ");
-      if (tret[1] == 0) {
-        strcat(sout, "         -                     \n");
-      } else {
-	t1 = tret[1];
-	swe_revjul(tret[1], gregflag, &jyear, &jmon, &jday, &jut);
-	sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
-      }
-      if (t0 != 0 && t1 != 0) {
-        t0 = (t1 - t0) * 24;
-	sprintf(sout + strlen(sout), "dt = %s", hms(t0, BIT_LZEROES));
-      }
-      strcat(sout, "\n");
-      do_printf(sout);
     }
-    /* swetest -metr
-     * calculate and print transits over meridian (midheaven and lower
-     * midheaven */
-    if (special_event == SP_MERIDIAN_TRANSIT) {
+    /* rising */
+    rsmi = SE_CALC_RISE | rsmior;
+    rval= swe_rise_trans(tnext, ipl, star, whicheph, rsmi, geopos, datm[0], datm[1], &trise, serr);
+    if (rval == ERR) {
+      do_printf(serr);
+      exit(0);
+    } 
+    do_rise = (rval == OK);
+    /* setting */
+    rsmi = SE_CALC_SET | rsmior;
+    do_set = FALSE;
+    loop_count = 0;
+    //tnext = trise; // dieter 14-feb-17
+    while (! do_set && loop_count < 2) {
+      rval = swe_rise_trans(tnext, ipl, star, whicheph, rsmi, geopos, datm[0], datm[1], &tset, serr);
+      if (rval == ERR) {
+	do_printf(serr);
+	exit(0);
+      } 
+      do_set = (rval == OK);
+      if (!do_set && do_rise ) {
+        tnext = trise;
+      }
+      loop_count++;
+    }
+    if (do_rise && do_set && trise > tset) {
+      do_rise = FALSE;	// ignore rises happening before setting
+      trise = 0;	// we hope that exact time 0 never happens, is highly unlikely.
+    }
+    if (do_rise && do_set) {
+      print_rise_set_line(trise, tset, geopos, serr);
+      last_was_empty = FALSE;
+      tnext = tset + dayfrac;
+    } else if (do_rise && !do_set) {
+      print_rise_set_line(trise, 0, geopos, serr);
+      last_was_empty = FALSE;
+      tnext = trise + dayfrac;
+    } else if (do_set && ! do_rise) {
+      tnext = tset + dayfrac;
+      print_rise_set_line(0, tset, geopos, serr);
+      last_was_empty = FALSE;
+    } else { // neither rise nor set 
+      // for sequences of days without rise or set, the line '-   -' is printed only once.
+      if (! last_was_empty) print_rise_set_line(0, 0, geopos, serr);
+      tnext += 1;
+      last_was_empty = TRUE;
+    }
+    if (nstep == 1) break;
+  }
+  /* swetest -metr
+   * calculate and print transits over meridian (midheaven and lower
+   * midheaven */
+  if (special_event == SP_MERIDIAN_TRANSIT) {
+  /* loop over days */
+    for (ii = 0; ii < nstep; ii++, t_ut = tret1sv + 0.001) {
       /* transit over midheaven */
       if (swe_rise_trans(t_ut, ipl, star, whicheph, SE_CALC_MTRANSIT, geopos, datm[0], datm[1], &(tret[0]), serr) != OK) {
 	do_printf(serr);
@@ -2422,7 +2617,7 @@ static int32 call_rise_set(double t_ut, int32 ipl, char *star, int32 whicheph, i
 	retc = ut_to_lmt_lat(tret[1], geopos, &(tret[1]), serr);
       }
       strcpy(sout, "mtransit ");
-      if (tret[0] == 0) strcat(sout, "         -                     ");
+      if (tret[0] == 0 || tret[0] > tret[1]) strcat(sout, "         -                     ");
       else {
 	swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
 	sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s    ", jday, jmon, jyear, hms(jut,BIT_LZEROES));
@@ -2436,6 +2631,7 @@ static int32 call_rise_set(double t_ut, int32 ipl, char *star, int32 whicheph, i
       do_printf(sout);
     }
   }
+  if (have_gap_parameter) insert_gap_string_for_tabs(sout, gap);
   return retc;
 }
 
@@ -2521,30 +2717,37 @@ ERR) {
       sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut);
       /* second line:
        * eclipse times, penumbral, partial, total begin and end */
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (eclflag & SE_ECL_PENUMBBEG_VISIBLE)
 	sprintf(sout + strlen(sout), "  %s ", hms_from_tjd(tret[6])); 
       else
 	strcat(sout, "      -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (eclflag & SE_ECL_PARTBEG_VISIBLE)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[2])); 
       else
 	strcat(sout, "    -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (eclflag & SE_ECL_TOTBEG_VISIBLE)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[4])); 
       else
 	strcat(sout, "    -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (eclflag & SE_ECL_TOTEND_VISIBLE)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[5])); 
       else
 	strcat(sout, "    -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (eclflag & SE_ECL_PARTEND_VISIBLE)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[3])); 
       else
 	strcat(sout, "    -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (eclflag & SE_ECL_PENUMBEND_VISIBLE)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[7])); 
       else
 	strcat(sout, "    -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "dt=%.1f", swe_deltat_ex(tret[0], whicheph, serr) * 86400.0);
       strcat(sout, "\n");
     /* global lunar eclipse */
@@ -2589,24 +2792,31 @@ ERR) {
       sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f\tsaros %d/%d\t%.6f\tdt=%.2f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[0],attr[1], (int) attr[9], (int) attr[10], t_ut, swe_deltat_ex(t_ut, whicheph, serr) * 86400);
       /* second line:
        * eclipse times, penumbral, partial, total begin and end */
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "  %s ", hms_from_tjd(tret[6])); 
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[2] != 0)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[2])); 
       else
 	strcat(sout, "   -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[4] != 0)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[4])); 
       else
 	strcat(sout, "   -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[5] != 0)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[5])); 
       else
 	strcat(sout, "   -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[3] != 0)
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[3])); 
       else
 	strcat(sout, "   -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "%s", hms_from_tjd(tret[7])); 
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "dt=%.1f", swe_deltat_ex(tret[0], whicheph, serr) * 86400.0);
       strcat(sout, "\n");
       if (special_mode & SP_MODE_HOCAL) {
@@ -2614,10 +2824,12 @@ ERR) {
 	sprintf(sout, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou, imin, ecl_type);
       } 
     }
-    if (short_output)
+    if (have_gap_parameter) insert_gap_string_for_tabs(sout, gap);
+    if (short_output) {
       do_printf(sout_short);
-    else
+    } else {
       do_printf(sout);
+    }
   }
   return OK;
 }
@@ -2662,6 +2874,7 @@ attr, direction_flag, serr)) == ERR) {
 	  has_found = TRUE;
 	  ecl_type = ECL_SOL_PARTIAL;
 	}
+	if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
 	if (!has_found) {
 	  ii--;
 	} else {
@@ -2677,22 +2890,30 @@ attr, direction_flag, serr)) == ERR) {
 	  dt = (tret[3] - tret[2]) * 24 * 60;
 	  sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%.4f/%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[8], attr[0], attr[2], (int) attr[9], (int) attr[10], t_ut);
 	  sprintf(sout + strlen(sout), "\t%d min %4.2f sec\t", (int) dt, fmod(dt, 1) * 60); 
-	  if (eclflag & SE_ECL_1ST_VISIBLE)
+	  if (eclflag & SE_ECL_1ST_VISIBLE) {
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[1])); 
-	  else
+	  } else {
 	    strcat(sout, "   -         ");
-	  if (eclflag & SE_ECL_2ND_VISIBLE)
+	  }
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
+	  if (eclflag & SE_ECL_2ND_VISIBLE) {
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[2])); 
-	  else
+	  } else {
 	    strcat(sout, "   -         ");
-	  if (eclflag & SE_ECL_3RD_VISIBLE)
+	  }
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
+	  if (eclflag & SE_ECL_3RD_VISIBLE) {
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[3])); 
-	  else
+	  } else {
 	    strcat(sout, "   -         ");
-	  if (eclflag & SE_ECL_4TH_VISIBLE)
+	  }
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
+	  if (eclflag & SE_ECL_4TH_VISIBLE) {
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[4])); 
-	  else
+	  } else {
 	    strcat(sout, "   -         ");
+	  }
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
 #if 0
 	  sprintf(sout + strlen(sout), "\t%d min %4.2f sec   %s %s %s %s", 
                 (int) dt, fmod(dt, 1) * 60, 
@@ -2703,6 +2924,7 @@ attr, direction_flag, serr)) == ERR) {
 #endif
 	  sprintf(sout + strlen(sout), "dt=%.1f", swe_deltat_ex(tret[0], whicheph, serr) * 86400.0);
 	  strcat(sout, "\n");
+	  if (have_gap_parameter) insert_gap_string_for_tabs(sout, gap);
 	  do_printf(sout);
 	}
       }
@@ -2734,6 +2956,7 @@ attr, direction_flag, serr)) == ERR) {
       }
       if ((eclflag & SE_ECL_NONCENTRAL) && !(eclflag & SE_ECL_PARTIAL))
         strcat(sout, "non-central ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       swe_sol_eclipse_where(t_ut, whicheph, geopos_max, attr, serr);
       if (time_flag & (BIT_TIME_LMT | BIT_TIME_LAT)) {
 	for (i = 0; i < 10; i++) {
@@ -2745,17 +2968,21 @@ attr, direction_flag, serr)) == ERR) {
       sprintf(sout_short, "%s\t%2d.%2d.%4d\t%s\t%.3f", sout, jday, jmon, jyear, hms(jut,0), attr[8]);
       sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%f km\t%.4f/%.4f/%.4f\tsaros %d/%d\t%.6f\n", jday, jmon, jyear, hms(jut,0), attr[3], attr[8], attr[0], attr[2], (int) attr[9], (int) attr[10], tret[0]);
       sprintf(sout + strlen(sout), "\t%s ", hms_from_tjd(tret[2])); 
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[4] != 0) {
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[4])); 
       } else {
 	strcat(sout, "   -         ");
       }
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[5] != 0) {
 	sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[5])); 
       } else {
 	strcat(sout, "   -         ");
       }
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "%s", hms_from_tjd(tret[3])); 
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "dt=%.1f", swe_deltat_ex(tret[0], whicheph, serr) * 86400.0);
       strcat(sout, "\n");
       sprintf(sout + strlen(sout), "\t%s\t%s", strcpy(s1, dms(geopos_max[0], BIT_ROUND_MIN)), strcpy(s2, dms(geopos_max[1], BIT_ROUND_MIN)));
@@ -2784,10 +3011,12 @@ attr, direction_flag, serr)) == ERR) {
 	sprintf(sout, "\"%04d %02d %02d %02d.%02d %d\",\n", jyear, jmon, jday, ihou, imin, ecl_type);
       } 
       /*printf("len=%ld\n", strlen(sout));*/
-      if (short_output)
+      if (short_output) {
 	do_printf(sout_short);
-      else
+      } else {
+	if (have_gap_parameter) insert_gap_string_for_tabs(sout, gap);
 	do_printf(sout);
+      }
     }
   }
   return OK;
@@ -2861,6 +3090,7 @@ static int32 call_lunar_occultation(double t_ut, int32 ipl, char *star, int32 wh
 	  else if (eclflag & SE_ECL_OCC_END_DAYLIGHT)
 	    strcat(sout, "(sunrise)"); /* occultation occurs during the day */
 	}
+	if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
 	while (strlen(sout) < 17)
 	  strcat(sout, " ");
 	if (!has_found) {
@@ -2875,18 +3105,22 @@ static int32 call_lunar_occultation(double t_ut, int32 ipl, char *star, int32 wh
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[1])); 
 	  else
 	    strcat(sout, "   -         ");
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
 	  if (eclflag & SE_ECL_2ND_VISIBLE)
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[2])); 
 	  else
 	    strcat(sout, "   -         ");
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
 	  if (eclflag & SE_ECL_3RD_VISIBLE)
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[3])); 
 	  else
 	    strcat(sout, "   -         ");
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
 	  if (eclflag & SE_ECL_4TH_VISIBLE)
 	    sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[4])); 
 	  else
 	    strcat(sout, "   -         ");
+	  if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
 #if 0
 	  sprintf(sout + strlen(sout), "\t%d min %4.2f sec   %s %s %s %s", 
                 (int) dt, fmod(dt, 1) * 60, 
@@ -2897,6 +3131,7 @@ static int32 call_lunar_occultation(double t_ut, int32 ipl, char *star, int32 wh
 #endif
 	  sprintf(sout + strlen(sout), "dt=%.1f", swe_deltat_ex(tret[0], whicheph, serr) * 86400.0);
 	  strcat(sout, "\n");
+	  if (have_gap_parameter) insert_gap_string_for_tabs(sout, gap);
 	  do_printf(sout);
 	}
       }
@@ -2941,15 +3176,19 @@ static int32 call_lunar_occultation(double t_ut, int32 ipl, char *star, int32 wh
       swe_revjul(tret[0], gregflag, &jyear, &jmon, &jday, &jut);
       sprintf(sout + strlen(sout), "%2d.%02d.%04d\t%s\t%f km\t%f o/o\n", jday, jmon, jyear, hms(jut,BIT_LZEROES), attr[3], attr[0]);
       sprintf(sout + strlen(sout), "\t%s ", hms_from_tjd(tret[2])); 
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[4] != 0)
 	  sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[4])); 
       else
           strcat(sout, "   -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       if (tret[5] != 0)
 	  sprintf(sout + strlen(sout), "%s ", hms_from_tjd(tret[5])); 
       else
           strcat(sout, "   -         ");
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "%s", hms_from_tjd(tret[3])); 
+      if (have_gap_parameter) sprintf(sout + strlen(sout), "\t");
       sprintf(sout + strlen(sout), "dt=%.1f", swe_deltat_ex(tret[0], whicheph, serr) * 86400.0);
       strcat(sout, "\n");
       sprintf(sout + strlen(sout), "\t%s\t%s", strcpy(s1, dms(geopos_max[0], BIT_ROUND_MIN)), strcpy(s2, dms(geopos_max[1], BIT_ROUND_MIN)));
@@ -2961,9 +3200,10 @@ static int32 call_lunar_occultation(double t_ut, int32 ipl, char *star, int32 wh
         if (fabs(tret[0] - t_ut) > 2) 
           do_printf("when_loc returns wrong date\n");
         dt = (tret[3] - tret[2]) * 24 * 60;
-        sprintf(sout + strlen(sout), "\t%d min %4.2f sec\t", (int) dt, fmod(dt, 1) * 60);
+        sprintf(sout + strlen(sout), "\t%d min %4.2f sec", (int) dt, fmod(dt, 1) * 60);
       } 
       strcat(sout, "\n");
+      if (have_gap_parameter) insert_gap_string_for_tabs(sout, gap);
       if (special_mode & SP_MODE_HOCAL) {
 	int ihou, imin, isec, isgn;
 	double dfrc;

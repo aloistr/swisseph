@@ -86,6 +86,10 @@ extern "C" {
  * definitions for use also by non-C programmers
  ***********************************************************/
 
+#define SE_AUNIT_TO_KM        (149597870.691)
+#define SE_AUNIT_TO_LIGHTYEAR (1.0/63241.077088071)
+#define SE_AUNIT_TO_PARSEC    (1.0/206264.8062471) 
+
 /* values for gregflag in swe_julday() and swe_revjul() */
 # define SE_JUL_CAL	0
 # define SE_GREG_CAL	1
@@ -257,10 +261,12 @@ extern "C" {
 #define SE_SIDM_GALCENT_MULA_WILHELM       36
 #define SE_SIDM_ARYABHATA_522   37
 #define SE_SIDM_BABYL_BRITTON   38
-//#define SE_SIDM_MANJULA         38
+#define SE_SIDM_TRUE_SHEORAN  	39
+//#define SE_SIDM_GALCENT_COCHRANE   	40
+//#define SE_SIDM_MANJULA         41
 #define SE_SIDM_USER            255 /* user-defined ayanamsha, t0 is TT */
 
-#define SE_NSIDM_PREDEF	        39
+#define SE_NSIDM_PREDEF	        40
 
 /* used for swe_nod_aps(): */
 #define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
@@ -317,6 +323,9 @@ extern "C" {
 #define SE_BIT_DISC_BOTTOM      8192 /* to be or'ed to SE_CALC_RISE/SET,
                                       * if rise or set of lower limb of 
 				      * disc is requried */
+#define SE_BIT_GEOCTR_NO_ECL_LAT 128 /* use geocentric rather than topocentric 
+                                        position of object and 
+					ignore its ecliptic latitude */
 #define SE_BIT_NO_REFRACTION    512 /* to be or'ed to SE_CALC_RISE/SET, 
 				     * if refraction is to be ignored */
 #define SE_BIT_CIVIL_TWILIGHT    1024 /* to be or'ed to SE_CALC_RISE/SET */
@@ -329,6 +338,7 @@ extern "C" {
                                         * test flag. It forces the usage
 					* of the old, slow calculation of
 					* risings and settings. */
+#define SE_BIT_HINDU_RISING  (SE_BIT_DISC_CENTER|SE_BIT_NO_REFRACTION|SE_BIT_GEOCTR_NO_ECL_LAT)
 
 /* for swe_azalt() and swe_azalt_rev() */
 #define SE_ECL2HOR		0
@@ -387,6 +397,7 @@ extern "C" {
 # define SE_SPLIT_DEG_ROUND_MIN    2
 # define SE_SPLIT_DEG_ROUND_DEG    4
 # define SE_SPLIT_DEG_ZODIACAL     8
+# define SE_SPLIT_DEG_NAKSHATRA 1024
 # define SE_SPLIT_DEG_KEEP_SIGN   16	/* don't round to next sign, 
 					 * e.g. 29.9999999 will be rounded
 					 * to 29d59'59" (or 29d59' or 29d) */
@@ -480,7 +491,7 @@ extern "C" {
 #define NSE_MODELS              8
 
 /* precession models */
-#define SEMOD_NPREC		9
+#define SEMOD_NPREC		10
 #define SEMOD_PREC_IAU_1976      1
 #define SEMOD_PREC_LASKAR_1986   2
 #define SEMOD_PREC_WILL_EPS_LASK 3
@@ -490,6 +501,7 @@ extern "C" {
 #define SEMOD_PREC_BRETAGNON_2003      7
 #define SEMOD_PREC_IAU_2006      8
 #define SEMOD_PREC_VONDRAK_2011  9
+#define SEMOD_PREC_OWEN_1990     10
 #define SEMOD_PREC_DEFAULT       SEMOD_PREC_VONDRAK_2011
 /* SE versions before 1.70 used IAU 1976 precession for 
  * a limited time range of 2 centuries in combination with 
@@ -529,42 +541,41 @@ extern "C" {
                                      * limited to 1962 - today. JPL uses the
 				     * first and last value for all  dates 
 				     * beyond this time range. */
-#define SEMOD_JPLHOR_BEFORE_1962_USE_APPROX    2  
-                                    /* outside the available time range 
-                                     * 1962 - today default to SEFLG_JPLHOR_APROX */
 #define SEMOD_JPLHOR_DEFAULT        SEMOD_JPLHOR_LONG_AGREEMENT
+/* Note, currently this is the only option for SEMOD_JPLHOR..*/
 /* SEMOD_JPLHOR_LONG_AGREEMENT, if combined with SEFLG_JPLHOR provides good 
- * agreement with JPL Horizons for 1800 - today. However, Horizons uses
- * correct dpsi and deps only after 20-jan-1962. For all dates before that
- * it uses dpsi and deps of 20-jan-1962, which provides a continuous
- * ephemeris, but does not make sense otherwise.
- * Before 1800, even this option does not provide agreement with Horizons,
- * because Horizons uses a different precession model (Owen 1986)
- * before 1800, which is not included in the Swiss Ephemeris.
- * SEMOD_JPLHOR_BEFORE_1962_USE_APPROX causes the program to default 
- * to SEFLG_JPLHOR_APPROX,
- * if the date is outside the time range 1962 - today, where values
- * for dpsi and deps are given.
- * Note that this will result in a non-continuous ephemeris near
- * 20-jan-1962 and current years.
+ * agreement with JPL Horizons for 9998 BC (-9997) until 9999 CE. 
+ * - After 20-jan-1962 until today, Horizons uses correct dpsi and deps. 
+ * - For dates before that, it uses dpsi and deps of 20-jan-1962, which 
+ *   provides a continuous ephemeris, but does not make sense otherwise.
+ * - Before 1.1.1799 and after 1.1.2202, the precession model Owen 1990
+ *   is used, as in Horizons. 
+ * An agreement with Horizons to a couple of milli arc seconds is achieved 
+ * for the whole time range of Horizons. (BC 9998-Mar-20 to AD 9999-Dec-31 TT.)
  */
 
 /* methods of approximation of JPL Horizons (iflag & SEFLG_JPLHORA), 
  * without dpsi, deps; see explanations below */
-#define SEMOD_NJPLHORA		2
+#define SEMOD_NJPLHORA		3
 #define SEMOD_JPLHORA_1     1
 #define SEMOD_JPLHORA_2     2
-#define SEMOD_JPLHORA_DEFAULT     SEMOD_JPLHORA_1
+#define SEMOD_JPLHORA_3     3
+#define SEMOD_JPLHORA_DEFAULT     SEMOD_JPLHORA_3
 /* With SEMOD_JPLHORA_1, planetary positions are always calculated 
  * using a recent precession/nutation model. Frame bias matrix is applied 
- * with some correction to RA and another correction is added to epsilon.
+ * with some correction to RA and another correction added to epsilon.
  * This provides a very good approximation of JPL Horizons positions. 
+ *
  * With SEMOD_JPLHORA_2, frame bias as recommended by IERS Conventions 2003 
  * and 2010 is *not* applied. Instead, dpsi_bias and deps_bias are added to 
  * nutation. This procedure is found in some older astronomical software.
  * Equatorial apparent positions will be close to JPL Horizons 
  * (within a few mas) between 1962 and current years. Ecl. longitude 
  * will be good, latitude bad. 
+ *
+ * With SEMOD_JPLHORA_3 works like SEMOD_JPLHORA_3 after 1962, but like
+ * SEFLG_JPLHOR before that. This allows EXTREMELY good agreement with JPL 
+ * Horizons over its whole time range.
  */
 
 #define SEMOD_NDELTAT		5
@@ -692,6 +703,16 @@ ext_def(int32) swe_fixstar_ut(char *star, double tjd_ut, int32 iflag,
 	double *xx, char *serr);
 
 ext_def(int32) swe_fixstar_mag(char *star, double *mag, char *serr);
+
+ext_def( int32 ) swe_fixstar2(
+        char *star, double tjd, int32 iflag, 
+        double *xx,
+        char *serr);
+
+ext_def(int32) swe_fixstar2_ut(char *star, double tjd_ut, int32 iflag, 
+	double *xx, char *serr);
+
+ext_def(int32) swe_fixstar2_mag(char *star, double *mag, char *serr);
 
 /* close Swiss Ephemeris */
 ext_def( void ) swe_close(void);

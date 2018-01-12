@@ -144,14 +144,6 @@ int day_of_week(double jd)
   return (((int) floor (jd - 2433282 - 1.5) %7) + 7) % 7;
 }
 
-/*************** julday ******************
-  get absolute julian day number (author: Marc Pottenger)
-  with bug fix for year < -4711   15-aug-88
-*/
-double juldays(int gregflag, ADATE *adp ) 
-{
-  return swe_julday(adp->year, adp->month, adp->day, adp->csec / 360000.0, gregflag);
-}
 
 /*** revjul ******************************************************
   revjul() is the inverse function to julday(), see the description
@@ -176,18 +168,6 @@ void revjul (double jd, int gregflag,
 	     int *jmon, int *jday, int *jyear, double *jut)
 {
   swe_revjul(jd, gregflag, jyear, jmon, jday, jut);
-}
-
-/************************************* revjul *********
-  get calendar date from julian day #
-  with bug fix for year < -4711 16-aug-88
-  arguments are julian day #, calendar flag (0=julian, 1=gregorian)
-*/
-void revjuls(double jd, int gregflag, struct adate *adp)
-{
-  double jut;
-  swe_revjul(jd, gregflag, &adp->year, &adp->month, &adp->day, &jut);
-  adp->csec = jut * 360000.0 + 0.5;
 }
 
 /*********************************************************

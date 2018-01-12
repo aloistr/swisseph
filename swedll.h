@@ -131,6 +131,19 @@ DllImport int32 CALL_CONV_IMP swe_fixstar_ut(
 DllImport int32 CALL_CONV_IMP swe_fixstar_mag(
         char *star, double *xx, char *serr);
 
+DllImport int32 CALL_CONV_IMP swe_fixstar2(
+        char *star, double tjd, int32 iflag, 
+        double *xx,
+        char *serr);
+
+DllImport int32 CALL_CONV_IMP swe_fixstar2_ut(
+        char *star, double tjd_ut, int32 iflag, 
+        double *xx,
+        char *serr);
+
+DllImport int32 CALL_CONV_IMP swe_fixstar2_mag(
+        char *star, double *xx, char *serr);
+
 DllImport double CALL_CONV_IMP swe_sidtime0(double tjd_ut, double ecl, double nut);
 DllImport double CALL_CONV_IMP swe_sidtime(double tjd_ut);
 
@@ -357,6 +370,8 @@ DllImport char * CALL_CONV_IMP swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZ
 DllImport char * CALL_CONV_IMP swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *s);
 
 DllImport char * CALL_CONV_IMP swe_cs2degstr(CSEC t, char *a);
+
+DllImport void CALL_CONV_IMP swe_set_interpolate_nut(AS_BOOL do_interpolate);
 
 
 /* additional functions for antiquated GFA basic DLL interface.

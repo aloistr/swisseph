@@ -103,9 +103,6 @@
  julian days.
 *************************************************************/
 extern int nacalc(double jd_ad, centisec *plon, centisec *pspe);
-extern int calcserv(int id, double t, int flag, int plalist, char *so);
-extern void helup(double jd_ad);
-extern void togeo(double le, double re, double l, double r, double z, double *alg, double *arg);
 extern int  calc(int p,
 		 double jd_ad,
 		 int flag, 
@@ -113,17 +110,6 @@ extern int  calc(int p,
 		 double *arad,
 		 double *alat,
 		 double *alngspeed);
-extern int rel_geo(int p, double rau);
-extern int hel( int	p,	/* planet index as defined by placalc.h */
-		double	jd_ad,	/* relative juliand date, ephemeris time */
-				/* Now come 6 pointers to return values. */
-		double	*al,	/* longitude in degrees */
-		double   *ar,	/* radius in AU */
-		double   *az,	/* distance from ecliptic in AU */
-		double   *alp, 	/* speed in longitude, degrees per day */
-		double   *arp,	/* speed in radius, AU per day */
-		double   *azp);   /* speed in z, AU per day */
-extern int  moon(double *al, double *ar, double *az);
 extern double fraction(double t);
 extern double sidtime(double jd_ad, double ecl, double nuta);
 extern double smod8360(double x);
@@ -131,9 +117,6 @@ extern double mod8360(double x);
 extern double diff8360(double x, double y);
 extern double test_near_zero(double x);
 extern double deltat(double jd_ad);
-extern void to_mean_ekl (double jd, double xyz[], double lrz[]);
-extern void placalc_close_files();
-extern int fixstar(char *star, double jd, double *lon, double *lat);
 extern char *placalc_get_errtext();
 extern char *placalc_set_ephepath(char *new_path);	/* sets ephepath;
 				if called with NULL, returns current path */
@@ -233,10 +216,10 @@ extern char *planet2abbr3(int planet);
 
 # define FIRST_HSNR 22
 # define LAST_HSNR 33
+#define MAX_PL_INDEX (LAST_HSNR + 1)  /* don't reckon signs */
 # define NO_OF_HOUSES 12
-# define FIRST_SGNR 34
-#define MAX_PL_INDEX 34 /* don't reckon signs */
-# define LAST_SGNR 45
+# define FIRST_SGNR (LAST_HSNR + 1) 
+# define LAST_SGNR (FIRST_SGNR + 11)
 # define NO_OF_SIGNS 12
 /*
  * in a bitlist flag each planet is represented by a bit;
@@ -311,43 +294,16 @@ extern char *planet2abbr3(int planet);
 
 
 /*
- * stuff from astrolib.h
- */
-
-#ifndef ADATE	/* this must be bracketed because users of swepcalc
-		   may also include astrolib.h for other reasons */
-#define ADATE struct adate
-
-/* makros for bit operations */
-# define clear_bit(v,bit_nr) 	((v) & ~(1L << (bit_nr)))
-# define set_bit(v,bit_nr) 	((v) | (1L << (bit_nr)))
-# define bit(bit_nr)		(1L << (bit_nr))
-# define check_bit(v,bit_nr)	((v) & (1L << (bit_nr)))
-
-ADATE {	/* date structure used by revjuls and juldays */
-       int day, month, year;
-       centisec csec;
-       };
-
-#endif	/* ADATE */
-
-/*
  * functions exported by swepdate.c
  */
 extern double julday(int month, int day, int year, double hour, int gregflag);
-extern double juldays(int gregflag, ADATE *adp); 
 extern void revjul (double u, int gregflag,
 	      int *jmon, int *jday, int *jyear, double *jut);
-extern void revjuls(double u, int gregflag, ADATE *adp); 
 extern int day_of_week(double t);
 /*
  * end swpdate.c
  */
 
-/*
- * stuff from housasp.h
- */
-#ifndef ASP_144		/* allow including housasp wihout conflict */
 #define MAXPLANETS  16
 
 /*
@@ -444,7 +400,7 @@ struct  AspectType {
 		int  index; 	/* number of the found aspect */
 		centisec orb;
 	       }
-		Asp [MAXPLANETS] [MAXPLANETS];
+		Asp[MAXPLANETS][MAXPLANETS];
 	     };
 
 struct  houses {
@@ -454,10 +410,6 @@ struct  houses {
 	};
 
 # define HOUSES 	struct houses
-#endif	/* ifndef ASP_144 */
-/**********************************
-  functions exported originally from housasp.c 
-***********************************/
 
 extern int HouseNr(HOUSES *h, CSEC p);
   /*

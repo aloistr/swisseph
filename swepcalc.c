@@ -89,26 +89,6 @@ static const int plac2swe[] = {SE_SUN, SE_MOON, SE_MERCURY, SE_VENUS, SE_MARS, S
 static TLS char perrtx[AS_MAXCH];
 static double ekl, nut;
 
-/*
- * mimimum and maximum distances computed over 1000 years with plamimax,
- * required for relative distances rgeo, where the distance is given
- * as 100 when a planet is closest and as 0 when farthest from earth.
- */
-static const double rmima[CALC_N][2] = {	
-	{ 0.98296342,  1.01704665},
-	{ 0.00238267,  0.00271861},
-	{ 0.54900496,  1.45169607},
-	{ 0.26411287,  1.73597885},
-	{ 0.37289847,  2.67626927},
-	{ 3.94877993,  6.45627627},
-	{ 7.99362824, 11.09276636},
-	{17.28622633, 21.10714104},
-	{28.81374786, 31.33507284},
-	{28.67716748, 50.29208774},
-	{ 0.00,	 0.00259553},	/* nodes don't get a real value*/
-	{ 0.00,  0.00259553},
-	{ 7.36277475, 19.86585062}};
-
 /**********************************************************
 function nacalc	()
 calculates an array of planet longitudes and speeds,
@@ -152,97 +132,6 @@ int nacalc (double	jd_ad,	/* universal time relative  julian date */
     strcpy(perrtx, err);
   return result;
 }	/* end nacalc */
-
-/******************************************************************
- * calculation server
- * delivers positions in string format which can be sent easily
- * over a communication line to the calculation client.
- * if plalist = 0, only SUN .. CHIRON are delivered, no LILITH
- ******************************************************************/
-int calcserv(int id,	/* request id, random number to prevent phase err */
-	    double jd_ad,	/* time as relative Astrodienst julian date */
-	    int	flag,	/* a set of CALC_BIT_ bitflags */
-	    int  plalist,/* bit list of planets to be computed, 0 = all */
-	    char *so)	/* output string, MUST BE LONG ENOUGH (800 bytes)*/
-{
-  int p, planet, so_len;
-  double rlng, rrad, rlat, rspeed, rau[CALC_N];
-  centisec lcs[CALC_N], lpcs[CALC_N], betcs[CALC_N]; 
-  char s[AS_MAXCH];
-  if (plalist == 0) plalist = (1 << 13) - 1;	/* sun .. chiron */;
-  /*
-   * flag determines whether deltat is added to t;
-   * if CALC_BIT_EPHE is set, jd_ad is considered as ephemeris time,
-   * otherwise as universal time.
-   */
-  if ((flag & CALC_BIT_EPHE) == 0) {
-    jd_ad += deltat (jd_ad);
-  }
-  for (p = SUN; p < CALC_N; p++) {
-    if (! check_bit(plalist, p)) continue;
-    if (calc (p, jd_ad, flag, &rlng, &rrad, &rlat, &rspeed) == OK) {
-      lcs [p] = swe_d2l (rlng * DEG);
-      lpcs [p] = swe_d2l (rspeed * DEG);
-      betcs [p] = swe_d2l (rlat * DEG);
-      rau [p] = rrad;
-    } else {
-      sprintf(so,"error at planet %d", p);
-      return ( ERR);
-    }
-  }
-  /*
-   * format comma separated list: id,teph,flag,plalist,ekl,nut
-   * double is given with 8 digits precision after decimal point, 
-   * all angles are given in centiseconds.
-   * then for each requested planet: longitude (csec)
-   * then for each requested planet, if wanted: speed (csec/day)
-   * then for each requested planet, if wanted: latitude (csec)
-   * then for each requested planet, if wanted: rgeo (units 0..999)
-   * then for each requested planet, if wanted: rau  (A.U.)
-   */
-  sprintf (so, "%d,%.8f,%d,%d,%d,%d", id, jd_ad, flag, plalist, 
-	       swe_d2l(ekl * DEG), swe_d2l (nut * DEG) );
-  so_len = strlen (so);
-  for (planet = SUN; planet < CALC_N; planet++) {
-    if (! check_bit(plalist, planet)) continue;
-    sprintf (s ,",%d", lcs[planet]);
-    strcat (so + so_len, s);
-    so_len += strlen (s);
-  }
-  if (flag & CALC_BIT_SPEED) {
-    for (planet = SUN; planet < CALC_N; planet++)  {
-      if (! check_bit(plalist, planet)) continue;
-      sprintf (s ,",%d", lpcs[planet]);
-      strcat (so + so_len, s);
-      so_len += strlen (s);
-    }
-  }
-  if (flag & CALC_BIT_BETA) {
-    for (planet = SUN; planet < CALC_N; planet++)  {
-      if (! check_bit(plalist, planet)) continue;
-      sprintf (s ,",%d", betcs[planet]);
-      strcat (so + so_len, s);
-      so_len += strlen (s);
-    }
-  }
-  if (flag & CALC_BIT_RGEO) {
-    for (planet = SUN; planet < CALC_N; planet++)  {
-      if (! check_bit(plalist, planet)) continue;
-      sprintf (s ,",%d", rel_geo(planet,rau[planet]));
-      strcat (so + so_len, s);
-      so_len += strlen (s);
-    }
-  }
-  if (flag & CALC_BIT_RAU) {
-    for (planet = SUN; planet < CALC_N; planet++)  {
-      if (! check_bit(plalist, planet)) continue;
-      sprintf (s ,",%.8f", rau[planet]);
-      strcat (so + so_len, s);
-      so_len += strlen (s);
-    }
-  }
-  return (OK);
-}	/* end calcserv */
 
 /******************************************************************
    function calc(): 
@@ -337,34 +226,6 @@ int calc(int  planet,  	/* planet index as defined in placalc.h,
   }
   return (OK);
 } /* end calc */
-
-int rel_geo(int planet, double rau)
-{
-  /*
-   * get relative earth distance in range 0..1000:
-   * To compute the relative distance we use fixed values of 
-   * mimimum and maximum distance measured empirically between
-   * 1300 AD and 2300 AD (see helconst.c). 
-   * This approach is certainly fine for the
-   * outer planets, but not the best for Sun and Moon, where it
-   * would be better to look at the mean anomaly, i.e. the progress
-   * the planet makes on it's Kepler orbit.
-   * Considering the low importance astrologers give to the relative
-   * distance, we consider the effort not worthwile.
-   * Now we compare real radius with longtime-averaged distances.
-   */
-  int rgeo;
-  if (planet == MEAN_NODE || planet == TRUE_NODE || planet == LILITH) {
-    return 0;
-  } else {
-    rgeo = 1000 * (1.0 - (rau - rmima[planet][0]) / (rmima[planet][1] - rmima[planet][0]));
-  }
-  if (rgeo < 0)
-    rgeo = 0;
-  else if (rgeo > 999)
-    rgeo = 999;
-  return rgeo;
-}
 
 /*
  * get the planet index for an AFL letter
@@ -509,11 +370,6 @@ char *placalc_set_ephepath(char *path)
   return epath;
 }
 
-void placalc_close_files()
-{
-  swe_close();
-}
-
 char *placalc_get_errtext()
 {
   return perrtx;
@@ -527,35 +383,6 @@ ET = UT +  deltat
 double deltat (double jd_ad) /* Astrodienst relative julian date */
 { 
   return swe_deltat(jd_ad + JUL_OFFSET);
-}
-
-/**********************************************************
- * get fixstar positions
- * parameters:
- * star
- *    if string star contains a name, this star is searched.
- *    if it contains a number, the n'th star of the file
- *    is returned, starting with 0.
- *    In any case the name of the star is returned.
- * jd absolute julian day
- * lon, lat	pointer for returning the ecliptic coordinates
- *              (mean ecliptic and equinox of date)
-**********************************************************/
-int fixstar(char *star, double jd, double *lon, double *lat)
-{
-  double x[6];
-  int i;
-  int32 retflag;
-  /* if call by number, fixstar() is 0-based, 
-   * whereas swe_fixstar starts with 1 */
-  if (isdigit((int) *star)) {
-    i = atoi(star);
-    sprintf(star, "%d", i+1);
-  }
-  retflag = swe_fixstar(star, jd, 0, x, perrtx);
-  *lon = x[0];
-  *lat = x[1];
-  return((int) retflag);
 }
 
 /******************************************************************/
@@ -582,7 +409,7 @@ int HouseNr(struct houses *hsp, CSEC pp)
   CSEC cx;
   int i = 2;
   cx = swe_difcsn(pp, hsp->cusp [1]); 	/* distance from cusp 1 */
-  while (i < 13 && cx >= difcsn(hsp->cusp [i], hsp->cusp [1])) i++;
+  while (i < 13 && cx >= difcsn(hsp->cusp[i], hsp->cusp[1])) i++;
   return (i - 1);
 } 
 
@@ -624,26 +451,24 @@ int InpHouseNr2 (struct houses *hsp, CSEC pp, CSEC *coff)
   return InpHouseNr(hsp, pp, myoff);
 }
 
-/* ********************************************************* */
-/*  Houses:						     */
-/* ********************************************************* */
-/*  Koch and Placidus don't work in the polar circle.        */
-/*  We swap MC/IC so that MC is always before AC in the zodiac */
-/*  We than divide the quadrants into 3 equal parts.         */
-/* ********************************************************* */
-/*  All angles are expressed in centiseconds (1/100th of a   */
-/*  second of arc) and integer arithmetic is used for these. */
-/*  Special trigonometric functions dsin, dcos etc. are im-  */
-/*  plemented for arguments in centiseconds.                 */
-/* ********************************************************* */
-/*  Arguments: th = sidereal time (angle 0..360 degrees      */
-/*             hsy = letter code for house system; implemen- */
-/*                   ted are P,K,C,R,E,V.                    */
-/*             fi = geographic latitude                      */
-/*             ekl = obliquity of the ecliptic               */
-/*             iteration_count = number of iterations in     */
-/*             Placidus calculation; can be 1 or 2.          */
-/* ********************************************************* */
+// ********************************************************* 
+//  Houses:						     
+// ********************************************************* 
+//  Koch and Placidus don't work in the polar circle.        
+//  We swap MC/IC so that MC is always before AC in the zodiac 
+//  We then divide the quadrants into 3 equal parts.         
+// ********************************************************* 
+//  All angles are expressed in centiseconds (1/100th of a   
+//  second of arc) and integer arithmetic is used for these. 
+// ********************************************************* 
+//  Arguments: th = sidereal time (angle 0..360 degrees      
+//             hsy = letter code for house system; implemen- 
+//                   ted are P,K,C,R,E,V.                    
+//             fi = geographic latitude                      
+//             ekl = obliquity of the ecliptic               
+//             iteration_count = number of iterations in     
+//             Placidus calculation; is obsolete but kept for API continuity 
+// ********************************************************* 
 void CalcHouses(CSEC th, CSEC fi, CSEC mekl, char hsy, int iteration_count,
 	struct houses *hsp )
 {

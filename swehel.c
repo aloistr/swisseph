@@ -362,7 +362,7 @@ int32 call_swe_calc(double tjd, int32 ipl, int32 iflag, double *x, char *serr)
 
 /* avoids problems with star name string that may be overwritten by 
    swe_fixstar() */
-int32 call_swe_fixstar(char *star, double tjd, int32 iflag, double *xx, char *serr)
+static int32 call_swe_fixstar(char *star, double tjd, int32 iflag, double *xx, char *serr)
 {
   int32 retval;
   char star2[AS_MAXCH];
@@ -373,7 +373,7 @@ int32 call_swe_fixstar(char *star, double tjd, int32 iflag, double *xx, char *se
 
 /* avoids problems with star name string that may be overwritten by 
    swe_fixstar_mag() */
-int32 call_swe_fixstar_mag(char *star, double *mag, char *serr)
+static int32 call_swe_fixstar_mag(char *star, double *mag, char *serr)
 {
   int32 retval;
   char star2[AS_MAXCH];
@@ -392,7 +392,7 @@ int32 call_swe_fixstar_mag(char *star, double *mag, char *serr)
 
 /* avoids problems with star name string that may be overwritten by 
    swe_fixstar() */
-int32 call_swe_rise_trans(double tjd, int32 ipl, char *star, int32 helflag, int32 eventtype, double *dgeo, double atpress, double attemp, double *tret, char *serr)
+static int32 call_swe_rise_trans(double tjd, int32 ipl, char *star, int32 helflag, int32 eventtype, double *dgeo, double atpress, double attemp, double *tret, char *serr)
 {
   int32 retval;
   int32 iflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
@@ -829,7 +829,7 @@ static double kOZ(double AltS, double sunra, double Lat)
   CHANGEKO = (100 - 11.6 * mymin(6, altslim)) / 100;
 if (0) {
   static int a = 0;
-  //if (a == 0)
+  if (a == 0)
     printf("bsk=%f %f\n", kOZret, AltS);
   a = 1;
 }
@@ -1439,10 +1439,11 @@ if (0) {
   return -16.57 - 2.5 * (log(Th) / log10);
 }
 
-static char *tolower_string(char *str)
+/* tolower star name, but not Bayer designation */
+static char *tolower_string_star(char *str)
 {
   char *sp;
-  for (sp = str; *sp != '\0'; sp++)
+  for (sp = str; *sp != '\0' && *sp != ','; sp++)
     *sp = tolower(*sp);
   return str;
 }
@@ -1462,7 +1463,7 @@ int32 CALL_CONV swe_vis_limit_mag(double tjdut, double *dgeo, double *datm, doub
   double sunra;
   for (i = 0; i < 7; i++)
     dret[i] = 0;
-  tolower_string(ObjectName);
+  tolower_string_star(ObjectName);
   if (DeterObject(ObjectName) == SE_SUN) {
     if (serr != NULL) {
       strcpy(serr, "it makes no sense to call swe_vis_limit_mag() for the Sun");
@@ -1873,7 +1874,7 @@ int32 CALL_CONV swe_heliacal_pheno_ut(double JDNDaysUT, double *dgeo, double *da
   /* note, the fixed stars functions rewrite the star name. The input string 
      may be too short, so we have to make sure we have enough space */
   strcpy_VBsafe(ObjectName, ObjectNameIn);
-  tolower_string(ObjectName);
+  tolower_string_star(ObjectName);
   default_heliacal_parameters(datm, dgeo, dobs, helflag);
   swe_set_topo(dgeo[0], dgeo[1], dgeo[2]);
   retval = ObjectLoc(JDNDaysUT, dgeo, datm, "sun", 1, helflag, &AziS, serr);
@@ -2913,14 +2914,15 @@ static int32 get_heliacal_day(double tjd, double *dgeo, double *datm, double *do
 static int32 time_optimum_visibility(double tjd, double *dgeo, double *datm, double *dobs, char *ObjectName, int32 helflag, double *tret, char *serr)
 {
   int32 retval, retval_sv, i;
-  double t1, t2, vl1, vl2, d, vl, darr[10], phot_scot_opic, phot_scot_opic_sv;
+  double t1, t2, vl1, vl2, d, darr[10], phot_scot_opic, phot_scot_opic_sv;
+  // double vl;
   int t_has_changed;
   *tret = tjd;
   retval = swe_vis_limit_mag(tjd, dgeo, datm, dobs, ObjectName, helflag, darr, serr);
   if (retval == ERR) return ERR;
   retval_sv = retval;
-  vl = darr[0] - darr[7];
-  vl = -1;
+  //vl = darr[0] - darr[7];
+  //vl = -1;
   t1 = tjd;
   t2 = tjd;
   vl1 = -1; 
@@ -3392,7 +3394,7 @@ int32 CALL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, double *dat
   /* note, the fixed stars functions rewrite the star name. The input string 
      may be too short, so we have to make sure we have enough space */
   strcpy_VBsafe(ObjectName, ObjectNameIn);
-  tolower_string(ObjectName);
+  tolower_string_star(ObjectName);
   default_heliacal_parameters(datm, dgeo, dobs, helflag);
   swe_set_topo(dgeo[0], dgeo[1], dgeo[2]);
   Planet = DeterObject(ObjectName);

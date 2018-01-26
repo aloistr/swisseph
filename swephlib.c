@@ -504,7 +504,10 @@ static const double pqpol[NPOL_PECL][2] = {
 static const double pqper[5][NPER_PECL] = {
   {708.15, 2309, 1620, 492.2, 1183, 622, 882, 547},
   {-5486.751211, -17.127623, -617.517403, 413.44294, 78.614193, -180.732815, -87.676083, 46.140315},
-  {-684.66156, 2446.28388, 399.671049, -356.652376, -186.387003, -316.80007, 198.296701, 101.135679}, /* typo in publication fixed */
+  // original publication    A&A 534, A22 (2011):
+//{-684.66156, 2446.28388, 399.671049, -356.652376, -186.387003, -316.80007, 198.296071, 101.135679}, 
+  // typo fixed according to A&A 541, C1 (2012)
+  {-684.66156, 2446.28388, 399.671049, -356.652376, -186.387003, -316.80007, 198.296701, 101.135679}, 
   {667.66673, -2354.886252, -428.152441, 376.202861, 184.778874, 335.321713, -185.138669, -120.97283},
   {-5523.863691, -549.74745, -310.998056, 421.535876, -36.776172, -145.278396, -34.74445, 22.885731}
 };
@@ -560,6 +563,7 @@ void swi_ldp_peps(double tjd, double *dpre, double *deps)
     *dpre = p;
   if (deps != NULL)
     *deps = q;
+//fprintf(stderr, "%.17f\n", *deps / DEGTORAD);
 }
 
 /*
@@ -659,10 +663,13 @@ static void swi_cross_prod(double *a, double *b, double *x)
 static void pre_pmat(double tjd, double *rp)
 {
   double peqr[3], pecl[3], v[3], w, eqx[3];
+//tjd = 1219339.078000;
   /*equator pole */
   pre_pequ(tjd, peqr);
   /* ecliptic pole */
   pre_pecl(tjd, pecl);
+//  fprintf(stderr, "%.17f %.17f %.17f\n", peqr[0], peqr[1], peqr[2]);
+//  fprintf(stderr, "%.17f %.17f %.17f\n", pecl[0], pecl[1], pecl[2]);
   /* equinox */
   swi_cross_prod(peqr, pecl, v);
   w = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
@@ -679,6 +686,169 @@ static void pre_pmat(double tjd, double *rp)
   rp[6] = peqr[0];
   rp[7] = peqr[1];
   rp[8] = peqr[2];
+//  int i;
+//  for (i = 0; i < 3; i++) {
+//    fprintf(stderr, "(%.17f   %.17f   %.17f)\n", rp[i*3], rp[i*3+1],rp[i*3+2]);
+//  } /**/
+}
+
+/* precession according to Owen 1990:
+ * Owen, William M., Jr., (JPL) "A Theory of the Earth's Precession
+ * Relative to the Invariable Plane of the Solar System", Ph.D.
+ * Dissertation, University of Florida, 1990.
+ * Implemented for time range -18000 to 14000. 
+ */
+/* 
+ * p. 177: central time Tc = -160, covering time span -200 <= T <= -120
+ * i.e. -14000 +- 40 centuries
+ * p. 178: central time Tc = -80, covering time span -120 <= T <= -40 
+ * i.e. -6000 +- 40 centuries 
+ * p. 179: central time Tc = 0, covering time span -40 <= T <= +40 
+ * i.e. 2000 +- 40 centuries 
+ * p. 180: central time Tc = 80, covering time span 40 <= T <= 120 
+ * i.e. 10000 +- 40 centuries 
+ * p. 181: central time Tc = 160, covering time span 120 <= T <= 200
+ * i.e. 10000 +- 40 centuries 
+ */
+static const double owen_eps0_coef[5][10] = {
+{23.699391439256386, 5.2330816033981775e-1, -5.6259493384864815e-2, -8.2033318431602032e-3, 6.6774163554156385e-4, 2.4931584012812606e-5, -3.1313623302407878e-6, 2.0343814827951515e-7, 2.9182026615852936e-8, -4.1118760893281951e-9,},
+{24.124759551704588, -1.2094875596566286e-1, -8.3914869653015218e-2, 3.5357075322387405e-3, 6.4557467824807032e-4, -2.5092064378707704e-5, -1.7631607274450848e-6, 1.3363622791424094e-7, 1.5577817511054047e-8, -2.4613907093017122e-9,},
+{23.439103144206208, -4.9386077073143590e-1, -2.3965445283267805e-4, 8.6637485629656489e-3, -5.2828151901367600e-5, -4.3951004595359217e-5, -1.1058785949914705e-6, 6.2431490022621172e-8, 3.4725376218710764e-8, 1.3658853127005757e-9,},
+{22.724671295125046, -1.6041813558650337e-1, 7.0646783888132504e-2, 1.4967806745062837e-3, -6.6857270989190734e-4, 5.7578378071604775e-6, 3.3738508454638728e-6, -2.2917813537654764e-7, -2.1019907929218137e-8, 4.3139832091694682e-9,},
+{22.914636050333696, 3.2123508304962416e-1, 3.6633220173792710e-2, -5.9228324767696043e-3, -1.882379107379328e-4, 3.2274552870236244e-5, 4.9052463646336507e-7, -5.9064298731578425e-8, -2.0485712675098837e-8, -6.2163304813908160e-10,},
+};
+
+static const double owen_psia_coef[5][10] = {
+{-218.57864954903122, 51.752257487741612, 1.3304715765661958e-1, 9.2048123521890745e-2, -6.0877528127241278e-3, -7.0013893644531700e-5, -4.9217728385458495e-5, -1.8578234189053723e-6, 7.4396426162029877e-7, -5.9157528981843864e-9,},
+{-111.94350527506128, 55.175558131675861, 4.7366115762797613e-1, -4.7701750975398538e-2, -9.2445765329325809e-3, 7.0962838707454917e-4, 1.5140455277814658e-4, -7.7813159018954928e-7, -2.4729402281953378e-6, -1.0898887008726418e-7,},
+{-2.041452011529441e-1, 55.969995858494106, -1.9295093699770936e-1, -5.6819574830421158e-3, 1.1073687302518981e-2, -9.0868489896815619e-5, -1.1999773777895820e-4, 9.9748697306154409e-6, 5.7911493603430550e-7, -2.3647526839778175e-7,},
+{111.61366860604471, 56.404525305162447, 4.4403302410703782e-1, 7.1490030578883907e-2, -4.9184559079790816e-3, -1.3912698949042046e-3, -6.8490613661884005e-5, 1.2394328562905297e-6, 1.7719847841480384e-6, 2.4889095220628068e-7,},
+{228.40683531269390, 60.056143904919826, 2.9583200718478960e-2, -1.5710838319490748e-1, -7.0017356811600801e-3, 3.3009615142224537e-3, 2.0318123852537664e-4, -6.5840216067828310e-5, -5.9077673352976155e-6, 1.3983942185303064e-6,},
+};
+
+static const double owen_oma_coef[5][10] = {
+{25.541291140949806, 2.377889511272162e-1, -3.7337334723142133e-1, 2.4579295485161534e-2, 4.3840999514263623e-3, -3.1126873333599556e-4, -9.8443045771748915e-6, -7.9403103080496923e-7, 1.0840116743893556e-9, 9.2865105216887919e-9,},
+{24.429357654237926, -9.5205745947740161e-1, 8.6738296270534816e-2, 3.0061543426062955e-2, -4.1532480523019988e-3, -3.7920928393860939e-4, 3.5117012399609737e-5, 4.6811877283079217e-6, -8.1836046585546861e-8, -6.1803706664211173e-8,},
+{23.450465062489337, -9.7259278279739817e-2, 1.1082286925130981e-2, -3.1469883339372219e-2, -1.0041906996819648e-4, 5.6455168475133958e-4, -8.4403910211030209e-6, -3.8269157371098435e-6, 3.1422585261198437e-7, 9.3481729116773404e-9,},
+{22.581778052947806, -8.7069701538602037e-1, -9.8140710050197307e-2, 2.6025931340678079e-2, 4.8165322168786755e-3, -1.906558772193363e-4, -4.6838759635421777e-5, -1.6608525315998471e-6, -3.2347811293516124e-8, 2.8104728109642000e-9,},
+{21.518861835737142, 2.0494789509441385e-1, 3.5193604846503161e-1, 1.5305977982348925e-2, -7.5015367726336455e-3, -4.0322553186065610e-4, 1.0655320434844041e-4, 7.1792339586935752e-6, -1.603874697543020e-6, -1.613563462813512e-7,},
+};
+
+static const double owen_chia_coef[5][10] = {
+{8.2378850337329404e-1, -3.7443109739678667, 4.0143936898854026e-1, 8.1822830214590811e-2, -8.5978790792656293e-3, -2.8350488448426132e-5, -4.2474671728156727e-5, -1.6214840884656678e-6, 7.8560442001953050e-7, -1.032016641696707e-8,},
+{-2.1726062070318606, 7.8470515033132925e-1, 4.4044931004195718e-1, -8.0671247169971653e-2, -8.9672662444325007e-3, 9.2248978383109719e-4, 1.5143472266372874e-4, -1.6387009056475679e-6, -2.4405558979328144e-6, -1.0148113464009015e-7,},
+{-4.8518673570735556e-1, 1.0016737299946743e-1, -4.7074888613099918e-1, -5.8604054305076092e-3, 1.4300208240553435e-2, -6.7127991650300028e-5, -1.3703764889645475e-4, 9.0505213684444634e-6, 6.0368690647808607e-7, -2.2135404747652171e-7,},
+{-2.0950740076326087, -9.4447359463206877e-1, 4.0940512860493755e-1, 1.0261699700263508e-1, -5.3133241571955160e-3, -1.6634631550720911e-3, -5.9477519536647907e-5, 2.9651387319208926e-6, 1.6434499452070584e-6, 2.3720647656961084e-7,},
+{6.3315163285678715e-1, 3.5241082918420464, 2.1223076605364606e-1, -1.5648122502767368e-1, -9.1964075390801980e-3, 3.3896161239812411e-3, 2.1485178626085787e-4, -6.6261759864793735e-5, -5.9257969712852667e-6, 1.3918759086160525e-6,},
+};
+
+static void get_owen_t0_icof(double tjd, double *t0, int *icof) 
+{
+  int i, j = 0;
+  double t0s[5] = {-3392455.5, -470455.5, 2451544.5, 5373544.5, 8295544.5, };
+  *t0 = t0s[0];
+  for (i = 1; i < 5; i++) {
+    if (tjd < (t0s[i-1] + t0s[i]) / 2) {
+      ;
+    } else {
+      *t0 = t0s[i];
+      j++;
+    }
+  }
+  *icof = j;
+}
+
+/* precession matrix Owen 1990 */
+static void owen_pre_matrix(double tjd, double *rp, int iflag)
+{
+  int i, icof = 0;
+  double eps0 = 0, chia = 0, psia = 0, oma = 0;
+  double coseps0, sineps0, coschia, sinchia, cospsia, sinpsia, cosoma, sinoma;
+  double k[10], tau[10];
+  double t0;
+  get_owen_t0_icof(tjd, &t0, &icof);
+//  fprintf(stderr, "%d, %.17f\n", icof, t0);
+  tau[0] = 0;
+  tau[1] = (tjd - t0) / 36525.0 / 40.0;
+  for (i = 2; i <= 9; i++) {
+    tau[i] = tau[1] * tau[i-1];
+  }
+  k[0] = 1;
+  k[1] = tau[1];
+  k[2] = 2 * tau[2] - 1;
+  k[3] = 4 * tau[3] - 3 * tau[1];
+  k[4] = 8 * tau[4] - 8 * tau[2] + 1;
+  k[5] = 16 * tau[5] - 20 * tau[3] + 5 * tau[1];
+  k[6] = 32 * tau[6] - 48 * tau[4] + 18 * tau[2] - 1;
+  k[7] = 64 * tau[7] - 112 * tau[5] + 56 * tau[3] - 7 * tau[1];
+  k[8] = 128 * tau[8] - 256 * tau[6] + 160 * tau[4] - 32 * tau[2] + 1;
+  k[9] = 256 * tau[9] - 576 * tau[7] + 432 * tau[5] - 120 * tau[3] + 9 * tau[1];
+  for (i = 0; i < 10; i++) {
+    //eps += (k[i] * owen_eps0_coef[icof][i]);
+    psia += (k[i] * owen_psia_coef[icof][i]);
+    oma  += (k[i] * owen_oma_coef[icof][i]);
+    chia += (k[i] * owen_chia_coef[icof][i]);
+  }
+  if (iflag & (SEFLG_JPLHOR || SEFLG_JPLHOR_APPROX)) {
+    /* 
+     * In comparison with JPL Horizons we have an almost constant offset
+     * almost constant offset in ecl. longitude of about -0.000019 deg. 
+     * We fix this as follows: */
+    psia += -0.000018560;
+  }
+  eps0 = 84381.448 / 3600.0;
+//fprintf(stderr, "e=%.17f, ps=%.17f, om=%.17f, ch=%.17f\n", eps0, psia, oma, chia);
+  eps0 *= DEGTORAD;
+  psia *= DEGTORAD;
+  chia *= DEGTORAD;
+  oma *= DEGTORAD;
+  coseps0 = cos(eps0);
+  sineps0 = sin(eps0);
+  coschia = cos(chia);
+  sinchia = sin(chia);
+  cospsia = cos(psia);
+  sinpsia = sin(psia);
+  cosoma = cos(oma);
+  sinoma = sin(oma);
+  rp[0] = coschia * cospsia + sinchia * cosoma * sinpsia;
+  rp[1] = (-coschia * sinpsia + sinchia * cosoma * cospsia) * coseps0 + sinchia * sinoma * sineps0;
+  rp[2] = (-coschia * sinpsia + sinchia * cosoma * cospsia) * sineps0 - sinchia * sinoma * coseps0;
+  rp[3] = -sinchia * cospsia + coschia * cosoma * sinpsia;
+  rp[4] = (sinchia * sinpsia + coschia * cosoma * cospsia) * coseps0 + coschia * sinoma * sineps0;
+  rp[5] = (sinchia * sinpsia + coschia * cosoma * cospsia) * sineps0 - coschia * sinoma * coseps0;
+  rp[6] = sinoma * sinpsia;
+  rp[7] = sinoma * cospsia * coseps0 - cosoma * sineps0;
+  rp[8] = sinoma * cospsia * sineps0 + cosoma * coseps0;
+  /*for (i = 0; i < 3; i++) {
+    fprintf(stderr, "(%.17f   %.17f   %.17f)\n", rp[i*3], rp[i*3+1],rp[i*3+2]);
+  } */
+}
+static void epsiln_owen_1986(double tjd, double *eps)
+{
+  int i, icof = 0;
+  double k[10], tau[10];
+  double t0;
+  get_owen_t0_icof(tjd, &t0, &icof);
+  *eps = 0;
+  tau[0] = 0;
+  tau[1] = (tjd - t0) / 36525.0 / 40.0;
+  for (i = 2; i <= 9; i++) {
+    tau[i] = tau[1] * tau[i-1];
+  }
+  k[0] = 1;
+  k[1] = tau[1];
+  k[2] = 2 * tau[2] - 1;
+  k[3] = 4 * tau[3] - 3 * tau[1];
+  k[4] = 8 * tau[4] - 8 * tau[2] + 1;
+  k[5] = 16 * tau[5] - 20 * tau[3] + 5 * tau[1];
+  k[6] = 32 * tau[6] - 48 * tau[4] + 18 * tau[2] - 1;
+  k[7] = 64 * tau[7] - 112 * tau[5] + 56 * tau[3] - 7 * tau[1];
+  k[8] = 128 * tau[8] - 256 * tau[6] + 160 * tau[4] - 32 * tau[2] + 1;
+  k[9] = 256 * tau[9] - 576 * tau[7] + 432 * tau[5] - 120 * tau[3] + 9 * tau[1];
+  for (i = 0; i < 10; i++) {
+    *eps += (k[i] * owen_eps0_coef[icof][i]);
+  }
+//fprintf(stderr, "eps=%.17f\n", *eps);
 }
 
 /* Obliquity of the ecliptic at Julian date J
@@ -718,17 +888,26 @@ double swi_epsiln(double J, int32 iflag)
   double tofs, dofs, t0, t1;
   int prec_model = swed.astro_models[SE_MODEL_PREC_LONGTERM];
   int prec_model_short = swed.astro_models[SE_MODEL_PREC_SHORTTERM];
-  int jplhor_model = swed.astro_models[SE_MODEL_JPLHOR_MODE];
   int jplhora_model = swed.astro_models[SE_MODEL_JPLHORA_MODE];
+  AS_BOOL is_jplhor = FALSE;
   if (prec_model == 0) prec_model = SEMOD_PREC_DEFAULT;
   if (prec_model_short == 0) prec_model_short = SEMOD_PREC_DEFAULT_SHORT;
-  if (jplhor_model == 0) jplhor_model = SEMOD_JPLHOR_DEFAULT;
   if (jplhora_model == 0) jplhora_model = SEMOD_JPLHORA_DEFAULT;
+  if (iflag & SEFLG_JPLHOR)
+    is_jplhor = TRUE;
+  if ((iflag & SEFLG_JPLHOR_APPROX) 
+      && jplhora_model == SEMOD_JPLHORA_3
+      && J <= HORIZONS_TJD0_DPSI_DEPS_IAU1980)
+    is_jplhor = TRUE;
   T = (J - 2451545.0)/36525.0;
-  if ((iflag & SEFLG_JPLHOR) /*&& INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980*/) {
-    eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
-  /*} else if ((iflag & SEFLG_JPLHOR_APPROX) && !APPROXIMATE_HORIZONS_ASTRODIENST) {*/
-  } else if ((iflag & SEFLG_JPLHOR_APPROX) && jplhora_model != SEMOD_JPLHORA_1) {
+  if (is_jplhor) {
+    if (J > 2378131.5 && J < 2525323.5) { // between 1.1.1799 and 1.1.2202
+      eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
+    } else {
+      epsiln_owen_1986(J, &eps);
+      eps *= DEGTORAD;
+    }
+  } else if ((iflag & SEFLG_JPLHOR_APPROX) && jplhora_model == SEMOD_JPLHORA_2) {
     eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
   } else if (prec_model_short == SEMOD_PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES ) {
     eps = (((1.813e-3*T-5.9e-4)*T-46.8150)*T+84381.448)*DEGTORAD/3600;
@@ -755,10 +934,13 @@ double swi_epsiln(double J, int32 iflag)
     - 5.138e-3)*T + 1.99925)*T - 0.0155)*T - 468.093)*T
     + 84381.448;
     eps *= DEGTORAD/3600.0;
+  } else if (prec_model == SEMOD_PREC_OWEN_1990) {
+    epsiln_owen_1986(J, &eps);
+    eps *= DEGTORAD;
+//fprintf(stderr, "epso=%.17f\n", eps);
   } else { /* SEMOD_PREC_VONDRAK_2011 */
     swi_ldp_peps(J, NULL, &eps);
-    /*if ((iflag & SEFLG_JPLHOR_APPROX) && APPROXIMATE_HORIZONS_ASTRODIENST) {*/
-    if ((iflag & SEFLG_JPLHOR_APPROX) && jplhora_model == SEMOD_JPLHORA_1) {
+    if ((iflag & SEFLG_JPLHOR_APPROX) && jplhora_model != SEMOD_JPLHORA_2) {
       tofs = (J - DCOR_EPS_JPL_TJD0) / 365.25;
       dofs = OFFSET_EPS_JPLHORIZONS;
       if (tofs < 0) {
@@ -776,6 +958,7 @@ double swi_epsiln(double J, int32 iflag)
       dofs /= (1000.0 * 3600.0);
       eps += dofs * DEGTORAD;
     }
+//fprintf(stderr, "epsv=%.17f\n", eps);
   }
   return(eps);
 }
@@ -1054,19 +1237,21 @@ static int precess_2(double *R, double J, int32 iflag, int direction, int prec_m
   return(0);
 }
 
-static int precess_3(double *R, double J, int direction, int prec_meth)
+static int precess_3(double *R, double J, int direction, int iflag, int prec_meth)
 {
-  double T;
+  //double T;
   double x[3], pmat[9];
   int i, j;
-  prec_meth = prec_meth; /* currently not used, statement prevents compiler warning */
   if( J == J2000 ) 
     return(0);
   /* Each precession angle is specified by a polynomial in
    * T = Julian centuries from J2000.0.  See AA page B18.
    */
-  T = (J - J2000)/36525.0;
-  pre_pmat(J, pmat);
+  //T = (J - J2000)/36525.0;
+  if (prec_meth == SEMOD_PREC_OWEN_1990)
+    owen_pre_matrix(J, pmat, iflag);
+  else
+    pre_pmat(J, pmat);
   if (direction == -1) {
     for (i = 0, j = 0; i <= 2; i++, j = i * 3) {
       x[i] = R[0] *  pmat[j + 0] +
@@ -1102,15 +1287,25 @@ int swi_precess(double *R, double J, int32 iflag, int direction )
   double T = (J - J2000)/36525.0;
   int prec_model = swed.astro_models[SE_MODEL_PREC_LONGTERM];
   int prec_model_short = swed.astro_models[SE_MODEL_PREC_SHORTTERM];
-  int jplhor_model = swed.astro_models[SE_MODEL_JPLHOR_MODE];
+  int jplhora_model = swed.astro_models[SE_MODEL_JPLHORA_MODE];
+  AS_BOOL is_jplhor = FALSE;
   if (prec_model == 0) prec_model = SEMOD_PREC_DEFAULT;
   if (prec_model_short == 0) prec_model_short = SEMOD_PREC_DEFAULT_SHORT;
-  if (jplhor_model == 0) jplhor_model = SEMOD_JPLHOR_DEFAULT;
+  if (jplhora_model == 0) jplhora_model = SEMOD_JPLHORA_DEFAULT;
+  if (iflag & SEFLG_JPLHOR)
+    is_jplhor = TRUE;
+  if ((iflag & SEFLG_JPLHOR_APPROX) 
+      && jplhora_model == SEMOD_JPLHORA_3
+      && J <= HORIZONS_TJD0_DPSI_DEPS_IAU1980)
+    is_jplhor = TRUE;
   /* JPL Horizons uses precession IAU 1976 and nutation IAU 1980 plus
    * some correction to nutation, arriving at extremely high precision */
-  /*if ((iflag & SEFLG_JPLHOR) && (jplhor_model & SEMOD_JPLHOR_DAILY_DATA)) {*/
-  if ((iflag & SEFLG_JPLHOR)/*&& INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980*/) {
-    return precess_1(R, J, direction, SEMOD_PREC_IAU_1976);
+  if (is_jplhor) {
+    if (J > 2378131.5 && J < 2525323.5) { // between 1.1.1799 and 1.1.2202
+      return precess_1(R, J, direction, SEMOD_PREC_IAU_1976);
+    } else { 
+      return precess_3(R, J, direction, iflag, SEMOD_PREC_OWEN_1990);
+    }
   /* Use IAU 1976 formula for a few centuries.  */
   } else if (prec_model_short == SEMOD_PREC_IAU_1976 && fabs(T) <= PREC_IAU_1976_CTIES) {
     return precess_1(R, J, direction, SEMOD_PREC_IAU_1976);
@@ -1134,8 +1329,13 @@ int swi_precess(double *R, double J, int32 iflag, int direction )
     return precess_2(R, J, iflag, direction, SEMOD_PREC_SIMON_1994);
   } else if (prec_model == SEMOD_PREC_WILLIAMS_1994 || prec_model == SEMOD_PREC_WILL_EPS_LASK) {
     return precess_2(R, J, iflag, direction, SEMOD_PREC_WILLIAMS_1994);
+  } else if (prec_model == SEMOD_PREC_OWEN_1990) { 
+    return precess_3(R, J, direction, iflag, SEMOD_PREC_OWEN_1990);
   } else { /* SEMOD_PREC_VONDRAK_2011 */
-    return precess_3(R, J, direction, SEMOD_PREC_VONDRAK_2011);
+    //int i;
+    //int retval = precess_3(R, J, direction, iflag, SEMOD_PREC_VONDRAK_2011);
+    // for (i = 0; i < 3; i++) printf("%.9f, ", R[i]);
+    return precess_3(R, J, direction, iflag, SEMOD_PREC_VONDRAK_2011);
   }
 }
 
@@ -1721,37 +1921,42 @@ static int calc_nutation(double J, int32 iflag, double *nutlo)
   int n;
   double dpsi, deps, J2;
   int nut_model = swed.astro_models[SE_MODEL_NUT];
-  int jplhor_model = swed.astro_models[SE_MODEL_JPLHOR_MODE];
   int jplhora_model = swed.astro_models[SE_MODEL_JPLHORA_MODE];
+  AS_BOOL is_jplhor = FALSE;
   if (nut_model == 0) nut_model = SEMOD_NUT_DEFAULT;
-  if (jplhor_model == 0) jplhor_model = SEMOD_JPLHOR_DEFAULT;
   if (jplhora_model == 0) jplhora_model = SEMOD_JPLHORA_DEFAULT;
-  /*if ((iflag & SEFLG_JPLHOR) && (jplhor_model & SEMOD_JPLHOR_DAILY_DATA)) {*/
-  if ((iflag & SEFLG_JPLHOR)/* && INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980*/) {
+  if (iflag & SEFLG_JPLHOR)
+    is_jplhor = TRUE;
+  if ((iflag & SEFLG_JPLHOR_APPROX) && 
+      jplhora_model == SEMOD_JPLHORA_3 
+      && J <= HORIZONS_TJD0_DPSI_DEPS_IAU1980)
+    is_jplhor = TRUE;
+  if (is_jplhor) {
     calc_nutation_iau1980(J, nutlo);
+    if (iflag & SEFLG_JPLHOR) {
+      n = (int) (swed.eop_tjd_end - swed.eop_tjd_beg + 0.000001);
+      J2 = J;
+      if (J < swed.eop_tjd_beg_horizons)
+	J2 = swed.eop_tjd_beg_horizons;
+      dpsi = bessel(swed.dpsi, n + 1, J2 - swed.eop_tjd_beg);
+      deps = bessel(swed.deps, n + 1, J2 - swed.eop_tjd_beg);
+      nutlo[0] += dpsi / 3600.0 * DEGTORAD;
+      nutlo[1] += deps / 3600.0 * DEGTORAD;
+#if 0
+      printf("tjd=%f, dpsi=%f, deps=%f\n", J, dpsi * 1000, deps * 1000);
+#endif
+    } else {
+      nutlo[0] += DPSI_IAU1980_TJD0 / 3600.0 * DEGTORAD;
+      nutlo[1] += DEPS_IAU1980_TJD0 / 3600.0 * DEGTORAD;
+    }
   } else if (nut_model == SEMOD_NUT_IAU_1980 || nut_model == SEMOD_NUT_IAU_CORR_1987) {
     calc_nutation_iau1980(J, nutlo);
   } else if (nut_model == SEMOD_NUT_IAU_2000A || nut_model == SEMOD_NUT_IAU_2000B) {
     calc_nutation_iau2000ab(J, nutlo);
-    /*if ((iflag & SEFLG_JPLHOR_APPROX) && FRAME_BIAS_APPROX_HORIZONS) {*/
-    /*if ((iflag & SEFLG_JPLHOR_APPROX) && !APPROXIMATE_HORIZONS_ASTRODIENST) {*/
-    if ((iflag & SEFLG_JPLHOR_APPROX) && jplhora_model != SEMOD_JPLHORA_1) {
+    if ((iflag & SEFLG_JPLHOR_APPROX) && jplhora_model == SEMOD_JPLHORA_2) {
       nutlo[0] += -41.7750 / 3600.0 / 1000.0 * DEGTORAD;
       nutlo[1] += -6.8192 / 3600.0 / 1000.0 * DEGTORAD;
     }
-  }
-  if ((iflag & SEFLG_JPLHOR)/* && INCLUDE_CODE_FOR_DPSI_DEPS_IAU1980*/) {
-    n = (int) (swed.eop_tjd_end - swed.eop_tjd_beg + 0.000001);
-    J2 = J;
-    if (J < swed.eop_tjd_beg_horizons)
-      J2 = swed.eop_tjd_beg_horizons;
-    dpsi = bessel(swed.dpsi, n + 1, J2 - swed.eop_tjd_beg);
-    deps = bessel(swed.deps, n + 1, J2 - swed.eop_tjd_beg);
-    nutlo[0] += dpsi / 3600.0 * DEGTORAD;
-    nutlo[1] += deps / 3600.0 * DEGTORAD;
-#if 0
-    printf("tjd=%f, dpsi=%f, deps=%f\n", J, dpsi * 1000, deps * 1000);
-#endif
   }
   return OK;
 }
@@ -1817,13 +2022,11 @@ static void swi_approx_jplhor(double *x, double tjd, int32 iflag, AS_BOOL backwa
   double t0, t1;
   double t = (tjd - DCOR_RA_JPL_TJD0) / 365.25;
   double dofs = OFFSET_JPLHORIZONS;
-  int jplhor_model = swed.astro_models[SE_MODEL_JPLHOR_MODE];
   int jplhora_model = swed.astro_models[SE_MODEL_JPLHORA_MODE];
-  if (jplhor_model == 0) jplhor_model = SEMOD_JPLHOR_DEFAULT;
   if (jplhora_model == 0) jplhora_model = SEMOD_JPLHORA_DEFAULT;
   if (!(iflag & SEFLG_JPLHOR_APPROX))
     return;
-  if (jplhora_model != SEMOD_JPLHORA_1)
+  if (jplhora_model == SEMOD_JPLHORA_2)
     return;
   if (t < 0) {
     t = 0;
@@ -1859,16 +2062,17 @@ void swi_bias(double *x, double tjd, int32 iflag, AS_BOOL backward)
   double xx[6], rb[3][3];
   int i;
   int bias_model = swed.astro_models[SE_MODEL_BIAS];
-  int jplhor_model = swed.astro_models[SE_MODEL_JPLHOR_MODE];
   int jplhora_model = swed.astro_models[SE_MODEL_JPLHORA_MODE];
   if (bias_model == 0) bias_model = SEMOD_BIAS_DEFAULT;
-  if (jplhor_model == 0) jplhor_model = SEMOD_JPLHOR_DEFAULT;
   if (jplhora_model == 0) jplhora_model = SEMOD_JPLHORA_DEFAULT;
   if (bias_model == SEMOD_BIAS_NONE)
     return;
-  /*if (FRAME_BIAS_APPROX_HORIZONS)*/
-  if ((iflag & SEFLG_JPLHOR_APPROX) && jplhora_model != SEMOD_JPLHORA_1)
-    return;
+  if (iflag & SEFLG_JPLHOR_APPROX) {
+    if (jplhora_model == SEMOD_JPLHORA_2)
+      return;
+    if (jplhora_model == SEMOD_JPLHORA_3 && tjd < DPSI_DEPS_IAU1980_TJD0_HORIZONS)
+      return;
+  }
 /* #if FRAME_BIAS_IAU2006 * frame bias 2006 */
   if (bias_model == SEMOD_BIAS_IAU2006) {
     rb[0][0] = +0.99999999999999412;
@@ -2129,12 +2333,12 @@ static TLS double dt[TABSIZ_SPACE] = {
 56.8553, 57.5653, 58.3092, 59.1218, 59.9845, 60.7854, 61.6287, 62.2951, 62.9659, 63.4673,
 /* 2000.0 - 2009.0 */
 63.8285, 64.0908, 64.2998, 64.4734, 64.5736, 64.6876, 64.8452, 65.1464, 65.4574, 65.7768,
-/* 2010.0 - 2016.0 */
-66.0699, 66.3246, 66.6030, 66.9069, 67.2810, 67.6439, 68.1024,
-/* Extrapolated values, 2017 - 2019 */
-                                                               68.5927, 69.0676, 69.60,
+/* 2010.0 - 2017.0 */
+66.0699, 66.3246, 66.6030, 66.9069, 67.2810, 67.6439, 68.1024, 68.5927,
+/* Extrapolated values, 2018 - 2019 */
+                                                                        68.9689, 69.35,
 /* Extrapolated values, 2020 - 2026 */
-70.10, 70.60, 71.00, 71.50, 72.00, 72.50, 73.00,
+69.80, 70.20, 70.60, 71.00, 71.50, 72.00, 72.50,
 };
 
 #define TAB2_SIZ	27
@@ -2946,10 +3150,10 @@ static double sidtime_long_term(double tjd_ut, double eps, double nut)
   double tsid = 0, tjd_et;
   double dlon, xs[6], xobl[6], dhour, nutlo[2];
   double dlt = AUNIT / CLIGHT / 86400.0;
-  double t, t2, t3, t4, t5, t6;
+  double t, t2, t3;
   tjd_et = tjd_ut + swe_deltat_ex(tjd_ut, -1, NULL);
   t = (tjd_et - J2000) / 365250.0;
-  t2 = t * t; t3 = t * t2; t4 = t * t3; t5 = t * t4; t6 = t * t5;
+  t2 = t * t; t3 = t * t2;
   /* mean longitude of earth J2000 */
   dlon = 100.46645683 + (1295977422.83429 * t - 2.04411 * t2 - 0.00523 * t3) / 3600.0;
   /* light time sun-earth */
@@ -3582,8 +3786,77 @@ char *CALL_CONV swe_cs2degstr(CSEC t, char *a)
   return (a);
 } /* swe_cs2degstr() */
 
-/*********************************************************
- *  function for splitting centiseconds into             *
+/******************************************************************
+ * decimal degrees in zodiac to nakshatra position, deg, min, sec *
+ * for definition of input see function swe_split_deg().
+ * output:
+ * ideg 	degrees, 
+ * imin 	minutes, 
+ * isec 	seconds, 
+ * dsecfr	fraction of seconds 
+ * inak	nakshatra number; 
+ ******************************************************************/
+static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *inak)
+{
+  double dadd = 0;
+  double dnakshsize = 13.33333333333333;
+  double ddeghelp = fmod(ddeg, dnakshsize);
+  *inak = 1;
+  if (ddeg < 0) {
+    *inak = -1;
+    ddeg = 0;
+  }
+  // Sheoran "Vedic" ayanamsha: 0 Aries = 3°20 Ashvini
+  if (swed.sidd.sid_mode & SE_SIDM_TRUE_SHEORAN)
+    ddeg = swe_degnorm(ddeg + 3.33333333333333);
+  if (roundflag & SE_SPLIT_DEG_ROUND_DEG) {
+    dadd = 0.5;
+  } else if (roundflag & SE_SPLIT_DEG_ROUND_MIN) {
+    dadd = 0.5 / 60;
+  } else if (roundflag & SE_SPLIT_DEG_ROUND_SEC) {
+    dadd = 0.5 / 3600;
+  }
+  if (roundflag & SE_SPLIT_DEG_KEEP_DEG) {
+    if ((int32) (ddeghelp + dadd) - (int32) ddeghelp > 0)
+      dadd = 0;
+  } else if (roundflag & SE_SPLIT_DEG_KEEP_SIGN) {
+    if (ddeghelp + dadd >= dnakshsize)
+      dadd = 0;
+  }
+  ddeg += dadd;
+  *inak = (int32) (ddeg / dnakshsize);
+  ddeg = fmod(ddeg, dnakshsize);
+  *ideg = (int32) ddeg;
+  ddeg -= *ideg;
+  *imin = (int32) (ddeg * 60);
+  ddeg -= *imin / 60.0;
+  *isec = (int32) (ddeg * 3600);
+  if (!(roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN | SE_SPLIT_DEG_ROUND_SEC))) {
+    *dsecfr = ddeg * 3600 - *isec;
+  }
+}  /* end split_deg_nakshtra */
+
+/************************************************************
+ * splitting decimal degrees into (zod.sign,) deg, min, sec. *
+ * input:
+ * ddeg 	decimal degrees, ecliptic longitude
+ * roundflag    by default there is no rounding. if rounding is 
+ *              required, the following bits can be set:
+# define SE_SPLIT_DEG_ROUND_SEC    1
+# define SE_SPLIT_DEG_ROUND_MIN    2
+# define SE_SPLIT_DEG_ROUND_DEG    4
+# define SE_SPLIT_DEG_ZODIACAL     8   * split into zodiac signs
+# define SE_SPLIT_DEG_NAKSHATRA 1024   * split into nakshatras *
+# define SE_SPLIT_DEG_KEEP_SIGN   16   * don't round to next zodiac sign,
+                                       * e.g. 29.9999998 will be rounded
+				       * to 29°59'59" (or 29°59' or 29°) * 
+				       * or next nakshatra:
+                                       * e.g. 13.3333332 will be rounded
+				       * to 13°19'59" (or 13°19' or 13°) * 
+# define SE_SPLIT_DEG_KEEP_DEG    32   * don't round to next degree
+                                       * e.g. 10.9999999 will be rounded
+				       * to 10d59'59" (or 10d59' or 10d) * 
+ * output:
  *  ideg 	degrees, 
  *  imin 	minutes, 
  *  isec 	seconds, 
@@ -3599,13 +3872,16 @@ void CALL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *i
   if (ddeg < 0) {
     *isgn = -1;
     ddeg = -ddeg;
+  } else if (roundflag & SE_SPLIT_DEG_NAKSHATRA) {
+    split_deg_nakshatra(ddeg, roundflag, ideg, imin, isec, dsecfr, isgn);
+    return;
   }
   if (roundflag & SE_SPLIT_DEG_ROUND_DEG) {
     dadd = 0.5;
   } else if (roundflag & SE_SPLIT_DEG_ROUND_MIN) {
-    dadd = 0.5 / 60;
+    dadd = 0.5 / 60.0;
   } else if (roundflag & SE_SPLIT_DEG_ROUND_SEC) {
-    dadd = 0.5 / 3600;
+    dadd = 0.5 / 3600.0;
   }
   if (roundflag & SE_SPLIT_DEG_KEEP_DEG) {
     if ((int32) (ddeg + dadd) - (int32) ddeg > 0)
@@ -3807,9 +4083,15 @@ static void get_precession_model(int precmod, int32 iflag, char *s)
 {
   if (precmod == 0)
     precmod = SEMOD_PREC_DEFAULT;
-  if ((iflag & SEFLG_JPLEPH) && (iflag & SEFLG_JPLHOR)) {
-    strcpy(s, "IAU 1976 (Lieske)");
-    return;
+  if (iflag & SEFLG_JPLEPH) {
+    if (iflag & SEFLG_JPLHOR) {
+      strcpy(s, "IAU 1976 (Lieske) / Owen 1990 before 1799");
+      return;
+    }
+    if (iflag & SEFLG_JPLHOR_APPROX) {
+      strcpy(s, "Vondrak 2011 / IAU 1976 (Lieske) before 1962 / Owen 1990 before 1799");
+      return;
+    }
   }
   switch(precmod) {
     case SEMOD_PREC_IAU_1976:
@@ -3835,6 +4117,9 @@ static void get_precession_model(int precmod, int32 iflag, char *s)
       break;
     case SEMOD_PREC_WILL_EPS_LASK:
       strcpy(s, "Williams 1994 / Epsilon Laskar 1986");
+      break;
+    case SEMOD_PREC_OWEN_1990:
+      strcpy(s, "Owen 1990");
       break;
     case SEMOD_PREC_VONDRAK_2011:
       strcpy(s, "Vondrák 2011");
@@ -3876,7 +4161,7 @@ static void get_nutation_model(int nutmod, int32 iflag, char *s)
   if (jplhormod == 0)
     jplhormod = SEMOD_JPLHOR_DEFAULT;
   if (jplhoramod == 0)
-    jplhoramod = SEMOD_JPLHOR_DEFAULT;
+    jplhoramod = SEMOD_JPLHORA_DEFAULT;
   if (nutmod == 0)
     nutmod = SEMOD_NUT_DEFAULT;
   switch(nutmod) {
@@ -3906,8 +4191,10 @@ static void get_nutation_model(int nutmod, int32 iflag, char *s)
       strcat(s, "\n+ some corrections, approximating JPL Horizons");
       if (jplhoramod == SEMOD_JPLHORA_1)
         strcat(s, " (SEMOD_JPLHORA_1)");
-      else
+      else if (jplhoramod == SEMOD_JPLHORA_2)
         strcat(s, " (SEMOD_JPLHORA_2)");
+      else
+        strcat(s, " (SEMOD_JPLHORA_3)");
     }
   }
 }
@@ -4063,10 +4350,11 @@ void CALL_CONV swe_get_astro_models(char *samod, char *sdet, int32 iflag)
 	get_frame_bias_model(i, s);
 	sprintf(sdet + strlen(sdet), ": %s\n", s);
       }
-      strcat(sdet, "JPL HORIZONS MODELS (J) (with SEFLG_JPLEPH|SEFLG_JPLHOR)\n");
-      strcat(sdet, "  IAU 1980 (Wahr) + daily corrections to dpsi/deps 1962-today\n");
-      strcat(sdet, "  (0 (=1): good agreement with JPL Horizons between 1800 and today\n");
-      strcat(sdet, "  (2): use our approximation SEGLG_JPLORA before 1962\n");
+      strcat(sdet, "JPL HORIZONS MODELS (J) (with SEFLG_JPLEPH|SEFLG_JPLHOR).\n");
+      strcat(sdet, "  IAU 1980 (Wahr) + daily corrections to dpsi/deps 1962-today.\n");
+      strcat(sdet, "  (0 (=1): between 1799 and 1962, dpsi/deps of 20-jan-1962 are used.\n");
+      strcat(sdet, "           For times beyond the dpsi/deps table, the last tabulated values are used.\n");
+      strcat(sdet, "           Beyond 1799 and 2201, precession Owen 1990 is used..\n");
       strcat(sdet, "  Documentation in swephexp.h under 'methods of JPL Horizons'\n");
       strcat(sdet, "JPL HORIZONS APPROXIMATION (J) (with SEFLG_JPLEPH|SEFLG_JPLHORA)\n");
       strcat(sdet, "  Documentation in swephexp.h under 'methods of JPL Horizons'\n");

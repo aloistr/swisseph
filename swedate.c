@@ -276,7 +276,7 @@ void CALL_CONV swe_utc_time_zone(
  */
 
 /* Leap seconds were inserted at the end of the following days:*/
-#define NLEAP_SECONDS 27
+#define NLEAP_SECONDS 27 // ignoring end mark '0'
 #define NLEAP_SECONDS_SPACE 100
 static TLS int leap_seconds[NLEAP_SECONDS_SPACE] = {
 19720630,

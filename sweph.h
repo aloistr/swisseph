@@ -63,7 +63,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.06.01b03"
+#define SE_VERSION      "2.07.01"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -283,6 +283,7 @@
 #define EARTH_ROT_SPEED (7.2921151467e-5 * 86400) /* in rad/day, expl. suppl., p 162 */
 
 #define LIGHTTIME_AUNIT  (499.0047838061/3600/24) 	/* 8.3167 minutes (days), AA 2006 K6 */
+#define PARSEC_TO_AUNIT  206264.8062471         /* 648000/PI, according to IAU Resolution B2, 2016 */
 
 /* node of ecliptic measured on ecliptic 2000 */
 #define SSY_PLANE_NODE_E2000    (107.582569 * DEGTORAD)
@@ -402,10 +403,12 @@ static const struct aya_init ayanamsa[] = {
 {1911797.740782065, 0, TRUE},	     /*37: Kali 3623 = 522 CE, Ujjain (75.7684565), 
                                       *    based on Kali midnight and SS year length */
 {1721057.5, -3.2, TRUE},             /*38: Babylonian (Britton 2010) */
-/*{2061539.789532065, 6.83333333, TRUE}, *38: Manjula's Laghumanasa, 10 March 932,
+{0, 0, FALSE},                       /*39: Sunil Sheoran ("Vedic") */
+/*{0, 0, FALSE},                       *40: Galactic Center at 0 Capricon (Cochrane) */
+/*{2061539.789532065, 6.83333333, TRUE}, *41: Manjula's Laghumanasa, 10 March 932,
                                       *    12 PM LMT Ujjain (75.7684565 E),
 				      *    ayanamsha = 6°50' */
-{0, 0, FALSE},	                     /*39: - */
+{0, 0, FALSE},	                     /*40: - */
     };
 
 #define PLAN_DATA struct plan_data
@@ -491,9 +494,14 @@ extern int32 swi_init_swed_if_start(void);
 extern int32 swi_set_tid_acc(double tjd_ut, int32 iflag, int32 denum, char *serr);
 extern int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, double *tid_acc, char *serr);
 
-double swi_armc_to_mc(double armc, double eps);
+extern int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr);
+extern int32 swi_get_ayanamsa_ex_ut(double tjd_ut, int32 iflag, double *daya, char *serr);
+extern int32 swi_get_ayanamsa_with_speed(double tjd_et, int32 iflag, double *daya, char *serr);
 
-int32 swi_get_denum(int32 ipli, int32 iflag);
+extern double swi_armc_to_mc(double armc, double eps);
+
+extern int32 swi_get_denum(int32 ipli, int32 iflag);
+
 
 /* nutation */
 struct nut {
@@ -577,6 +585,14 @@ struct sid_data {
   AS_BOOL t0_is_UT;
 };
 
+struct fixed_star {
+  char skey[40];
+  char starname[40];
+  char starbayer[40];
+  char starno[10];
+  double epoch, ra, de, ramot, demot, radvel, parall, mag;
+};
+
 /* dpsi and deps loaded for 100 years after 1962 */
 #define SWE_DATA_DPSI_DEPS  36525   
 
@@ -639,6 +655,10 @@ struct swe_data {
   struct nut nutv;
   struct topo_data topd;
   struct sid_data sidd;
+  AS_BOOL n_fixstars_real;   // real number of fixed stars in sefstars.txt
+  AS_BOOL n_fixstars_named;  // number of fixed stars with tradtional name
+  AS_BOOL n_fixstars_records;// number of fixed stars records in fixed_stars
+  struct fixed_star *fixed_stars;
 };
 
 extern TLS struct swe_data swed;

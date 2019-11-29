@@ -1,6 +1,5 @@
 
 /* SWISSEPH
-   $Header: /home/dieter/sweph/RCS/sweasp.c,v 1.74 2008/06/16 10:07:20 dieter Exp dieter $
    
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 

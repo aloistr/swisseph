@@ -1,5 +1,4 @@
 /************************************************************
-  $Header: /home/dieter/sweph/RCS/swephexp.h,v 1.75 2009/04/08 07:19:08 dieter Exp $
   SWISSEPH: exported definitions and constants 
 
   This file represents the standard application interface (API)
@@ -86,8 +85,8 @@ extern "C" {
  * definitions for use also by non-C programmers
  ***********************************************************/
 
-#define SE_AUNIT_TO_KM        (149597870.691)
-#define SE_AUNIT_TO_LIGHTYEAR (1.0/63241.077088071)
+#define SE_AUNIT_TO_KM        (149597870.700)
+#define SE_AUNIT_TO_LIGHTYEAR (1.0/63241.07708427)
 #define SE_AUNIT_TO_PARSEC    (1.0/206264.8062471) 
 
 /* values for gregflag in swe_julday() and swe_revjul() */
@@ -206,6 +205,7 @@ extern "C" {
 #define SEFLG_TOPOCTR	(32*1024)    /* topocentric position */
 #define SEFLG_ORBEL_AA SEFLG_TOPOCTR /* used for Astronomical Almanac mode in 
                                       * calculation of Kepler elipses */
+#define SEFLG_TROPICAL	(0)          /* tropical position (default) */
 #define SEFLG_SIDEREAL	(64*1024)    /* sidereal position */
 #define SEFLG_ICRS	(128*1024)   /* ICRS (DE406 reference frame) */
 #define SEFLG_DPSIDEPS_1980	(256*1024) /* reproduce JPL Horizons 
@@ -262,11 +262,13 @@ extern "C" {
 #define SE_SIDM_ARYABHATA_522   37
 #define SE_SIDM_BABYL_BRITTON   38
 #define SE_SIDM_TRUE_SHEORAN  	39
-//#define SE_SIDM_GALCENT_COCHRANE   	40
-//#define SE_SIDM_MANJULA         41
+#define SE_SIDM_GALCENT_COCHRANE   	40
+#define SE_SIDM_GALEQU_FIORENZA 41
+#define SE_SIDM_VALENS_MOON     42
+//#define SE_SIDM_MANJULA         43
 #define SE_SIDM_USER            255 /* user-defined ayanamsha, t0 is TT */
 
-#define SE_NSIDM_PREDEF	        40
+#define SE_NSIDM_PREDEF	        43
 
 /* used for swe_nod_aps(): */
 #define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
@@ -291,6 +293,7 @@ extern "C" {
 #define SE_ECL_ANNULAR		8
 #define SE_ECL_PARTIAL		16
 #define SE_ECL_ANNULAR_TOTAL	32
+#define SE_ECL_HYBRID   	32  // = annular-total
 #define SE_ECL_PENUMBRAL	64
 #define SE_ECL_ALLTYPES_SOLAR   (SE_ECL_CENTRAL|SE_ECL_NONCENTRAL|SE_ECL_TOTAL|SE_ECL_ANNULAR|SE_ECL_PARTIAL|SE_ECL_ANNULAR_TOTAL)
 #define SE_ECL_ALLTYPES_LUNAR   (SE_ECL_TOTAL|SE_ECL_PARTIAL|SE_ECL_PENUMBRAL)
@@ -334,7 +337,7 @@ extern "C" {
 #define SE_BIT_FIXED_DISC_SIZE  16384 /* or'ed to SE_CALC_RISE/SET:
                                      * neglect the effect of distance on
 				     * disc size */
-#define SE_BIT_FORCE_SLOW_METHOD 32768 /* This is only a Astrodienst in-house
+#define SE_BIT_FORCE_SLOW_METHOD 32768 /* This is only an Astrodienst in-house
                                         * test flag. It forces the usage
 					* of the old, slow calculation of
 					* risings and settings. */
@@ -637,20 +640,11 @@ extern HANDLE dllhandle;        // set by swedllst::DllMain,
   #else
     #define CALL_CONV 
   #endif
-  #ifdef MAKE_DLL16 /* 16bit DLL */
-    /* We compiled the 16bit DLL for Windows 3.x using Borland C/C++ Ver:3.x
-       and the -WD or -WDE compiler switch. */
-    #define EXP16 __export 
-    #define EXP32 
-  #else /* 32bit DLL */
-    /* To export symbols in the new DLL model of Win32, Microsoft 
-       recommends the following approach */ 
-    #define EXP16 
-    #define EXP32  __declspec( dllexport )
-  #endif
+  /* To export symbols in the new DLL model of Win32, Microsoft 
+     recommends the following approach */ 
+  #define EXP32  __declspec( dllexport )
 #else 
   #define CALL_CONV 
-  #define EXP16 
   #define EXP32 
 #endif  
 
@@ -661,7 +655,7 @@ extern HANDLE dllhandle;        // set by swedllst::DllMain,
  * exported functions
  ***********************************************************/
 
-#define ext_def(x)	extern EXP32 x CALL_CONV EXP16
+#define ext_def(x)	extern EXP32 x CALL_CONV 
 			/* ext_def(x) evaluates to x on Unix */
 
 ext_def(int32) swe_heliacal_ut(double tjdstart_ut, double *geopos, double *datm, double *dobs, char *ObjectName, int32 TypeEvent, int32 iflag, double *dret, char *serr);

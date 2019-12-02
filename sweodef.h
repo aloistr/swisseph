@@ -1,5 +1,4 @@
 /************************************************************
-   $Header: /home/dieter/sweph/RCS/sweodef.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
    definitions and constants for all Swiss Ephemeris source files,
    only required for compiling the libraries, not for the external
    interface of the libraries.

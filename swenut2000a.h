@@ -1,5 +1,4 @@
 /************************************************************
-   $Header: /home/dieter/sweph/RCS/swenut2000a.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
    definitions for nutation theory IAU 2000a
    derived from public sources
 

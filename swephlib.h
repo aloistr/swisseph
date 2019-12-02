@@ -1,6 +1,5 @@
 
 /************************************************************
-   $Header: /home/dieter/sweph/RCS/swephlib.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
@@ -161,6 +160,8 @@ extern void swi_gen_filename(double tjd, int ipli, char *fname);
 
 /* cyclic redundancy checksum (CRC), 32 bit */
 extern uint32 swi_crc32(unsigned char *buf, int len);
+
+extern size_t swi_strnlen(const char *str, size_t n);
 
 extern int swi_cutstr(char *s, char *cutlist, char *cpos[], int nmax);
 extern char *swi_right_trim(char *s);

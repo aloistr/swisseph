@@ -1,6 +1,5 @@
 
 /* 
-  $Header: /home/dieter/sweph/RCS/swemini.c,v 1.74 2008/06/16 10:07:20 dieter Exp $
 
   swemini.c	A minimal program to test the Swiss Ephemeris.
 

@@ -1,5 +1,4 @@
 /* SWISSEPH
-   $Header: /home/dieter/sweph/RCS/swephlib.c,v 1.75 2009/11/27 11:00:57 dieter Exp $
 
    SWISSEPH modules that may be useful for other applications
    e.g. chopt.c, venus.c, swetest.c
@@ -362,14 +361,17 @@ void swi_polcart(double *l, double *x)
  */
 void swi_cartpol_sp(double *x, double *l)
 {
+  int i;
   double xx[6], ll[6];
   double rxy, coslon, sinlon, coslat, sinlat;
   /* zero position */
   if (x[0] == 0 && x[1] == 0 && x[2] == 0) {
-    l[0] = l[1] = l[3] = l[4] = 0;
-    l[5] = sqrt(square_sum((x+3)));
-    swi_cartpol(x+3, l);
-    l[2] = 0;
+    ll[0] = ll[1] = ll[3] = ll[4] = 0;
+    ll[5] = sqrt(square_sum((x+3)));
+    swi_cartpol(x+3, ll);
+    ll[2] = 0;
+    for (i = 0; i <= 5; i++)
+      l[i] = ll[i];
     return;
   }
   /* zero speed */
@@ -789,7 +791,7 @@ static void owen_pre_matrix(double tjd, double *rp, int iflag)
     oma  += (k[i] * owen_oma_coef[icof][i]);
     chia += (k[i] * owen_chia_coef[icof][i]);
   }
-  if (iflag & (SEFLG_JPLHOR || SEFLG_JPLHOR_APPROX)) {
+  if (iflag & (SEFLG_JPLHOR | SEFLG_JPLHOR_APPROX)) {
     /* 
      * In comparison with JPL Horizons we have an almost constant offset
      * almost constant offset in ecl. longitude of about -0.000019 deg. 
@@ -2272,7 +2274,7 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
  * the macros TABEND and TABSIZ !
  */
 #define TABSTART 	1620
-#define TABEND 		2026
+#define TABEND 		2027
 #define TABSIZ 		(TABEND-TABSTART+1) 
 /* we make the table greater for additional values read from external file */
 #define TABSIZ_SPACE 	(TABSIZ+100)
@@ -2333,12 +2335,11 @@ static TLS double dt[TABSIZ_SPACE] = {
 56.8553, 57.5653, 58.3092, 59.1218, 59.9845, 60.7854, 61.6287, 62.2951, 62.9659, 63.4673,
 /* 2000.0 - 2009.0 */
 63.8285, 64.0908, 64.2998, 64.4734, 64.5736, 64.6876, 64.8452, 65.1464, 65.4574, 65.7768,
-/* 2010.0 - 2017.0 */
-66.0699, 66.3246, 66.6030, 66.9069, 67.2810, 67.6439, 68.1024, 68.5927,
-/* Extrapolated values, 2018 - 2019 */
-                                                                        68.9689, 69.35,
-/* Extrapolated values, 2020 - 2026 */
-69.80, 70.20, 70.60, 71.00, 71.50, 72.00, 72.50,
+/* 2010.0 - 2018.0 */
+66.0699, 66.3246, 66.6030, 66.9069, 67.2810, 67.6439, 68.1024, 68.5927, 68.9676, 69.2202,
+/* Extrapolated values: 
+ * 2020 - 2027 */
+69.4456, 70.00,   70.50,   71.00,   71.50,   72.00,   72.50,   73.00,
 };
 
 #define TAB2_SIZ	27
@@ -2548,6 +2549,8 @@ double CALL_CONV swe_deltat_ex(double tjd, int32 iflag, char *serr)
   double deltat;
   if (swed.delta_t_userdef_is_set)
     return swed.delta_t_userdef;
+  if (serr != NULL)
+    *serr = '\0';
   calc_deltat(tjd, iflag, &deltat, serr);
   return deltat;
 }
@@ -3583,9 +3586,15 @@ int swi_cutstr(char *s, char *cutlist, char *cpos[], int nmax)
 char *swi_right_trim(char *s)
 {
   char *sp = s + strlen(s) - 1;
-  while (isspace((int)(unsigned char) *sp) && sp >= s)
+  // while (isspace((int)(unsigned char) *sp) && sp >= s)
+  while (sp >= s && isspace((int)(unsigned char) *sp))
     *sp-- = '\0';
   return s;
+}
+
+size_t swi_strnlen(const char *str, size_t n) {
+  const char * stop = (char *)memchr(str, '\0', n);
+  return stop ? stop - str : n;
 }
 
 /*
@@ -3807,7 +3816,7 @@ static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32
     ddeg = 0;
   }
   // Sheoran "Vedic" ayanamsha: 0 Aries = 3°20 Ashvini
-  if (swed.sidd.sid_mode & SE_SIDM_TRUE_SHEORAN)
+  if ((swed.sidd.sid_mode & SE_SIDM_TRUE_SHEORAN) == SE_SIDM_TRUE_SHEORAN)
     ddeg = swe_degnorm(ddeg + 3.33333333333333);
   if (roundflag & SE_SPLIT_DEG_ROUND_DEG) {
     dadd = 0.5;
@@ -3825,6 +3834,7 @@ static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32
   }
   ddeg += dadd;
   *inak = (int32) (ddeg / dnakshsize);
+  if (*inak == 27) *inak = 0; // with rounding up from 359.9999
   ddeg = fmod(ddeg, dnakshsize);
   *ideg = (int32) ddeg;
   ddeg -= *ideg;
@@ -3893,6 +3903,8 @@ void CALL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *i
   ddeg += dadd;
   if (roundflag & SE_SPLIT_DEG_ZODIACAL) {
     *isgn = (int32) (ddeg / 30);
+    if (*isgn == 12) // 360° = 0°
+      *isgn = 0;
     ddeg = fmod(ddeg, 30);
   }
   *ideg = (int32) ddeg;
@@ -4386,27 +4398,6 @@ char *swi_strcpy(char *to, char *from)
       strcpy(to, from);
     } else {
       strcpy(to, sp);
-      free(sp);
-    }
-  }
-  return to;
-}
-
-char *swi_strncpy(char *to, char *from, size_t n)
-{ 
-  char *sp, s[AS_MAXCH];
-  if (*from == '\0') {
-    return to;
-  }
-  if (strlen(from) < AS_MAXCH) {
-    strncpy(s, from, n);
-    strncpy(to, s, n);
-  } else {
-    sp = strdup(from);
-    if (sp == NULL) {
-      strncpy(to, from, n);
-    } else {
-      strncpy(to, sp, n);
       free(sp);
     }
   }

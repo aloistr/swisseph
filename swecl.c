@@ -1,5 +1,4 @@
 /* SWISSEPH 
-   $Header: /home/dieter/sweph/RCS/swecl.c,v 1.75 2008/08/26 07:23:27 dieter Exp $
 
     Ephemeris computations
     Author: Dieter Koch
@@ -107,6 +106,11 @@ static int32 calc_planet_star(double tjd_et, int32 ipl, char *starname, int32 if
 
 struct saros_data {int series_no; double tstart;};
 
+// Saros cycle numbers of solar eclipses with date of initial 
+// eclipse. Table was derived from the table of the Nasa Eclipse Web Site:
+// https://eclipse.gsfc.nasa.gov/SEsaros/SEsaros0-180.html
+// Note, for eclipse dates =< 15 Feb -1604 and eclipse dates
+// >= 2 Sep 2666, Saros cycle numbers cannot always be given.
 #define SAROS_CYCLE  6585.3213
 #define NSAROS_SOLAR 181
 struct saros_data saros_data_solar[NSAROS_SOLAR] = {
@@ -293,6 +297,11 @@ struct saros_data saros_data_solar[NSAROS_SOLAR] = {
 {180, 2729226.5}, /* 08 Apr 2760 */
 };
 
+// Saros cycle numbers of lunar eclipses with date of initial 
+// eclipse. Table was derived from the table of the Nasa Eclipse Web Site:
+// https://eclipse.gsfc.nasa.gov/LEsaros/LEsaroscat.html
+// Note, for eclipse dates =< 29 April -1337 and eclipse dates
+// >= 10 Aug 2892, Saros cycle numbers cannot always be given.
 #define NSAROS_LUNAR 180
 struct saros_data saros_data_lunar[NSAROS_LUNAR] = {
 {1, 782437.5}, /* 14 Mar -2570 */
@@ -547,6 +556,10 @@ struct saros_data saros_data_lunar[NSAROS_LUNAR] = {
  * attr[5]	true altitude of sun above horizon at tjd
  * attr[6]	apparent altitude of sun above horizon at tjd
  * attr[7]	angular distance of moon from sun in degrees
+ * attr[8]	magnitude acc. to NASA;
+ *              = attr[0] for partial and attr[1] for annular and total eclipses
+ * attr[9]	saros series number
+ * attr[10]	saros series member number
  *         declare as attr[20] at least !
  */
 int32 CALL_CONV swe_sol_eclipse_where(
@@ -913,9 +926,11 @@ int32 CALL_CONV swe_sol_eclipse_how(
           double *attr, 
           char *serr)
 {
-  int32 retflag, retflag2;
+  int32 retflag, retflag2, i;
   double dcore[10], ls[6], xaz[6];
   double geopos2[20];
+  for (i = 0; i <= 10; i++)
+    attr[i] = 0;
   if (geopos[2] < SEI_ECL_GEOALT_MIN || geopos[2] > SEI_ECL_GEOALT_MAX) {
     if (serr != NULL)
       sprintf(serr, "location for eclipses must be between %.0f and %.0f m above sea", SEI_ECL_GEOALT_MIN, SEI_ECL_GEOALT_MAX);
@@ -939,6 +954,12 @@ int32 CALL_CONV swe_sol_eclipse_how(
   attr[6] = xaz[2];
   if (xaz[2] <= 0)
     retflag = 0;
+  if (retflag == 0) {
+    for (i = 0; i <= 3; i++)
+      attr[i] = 0;
+    for (i = 8; i <= 10; i++)
+      attr[i] = 0;
+  }
   return retflag;
 }
 
@@ -1046,7 +1067,8 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
   if (lsun > 0) {
     attr[0] = lsunleft / rsun / 2;
   } else {
-    attr[0] = 100;
+    //attr[0] = 100;
+    attr[0] = 1;
   }
   /*if (retc == SE_ECL_ANNULAR || retc == SE_ECL_TOTAL)
       attr[0] = attr[1];*/
@@ -1058,7 +1080,8 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
   lmoon = rmoon;
   lctr = dctr;
   if (retc == 0 || lsun == 0) {
-    attr[2] = 100;
+    //attr[2] = 100;
+    attr[2] = 1;
   } else if (retc == SE_ECL_TOTAL || retc == SE_ECL_ANNULAR) {
     attr[2] = lmoon * lmoon / lsun / lsun;
   } else {
@@ -1106,6 +1129,7 @@ static int32 eclipse_how( double tjd_ut, int32 ipl, char *starname, int32 ifl,
     /* saros series and member */
     for (i = 0; i < NSAROS_SOLAR; i++) {
       d = (tjd_ut - saros_data_solar[i].tstart) / SAROS_CYCLE;
+      if (d < 0 && d * SAROS_CYCLE > -2) d = 0.0000001;
       if (d < 0) continue;
       j = (int) d;
       if ((d - j) * SAROS_CYCLE < 2) {
@@ -2989,8 +3013,17 @@ void CALL_CONV swe_set_lapse_rate(double lapse_rate)
  *                      *        SE_TRUE_TO_APP
  *
  * function returns:
+ * function returns:
+ * double *dret;        * array of 4 doubles; declare 20 doubles !
+ * - dret[0] true altitude, if possible; otherwise input value
+ * - dret[1] apparent altitude, if possible; otherwise input value
+ * - dret[2] refraction
+ * - dret[3] dip of the horizon
+ * 
+ * The body is above the horizon if the dret[0] != dret[1]
+ *
  * case 1, conversion from true altitude to apparent altitude
- * - apparent altitude, if body appears above is observable above ideal horizon
+ * - apparent altitude, if body is observable above ideal horizon
  * - true altitude (the input value), otherwise
  *   "ideal horizon" is the horizon as seen above an ideal sphere (as seen
  *   from a plane over the ocean with a clear sky)
@@ -2999,12 +3032,6 @@ void CALL_CONV swe_set_lapse_rate(double lapse_rate)
  *   is a plausible apparent altitude, i.e. if it is a position above the ideal
  *   horizon
  * - the input altitude otherwise
- *
- * in addition the array dret[] is given the following values
- * - dret[0] true altitude, if possible; otherwise input value
- * - dret[1] apparent altitude, if possible; otherwise input value
- * - dret[2] refraction
- * - dret[3] dip of the horizon
  *
  * The body is above the horizon if the dret[0] != dret[1]
  */
@@ -3312,6 +3339,7 @@ static int32 lun_eclipse_how(
   /* saros series and member */
   for (i = 0; i < NSAROS_LUNAR; i++) {
     d = (tjd_ut - saros_data_lunar[i].tstart) / SAROS_CYCLE;
+    if (d < 0 && d * SAROS_CYCLE > -2) d = 0.0000001;
     if (d < 0) continue;
     j = (int) d;
     if ((d - j) * SAROS_CYCLE < 2) {
@@ -3765,7 +3793,7 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
   double fac;
   double T, in, om, sinB, u1, u2, du;
   double ph1, ph2, me[2];
-  int32 iflagp, epheflag;
+  int32 iflagp, epheflag, retflag, epheflag2;
   char serr2[AS_MAXCH];
   *serr2 = '\0';
   iflag &= ~(SEFLG_JPLHOR | SEFLG_JPLHOR_APPROX);
@@ -3795,16 +3823,26 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
   /*  
    * geocentric planet
    */
-  if (swe_calc(tjd, (int) ipl, iflag | SEFLG_XYZ, xx, serr) == ERR)
+  if ((retflag = swe_calc(tjd, (int) ipl, iflag | SEFLG_XYZ, xx, serr)) == ERR)
     /* int cast can be removed when swe_calc() gets int32 ipl definition */
     return ERR;
+  // check epheflag and adjust iflag
+  epheflag2 = retflag & SEFLG_EPHMASK;
+  if (epheflag != epheflag2) {
+    iflag &= ~epheflag;
+    iflagp &= ~epheflag;
+    iflag |= epheflag2;
+    iflagp |= epheflag2;
+    epheflag = epheflag2;
+  }
   if (swe_calc(tjd, (int) ipl, iflag, lbr, serr) == ERR)
     /* int cast can be removed when swe_calc() gets int32 ipl definition */
     return ERR;
   /* if moon, we need sun as well, for magnitude */
-  if (ipl == SE_MOON)
+  if (ipl == SE_MOON) {
     if (swe_calc(tjd, SE_SUN, iflag | SEFLG_XYZ, xxs, serr) == ERR)
       return ERR;
+  }
   if (ipl != SE_SUN && ipl != SE_EARTH &&
     ipl != SE_MEAN_NODE && ipl != SE_TRUE_NODE &&
     ipl != SE_MEAN_APOG && ipl != SE_OSCU_APOG) {
@@ -3857,7 +3895,8 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
     } else if (ipl == SE_MOON) {
       /* formula according to Allen, C.W., 1976, Astrophysical Quantities */
       /*attr[4] = -21.62 + 5 * log10(384410497.8 / EARTH_RADIUS) / log10(10) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);*/
-      attr[4] = -21.62 + 5 * log10(lbr[2] * AUNIT / EARTH_RADIUS) / log10(10) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);
+      //attr[4] = -21.62 + 5 * log10(lbr[2] * AUNIT / EARTH_RADIUS) / log10(10) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);
+      attr[4] = -21.62 + 5 * log10(lbr[2] * AUNIT / EARTH_RADIUS) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);
 #if 0
       /* ratio apparent diameter : average diameter */
       fac = attr[3] / (asin(pla_diam[SE_MOON] / 2.0 / 384400000.0) * 2 * RADTODEG);
@@ -3992,7 +4031,7 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
   }
   if (*serr2 != '\0' && serr != NULL)
     strcpy(serr, serr2);
-  return OK;
+  return iflag;
 }
 
 int32 CALL_CONV swe_pheno_ut(double tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr)
@@ -5001,8 +5040,9 @@ int32 CALL_CONV swe_nod_aps(double tjd_et, int32 ipl, int32 iflag,
   if (ipl == SE_MEAN_NODE || ipl == SE_TRUE_NODE || 
 	  ipl == SE_MEAN_APOG || ipl == SE_OSCU_APOG || 
 	  ipl < 0 || 
-	  (ipl >= SE_NPLANETS && ipl <= SE_AST_OFFSET)) {
-	  /*(ipl >= SE_FICT_OFFSET && ipl - SE_FICT_OFFSET < SE_NFICT_ELEM)) */
+	  (ipl >= SE_NPLANETS && ipl <= SE_AST_OFFSET)) 
+	  // (ipl >= SE_FICT_OFFSET && ipl - SE_FICT_OFFSET < SE_NFICT_ELEM)) 
+	  {
     if (serr != NULL)
       sprintf(serr, "nodes/apsides for planet %5.0f are not implemented", (double) ipl);
     if (xnasc != NULL)
@@ -5335,6 +5375,7 @@ int32 CALL_CONV swe_nod_aps(double tjd_et, int32 ipl, int32 iflag,
     swi_precess(xp, tjd_et, iflag, J_TO_J2000);
     if (iflag & SEFLG_SPEED)
       swi_precess_speed(xp, tjd_et, iflag, J_TO_J2000);
+//      fprintf(stderr, "%.17f, %.17f, %.17f, %.17f, %.17f, %.17f\n", xp[0], xp[1], xp[2], xp[3], xp[4], xp[5]);
     /*********************
      * to barycenter 
      *********************/

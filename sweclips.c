@@ -1,5 +1,4 @@
 /* SWISSEPH
-   $Header: sweclips.c,v 1.2 2000/12/25 13:43:33 alois Exp $
    
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zürich
 

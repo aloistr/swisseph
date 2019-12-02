@@ -1,31 +1,9 @@
 /* SWISSEPH
-   $Header: swedllst.c,v 1.30 97/07/08 15:16:43 dieter Exp $
  *
  *  Windows DLL interface code for the Astrodienst SWISSEPH package
  */
 
 #include "swephexp.h"
-
-#ifdef MAKE_DLL16 /* 16bit DLL code for Windows 3.x */
-
-int PASCAL LibMain(HANDLE hInstance, WORD wDataSeg,
-        WORD cbHeapSize, LPSTR lpCmdLine)
-{
-  /* Since the DLL is non-reentrant it might be a good idea
-     to return 0 here, if we're not the first instance.
-     However, where is our instance counter? */
-  return 1;  /* 1=success, 0=failure */
-}
-
-int PASCAL WEP(int nParameter) 
-{
-  /* nParameter is either WEB_SYSTEMEXIT or WEP_FREE_DLL,
-     however this doesn't matter for us. */
-  /*swe_close();*/
-  return 1;  /* 1=success, 0=failure */
-}
-
-#else /* 32bit DLL code */
 
 /* Export stubs for the 32bit PLACALC DLL as generated using
   Microsoft Developer Studio and Visual C/C++ 4.2 */
@@ -46,7 +24,6 @@ BOOL WINAPI DllMain(HANDLE hInst,
   /* TRUE (1) indicates success */
   return TRUE;
 }
-#endif /* 16,32 bit DLL code */
 
 /* The GFABASIC DLL interface does not support 8 and 64 bit data types.
  * The following functions avoid problems with doubles by use of
@@ -56,137 +33,137 @@ BOOL WINAPI DllMain(HANDLE hInst,
  */
 
 /* planets, moon, nodes etc. */
-extern EXP32 long CALL_CONV EXP16 swe_calc_d(
+extern EXP32 long CALL_CONV swe_calc_d(
     double *tjd, int ipl, long iflag,
     double *xx,
     char *serr);
 
 /* planets, moon, nodes etc. */
-extern EXP32 long CALL_CONV EXP16 swe_calc_ut_d(
+extern EXP32 long CALL_CONV swe_calc_ut_d(
     double *tjd_ut, int ipl, long iflag,
     double *xx,
     char *serr);
 
 /* fixed stars */
-extern EXP32 long CALL_CONV EXP16 swe_fixstar_d(
+extern EXP32 long CALL_CONV swe_fixstar_d(
     char *star, double *tjd, long iflag,
     double *xx,
     char *serr);
 
 /* fixed stars */
-extern EXP32 long CALL_CONV EXP16 swe_fixstar_ut_d(
+extern EXP32 long CALL_CONV swe_fixstar_ut_d(
     char *star, double *tjd_ut, long iflag,
     double *xx,
     char *serr);
 
 /* close Swiss Ephemeris */
-extern EXP32 int CALL_CONV EXP16 swe_close_d(int ivoid);
+extern EXP32 int CALL_CONV swe_close_d(int ivoid);
 
 /* set directory path of ephemeris files */
-extern EXP32 int CALL_CONV EXP16 swe_set_ephe_path_d(char *path);
+extern EXP32 int CALL_CONV swe_set_ephe_path_d(char *path);
 
 /* set file name of JPL file */
-extern EXP32 int CALL_CONV EXP16 swe_set_jpl_file_d(char *fname);
+extern EXP32 int CALL_CONV swe_set_jpl_file_d(char *fname);
 
 /* get planet name */
-extern EXP32 char *CALL_CONV EXP16 swe_get_planet_name_d(int ipl, char *spname);
+extern EXP32 char *CALL_CONV swe_get_planet_name_d(int ipl, char *spname);
 
 /* set sidereal mode */
-extern EXP32 int CALL_CONV EXP16 swe_set_sid_mode_d(long sid_mode, double *t0, double *ayan_t0);
+extern EXP32 int CALL_CONV swe_set_sid_mode_d(long sid_mode, double *t0, double *ayan_t0);
 
 /* get ayanamsa */
-extern EXP32 int CALL_CONV EXP16 swe_get_ayanamsa_d(double *tjd_et, double *ayan);
+extern EXP32 int CALL_CONV swe_get_ayanamsa_d(double *tjd_et, double *ayan);
 
 /* get ayanamsa */
-extern EXP32 int CALL_CONV EXP16 swe_get_ayanamsa_ut_d(double *tjd_ut, double *ayan);
+extern EXP32 int CALL_CONV swe_get_ayanamsa_ut_d(double *tjd_ut, double *ayan);
 
 /* delta t */
-extern EXP32 int CALL_CONV EXP16 swe_deltat_d(double *tjd, double *deltat);
+extern EXP32 int CALL_CONV swe_deltat_d(double *tjd, double *deltat);
 
 /* sidereal time */
-extern EXP32 int CALL_CONV EXP16 swe_sidtime0_d(
+extern EXP32 int CALL_CONV swe_sidtime0_d(
         double *tjd_ut, double *eps, double *nut, double *sidt);
-extern EXP32 int CALL_CONV EXP16 swe_sidtime_d(
+extern EXP32 int CALL_CONV swe_sidtime_d(
         double *tjd_ut, double *sidt);
 
 /* set geographic location for topocentric planet calculation */
-extern EXP32 int CALL_CONV EXP16 swe_set_topo_d(double *geolon, double *geolat, double *height);
+extern EXP32 int CALL_CONV swe_set_topo_d(double *geolon, double *geolat, double *height);
 
 /* coordinate transformation polar -> polar */
-extern EXP32 int CALL_CONV EXP16 swe_cotrans_d(double *xpo, double *xpn, double *eps);
-extern EXP32 int CALL_CONV EXP16 swe_cotrans_sp_d(double *xpo, double *xpn, double *eps);
+extern EXP32 int CALL_CONV swe_cotrans_d(double *xpo, double *xpn, double *eps);
+extern EXP32 int CALL_CONV swe_cotrans_sp_d(double *xpo, double *xpn, double *eps);
 
 /* tidal acceleration to be used in swe_deltat() */
-extern EXP32 int CALL_CONV EXP16 swe_get_tid_acc_d(double *t_acc);
-extern EXP32 int CALL_CONV EXP16 swe_set_tid_acc_d(double *t_acc);
+extern EXP32 int CALL_CONV swe_get_tid_acc_d(double *t_acc);
+extern EXP32 int CALL_CONV swe_set_tid_acc_d(double *t_acc);
 
-extern EXP32 int CALL_CONV EXP16 swe_degnorm_d(double *x);
+extern EXP32 int CALL_CONV swe_degnorm_d(double *x);
 
-extern EXP32 int CALL_CONV EXP16 swe_date_conversion_d(
+extern EXP32 int CALL_CONV swe_date_conversion_d(
         int y , int m , int d ,         /* year, month, day */
         double *utime,   /* universal time in hours (decimal) */
         char *c,         /* calendar g[regorian]|j[ulian]|a[stro = greg] */
         double *tjd);
 
-extern EXP32 int CALL_CONV EXP16 swe_julday_d(
+extern EXP32 int CALL_CONV swe_julday_d(
         int year, int month, int day, double *hour,
         int gregflag, double *tjd);
 
-extern EXP32 int CALL_CONV EXP16 swe_revjul_d(
+extern EXP32 int CALL_CONV swe_revjul_d(
         double *tjd,
         int gregflag,
         int *jyear, int *jmon, int *jday, double *jut);
 
-extern EXP32 int CALL_CONV EXP16 swe_time_equ_d(
+extern EXP32 int CALL_CONV swe_time_equ_d(
         double *tjd,
         double *e,
         char *serr);
 
-extern EXP32 int CALL_CONV EXP16 swe_houses_d(
+extern EXP32 int CALL_CONV swe_houses_d(
         double *tjd_ut, double *geolat, double *geolon, int hsys, 
         double *cusps, double *ascmc);
 
-extern EXP32 int CALL_CONV EXP16 swe_houses_ex_d(
+extern EXP32 int CALL_CONV swe_houses_ex_d(
         double *tjd_ut, int32 iflag, double *geolat, double *geolon, int hsys, 
         double *hcusps, double *ascmc);
 
-extern EXP32 int CALL_CONV EXP16 swe_houses_armc_d(
+extern EXP32 int CALL_CONV swe_houses_armc_d(
         double *armc, double *geolat, double *eps, int hsys, 
         double *cusps, double *ascmc);
 
-extern EXP32 int CALL_CONV EXP16 swe_house_pos_d(
+extern EXP32 int CALL_CONV swe_house_pos_d(
         double *armc, double *geolat, double *eps, int hsys, double *xpin,
         double *hpos, char *serr);
 
 /* normalize argument into interval [0..DEG360] */
-extern EXP32 centisec CALL_CONV EXP16 swe_csnorm_d(centisec p);
+extern EXP32 centisec CALL_CONV swe_csnorm_d(centisec p);
 
 /* distance in centisecs p1 - p2 normalized to [0..360[ */
-extern EXP32 centisec CALL_CONV EXP16 swe_difcsn_d(centisec p1, centisec p2);
+extern EXP32 centisec CALL_CONV swe_difcsn_d(centisec p1, centisec p2);
 
-extern EXP32 int CALL_CONV EXP16 swe_difdegn_d(double *p1, double *p2, double *diff);
+extern EXP32 int CALL_CONV swe_difdegn_d(double *p1, double *p2, double *diff);
 
 /* distance in centisecs p1 - p2 normalized to [-180..180[ */
-extern EXP32 centisec CALL_CONV EXP16 swe_difcs2n_d(centisec p1, centisec p2);
+extern EXP32 centisec CALL_CONV swe_difcs2n_d(centisec p1, centisec p2);
 
-extern EXP32 int CALL_CONV EXP16 swe_difdeg2n_d(double *p1, double *p2, double *diff);
+extern EXP32 int CALL_CONV swe_difdeg2n_d(double *p1, double *p2, double *diff);
 
 /* round second, but at 29.5959 always down */
-extern EXP32 centisec CALL_CONV EXP16 swe_csroundsec_d(centisec x);
+extern EXP32 centisec CALL_CONV swe_csroundsec_d(centisec x);
 
 /* double to long with rounding, no overflow check */
-extern EXP32 long CALL_CONV EXP16 swe_d2l_d(double *x);
+extern EXP32 long CALL_CONV swe_d2l_d(double *x);
 
-extern EXP32 int CALL_CONV EXP16 swe_split_deg_d(double *ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn);
+extern EXP32 int CALL_CONV swe_split_deg_d(double *ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *isgn);
 
 /* monday = 0, ... sunday = 6 */
-extern EXP32 int CALL_CONV EXP16 swe_day_of_week_d(double *jd);
+extern EXP32 int CALL_CONV swe_day_of_week_d(double *jd);
 
-extern EXP32 char *CALL_CONV EXP16 swe_cs2timestr_d(CSEC t, int sep, AS_BOOL suppressZero, char *a);
+extern EXP32 char *CALL_CONV swe_cs2timestr_d(CSEC t, int sep, AS_BOOL suppressZero, char *a);
 
-extern EXP32 char *CALL_CONV EXP16 swe_cs2lonlatstr_d(CSEC t, char *pchar, char *mchar, char *s);
+extern EXP32 char *CALL_CONV swe_cs2lonlatstr_d(CSEC t, char *pchar, char *mchar, char *s);
 
-extern EXP32 char *CALL_CONV EXP16 swe_cs2degstr_d(CSEC t, char *a);
+extern EXP32 char *CALL_CONV swe_cs2degstr_d(CSEC t, char *a);
 
 
 /**************************** 
@@ -195,37 +172,37 @@ extern EXP32 char *CALL_CONV EXP16 swe_cs2degstr_d(CSEC t, char *a);
 
 /* computes geographic location and attributes of solar 
  * eclipse at a given tjd */
-extern EXP32 int32 CALL_CONV EXP16 swe_sol_eclipse_where_d(double *tjd_ut, int32 ifl, double *geopos, double *attr, char *serr);
+extern EXP32 int32 CALL_CONV swe_sol_eclipse_where_d(double *tjd_ut, int32 ifl, double *geopos, double *attr, char *serr);
 
 /* computes attributes of a solar eclipse for given tjd, geolon, geolat */
-extern EXP32 int32 CALL_CONV EXP16 swe_sol_eclipse_how_d(double *tjd_ut, int32 ifl, double *geopos, double *attr, char *serr);
+extern EXP32 int32 CALL_CONV swe_sol_eclipse_how_d(double *tjd_ut, int32 ifl, double *geopos, double *attr, char *serr);
 /* finds time of next local eclipse */
 
-extern EXP32 int32 CALL_CONV EXP16 swe_sol_eclipse_when_loc_d(double *tjd_start, int32 ifl, double *geopos, double *tret, double *attr, AS_BOOL backward, char *serr);
+extern EXP32 int32 CALL_CONV swe_sol_eclipse_when_loc_d(double *tjd_start, int32 ifl, double *geopos, double *tret, double *attr, AS_BOOL backward, char *serr);
 
 /* finds time of next eclipse globally */
-extern EXP32 int32 CALL_CONV EXP16 swe_sol_eclipse_when_glob_d(double *tjd_start, int32 ifl, int32 ifltype,
+extern EXP32 int32 CALL_CONV swe_sol_eclipse_when_glob_d(double *tjd_start, int32 ifl, int32 ifltype,
      double *tret, AS_BOOL backward, char *serr);
 
 /* computes attributes of a lunar eclipse for given tjd */
-extern EXP32 int32 CALL_CONV EXP16 swe_lun_eclipse_how_d(
+extern EXP32 int32 CALL_CONV swe_lun_eclipse_how_d(
           double *tjd_ut, 
           int32 ifl,
 		  double *geopos,
           double *attr, 
           char *serr);
-extern EXP32 int32 CALL_CONV EXP16 swe_lun_eclipse_when_d(double *tjd_start, int32 ifl, int32 ifltype,
+extern EXP32 int32 CALL_CONV swe_lun_eclipse_when_d(double *tjd_start, int32 ifl, int32 ifltype,
      double *tret, AS_BOOL backward, char *serr);
 
 /* planetary phenomena */
-extern EXP32 int32 CALL_CONV EXP16 swe_pheno_d(double *tjd, int32 ipl, int32 iflag,
+extern EXP32 int32 CALL_CONV swe_pheno_d(double *tjd, int32 ipl, int32 iflag,
      double *attr, char *serr);
 
-extern EXP32 int32 CALL_CONV EXP16 swe_pheno_ut_d(double *tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr);
+extern EXP32 int32 CALL_CONV swe_pheno_ut_d(double *tjd_ut, int32 ipl, int32 iflag, double *attr, char *serr);
 
-extern EXP32 int CALL_CONV EXP16 swe_refrac_d(double *inalt, double *atpress, double *attemp, int32 calc_flag, double *retalt);
+extern EXP32 int CALL_CONV swe_refrac_d(double *inalt, double *atpress, double *attemp, int32 calc_flag, double *retalt);
 
-extern EXP32 int CALL_CONV EXP16 swe_azalt_d(
+extern EXP32 int CALL_CONV swe_azalt_d(
       double *tjd_ut,
       int32 calc_flag,
       double *geopos,
@@ -234,14 +211,14 @@ extern EXP32 int CALL_CONV EXP16 swe_azalt_d(
       double *xin, 
       double *xaz); 
 
-extern EXP32 int CALL_CONV EXP16 swe_azalt_rev_d(
+extern EXP32 int CALL_CONV swe_azalt_rev_d(
       double *tjd_ut,
       int32 calc_flag,
       double *geopos,
       double *xin, 
       double *xout); 
 
-extern EXP32 int32 CALL_CONV EXP16 swe_rise_trans_d(
+extern EXP32 int32 CALL_CONV swe_rise_trans_d(
                double *tjd_ut, int32 ipl, char *starname, 
 	       int32 epheflag, int32 rsmi,
                double *geopos, 
@@ -249,13 +226,13 @@ extern EXP32 int32 CALL_CONV EXP16 swe_rise_trans_d(
                double *tret,
                char *serr);
 
-extern EXP32 int32 CALL_CONV EXP16 swe_nod_aps_d(double *tjd_et, int32 ipl, int32 iflag, 
+extern EXP32 int32 CALL_CONV swe_nod_aps_d(double *tjd_et, int32 ipl, int32 iflag, 
                       int32  method,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
                       char *serr);
 
-extern EXP32 int32 CALL_CONV EXP16 swe_nod_aps_ut_d(double *tjd_ut, int32 ipl, int32 iflag, 
+extern EXP32 int32 CALL_CONV swe_nod_aps_ut_d(double *tjd_ut, int32 ipl, int32 iflag, 
                       int32  method,
                       double *xnasc, double *xndsc, 
                       double *xperi, double *xaphe, 
@@ -465,7 +442,7 @@ int CALL_CONV swe_houses_armc_d(
   return swe_houses_armc(*armc, *geolat, *eps, hsys, cusps, ascmc);
 }
 
-extern EXP32 int CALL_CONV EXP16 swe_house_pos_d(
+extern EXP32 int CALL_CONV swe_house_pos_d(
         double *armc, double *geolat, double *eps, int hsys, double *xpin,
         double *hpos, char *serr)
 {

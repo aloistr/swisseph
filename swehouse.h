@@ -1,5 +1,4 @@
 /*******************************************************
-$Header: /home/dieter/sweph/RCS/swehouse.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
 module swehouse.h
 house and (simple) aspect calculation 
 

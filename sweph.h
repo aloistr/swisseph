@@ -1,5 +1,4 @@
 /************************************************************
-   $Header: /home/dieter/sweph/RCS/sweph.h,v 1.74 2008/06/16 10:07:20 dieter Exp $
    definitions and constants SWISSEPH
 
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
@@ -63,7 +62,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.07.01"
+#define SE_VERSION      "2.08.00a"  //"2.07.02a"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -268,8 +267,9 @@
 #if 0
 #define EARTH_MOON_MRAT 81.30056		/* de406 */
 #endif
-#define AUNIT       	1.49597870691e+11  	/* au in meters, AA 2006 K6 */
-#define CLIGHT       	2.99792458e+8   	/* m/s, AA 1996 K6 */
+//#define AUNIT       	1.49597870691e+11  	/* au in meters, AA 2006 K6 */
+#define AUNIT       	1.49597870700e+11  	/* au in meters, DE431 */
+#define CLIGHT       	2.99792458e+8   	/* m/s, AA 1996 K6 / DE431 */
 #if 0
 #define HELGRAVCONST    1.32712438e+20		/* G * M(sun), m^3/sec^2, AA 1996 K6 */
 #endif
@@ -282,7 +282,7 @@
 #define EARTH_OBLATENESS (1.0/ 298.25642)	/* AA 2006 K6 */
 #define EARTH_ROT_SPEED (7.2921151467e-5 * 86400) /* in rad/day, expl. suppl., p 162 */
 
-#define LIGHTTIME_AUNIT  (499.0047838061/3600/24) 	/* 8.3167 minutes (days), AA 2006 K6 */
+#define LIGHTTIME_AUNIT  (499.0047838362/3600.0/24.0) 	/* 8.3167 minutes (days) */
 #define PARSEC_TO_AUNIT  206264.8062471         /* 648000/PI, according to IAU Resolution B2, 2016 */
 
 /* node of ecliptic measured on ecliptic 2000 */
@@ -354,9 +354,11 @@ static const struct aya_init ayanamsa[] = {
 {J1900, 360 - 338.917778, FALSE},    /* 7: Shri Yukteshwar; (David Cochrane) */
 //{2412543.5, 20.91, TRUE},          /* 7: Shri Yukteshwar; (Holy Science, p. xx) */
 {J1900, 360 - 338.634444, FALSE},    /* 8: J.N. Bhasin; (David Cochrane) */
-{1684532.5, -3.36667, TRUE},         /* 9: Babylonian, Kugler 1 */
-{1684532.5, -4.76667, TRUE},         /*10: Babylonian, Kugler 2 */
-{1684532.5, -5.61667, TRUE},         /*11: Babylonian, Kugler 3 */
+/* 14 Sept. 2018: the following three ayanamshas have been wrong for
+ * many years */
+{1684532.5, -5.66667, TRUE},         /* 9: Babylonian, Kugler 1 */
+{1684532.5, -4.26667, TRUE},         /*10: Babylonian, Kugler 2 */
+{1684532.5, -3.41667, TRUE},         /*11: Babylonian, Kugler 3 */
 {1684532.5, -4.46667, TRUE},         /*12: Babylonian, Huber */
 /*{1684532.5, -4.56667, TRUE},         *12: Babylonian, Huber (Swisseph has been wrong for many years!) */
 {1673941, -5.079167, TRUE},          /*13: Babylonian, Mercier;
@@ -372,8 +374,8 @@ static const struct aya_init ayanamsa[] = {
 {1903396.8128654, 0, TRUE},	     /*21: Suryasiddhanta, assuming
                                        ingress of mean Sun into Aries at point
 				       of mean equinox of date on
-				       21.3.499, noon, Ujjain (75.7684565 E)
-                                       = 7:30:31.57 UT */
+				       21.3.499, near noon, Ujjain (75.7684565 E)
+                                       = 7:30:31.57 UT = 12:33:36 LMT*/
 {1903396.8128654,-0.21463395, TRUE}, /*22: Suryasiddhanta, assuming
 				       ingress of mean Sun into Aries at
 				       true position of mean Sun at same epoch */
@@ -404,11 +406,15 @@ static const struct aya_init ayanamsa[] = {
                                       *    based on Kali midnight and SS year length */
 {1721057.5, -3.2, TRUE},             /*38: Babylonian (Britton 2010) */
 {0, 0, FALSE},                       /*39: Sunil Sheoran ("Vedic") */
-/*{0, 0, FALSE},                       *40: Galactic Center at 0 Capricon (Cochrane) */
+{0, 0, FALSE},                       /*40: Galactic Center at 0 Capricon (Cochrane) */
+{2451544.5, 25.0, TRUE},             /*41: "Galactic Equatorial" (N.A. Fiorenza) */
+{1775845.5, -2.9422, TRUE},          /*42: Vettius Valens (Moon; derived from
+                                           Holden 1995 p. 12 for epoch of Valens
+					   1 Jan. 150 CE julian) */
 /*{2061539.789532065, 6.83333333, TRUE}, *41: Manjula's Laghumanasa, 10 March 932,
                                       *    12 PM LMT Ujjain (75.7684565 E),
 				      *    ayanamsha = 6°50' */
-{0, 0, FALSE},	                     /*40: - */
+{0, 0, FALSE},	                     /*42: - */
     };
 
 #define PLAN_DATA struct plan_data
@@ -585,10 +591,11 @@ struct sid_data {
   AS_BOOL t0_is_UT;
 };
 
+#define SWI_STAR_LENGTH 40
 struct fixed_star {
-  char skey[40];
-  char starname[40];
-  char starbayer[40];
+  char skey[SWI_STAR_LENGTH + 2]; // may be prefixed with comma, one char more
+  char starname[SWI_STAR_LENGTH + 1];
+  char starbayer[SWI_STAR_LENGTH + 1];
   char starno[10];
   double epoch, ra, de, ramot, demot, radvel, parall, mag;
 };

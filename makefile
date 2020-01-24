@@ -18,15 +18,15 @@ REV=1.30
 SWEVERSION=2.05
 
 MOSH = swemmoon.o swemplan.o
-SWEPH = sweph.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o swehouse.o swecl.o 
+SWEPH = sweph.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o swehouse.o swecl.o swehel.o
 SWEPHA = swepha.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o
 SWEOBJ = swecl.o sweph.o swephlib.o swejpl.o \
-	swemmoon.o swemplan.o swedate.o swehouse.o 
+	swemmoon.o swemplan.o swedate.o swehouse.o swehel.o
 
 PUBSOURCE = LICENSE swedll.h swemmoon.c swepcalc.h sweph.h swephlib.h \
 	swehouse.c swepcalc.c swepdate.c swephexp.h swetest.c \
 	swehouse.h swemplan.c sweph.c swecl.c \
-	swedate.c swejpl.c swemptab.c \
+	swedate.c swejpl.c swemptab.c swehel.c \
 	swedate.h swejpl.h sweodef.h swephlib.c swemini.c seorbel.txt \
 	sefstars.txt swenut2000a.h seleapsec.txt \
 	sedeltat.txt.inactive \
@@ -52,6 +52,9 @@ INTSOURCE = $(PUBSOURCE)
 
 swetest: swetest.o $(SWEPH)
 	cc $(OP) -o swetest swetest.o $(SWEPH) -lastros -lm -ldl
+
+st13: st13.o $(SWEPH)
+	cc $(OP) -o st13 st13.o $(SWEPH) -lastro -lm -ldl
 
 # a version of swetest with dynamical library
 swetestx: swetest.o 
@@ -111,6 +114,15 @@ testlat: testlat.o $(SWEPH)
 
 swetesth: swetesth.o $(SWEPH)
 	cc $(OP) -o swetesth swetesth.o $(SWEPH) -lastro -lm
+
+swehel: sweh.o $(SWEPH)
+	cc $(OP) -o swehel sweh.o $(SWEPH) -lastro -lm
+
+swehelx: sweh.o swehelx.o $(SWEPH)
+	cc $(OP) -o swehelx sweh.o swehelx.o $(SWEPH) -lastro -lm
+
+swehely: swehelx.o $(SWEPH)
+	cc $(OP) -o swehelx swehelx.o $(SWEPH) -lastro -lm
 
 chcal: chcal.o $(SWEPH)
 	cc $(OP) -o chcal chcal.o $(SWEPH) -lastro -lm

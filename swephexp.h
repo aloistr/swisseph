@@ -220,6 +220,14 @@ extern "C" {
 #define SE_SIDBIT_SSY_PLANE     512
 /* with user-defined ayanamsha, t0 is UT */
 #define SE_SIDBIT_USER_UT       1024
+/* ayanamsha measured on ecliptic of date;
+ * see commentaries in sweph.c:swi_get_ayanamsa_ex(). */
+#define SE_SIDBIT_ECL_DATE      2048
+/* test feature: don't apply constant offset to ayanamsha 
+ * see commentary above sweph.c:get_aya_correction() */
+#define SE_SIDBIT_NO_PREC_OFFSET       4096
+/* test feature: calculate ayanamsha using its original precession model */
+#define SE_SIDBIT_PREC_ORIG     8192
 
 /* sidereal modes (ayanamsas) */
 #define SE_SIDM_FAGAN_BRADLEY    0
@@ -265,10 +273,14 @@ extern "C" {
 #define SE_SIDM_GALCENT_COCHRANE   	40
 #define SE_SIDM_GALEQU_FIORENZA 41
 #define SE_SIDM_VALENS_MOON     42
+#define SE_SIDM_LAHIRI_1940     43
+#define SE_SIDM_LAHIRI_VP285    44
+#define SE_SIDM_KRISHNAMURTI_VP291    45
+#define SE_SIDM_LAHIRI_ICRC     46
 //#define SE_SIDM_MANJULA         43
 #define SE_SIDM_USER            255 /* user-defined ayanamsha, t0 is TT */
 
-#define SE_NSIDM_PREDEF	        43
+#define SE_NSIDM_PREDEF	        47
 
 /* used for swe_nod_aps(): */
 #define SE_NODBIT_MEAN		1   /* mean nodes/apsides */
@@ -494,7 +506,7 @@ extern "C" {
 #define NSE_MODELS              8
 
 /* precession models */
-#define SEMOD_NPREC		10
+#define SEMOD_NPREC		11
 #define SEMOD_PREC_IAU_1976      1
 #define SEMOD_PREC_LASKAR_1986   2
 #define SEMOD_PREC_WILL_EPS_LASK 3
@@ -505,6 +517,7 @@ extern "C" {
 #define SEMOD_PREC_IAU_2006      8
 #define SEMOD_PREC_VONDRAK_2011  9
 #define SEMOD_PREC_OWEN_1990     10
+#define SEMOD_PREC_NEWCOMB       11
 #define SEMOD_PREC_DEFAULT       SEMOD_PREC_VONDRAK_2011
 /* SE versions before 1.70 used IAU 1976 precession for 
  * a limited time range of 2 centuries in combination with 
@@ -513,12 +526,13 @@ extern "C" {
 #define SEMOD_PREC_DEFAULT_SHORT SEMOD_PREC_VONDRAK_2011
 
 /* nutation models */
-#define SEMOD_NNUT		4
+#define SEMOD_NNUT		5
 #define SEMOD_NUT_IAU_1980          1
 #define SEMOD_NUT_IAU_CORR_1987     2 /* Herring's (1987) corrections to IAU 1980 
 				    * nutation series. AA (1996) neglects them.*/
 #define SEMOD_NUT_IAU_2000A         3 /* very time consuming ! */
 #define SEMOD_NUT_IAU_2000B         4 /* fast, but precision of milli-arcsec */
+#define SEMOD_NUT_WOOLARD           5
 #define SEMOD_NUT_DEFAULT           SEMOD_NUT_IAU_2000B  /* fast, but precision of milli-arcsec */
 
 /* methods for sidereal time */

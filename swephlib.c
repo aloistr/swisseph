@@ -921,6 +921,9 @@ double swi_epsiln(double J, int32 iflag)
     eps = (((1.813e-3*T-5.9e-4)*T-46.84024)*T+84381.406)*DEGTORAD/3600;
   } else if (prec_model_short == SEMOD_PREC_IAU_2006 && fabs(T) <= PREC_IAU_2006_CTIES) {
     eps =  (((((-4.34e-8 * T -5.76e-7) * T +2.0034e-3) * T -1.831e-4) * T -46.836769) * T + 84381.406) * DEGTORAD / 3600.0; 
+  } else if (prec_model == SEMOD_PREC_NEWCOMB) {
+    double Tn = (J - 2396758.0)/36525.0;
+    eps = (0.0017 * Tn * Tn * Tn - 0.0085 * Tn * Tn - 46.837 * Tn + 84451.68) * DEGTORAD / 3600.0; 
   } else if (prec_model == SEMOD_PREC_IAU_2006) {
     eps =  (((((-4.34e-8 * T -5.76e-7) * T +2.0034e-3) * T -1.831e-4) * T -46.836769) * T + 84381.406) * DEGTORAD / 3600.0; 
   } else if (prec_model == SEMOD_PREC_BRETAGNON_2003) {
@@ -1030,6 +1033,12 @@ static int precess_1(double *R, double J, int direction, int prec_method)
     Z =  (( 0.017998*T + 0.30188)*T + 2306.2181)*T*DEGTORAD/3600;
     z =  (( 0.018203*T + 1.09468)*T + 2306.2181)*T*DEGTORAD/3600;
     TH = ((-0.041833*T - 0.42665)*T + 2004.3109)*T*DEGTORAD/3600;
+    /*
+     * precession relative to ecliptic of start epoch is:
+     * pn = (5029.0966 + 2.22226*T-0.000042*T*T) * t + (1.11161-0.000127*T) * t * t - 0.000113*t*t*t;
+     * with: t = (tstart - tdate) / 36525.0
+     *       T = (tstart - J2000) / 36525.0
+     */
   } else if (prec_method == SEMOD_PREC_IAU_2000) {
     /* AA 2006 B28:*/
     Z =  (((((- 0.0000002*T - 0.0000327)*T + 0.0179663)*T + 0.3019015)*T + 2306.0809506)*T + 2.5976176)*DEGTORAD/3600;
@@ -1044,6 +1053,83 @@ static int precess_1(double *R, double J, int direction, int prec_method)
     Z =  ((((((-0.00000000013*T - 0.0000003040)*T - 0.000005708)*T + 0.01801752)*T + 0.3023262)*T + 2306.080472)*T + 2.72767)*DEGTORAD/3600;
     z =  ((((((-0.00000000005*T - 0.0000002486)*T - 0.000028276)*T + 0.01826676)*T + 1.0956768)*T + 2306.076070)*T - 2.72767)*DEGTORAD/3600;
     TH = ((((((0.000000000009*T + 0.00000000036)*T -0.0000001127)*T - 0.000007291)*T - 0.04182364)*T - 0.4266980)*T + 2004.190936)*T*DEGTORAD/3600;
+#if 0
+  } else if (prec_method == SEMOD_PREC_NEWCOMB) {
+    double t1 = (J2000 - 2415020.3135) / 36524.2199;
+    double T = (J - J2000) / 36524.2199;
+    double T2 = T * T; double T3 = T2 * T;
+    Z = (2304.250 + 1.396 * t1) * T + 0.302 * T2 + 0.0179 * T3;
+    z = (2304.250 + 1.396 * t1) * T + 1.093 * T2 + 0.0192 * T3;
+    TH =(2004.682 - 0.853 * t1) * T - 0.426 * T2 - 0.0416 * T3;
+    Z *= (DEGTORAD/3600.0);
+    z *= (DEGTORAD/3600.0);
+    TH *= (DEGTORAD/3600.0);
+#endif
+#if 0
+  // from Newcomb, "Compendium" (1906), pp. 245f., relative to 1850
+/* } else if (prec_method == SEMOD_PREC_NEWCOMB) {
+    double cties = 36524.2198782; // trop. centuries
+    double T = (J - B1850) / cties;
+    double T2 = T * T; double T3 = T2 * T;
+    double Z1 = 2303.56;
+    Z = 2303.56 * T + 0.3023 * T2 + 0.018 * T3;
+    z = 2303.55 * T + 1.094 * T2 + 0.018 * T3;
+    TH = 2005.11 * T - 0.43 * T2 - 0.041 * T3;
+    Z *= (DEGTORAD/3600.0);
+    z *= (DEGTORAD/3600.0);
+    TH *= (DEGTORAD/3600.0);
+*/
+#endif
+#if 0
+  // Newcomb from Expl. supp. 61 pg. 38 
+  // "Andoyar (Woolard and Clemence) expressions":
+  } else if (prec_method == SEMOD_PREC_NEWCOMB) {
+    double mills = 365242.198782; // trop. millennia
+    double t1 = (J2000 - B1850) / mills;
+    double t2 = (J - B1850) / mills;
+    double T = t2 - t1;
+    double T2 = T * T; double T3 = T2 * T;
+    double Z1 = 23035.545 + 139.720 * t1 + 0.060 * t1 * t1;
+    Z = Z1 * T + (30.240 - 0.270 * t1) * T2 + 17.995 * T3;
+    z = Z1 * T + (109.480 - 0.390 * t1) * T2 + 18.325 * T3;
+    TH = (20051.12 - 85.29 * t1 - 0.37 * t1 * t1) * T + (-42.65 - 0.37 * t1) * T2 - 41.80 * T3;
+    Z *= (DEGTORAD/3600.0);
+    z *= (DEGTORAD/3600.0);
+    TH *= (DEGTORAD/3600.0);
+#endif
+#if 1
+  // Newcomb according to Kinoshita 1975, very close to ExplSuppl/Andoyer;
+  // one additional digit.
+  } else if (prec_method == SEMOD_PREC_NEWCOMB) {
+    double mills = 365242.198782; // trop. millennia
+    double t1 = (J2000 - B1850) / mills;
+    double t2 = (J - B1850) / mills;
+    double T = t2 - t1;
+    double T2 = T * T; double T3 = T2 * T;
+    double Z1 = 23035.5548 + 139.720 * t1 + 0.069 * t1 * t1;
+    Z = Z1 * T + (30.242 - 0.269 * t1) * T2 + 17.996 * T3;
+    z = Z1 * T + (109.478 - 0.387 * t1) * T2 + 18.324 * T3;
+    TH = (20051.125 - 85.294 * t1 - 0.365 * t1 * t1) * T + (-42.647 - 0.365 * t1) * T2 - 41.802 * T3;
+    Z *= (DEGTORAD/3600.0);
+    z *= (DEGTORAD/3600.0);
+    TH *= (DEGTORAD/3600.0);
+#endif
+#if 0
+  // from Lieske, "Expressions for the Precession Quantities..." (1967), p. 20
+  } else if (prec_method == SEMOD_PREC_NEWCOMB) {
+    double cties = 36524.2198782; // trop. centuries
+    double t1 = (J2000 - J1900) / cties;
+    double t2 = (J - J1900) / cties;
+    double T = t2 - t1;
+    double T2 = T * T; double T3 = T2 * T;
+    double Z1 = 2304.253 + 1.3972 * t1 + 0.000125 * t1 * t1;
+    Z = Z1 * T + (0.3023 - 0.000211 * t1) * T2 + 0.0180 * T3;
+    z = Z1 * T + (1.0949 - 0.00046 * t1) * T2 + 0.0183 * T3;
+    TH = (2004.684 - 0.8532 * t1 - 0.000317 * t1 * t1) * T + (-0.4266 - 0.00032 * t1) * T2 - 0.0418 * T3;
+    Z *= (DEGTORAD/3600.0);
+    z *= (DEGTORAD/3600.0);
+    TH *= (DEGTORAD/3600.0);
+#endif
   } else {
     return 0;
   }
@@ -1325,6 +1411,8 @@ int swi_precess(double *R, double J, int32 iflag, int direction )
     return precess_1(R, J, direction, SEMOD_PREC_IAU_2006);
   } else if (prec_model == SEMOD_PREC_BRETAGNON_2003) {
     return precess_1(R, J, direction, SEMOD_PREC_BRETAGNON_2003);
+  } else if (prec_model == SEMOD_PREC_NEWCOMB) {
+    return precess_1(R, J, direction, SEMOD_PREC_NEWCOMB);
   } else if (prec_model == SEMOD_PREC_LASKAR_1986) {
     return precess_2(R, J, iflag, direction, SEMOD_PREC_LASKAR_1986);
   } else if (prec_model == SEMOD_PREC_SIMON_1994) {
@@ -1506,6 +1594,7 @@ static const short nt[] = {
  2, 0, 0, 2, 0,     1,  0,    0,  0,
  0, 0, 2, 4, 2,    -1,  0,    0,  0,
  0, 1, 0, 1, 0,     1,  0,    0,  0,
+#if 1
 /*#if NUT_CORR_1987  switch is handled in function calc_nutation_iau1980() */
 /* corrections to IAU 1980 nutation series by Herring 1987
  *             in 0.00001" !!!
@@ -1519,6 +1608,7 @@ static const short nt[] = {
  102, 1, 0, 0, 0,  61, 0, -24, 0,
  102, 0, 2,-2, 2,-118, 0, -47, 0,
 /*#endif*/
+#endif
  ENDMARK,
 };
 
@@ -1853,6 +1943,64 @@ static int calc_nutation_iau2000ab(double J, double *nutlo)
   return 0;
 }
 
+/* an incomplete implementation of nutation Woolard 1953 */
+static int calc_nutation_woolard(double J, double *nutlo) 
+{
+  double deps, dpsi;
+  double ls, ld;	/* sun's mean longitude, moon's mean longitude */
+  double ms, md;	/* sun's mean anomaly, moon's mean anomaly */
+  double nm;	/* longitude of moon's ascending node */
+  double t, t2;	/* number of Julian centuries of 36525 days since
+		   * Jan 0.5 1900.
+		   */
+  double tls, tnm, tld;	/* twice above */
+  double a, b;	/* temps */
+  double mjd = J - J1900;
+  t = mjd/36525.;
+  t2 = t*t;
+  a = 100.0021358*t;
+  b = 360.*(a-(long)a);
+  ls = 279.697+.000303*t2+b;
+  a = 1336.855231*t;
+  b = 360.*(a-(long)a);
+  ld = 270.434-.001133*t2+b;
+  a = 99.99736056000026*t;
+  b = 360.*(a-(long)a);
+  ms = 358.476-.00015*t2+b;
+  a = 13255523.59*t;
+  b = 360.*(a-(long)a);
+  md = 296.105+.009192*t2+b;
+  a = 5.372616667*t;
+  b = 360.*(a-(long)a);
+  nm = 259.183+.002078*t2-b;
+  /* convert to radian forms for use with trig functions.
+   */
+  tls = 2*ls * DEGTORAD;
+  nm = nm * DEGTORAD;
+  tnm = 2*nm;
+  ms = ms * DEGTORAD;
+  tld = 2*ld * DEGTORAD;
+  md = md * DEGTORAD;
+  /* find delta psi and eps, in arcseconds.
+   */
+  dpsi = (-17.2327-.01737*t)*sin(nm)+(-1.2729-.00013*t)*sin(tls)
+	     +.2088*sin(tnm)-.2037*sin(tld)+(.1261-.00031*t)*sin(ms)
+	     +.0675*sin(md)-(.0497-.00012*t)*sin(tls+ms)
+	     -.0342*sin(tld-nm)-.0261*sin(tld+md)+.0214*sin(tls-ms)
+	     -.0149*sin(tls-tld+md)+.0124*sin(tls-nm)+.0114*sin(tld-md);
+  deps = (9.21+.00091*t)*cos(nm)+(.5522-.00029*t)*cos(tls)
+	     -.0904*cos(tnm)+.0884*cos(tld)+.0216*cos(tls+ms)
+	     +.0183*cos(tld-nm)+.0113*cos(tld+md)-.0093*cos(tls-ms)
+	     -.0066*cos(tls-nm);
+  /* convert to radians.
+   */
+  dpsi = dpsi/3600.0 * DEGTORAD;
+  deps = deps/3600.0 * DEGTORAD;
+  nutlo[1] = deps;
+  nutlo[0] = dpsi;
+  return OK;
+}
+
 static double bessel(double *v, int n, double t)
 {
   int i, iy, k;
@@ -1959,6 +2107,8 @@ static int calc_nutation(double J, int32 iflag, double *nutlo)
       nutlo[0] += -41.7750 / 3600.0 / 1000.0 * DEGTORAD;
       nutlo[1] += -6.8192 / 3600.0 / 1000.0 * DEGTORAD;
     }
+  } else if (nut_model == SEMOD_NUT_WOOLARD) {
+    calc_nutation_woolard(J, nutlo);
   }
   return OK;
 }
@@ -2274,7 +2424,7 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
  * the macros TABEND and TABSIZ !
  */
 #define TABSTART 	1620
-#define TABEND 		2027
+#define TABEND 		2028
 #define TABSIZ 		(TABEND-TABSTART+1) 
 /* we make the table greater for additional values read from external file */
 #define TABSIZ_SPACE 	(TABSIZ+100)
@@ -2337,9 +2487,11 @@ static TLS double dt[TABSIZ_SPACE] = {
 63.8285, 64.0908, 64.2998, 64.4734, 64.5736, 64.6876, 64.8452, 65.1464, 65.4574, 65.7768,
 /* 2010.0 - 2018.0 */
 66.0699, 66.3246, 66.6030, 66.9069, 67.2810, 67.6439, 68.1024, 68.5927, 68.9676, 69.2202,
+/* 2020.0 -        */
+69.3612,
 /* Extrapolated values: 
- * 2020 - 2027 */
-69.4456, 70.00,   70.50,   71.00,   71.50,   72.00,   72.50,   73.00,
+ * 2021 - 2028 */
+         69.4271, 70.00,   70.50,   71.00,   71.50,   72.00,   72.50,   73.00,
 };
 
 #define TAB2_SIZ	27
@@ -4015,11 +4167,14 @@ P6 SEMOD_PREC_IAU_2000
 P7 SEMOD_PREC_BRETAGNON_2003
 P8 SEMOD_PREC_IAU_2006
 P9 SEMOD_PREC_VONDRAK_2011
+P10 SEMOD_PREC_OWEN_1990
+P11 SEMOD_PREC_NEWCOMB
 
 N1 SEMOD_NUT_IAU_1980
 N2 SEMOD_NUT_IAU_CORR_1987
 N3 SEMOD_NUT_IAU_2000A
 N4 SEMOD_NUT_IAU_2000B
+N5 SEMOD_NUT_WOOLARD
 
 B1 SEMOD_BIAS_NONE
 B2 SEMOD_BIAS_IAU2000
@@ -4133,6 +4288,9 @@ static void get_precession_model(int precmod, int32 iflag, char *s)
     case SEMOD_PREC_OWEN_1990:
       strcpy(s, "Owen 1990");
       break;
+    case SEMOD_PREC_NEWCOMB:
+      strcpy(s, "Newcomb 1895");
+      break;
     case SEMOD_PREC_VONDRAK_2011:
       strcpy(s, "Vondrák 2011");
       break;
@@ -4177,6 +4335,9 @@ static void get_nutation_model(int nutmod, int32 iflag, char *s)
   if (nutmod == 0)
     nutmod = SEMOD_NUT_DEFAULT;
   switch(nutmod) {
+    case SEMOD_NUT_WOOLARD:
+    strcpy(s, "Woolard 1953");
+    break;
     case SEMOD_NUT_IAU_1980:
     strcpy(s, "IAU 1980 (Wahr)");
     break;

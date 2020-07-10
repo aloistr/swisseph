@@ -155,7 +155,7 @@ static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi",
 
 static char *dms(double xv, int32 iflg);
 static char *hms(double x, int32 iflag);
-static long do_calc(double tjd, int ipl, long iflag, double *x, char *serr);
+static int do_calc(double tjd, int ipl, long iflag, double *x, char *serr);
 static void do_printf(char *info);
 static int make_ephemeris_path(long iflag, char *argv0);
 static char *hms_from_tjd(double x);
@@ -825,12 +825,9 @@ static int make_ephemeris_path(long iflag, char *argv0)
   return OK;
 }
 
-static long do_calc(double tjd, int ipl, long iflag, double *x, char *serr)
+static int do_calc(double tjd, int ipl, long iflag, double *x, char *serr)
 {
   return swe_calc(tjd, ipl, iflag, x, serr);
-#if 0
-  return swe_calc(tjd, ipl, iflag, x, x+1, x+2, x+3, x+4, x+5, serr);
-#endif
 }
 
 static void do_printf(char *info)

@@ -116,7 +116,7 @@ extern void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward);
 extern int swi_precess(double *R, double J, int32 iflag, int direction );
 extern void swi_precess_speed(double *xx, double t, int32 iflag, int direction);
 
-extern int32 swi_guess_ephe_flag();
+extern int32 swi_guess_ephe_flag(void);
 
 /* from sweph.c, light deflection, aberration, etc. */
 extern void swi_deflect_light(double *xx, double dt, int32 iflag);
@@ -126,7 +126,7 @@ extern int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, int32 i
 extern int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, int32 iflag);
 extern int swi_get_observer(double tjd, int32 iflag, 
 	AS_BOOL do_save, double *xobs, char *serr);
-extern void swi_force_app_pos_etc();
+extern void swi_force_app_pos_etc(void);
 
 /* obliquity of ecliptic */
 extern void swi_check_ecliptic(double tjd, int32 iflag);

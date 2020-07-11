@@ -176,6 +176,10 @@ static const char *ayanamsa_name[] = {
    "Cochrane (Gal.Center = 0 Cap)",    /* 40 SE_SIDM_GALCENT_COCHRANE */
    "Galactic Equator (Fiorenza)",      /* 41 SE_SIDM_GALEQU_FIORENZA */
    "Vettius Valens",                   /* 42 SE_SIDM_VALENS_MOON */
+   "Lahiri 1940",                      /* 43 SE_SIDM_LAHIRI_1940 */
+   "Lahiri VP285",                     /* 44 SE_SIDM_LAHIRI_VP285 */
+   "Krishnamurti-Senthilathiban",      /* 45 SE_SIDM_KRISHNAMURTI_VP291 */
+   "Lahiri ICRC",                      /* 46 SE_SIDM_LAHIRI_ICRC */
    /*"Manjula/Laghumanasa",*/
 };
 static const int pnoint2jpl[]   = PNOINT2JPL;
@@ -339,6 +343,8 @@ int32 CALL_CONV swe_calc(double tjd, int ipl, int32 iflag,
   FILE *fp;
   char s[AS_MAXCH], *sp;
   memset(x, 0, sizeof(double) * 6);
+  if (serr != NULL) 
+    *serr = '\0';
   /* if the following file exists, flag is read from it and or'ed into iflag */
   if (!force_flag_checked) {
     if ((fp = fopen(fname_force_flg, BFILE_R_ACCESS)) != NULL) {
@@ -573,8 +579,8 @@ static int32 swecalc(double tjd, int ipl, int32 iflag, double *x, char *serr)
   double *xp, *xp2;
   double ss[3];
   char serr2[AS_MAXCH];
-  if (serr != NULL)
-    *serr = '\0';
+  //if (serr != NULL)
+  //  *serr = '\0';  // is done in calling function
   serr2[0] = '\0';
   /****************************************** 
    * iflag plausible?                       * 
@@ -2309,7 +2315,7 @@ again:
 #if 1
   /* asteroids are heliocentric.
    * if JPL or SWISSEPH, convert to barycentric */
-  if ((iflag & SEFLG_JPLEPH) || (iflag & SEFLG_SWIEPH)) {
+  if (xsunb != NULL && ((iflag & SEFLG_JPLEPH) || (iflag & SEFLG_SWIEPH))) {
     if (ipl >= SEI_ANYBODY) {
       for (i = 0; i <= 2; i++)
 	xp[i] += xsunb[i];
@@ -2839,7 +2845,8 @@ void CALL_CONV swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
 	  || sid_mode == SE_SIDM_B1950
 	  || sid_mode == SE_SIDM_GALALIGN_MARDYKS
 	  ) {
-    sip->sid_mode &= ~SE_SIDBIT_SSY_PLANE;
+    //sip->sid_mode &= ~SE_SIDBIT_SSY_PLANE;
+    sip->sid_mode = sid_mode;
     sip->sid_mode |= SE_SIDBIT_ECL_T0;
   }
   if (sid_mode == SE_SIDM_TRUE_CITRA 
@@ -2854,8 +2861,10 @@ void CALL_CONV swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
       || sid_mode == SE_SIDM_GALEQU_IAU1958 
       || sid_mode == SE_SIDM_GALEQU_TRUE
       || sid_mode == SE_SIDM_GALEQU_MULA
-      ) 
-    sip->sid_mode &= ~(SE_SIDBIT_ECL_T0 | SE_SIDBIT_SSY_PLANE | SE_SIDBIT_USER_UT);
+      ) {
+    //sip->sid_mode &= ~(SE_SIDBIT_ECL_T0 | SE_SIDBIT_SSY_PLANE | SE_SIDBIT_USER_UT);
+    sip->sid_mode = sid_mode;
+  }
   if (sid_mode >= SE_NSIDM_PREDEF && sid_mode != SE_SIDM_USER)
     sip->sid_mode = sid_mode = SE_SIDM_FAGAN_BRADLEY;
   swed.ayana_is_set = TRUE;
@@ -2869,6 +2878,22 @@ void CALL_CONV swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
     sip->t0 = ayanamsa[sid_mode].t0;
     sip->ayan_t0 = ayanamsa[sid_mode].ayan_t0;
     sip->t0_is_UT = ayanamsa[sid_mode].t0_is_UT;
+  }
+  // test feature: ayanamsha using its original precession model
+  if ((sip->sid_mode & SE_SIDBIT_PREC_ORIG) && ayanamsa[sid_mode].prec_offset > 0) {
+    swed.astro_models[SE_MODEL_PREC_LONGTERM] = ayanamsa[sid_mode].prec_offset;
+    swed.astro_models[SE_MODEL_PREC_SHORTTERM] = ayanamsa[sid_mode].prec_offset;
+    // add a corresponding nutation model
+    switch(ayanamsa[sid_mode].prec_offset) {
+      case SEMOD_PREC_NEWCOMB:
+        swed.astro_models[SE_MODEL_NUT] = SEMOD_NUT_WOOLARD;
+	break;
+      case SEMOD_PREC_IAU_1976:
+        swed.astro_models[SE_MODEL_NUT] = SEMOD_NUT_IAU_1980;
+	break;
+      default:
+        break;
+    }
   }
   swi_force_app_pos_etc();
 }
@@ -2890,18 +2915,73 @@ int32 CALL_CONV swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, ch
   return retval;
 }
 
+/*
+ * Function calculates a correction for ayanamsha if the ayanamsha was
+ * defined using a different precession model than our standard one.
+ * This allows us to use this ayanamsha with our standard precession
+ * model and still remain very accurate in ephemeris positions.
+ * It has the effect that ayanamsha values change depending on the precession
+ * model used, but sidereal planetary positions remain the same.
+ *
+ * For this function to work correctly, our standard precession model 
+ * must be relative to J2000. Any future precession model should not
+ * use a different starting epoch.
+ */
+static int get_aya_correction(int iflag, double *corr, char *serr) {
+  double x[6], eps, t0;
+  struct sid_data *sip = &swed.sidd;
+  int prec_model = swed.astro_models[SE_MODEL_PREC_LONGTERM];
+  int prec_model_short = swed.astro_models[SE_MODEL_PREC_SHORTTERM];
+  int prec_offset = 0;
+  int sid_mode = sip->sid_mode;
+  sid_mode %= SE_SIDBITS;
+  *corr = 0;
+  if (sip->t0 == J2000) 
+    return 0;
+  if (sip->sid_mode & SE_SIDBIT_NO_PREC_OFFSET) 
+    return 0;
+  prec_offset = ayanamsa[sid_mode].prec_offset;
+  if (prec_offset < 0) prec_offset = 0;
+  if (prec_model == prec_offset)
+    return 0;
+  t0 = sip->t0;
+  if (sip->t0_is_UT)
+    t0 += swe_deltat_ex(t0, iflag, serr);
+  /* vernal point (tjd), cartesian */
+  x[0] = 1; 
+  x[1] = x[2] = 0;
+  swi_precess(x, t0, 0, J_TO_J2000);
+  swed.astro_models[SE_MODEL_PREC_LONGTERM] = prec_offset;
+  swed.astro_models[SE_MODEL_PREC_SHORTTERM] = prec_offset;
+  swi_precess(x, t0, 0, J2000_TO_J);
+  swed.astro_models[SE_MODEL_PREC_LONGTERM] = prec_model;
+  swed.astro_models[SE_MODEL_PREC_SHORTTERM] = prec_model_short;
+  /* to ecliptic */
+  eps = swi_epsiln(t0, 0);
+  swi_coortrf(x, x, eps);
+  /* to polar */
+  swi_cartpol(x, x);
+  /* get ayanamsa */
+  *corr = x[0] * RADTODEG;
+  if (*corr > 350 /*correct!*/) *corr -= 360; // a signed value near 0
+  //fprintf(stderr, "corr=%f\n", *corr * 3600.0);
+  return OK;
+}
+
 int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
 {
-  double x[6], eps, t0;
+  double x[6], eps, t0, corr;
   struct sid_data *sip = &swed.sidd;
   char star[AS_MAXCH];
   int32 epheflag, otherflag, retflag, iflag_true, iflag_galequ;
+  int sid_mode = sip->sid_mode;
   iflag = plaus_iflag(iflag, -1, tjd_et, serr);
   epheflag = iflag & SEFLG_EPHMASK;
   otherflag = iflag & ~SEFLG_EPHMASK;
   *daya = 0.0;
   iflag &= SEFLG_EPHMASK;
   iflag |= SEFLG_NONUT;
+  sid_mode %= SE_SIDBITS;
   /* ayanamshas based on the intersection point of galactic equator and
    * ecliptic always need SEFLG_TRUEPOS, because position of galactic
    * pole is required without aberration or light deflection */
@@ -2918,24 +2998,24 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
   /* warning, if swe_set_ephe_path() or swe_set_jplfile() was not called yet,
    * although ephemeris files are required */
   if (swi_init_swed_if_start() == 1 && !(epheflag & SEFLG_MOSEPH) 
-     && (sip->sid_mode ==  SE_SIDM_TRUE_CITRA 
-      || sip->sid_mode == SE_SIDM_TRUE_REVATI 
-      || sip->sid_mode == SE_SIDM_TRUE_PUSHYA 
+     && (sid_mode ==  SE_SIDM_TRUE_CITRA 
+      || sid_mode == SE_SIDM_TRUE_REVATI 
+      || sid_mode == SE_SIDM_TRUE_PUSHYA 
       || sip->sid_mode == SE_SIDM_TRUE_SHEORAN 
-      || sip->sid_mode == SE_SIDM_TRUE_MULA 
-      || sip->sid_mode == SE_SIDM_GALCENT_0SAG
-      || sip->sid_mode == SE_SIDM_GALCENT_COCHRANE
-      || sip->sid_mode == SE_SIDM_GALCENT_RGILBRAND 
-      || sip->sid_mode == SE_SIDM_GALCENT_MULA_WILHELM
-      || sip->sid_mode == SE_SIDM_GALEQU_IAU1958 
-      || sip->sid_mode == SE_SIDM_GALEQU_TRUE
-      || sip->sid_mode == SE_SIDM_GALEQU_MULA) 
+      || sid_mode == SE_SIDM_TRUE_MULA 
+      || sid_mode == SE_SIDM_GALCENT_0SAG
+      || sid_mode == SE_SIDM_GALCENT_COCHRANE
+      || sid_mode == SE_SIDM_GALCENT_RGILBRAND 
+      || sid_mode == SE_SIDM_GALCENT_MULA_WILHELM
+      || sid_mode == SE_SIDM_GALEQU_IAU1958 
+      || sid_mode == SE_SIDM_GALEQU_TRUE
+      || sid_mode == SE_SIDM_GALEQU_MULA) 
       && serr != NULL) {
     strcpy(serr, "Please call swe_set_ephe_path() or swe_set_jplfile() before calling swe_get_ayanamsa_ex()");
   }
   if (!swed.ayana_is_set)
     swe_set_sid_mode(SE_SIDM_FAGAN_BRADLEY, 0, 0);
-  if (sip->sid_mode == SE_SIDM_TRUE_CITRA) {
+  if (sid_mode == SE_SIDM_TRUE_CITRA) {
     strcpy(star, "Spica"); /* Citra */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR) {
       return ERR; 
@@ -2944,35 +3024,35 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
     *daya = swe_degnorm(x[0] - 180);
     return (retflag & SEFLG_EPHMASK);
   }
-  if (sip->sid_mode == SE_SIDM_TRUE_REVATI) {
+  if (sid_mode == SE_SIDM_TRUE_REVATI) {
     strcpy(star, ",zePsc"); /* Revati */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR)
       return ERR;
     *daya = swe_degnorm(x[0] - 359.8333333333);
     return (retflag & SEFLG_EPHMASK);
   }
-  if (sip->sid_mode == SE_SIDM_TRUE_PUSHYA) {
+  if (sid_mode == SE_SIDM_TRUE_PUSHYA) {
     strcpy(star, ",deCnc"); /* Pushya = Asellus Australis */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR)
       return ERR;
     *daya = swe_degnorm(x[0] - 106);
     return (retflag & SEFLG_EPHMASK);
   }
-  if (sip->sid_mode == SE_SIDM_TRUE_SHEORAN) {
+  if (sid_mode == SE_SIDM_TRUE_SHEORAN) {
     strcpy(star, ",deCnc"); /* Asellus Australis */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR)
       return ERR;
     *daya = swe_degnorm(x[0] - 103.49264221625);
     return (retflag & SEFLG_EPHMASK);
   }
-  if (sip->sid_mode == SE_SIDM_TRUE_MULA) {
+  if (sid_mode == SE_SIDM_TRUE_MULA) {
     strcpy(star, ",laSco"); /* Mula = lambda Scorpionis */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR)
       return ERR;
     *daya = swe_degnorm(x[0] - 240);
     return (retflag & SEFLG_EPHMASK);
   }
-  if (sip->sid_mode ==  SE_SIDM_GALCENT_0SAG) {
+  if (sid_mode ==  SE_SIDM_GALCENT_0SAG) {
     strcpy(star, ",SgrA*"); /* Galactic Centre */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR)
       return ERR;
@@ -2980,7 +3060,7 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
     return (retflag & SEFLG_EPHMASK);
     /*return swe_degnorm(x[0] - 359.83333333334);*/
   }
-  if (sip->sid_mode ==  SE_SIDM_GALCENT_COCHRANE) {
+  if (sid_mode ==  SE_SIDM_GALCENT_COCHRANE) {
     strcpy(star, ",SgrA*"); /* Galactic Centre */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR)
       return ERR;
@@ -2988,7 +3068,7 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
     return (retflag & SEFLG_EPHMASK);
     /*return swe_degnorm(x[0] - 359.83333333334);*/
   }
-  if (sip->sid_mode ==  SE_SIDM_GALCENT_RGILBRAND) {
+  if (sid_mode ==  SE_SIDM_GALCENT_RGILBRAND) {
     strcpy(star, ",SgrA*"); /* Galactic Centre */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_true, x, serr)) == ERR)
       return ERR;
@@ -2996,7 +3076,7 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
     return (retflag & SEFLG_EPHMASK);
     /*return swe_degnorm(x[0] - 359.83333333334);*/
   }
-  if (sip->sid_mode == SE_SIDM_GALCENT_MULA_WILHELM) {
+  if (sid_mode == SE_SIDM_GALCENT_MULA_WILHELM) {
     strcpy(star, ",SgrA*"); /* Galactic Centre */
     /* right ascension in polar projection onto the ecliptic, 
      * and that point is put in the middle of Mula */
@@ -3008,47 +3088,91 @@ int32 swi_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, char *serr)
     return (retflag & SEFLG_EPHMASK);
     /*return swe_degnorm(x[0] - 359.83333333334);*/
   }
-  if (sip->sid_mode == SE_SIDM_GALEQU_IAU1958) {
+  if (sid_mode == SE_SIDM_GALEQU_IAU1958) {
     strcpy(star, ",GP1958"); /* Galactic Pole IAU 1958 */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_galequ, x, serr)) == ERR)
       return ERR;
     *daya = swe_degnorm(x[0] - 150);
     return (retflag & SEFLG_EPHMASK);
   }
-  if (sip->sid_mode == SE_SIDM_GALEQU_TRUE) {
+  if (sid_mode == SE_SIDM_GALEQU_TRUE) {
     strcpy(star, ",GPol"); /* Galactic Pole modern, true */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_galequ, x, serr)) == ERR)
       return ERR;
     *daya = swe_degnorm(x[0] - 150);
     return (retflag & SEFLG_EPHMASK);
   }
-  if (sip->sid_mode == SE_SIDM_GALEQU_MULA) {
+  if (sid_mode == SE_SIDM_GALEQU_MULA) {
     strcpy(star, ",GPol"); /* Galactic Pole modern, true */
     if ((retflag = swe_fixstar(star, tjd_et, iflag_galequ, x, serr)) == ERR)
       return ERR;
     *daya = swe_degnorm(x[0] - 150 - 6.6666666667);
     return (retflag & SEFLG_EPHMASK);
   }
-  /* vernal point (tjd), cartesian */
-  x[0] = 1; 
-  x[1] = x[2] = 0;
-  /* to J2000 */
-  if (tjd_et != J2000)
-    swi_precess(x, tjd_et, 0, J_TO_J2000);
-  /* to t0 */
-  t0 = sip->t0;
-  if (sip->t0_is_UT)
-    t0 += swe_deltat_ex(t0, iflag, serr);
-  swi_precess(x, t0, 0, J2000_TO_J);
-  /* to ecliptic */
-  eps = swi_epsiln(t0, 0);
-  swi_coortrf(x, x, eps);
-  /* to polar */
-  swi_cartpol(x, x);
-  /* subtract initial value of ayanamsa */
-  x[0] = x[0] * RADTODEG - sip->ayan_t0;
+  if (!(sip->sid_mode & SE_SIDBIT_ECL_DATE)) {
+    // Now calculate precession for ayanamsha. 
+    // The following is the original method implemented in 1999 and
+    // still used as our default method, although it is not logical.
+    // Precession is measured on the ecliptic of the start epoch t0 (ayan_t0),
+    // then the initial value of ayanamsha is added.
+    // The procedure is as follows: The vernal point of the end epoch tjd_et
+    // is precessed to t0. Ayanamsha is the resulting longitude of that
+    // point at t0 plus the initial value.
+    // This method is not really consistent because later this ayanamsha,
+    // which is based on the ecliptic t0, will be applied to planetary
+    // positions relative to the ecliptic of date.
+    //
+    /* vernal point (tjd), cartesian */
+    x[0] = 1; 
+    x[1] = x[2] = x[3] = x[4] = x[5] = 0;
+    /* to J2000 */
+    if (tjd_et != J2000)
+      swi_precess(x, tjd_et, 0, J_TO_J2000);
+    /* to t0 */
+    t0 = sip->t0;
+    if (sip->t0_is_UT)
+      t0 += swe_deltat_ex(t0, iflag, serr);
+    swi_precess(x, t0, 0, J2000_TO_J);
+    /* to ecliptic t0 */
+    eps = swi_epsiln(t0, 0);
+    swi_coortrf(x, x, eps);
+    /* to polar */
+    swi_cartpol(x, x);
+    /* subtract initial value of ayanamsa */
+    x[0] = -x[0] * RADTODEG + sip->ayan_t0;
+  } else {
+    // Alternative method, more consistent, programmed on 15 may 2020.
+    // The ayanamsha is measured on the ecliptic of date. This is more
+    // correct because the ayanamsha will be applied to planetary positions
+    // relative to the ecliptic of date.
+    //
+    // at t0, we have ayanamsha sip->ayan_t0
+    x[0] = swe_degnorm(sip->ayan_t0) * DEGTORAD;
+    x[1] = 0; x[2] = 1;
+    // get epsilon for t0
+    t0 = sip->t0;
+    if (sip->t0_is_UT)
+      t0 += swe_deltat_ex(t0, iflag, serr);
+    eps = swi_epsiln(t0, 0);
+    // to polar equatorial relative to equinox t0
+    swi_polcart(x, x);
+    swi_coortrf(x, x, -eps);
+    // precess to J2000
+    if (t0 != J2000)
+      swi_precess(x, t0, 0, J_TO_J2000);
+    // precess to date
+    swi_precess(x, tjd_et, 0, J2000_TO_J);
+    // epsilon of date
+    eps = swi_epsiln(tjd_et, 0);
+    // to polar
+    swi_coortrf(x, x, eps);
+    swi_cartpol(x, x);
+    x[0] = swe_degnorm(x[0] * RADTODEG);
+  }
+  get_aya_correction(iflag, &corr, serr);
   /* get ayanamsa */
-  *daya = swe_degnorm(-x[0]);
+  *daya = swe_degnorm(x[0] - corr);
+  //*daya = swe_degnorm(x[0]);
   return iflag;
 }
 
@@ -3117,7 +3241,7 @@ double CALL_CONV swe_get_ayanamsa_ut(double tjd_ut)
  */
 int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, int32 iflag)
 {
-  double x[6];
+  double x[6], corr;
   int i;
   struct sid_data *sip = &swed.sidd;
   struct epsilon oectmp;
@@ -3137,7 +3261,9 @@ int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, int32 iflag)
   /* to polar coordinates */
   swi_cartpol_sp(x, x); 
   /* subtract ayan_t0 */
+  get_aya_correction(iflag, &corr, NULL);
   x[0] -= sip->ayan_t0 * DEGTORAD;
+  x[0] = swe_radnorm(x[0] + corr * DEGTORAD);
   /* back to cartesian */
   swi_polcart_sp(x, xout); 
   return OK;
@@ -3150,7 +3276,7 @@ int swi_trop_ra2sid_lon(double *xin, double *xout, double *xoutr, int32 iflag)
  */
 int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, int32 iflag)
 {
-  double x[6], x0[6];
+  double x[6], x0[6], corr;
   int i;
   struct sid_data *sip = &swed.sidd;
   struct epsilon *oe = &swed.oec2000;
@@ -3190,8 +3316,9 @@ int swi_trop_ra2sid_lon_sosy(double *xin, double *xout, int32 iflag)
   x[0] -= x0[0];
   x[0] *= RADTODEG;
   /* subtract ayan_t0 */
+  get_aya_correction(iflag, &corr, NULL);
   x[0] -= sip->ayan_t0;
-  x[0] = swe_degnorm(x[0]) * DEGTORAD;
+  x[0] = swe_degnorm(x[0] + corr) * DEGTORAD;
   /* back to cartesian */
   swi_polcart_sp(x, xout); 
   return OK;
@@ -6446,7 +6573,7 @@ static int32 fixstar_calc_from_struct(struct fixed_star *stardata, double tjd, i
    ************************************************/
   if (!(iflag & SEFLG_NONUT))
     swi_nutate(x, iflag, FALSE);
-if (0) {
+if ((0)) {
   double r = sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
   printf("%.17f %.17f %f\n", x[0]/r, x[1]/r, x[2]/r);
 }
@@ -7658,7 +7785,7 @@ static int32 swi_fixstar_calc_from_record(char *srecord, double tjd, int32 iflag
    ************************************************/
   if (!(iflag & SEFLG_NONUT))
     swi_nutate(x, iflag, FALSE);
-if (0) {
+if ((0)) {
   double r = sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
   printf("%.17f %.17f %f\n", x[0]/r, x[1]/r, x[2]/r);
 }

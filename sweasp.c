@@ -296,7 +296,7 @@ extern int swe_plan_pheno(double tjd, int ipl, int iflag, double *attr, char *se
 static char star[AS_MAXCH] = "algol";
 static char sastno[AS_MAXCH] = "433";
 static char *dms(double x, long iflag);
-static long do_calc(double tjd, int ipl, long iflag, double *x, char *serr);
+static int do_calc(double tjd, int ipl, long iflag, double *x, char *serr);
 static long do_fixstar(char *star, double tjd, long iflag, double *x, char *serr);
 static void do_printf(char *info);
 static double difdeg2n (double p1, double p2);
@@ -1658,12 +1658,12 @@ static char *dms(double x, long iflag)
   return(s);
 }
 
-static long do_calc(double tjd, int ipl, long iflag, double *x, char *serr)
+static int do_calc(double tjd, int ipl, long iflag, double *x, char *serr)
 {
   if (do_nod || do_nos || do_aph || do_per) {
 	double xnasc[6], xndsc[6], xperi[6], xaphe[6];
 	int i;
-	int32 retc;
+	int32 retc = 0;
 	int32 method = (int32) do_true_node;
 	//retc = swe_node_aps(tjd, ipl, iflag, method, xnasc, xndsc, xperi, xaphe, serr);
     if (do_nod) { for (i = 0; i <= 5; i++) x[i] = xnasc[i];}

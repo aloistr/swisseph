@@ -3013,7 +3013,6 @@ void CALL_CONV swe_set_lapse_rate(double lapse_rate)
  *                      *        SE_TRUE_TO_APP
  *
  * function returns:
- * function returns:
  * double *dret;        * array of 4 doubles; declare 20 doubles !
  * - dret[0] true altitude, if possible; otherwise input value
  * - dret[1] apparent altitude, if possible; otherwise input value
@@ -3030,7 +3029,7 @@ void CALL_CONV swe_set_lapse_rate(double lapse_rate)
  * case 2, conversion from apparent altitude to true altitude
  * - the true altitude resulting from the input apparent altitude, if this value
  *   is a plausible apparent altitude, i.e. if it is a position above the ideal
- *   horizon
+ *   horizon, taking into account the dip of the horizon
  * - the input altitude otherwise
  *
  * The body is above the horizon if the dret[0] != dret[1]
@@ -3092,6 +3091,7 @@ double CALL_CONV swe_refrac_extended(double inalt, double geoalt, double atpress
   } else {
     refr = calc_astronomical_refr(inalt,atpress,attemp);
     trualt=inalt-refr;
+    //printf("inalt=%f, dip=%f\n", inalt, dip);
     if (dret != NULL) {
       if (inalt > dip) {
 	dret[0]=trualt;
@@ -3105,7 +3105,11 @@ double CALL_CONV swe_refrac_extended(double inalt, double geoalt, double atpress
 	dret[3]=dip;
       }
     }
-    if (trualt > dip)
+    // Apparent altitude cannot be below dip.
+    // True altitude is only returned if apparent altitude is hgher than dip.
+    // Othwise the apparent altitude is returned.
+    //if (trualt > dip)
+    if (inalt >= dip)  // bug fix dieter, 4 feb 20
       return trualt;
     else
       return inalt;
@@ -3744,7 +3748,8 @@ next_lun_ecl:
  */
 #define EULER 2.718281828459
 #define NMAG_ELEM  (SE_VESTA + 1)
-#define MAG_HILTON_2005
+#define MAG_HILTON_2005   0
+#define MAG_MALLAMA_2018  1
 /* Magnitudes according to:
  * - "Explanatory Supplement to the Astronomical Almanac" 1986.
  * Magnitudes for Mercury and Venus:
@@ -3789,9 +3794,8 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
 {
   int i;
   double xx[6], xx2[6], xxs[6], lbr[6], lbr2[6], dt = 0, dd;
-  double i100;
   double fac;
-  double T, in, om, sinB, u1, u2, du;
+  double T, in, om, sinB;
   double ph1, ph2, me[2];
   int32 iflagp, epheflag, retflag, epheflag2;
   char serr2[AS_MAXCH];
@@ -3911,7 +3915,114 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
       attr[4] = mag_elem[ipl][0] - 2.5 * log10(fac);
 #endif
       /*printf("1 = %f, 2 = %f\n", mag, mag2);*/
+#if MAG_HILTON_2005
+    } else if (ipl == SE_MERCURY) {
+      /* valid range is actually 2.1° < i < 169.5° */
+      double i100 = attr[0] / 100.0;
+      attr[4] = -0.60 + 4.98 * i100 - 4.88 * i100 * i100 + 3.02 * i100 * i100 * i100;
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+      if (attr[0] < 2.1 || attr[0] > 169.5) 
+        sprintf(serr2, "magnitude value for Mercury at phase angle i=%.1f is bad; formula is valid only for 2.1 < i < 169.5", attr[0]);
+    } else if (ipl == SE_VENUS) {
+      double i100 = attr[0] / 100.0;
+      if (attr[0] < 163.6) /* actual valid range is 2.2° < i < 163.6° */
+	attr[4] = -4.47 + 1.03 * i100 + 0.57 * i100 * i100 + 0.13 * i100 * i100 * i100;
+      else /* actual valid range is 163.6° < i < 170.2° */
+	attr[4] = 0.98 - 1.02 * i100;
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+      if (attr[0] < 2.2 || attr[0] > 170.2)
+        sprintf(serr2, "magnitude value for Venus at phase angle i=%.1f is bad; formula is valid only for 2.2 < i < 170.2", attr[0]);
+#endif
+#if MAG_MALLAMA_2018
+    // see: A. Mallama, J.Hilton,
+    // "ComputingApparentPlanetaryMagnitudesforTheAstronomicalAlmanac" (2018)
+    // https://arxiv.org/ftp/arxiv/papers/1808/1808.01973.pdf
+    } else if (ipl == SE_MERCURY) {
+      double a = attr[0];
+      double a2 = a * a; double a3 = a2 * a; double a4 = a3 * a; double a5 = a4 * a; double a6 = a5 * a; 
+      attr[4] = -0.613 + a * 6.3280E-02 - a2 * 1.6336E-03 + a3 * 3.3644E-05 - a4 * 3.4265E-07 + a5 * 1.6893E-09 - a6 * 3.0334E-12;
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+    } else if (ipl == SE_VENUS) {
+      double a = attr[0];
+      double a2 = a * a; double a3 = a2 * a; double a4 = a3 * a; 
+      if (a <= 163.7)
+	attr[4] = -4.384 - a * 1.044E-03 + a2 * 3.687E-04 - a3 * 2.814E-06 + a4 * 8.938E-09;
+      else 
+	attr[4] = 236.05828 - a * 2.81914E+00 + a2 * 8.39034E-03;
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+      if (attr[0] > 179.0)
+        sprintf(serr2, "magnitude value for Venus at phase angle i=%.1f is bad; formula is valid only for i < 179.0", attr[0]);
+    } else if (ipl == SE_MARS) {
+      double a = attr[0];
+      double a2 = a * a; 
+      /* With the following formulae, the terms +L(λe)+L(LS) have been omitted.
+       * They are "the magnitude corrections for the longitude of the sub-Earth 
+       * meridian of the illuminated disk and the longitude of the vernal 
+       * equinox,respectively".
+       * The apparent magnitude of Mars changes considerably within hours, 
+       * depending on the surface that is seen.
+       * Note that the maximum phase angle of mars as seen from earth is
+       * about 45°.
+       * The deviation of this simplified solution from Horizons is
+       * smaller than 0.1m.
+       */
+      if (a <= 50.0)
+	attr[4] = -1.601 + a * 0.02267 - a2 * 0.0001302; 
+      else  // irrelevant to earth-centered observation
+	attr[4] = -0.367 - a * 0.02573 + a2 * 0.0003445;
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+    } else if (ipl == SE_JUPITER) {
+      /* the phase angle of Jupiter never exceeds 12°. */
+      double a = attr[0];
+      double a2 = a * a; 
+      attr[4] = -9.395 - a * 3.7E-04 + a2 * 6.16E-04;
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
     } else if (ipl == SE_SATURN) {
+      double a = attr[0];
+      double sinB2;
+      T = (tjd - dt - J2000) / 36525.0;
+      in = (28.075216 - 0.012998 * T + 0.000004 * T * T) * DEGTORAD;
+      om = (169.508470 + 1.394681 * T + 0.000412 * T * T) * DEGTORAD;
+      // B is "mean tilt of the ring plane to the Earth and Sun (If the Earth
+      // and Sun are on opposite sides of the ring plane B = 0)" according to Hilton:
+      // https://syrte.obspm.fr/astro/journees2019/journees_pdf/SessionV_1/HiltonStewart_final.pdf
+      // Mallama does not provide B. We derive it from 
+      // Meeus, p. 301ff. (German version 329ff.)
+      // There are small differences from Horizons < 0.02m.
+      sinB = (sin(in) * cos(lbr[1] * DEGTORAD) 
+                    * sin(lbr[0] * DEGTORAD - om)
+                    - cos(in) * sin(lbr[1] * DEGTORAD));
+      sinB2 = (sin(in) * cos(lbr2[1] * DEGTORAD) 
+                    * sin(lbr2[0] * DEGTORAD - om)
+                    - cos(in) * sin(lbr2[1] * DEGTORAD));
+      sinB = fabs(sin((asin(sinB) + asin(sinB2)) / 2.0));/**/
+      attr[4] = -8.914 - 1.825 * sinB + 0.026 * a - 0.378 * sinB * pow(2.7182818,-2.25 * a);
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+    } else if (ipl == SE_URANUS) { 
+      // This is a simplified solution ignoring the term depending on
+      // sub-Earth latitude. The difference from Horizons is +-0.03m.
+      double a = attr[0];
+      double a2 = a * a; 
+      double fi_ = 0; // sub-Earth latitude in deg; ignored here
+      attr[4] = -7.110 - 8.4E-04 * fi_ + a * 6.587E-3 + a2 * 1.045E-4;
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+      // instead of the term with fi_, we do subtract the 0.05m.
+      // the remaining error is +-0.03m
+      attr[4] -= 0.05; 
+    } else if (ipl == SE_NEPTUNE) { 
+      if (tjd < 2444239.5) {
+	attr[4] = -6.89;
+      } else if (tjd <= 2451544.5) {
+	attr[4] = -6.89 - 0.0055 * (tjd - 2444239.5) / 365.25;
+	// Mallama has 0.0054, but that would make the curve discontinuos
+	// Nevertheless, JPL Horizons has 0.0054 and the discontinuity
+      } else {
+	attr[4] = -7.00;
+      }
+      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
+#else
+    } else if (ipl == SE_SATURN) {
+      double u1, u2, du;
       /* rings are considered according to Meeus, p. 301ff. (German version 329ff.) */
       T = (tjd - dt - J2000) / 36525.0;
       in = (28.075216 - 0.012998 * T + 0.000004 * T * T) * DEGTORAD;
@@ -3933,23 +4044,6 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
                   + mag_elem[ipl][2] * sinB * sinB
                   + mag_elem[ipl][3] * du
                   + mag_elem[ipl][0];
-#ifdef MAG_HILTON_2005
-    } else if (ipl == SE_MERCURY) {
-      /* valid range is actually 2.1° < i < 169.5° */
-      i100 = attr[0] / 100.0;
-      attr[4] = -0.60 + 4.98 * i100 - 4.88 * i100 * i100 + 3.02 * i100 * i100 * i100;
-      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
-      if (attr[0] < 2.1 || attr[0] > 169.5) 
-        sprintf(serr2, "magnitude value for Mercury at phase angle i=%.1f is bad; formula is valid only for 2.1 < i < 169.5", attr[0]);
-    } else if (ipl == SE_VENUS) {
-      i100 = attr[0] / 100.0;
-      if (attr[0] < 163.6) /* actual valid range is 2.2° < i < 163.6° */
-	attr[4] = -4.47 + 1.03 * i100 + 0.57 * i100 * i100 + 0.13 * i100 * i100 * i100;
-      else /* actual valid range is 163.6° < i < 170.2° */
-	attr[4] = 0.98 - 1.02 * i100;
-      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
-      if (attr[0] < 2.2 || attr[0] > 170.2)
-        sprintf(serr2, "magnitude value for Venus at phase angle i=%.1f is bad; formula is valid only for 2.2 < i < 170.2", attr[0]);
 #endif
     } else if (ipl < SE_CHIRON) {
       attr[4] = 5 * log10(lbr2[2] * lbr[2])
@@ -3957,10 +4051,10 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
                   + mag_elem[ipl][2] * attr[0] * attr[0] / 10000.0
                   + mag_elem[ipl][3] * attr[0] * attr[0] * attr[0] / 1000000.0
                   + mag_elem[ipl][0];
-    } else if (ipl < NMAG_ELEM || ipl > SE_AST_OFFSET) { /* asteroids */
+    } else if (ipl < NMAG_ELEM || ipl > SE_AST_OFFSET) { /* other planets, asteroids */
       ph1 = pow(EULER, -3.33 * pow(tan(attr[0] * DEGTORAD / 2), 0.63));
       ph2 = pow(EULER, -1.87 * pow(tan(attr[0] * DEGTORAD / 2), 1.22));
-      if (ipl < NMAG_ELEM) {    /* main asteroids */
+      if (ipl < NMAG_ELEM) {    /* other planets, main asteroids */
         me[0] = mag_elem[ipl][0];
         me[1] = mag_elem[ipl][1];
       } else if (ipl == SE_AST_OFFSET + 1566) { 
@@ -4231,7 +4325,7 @@ run_rise_again:
     if (dt > 0.1) dt = 0.1;
     else if (dt < -0.1) dt = -0.1;
     dtsum += dt;
-    if (0 && fabs(dt) > 5.0 / 86400.0 && nloop < 20)
+    if ((0) && fabs(dt) > 5.0 / 86400.0 && nloop < 20)
       nloop++;
     tr -= dt;
   }

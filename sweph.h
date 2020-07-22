@@ -62,11 +62,12 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.08.00a"  //"2.07.02a"
+#define SE_VERSION      "2.09" // "2.08.00b"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
 #define J1900           2415020.0  	/* 1900 January 0.5 */
+#define B1850           2396758.2035810  	/* 1850 January 16:53 */
 
 #define MPC_CERES       1
 #define MPC_PALLAS      2
@@ -336,85 +337,264 @@ static const double pla_diam[NDIAM] = {1392000000.0, /* Sun */
  * t0       epoch of ayanamsa, TDT (can be ET or UT)
  * ayan_t0  ayanamsa value at epoch
  * t0_is_UT true, if t0 is UT
+ * prec_offset is the precession model for which the ayanamsha
+ *          has to be corrected by adding/subtracting a constant offset. 
+ *          0, if no correction is needed
+ *          -1, if correction is unclear or has not been investigated
+ *              and therefore is not applied
  */
-struct aya_init {double t0, ayan_t0; AS_BOOL t0_is_UT;};
+struct aya_init {double t0;
+                 double ayan_t0; 
+		 AS_BOOL t0_is_UT;
+		 int prec_offset;};
 static const struct aya_init ayanamsa[] = {
-{2433282.5, 24.042044444, FALSE},    /* 0: Fagan/Bradley (Default) */
-/*{J1900, 360 - 337.53953},   * 1: Lahiri (Robert Hand) */
-{2435553.5, 23.250182778 - 0.004660222, FALSE}, 
-                                     /* 1: Lahiri (derived from: Indian
-				      * Astronomical Ephemeris 1989, p. 556;
-				      * the subtracted value is nutation) */
-{J1900, 360 - 333.58695, FALSE},     /* 2: Robert DeLuce (Constellational Astrology ... p. 5 */
-{J1900, 360 - 338.98556, FALSE},     /* 3: B.V. Raman (Robert Hand) */
-{J1900, 360 - 341.33904, FALSE},     /* 4: Usha/Shashi (Robert Hand) */
-{J1900, 360 - 337.636111, FALSE},    /* 5: Krishnamurti (Robert Hand) */
-{J1900, 360 - 333.0369024, FALSE},   /* 6: Djwhal Khool; (Graham Dawson)  
-                                      *    Aquarius entered on 1 July 2117 */
-{J1900, 360 - 338.917778, FALSE},    /* 7: Shri Yukteshwar; (David Cochrane) */
-//{2412543.5, 20.91, TRUE},          /* 7: Shri Yukteshwar; (Holy Science, p. xx) */
-{J1900, 360 - 338.634444, FALSE},    /* 8: J.N. Bhasin; (David Cochrane) */
+/* 0: Fagan/Bradley (Default) 
+     "The American Sidereal Ephemeris, 1976-2000" (Astro Computing Services, 1981)
+     states on S.V.P. ("Synetic Vernal Point"):
+     "The S.V.P. is the Sidereal longitude of the Vernal Equinox (the
+     Tropical zero-point) in the Fagan-Bradley school of Western Sidereal
+     astrology. It was determined empirically, its mean value being defined
+     as 335°57'28".64 for the epoch 1950.0."
+     Fagan/Firebrace, "Primer of Sidereal Astrology", p. 13:
+     "It was during 1957 that Garth Allen .... experimenting ... But when
+     progressed for the dates of the calamities, all were found by him to be 
+     slightly out, the mean error being equivalent to an increase of 0°06'05"
+     in the then-adopted sidereal longitude of the vernal point, determined
+     from Spica in 29 Virgo (i.e. 29°06'05" Virgo; D.K.), and the proper motion
+     having been allowed for. In short, for the epoch 1950.0 he proposed as the 
+     mean longitude of the vernal point 335°57'28.64", proper motion being 
+     disregarded."
+     If "1950.0" means the standard epoch B1950 = JD 2433282.423, and based 
+     on the then-used precession model of Newcomb, this ayanamsha leads to 
+     a true position of 29°06'05.965" Virgo, based on Hipparcos position of 
+     the star. */
+{2433282.42346, 24.042044444, FALSE, SEMOD_PREC_NEWCOMB}, // 0: Fagan/Bradley
+/*************************/
+/* 1: Standard Lahiri 
+     according to program NOVA by Robert Hand: 
+     {J1900, 360 - 337.53953},   
+     This corresponds to an ayanamsha 22°27'37.69 as given in
+     Indian Ephemeris and Nautical Almanac" 1965, p. 459.
+     Note, however, this value should only with a precession formula 
+     where T is measured in tropical centuries. Swiss Ephemeris always
+     uses Julian centuries.
+     The following definition is according to:
+     Calendar Reform Committee 1956; the subtracted value is nutation:
+     {2435553.5, 23.25 - 0.00464207, FALSE}, 
+     Lahiri (derived from: Indian Astronomical Ephemeris 1989, p. 556;
+     the subtracted value is nutation, according to Wahr 1980) */
+{2435553.5, 23.250182778 - 0.004658035, FALSE, SEMOD_PREC_IAU_1976}, // 1: Lahiri
+/*************************/
+/* 2: Robert DeLuce (Constellational Astrology ... p. 5; 
+     birth of Jesus assumed on 1 Jan 1 BC (= 0) jul.,
+     based on Newcomb precession. 
+     {J1900, 360 - 333.58695, FALSE, 0}, 
+     Ayanamsha was corrected with SE 2.09 as follows:
+     Started at zero ayanamsha epoch with value 0 and 
+     run with standard precession.
+     This makes a difference of 22" compared with previous version: */
+{1721057.5, 0, TRUE, 0}, // 2: DeLuce
+/*************************/
+/* 3: B.V. Raman (Robert Hand) 
+     See B.V. Raman, "Hindu Predictive Astrology" (1938, Introduction), 
+     pp. 279, 287.
+     This ayanamsha is apparently not based on a valid precession theory (e.g.
+     Newcomb). We cannot reproduce precisely the ayanamsha values on p. 287. */
+{J1900, 360 - 338.98556, FALSE, SEMOD_PREC_NEWCOMB}, // 3: Raman
+/*************************/
+/* 4: Usha/Shashi (Robert Hand) 
+     Usha and Shashi, "Hindu Astrological Calculations" (1978, 
+     Sagar Publications, New Delhi).
+     We do not have this book. */
+{J1900, 360 - 341.33904, FALSE, -1}, // 4: Usha/Shashi
+/*************************/
+/* 5: Krishnamurti (Robert Hand)
+     K.S. Krishnamurti, "Reader 1", pp. 55-59.
+     Autor does not give precise information. Zero ayanamsha year is said to 
+     be 291 CE, and there is an ayanamsha table with arc min precision for
+     1840 to 2000 on p. 58.
+     This ayanamsha reproduces the table quite well, if 1 Jan of each year
+     is taken. (Turn off Newcomb precession in order to verify.)
+     However, D. Senthilathiban believes the values are given for the date
+     of sidereal Aries ingress of each year. ("Study of KP Ayanamsa with
+     Modern Precession Theories", pp. 126f. */
+{J1900, 360 - 337.636111, FALSE, SEMOD_PREC_NEWCOMB}, // 5: Krishnamurti
+/*************************/
+/* 6: Djwhal Khool (Graham Dawson), 
+     "Channeled" information: Aquarius ingress of VP on 1 July 2117
+     See Philipp Lindsay, “The Beginning of the Age of Aquarius: 2,117 A.D.”,
+     http://esotericastrologer.org/newsletters/the-age-of-aquarius-ray-and-zodiac-cycles/ */
+/*************************/
+{J1900, 360 - 333.0369024, FALSE, 0}, // 6: Djwhal Khool
+/* 7: Shri Yukteshwar; (David Cochrane) 
+     This ayanamsha seems to be wrong.
+     Swami Sri Yukteswar, "The Holy Science", 1920 (1949, 1957 and 1977, 
+     partly revised), Yogoda Satsanga Society of India.
+     Ayanamsha on the spring equinox 1893 was 20°54'36" (1894 according to 
+     the revised edition of 1977) At the same time he believed that this was the
+     distance of the spring equinox from the star Revati, which he put at the
+     initial point of Aries.  Unfortunately, this is wrong, because on that date
+     Revati was actually 18°23' away from the vernal point. The error is
+     explained from the fact that Yukteshwar used the zero ayanamsha year 499 CE
+     and an inaccurate Suryasiddhantic precession rate of 360°/24'000 years = 54
+     arcsec/year. It is obvious that Yukteshwar actually intended an ayanamsha
+     that starts at the star Revati.  */
+{J1900, 360 - 338.917778, FALSE, -1},  // 7: Shri Yukteshwar
+//{2412543.5, 20.91, TRUE, -1},        // 7: Shri Yukteshwar; (Holy Science, p. xx) 
+/*************************/
+/* 8: J.N. Bhasin; (David Cochrane) 
+     We don't have any sources or detailed information about this ayanamsha. */
+{J1900, 360 - 338.634444, FALSE, -1}, // Bhasin
+/*************************/
 /* 14 Sept. 2018: the following three ayanamshas have been wrong for
- * many years */
-{1684532.5, -5.66667, TRUE},         /* 9: Babylonian, Kugler 1 */
-{1684532.5, -4.26667, TRUE},         /*10: Babylonian, Kugler 2 */
-{1684532.5, -3.41667, TRUE},         /*11: Babylonian, Kugler 3 */
-{1684532.5, -4.46667, TRUE},         /*12: Babylonian, Huber */
-/*{1684532.5, -4.56667, TRUE},         *12: Babylonian, Huber (Swisseph has been wrong for many years!) */
-{1673941, -5.079167, TRUE},          /*13: Babylonian, Mercier;
-                                      *    eta Piscium culminates with zero point */
-{1684532.5, -4.44088389, TRUE},      /*14: t0 is defined by Aldebaran at 15 Taurus */
-{1674484, -9.33333, TRUE},           /*15: Hipparchos */
-{1927135.8747793, 0, TRUE},          /*16: Sassanian */
-//{1746412.236, 0, FALSE},             /*17: Galactic Center at 0 Sagittarius */
-{0, 0, FALSE},                       /*17: Galactic Center at 0 Sagittarius */
-{J2000, 0, FALSE},	             /*18: J2000 */
-{J1900, 0, FALSE},	             /*19: J1900 */
-{B1950, 0, FALSE},	             /*20: B1950 */
-{1903396.8128654, 0, TRUE},	     /*21: Suryasiddhanta, assuming
-                                       ingress of mean Sun into Aries at point
-				       of mean equinox of date on
-				       21.3.499, near noon, Ujjain (75.7684565 E)
-                                       = 7:30:31.57 UT = 12:33:36 LMT*/
-{1903396.8128654,-0.21463395, TRUE}, /*22: Suryasiddhanta, assuming
-				       ingress of mean Sun into Aries at
-				       true position of mean Sun at same epoch */
-{1903396.7895321, 0, TRUE},	     /*23: Aryabhata, same date, but UT 6:56:55.57
-				       analogous 21 */
-{1903396.7895321,-0.23763238, TRUE}, /*24: Aryabhata, analogous 22 */
-{1903396.8128654,-0.79167046, TRUE}, /*25: SS, Revati/zePsc at polar long. 359°50'*/
-{1903396.8128654, 2.11070444, TRUE}, /*26: SS, Citra/Spica at polar long. 180° */
-{0, 0, FALSE},	                     /*27: True Citra (Spica exactly at 0 Libra) */
-{0, 0, FALSE},	                     /*28: True Revati (zeta Psc exactly at 29°50' Pisces) */
-{0, 0, FALSE},			     /*29: True Pushya (delta Cnc exactly a 16 Cancer */
-{0, 0, FALSE},                       /*30: R. Gil Brand; Galactic Center at golden section
-                                       between 0 Sco and 0 Aqu; note: 0° Aqu/Leo is
-				       the symmetric axis of rulerships */
-{0, 0, FALSE},	                     /*31: Galactic Equator IAU 1958, i.e. galactic/ecliptic
-                                       intersection point based on galactic coordinate system */
-{0, 0, FALSE},	                     /*32: Galactic Equator True, i.e. galactic/ecliptic 
-                                       intersection point based on the galactic pole as given in:
-				       Liu/Zhu/Zhang, „Reconsidering the galactic 
-				       coordinate system“, A & A No. AA2010, Oct. 2010 */
-{0, 0, FALSE},	                     /*33: Galactic Equator Mula, i.e. galactic/ecliptic 
-                                       intersection point in the middle of lunar mansion Mula */
-{2451079.734892000, 30, FALSE},	     /*34: Skydram/Galactic Alignment (R. Mardyks); 
-                                       autumn equinox aligned with Galactic Equator/Pole */
-{0, 0, FALSE},	                     /*35: Chandra Hari */
-{0, 0, FALSE},	                     /*36: Dhruva Galactic Centre Middle of Mula (Ernst Wilhelm) */
-{1911797.740782065, 0, TRUE},	     /*37: Kali 3623 = 522 CE, Ujjain (75.7684565), 
-                                      *    based on Kali midnight and SS year length */
-{1721057.5, -3.2, TRUE},             /*38: Babylonian (Britton 2010) */
-{0, 0, FALSE},                       /*39: Sunil Sheoran ("Vedic") */
-{0, 0, FALSE},                       /*40: Galactic Center at 0 Capricon (Cochrane) */
-{2451544.5, 25.0, TRUE},             /*41: "Galactic Equatorial" (N.A. Fiorenza) */
-{1775845.5, -2.9422, TRUE},          /*42: Vettius Valens (Moon; derived from
-                                           Holden 1995 p. 12 for epoch of Valens
-					   1 Jan. 150 CE julian) */
-/*{2061539.789532065, 6.83333333, TRUE}, *41: Manjula's Laghumanasa, 10 March 932,
-                                      *    12 PM LMT Ujjain (75.7684565 E),
-				      *    ayanamsha = 6°50' */
-{0, 0, FALSE},	                     /*42: - */
+   many years */
+/* 9 - 11: Babylonian, Kugler */
+{1684532.5, -5.66667, TRUE, -1},     /*  9: Babylonian, Kugler 1 */
+{1684532.5, -4.26667, TRUE, -1},     /* 10: Babylonian, Kugler 2 */
+{1684532.5, -3.41667, TRUE, -1},     /* 11: Babylonian, Kugler 3 */
+/*************************/
+/* 12: Babylonian, Huber 
+      P. Huber, "Über den Nullpunkt der babylonischen Ekliptik", in: Centaurus
+      1958, 5, p. 192-208. 
+      This ayanamsha had a wrong initial value until 14 Sept. 2018. */
+{1684532.5, -4.46667, TRUE, -1},     // 12: Baylonian, Huber 
+/*************************/
+/* 13: Babylonian, Mercier; eta Piscium culminates with zero point */
+{1673941, -5.079167, TRUE, -1},      // 13: Babylonian, Mercier
+/*************************/
+/* 14: t0 is defined by Aldebaran at 15 Taurus in year -100 */
+{1684532.5, -4.44138598, TRUE, 0},  
+/*************************/
+/* 15: Hipparchos */
+{1674484, -9.33333, TRUE, -1},       // 15: Hipparchos
+/*************************/
+/* 16: Sassanian */
+{1927135.8747793, 0, TRUE, -1},      // 16: Sassanian 
+/*************************/
+/* 17: Galactic Center at 0 Sagittarius */
+{0, 0, FALSE, 0},                    // 17: Galactic Center at 0 Sagittarius 
+/*************************/
+/* 18: J2000 */
+{J2000, 0, FALSE, 0},	             /* 18: J2000 */
+/*************************/
+/* 19: J1900 */
+{J1900, 0, FALSE, 0},	             /* 19: J1900 */
+/*************************/
+/* 20: B1950 */
+{B1950, 0, FALSE, 0},	             /* 20: B1950 */
+/*************************/
+/* 21: Suryasiddhanta, assuming ingress of mean Sun into Aries at point of mean
+      equinox of date on 21.3.499, near noon, Ujjain (75.7684565 E) 
+      = 7:30:31.57 UT = 12:33:36 LMT*/
+{1903396.8128654, 0, TRUE, 0},	     // 21: 
+/*************************/
+/* 22: Suryasiddhanta, assuming ingress of mean Sun into Aries at true position
+      of mean Sun at same epoch */
+{1903396.8128654,-0.21463395, TRUE, 0}, // 22: 
+/*************************/
+/* 23: Aryabhata, same date, but UT 6:56:55.57 analogous to 21 */
+{1903396.7895321, 0, TRUE, 0},	     // 23: 
+/*************************/
+/* 24: Aryabhata, analogous 22 */
+{1903396.7895321,-0.23763238, TRUE, 0}, // 24: 
+/*************************/
+/* 25: Suryasiddhanta, Revati/zePsc at polar long. 359°50'*/
+{1903396.8128654,-0.79167046, TRUE, 0}, // 25: 
+/*************************/
+/* 26: Suryasiddhanta, Citra/Spica at polar long. 180° */
+{1903396.8128654, 2.11070444, TRUE, 0}, // 26: 
+/*************************/
+/* 27: True Citra (Spica exactly at 0 Libra) */
+{0, 0, FALSE, 0},	             // 27: True Citra 
+/*************************/
+/* 28: True Revati (zeta Psc exactly at 29°50' Pisces) */
+{0, 0, FALSE, 0},	             // 28: True Revati 
+/*************************/
+/* 29: True Pushya (delta Cnc exactly a 16 Cancer */
+{0, 0, FALSE, 0},		     // 29: True Pushya 
+/*************************/
+/* 30: R. Gil Brand; Galactic Center at golden section between 0 Sco and 0 Aqu;
+      note: 0° Aqu/Leo is the symmetric axis of rulerships */
+{0, 0, FALSE, 0},                    // 30: Gil Brand
+/*************************/
+/* 31: Galactic Equator IAU 1958, i.e. galactic/ecliptic intersection point
+      based on galactic coordinate system */
+{0, 0, FALSE, 0},	             // 31: GE IAU 1958
+/*************************/
+/* 32: Galactic Equator True, i.e. galactic/ecliptic intersection point based
+     on the galactic pole as given in: Liu/Zhu/Zhang, „Reconsidering the
+     galactic coordinate system“, A & A No. AA2010, Oct. 2010 */
+{0, 0, FALSE, 0},	             // 32: GE true
+/*************************/
+/* 33: Galactic Equator Mula, i.e. galactic/ecliptic intersection point in the
+      middle of lunar mansion Mula */
+{0, 0, FALSE, 0},	             // 33: GE Mula
+/*************************/
+/* 34: Skydram/Galactic Alignment (R. Mardyks); autumn equinox aligned with
+      Galactic Equator/Pole */
+{2451079.734892000, 30, FALSE, 0},   // 34: Skydram/Mardyks
+/*************************/
+/* 35: Chandra Hari */
+{0, 0, FALSE, 0},	             // 35: Chandra Hari 
+/*************************/
+/* 36: Dhruva Galactic Centre Middle of Mula (Ernst Wilhelm) */
+{0, 0, FALSE, 0},	             // 36: Ernst Wilhelm
+/*************************/
+/* 37: Kali 3623 = 522 CE, Ujjain (75.7684565), based on Kali midnight and 
+      year length of Suryasiddhanta */
+{1911797.740782065, 0, TRUE, 0},     // 36: 0 ayanamsha in year 522
+/*************************/
+/* 38: Babylonian (Britton 2010) 
+      John P. Britton, "Studies in Babylonian lunar theory: part III. The
+      introduction of the uniform zodiac", in Arch. Hist. Exact. Sci.
+      (2010)64:617-663, p. 630. */
+{1721057.5, -3.2, TRUE, -1},         // 38: Babylonian (Britton 2010)
+/*************************/
+/* 39: Sunil Sheoran ("Vedic") 
+      S. Sheoran, "The Science of Time and Timeline of World History", 2017. */
+{0, 0, FALSE, 0},                    // 39: Sunil Sheoran ("Vedic") 
+/*************************/
+/* 40: Galactic Center at 0 Capricon (Cochrane) */
+{0, 0, FALSE, 0},                    // 40: Cochrane 
+/*************************/
+/* 41: "Galactic Equatorial" (N.A. Fiorenza) */
+{2451544.5, 25.0, TRUE, 0},          // 41: N.A. Fiorenza */
+/*************************/
+/* 42: Vettius Valens (Moon; derived from Holden 1995 p. 12 for epoch of Valens
+      1 Jan. 150 CE julian) */
+{1775845.5, -2.9422, TRUE, -1},      // 42: Vettius Valens
+/*************************/
+/* 43: Lahiri (1940), book "Panchanga darpan": 
+      22°26'45".50 + 50".25748T + 0".00011115T^2 */
+{J1900, 22.44597222, FALSE, SEMOD_PREC_NEWCOMB}, // 43: Lahiri (1940)
+/*************************/
+/* 44: Lahiri (VP285), mean sun at 360° in 285CE; epoch for mean sun at 0 acc.
+      to Simon 1994, corrected for Vondrak precession 
+      (Preface to Lahiri's "Indian Ephemeris" 1980) */
+{1825235.2458513028, 0.0, FALSE, 0}, // 44: Lahiri VP285 (1980)
+/*************************/
+/* 45: Krishnamurti from mean equinox 291, based on Newcomb precession,
+      according to D. Senthilathiban, "Study of KP Ayanamsa with Modern
+      Precession Theories" (2019), but using precession Vondrak 2011 and
+      correction base on Newcomb precession. */
+//{1827424.752255678, 0.0, FALSE, SEMOD_PREC_NEWCOMB}, // 45: Krishnamurti VP291
+{1827424.752255678, 0.0, FALSE, 0}, // 45: Krishnamurti VP291
+/*************************/
+/* 46: Lahiri original: Calendar Reform Committee 1956, 
+      before the correction by 0.658" in IAE 1985.
+      The subtracted value is nutation according to Woolard 1953.
+      However, nutation Woolard was used by IENA/IAE only from 1960 on,
+      so this value is not correct. In order to reproduce mean ayanamshas
+      of IENA >=1960, we could choose 23.25 - 0.00464207 + 0.07 / 3600.0
+      as initial value in 1956. However this will not help to reproduce 
+      true ayanamshas. A deviation of around 0.1" remains,
+      for unknown reasons. The difference between Lahiri (1) and
+      Lahiri ICRC (45) amounts to 1.1". */
+{2435553.5, 23.25 - 0.00464207, FALSE, SEMOD_PREC_NEWCOMB}, 
+/*************************/
+/*{2061539.789532065, 6.83333333, TRUE, -1}, *41: Manjula's Laghumanasa, 10 March 932, 12 PM LMT Ujjain (75.7684565 E), ayanamsha = 6°50' */
+/* */
+{J1900, 0, FALSE, -1},	                     /*46: - */
     };
 
 #define PLAN_DATA struct plan_data

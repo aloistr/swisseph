@@ -69,9 +69,7 @@ house and (simple) aspect calculation
 
 static double Asc1(double, double, double, double);
 static double Asc2(double, double, double, double);
-static int CalcH(
-	double th, double fi, double ekl, char hsy, 
-	int iteration_count, struct houses *hsp);
+static int CalcH(double th, double fi, double ekl, char hsy, struct houses *hsp);
 static int sidereal_houses_ecl_t0(double tjde, 
                            double armc, 
                            double eps, 
@@ -136,7 +134,11 @@ int CALL_CONV swe_houses(double tjd_ut,
     int flags = SEFLG_SPEED| SEFLG_EQUATORIAL;
     double xp[6];
     int result = swe_calc_ut(tjd_ut, SE_SUN, flags, xp, NULL);
-    if (result < 0) return ERR;
+    if (result < 0) {
+      // in case of failure, Porphyry houses
+      result = swe_houses_armc(armc, geolat, eps + nutlo[1], 'O', cusp, ascmc);
+      return ERR;
+    }
     ascmc[9] = xp[1];	// declination in ascmc[9];
   }
 #ifdef TRACE
@@ -187,6 +189,7 @@ int CALL_CONV swe_houses_ex(double tjd_ut,
   double tjde = tjd_ut + swe_deltat_ex(tjd_ut, iflag, NULL);
   struct sid_data *sip = &swed.sidd;
   double xp[6];
+  int retc_makr = 0;
   int ito;
   if (toupper(hsys) == 'G')
     ito = 36;
@@ -225,8 +228,11 @@ int CALL_CONV swe_houses_ex(double tjd_ut,
 //fprintf(stderr, "armc=%f, iflag=%d\n", armc, iflag);
   if (toupper(hsys) ==  'I') {	// compute sun declination for sunshine houses
     int flags = SEFLG_SPEED| SEFLG_EQUATORIAL;
-    int result = swe_calc_ut(tjd_ut, SE_SUN, flags, xp, NULL);
-    if (result < 0) return ERR;
+    retc_makr = swe_calc_ut(tjd_ut, SE_SUN, flags, xp, NULL);
+    if (retc_makr < 0) {
+      // in case of failure, provide Porphyry houses
+      hsys = (int) 'O';
+    }
     ascmc[9] = xp[1];	// declination in ascmc[9];
   }
   if (iflag & SEFLG_SIDEREAL) { 
@@ -238,7 +244,7 @@ int CALL_CONV swe_houses_ex(double tjd_ut,
       retc = sidereal_houses_trad(tjde, iflag, armc, eps_mean + nutlo[1], nutlo[0], geolat, hsys, cusp, ascmc);
   } else {
     retc = swe_houses_armc(armc, geolat, eps_mean + nutlo[1], hsys, cusp, ascmc);
-    if (toupper(hsys) ==  'I') 	// compute sun declination for sunshine houses
+    if (toupper(hsys) ==  'I') 	
       ascmc[9] = xp[1];	// declination in ascmc[9];
   }
   if (iflag & SEFLG_RADIANS) {
@@ -247,6 +253,8 @@ int CALL_CONV swe_houses_ex(double tjd_ut,
     for (i = 0; i < SE_NASCMC; i++)
       ascmc[i] *= DEGTORAD;
   }
+  if (retc_makr < 0)
+    return retc_makr;
   return retc;
 }
 
@@ -581,8 +589,11 @@ int CALL_CONV swe_houses_armc(
       saved_sundec = h.sundec;
     }
   }
-  retc = CalcH(armc, geolat, eps, (char)hsys, 2, &h);
+  retc = CalcH(armc, geolat, eps, (char)hsys, &h);
   cusp[0] = 0;
+  // on failure, we only have 12 Porphyry cusps
+  if (retc < 0) 
+    ito = 12;
   for (i = 1; i <= ito; i++) {
     cusp[i] = h.cusp[i];
   }
@@ -757,9 +768,10 @@ double swi_armc_to_mc(double armc, double eps)
   return mc;
 }
 
+//#define DEBUG_PLAC_ITER 1
+#define VERY_SMALL_PLAC_ITER (1.0 / 360000.0 )
 static int CalcH(
-	double th, double fi, double ekl, char hsy,
-	int iteration_count, struct houses *hsp)
+	double th, double fi, double ekl, char hsy, struct houses *hsp)
 /* *********************************************************
  *  Arguments: th = sidereal time (angle 0..360 degrees
  *             hsy = letter code for house system;
@@ -790,8 +802,6 @@ static int CalcH(
  *                   Y  APC houses
  *             fi = geographic latitude
  *             ekl = obliquity of the ecliptic
- *             iteration_count = number of iterations in
- *             Placidus calculation; can be 1 or 2.
  * *********************************************************
  *  Koch and Placidus don't work in the polar circle.
  *  We swap MC/IC so that MC is always before AC in the zodiac
@@ -807,6 +817,8 @@ static int CalcH(
   int 	i, ih, ih2, retc = OK;
   double sine, cose;
   double x[3], krHorizonLon; /* BK 14.02.2006 */
+  int niter_max = 100; // maximum iterations allowed with Placidus
+  double cuspsv;
   *hsp->serr = '\0';
   cose  = cosd(ekl);
   sine  = sind(ekl);
@@ -1019,6 +1031,8 @@ porphyry:
       hsp->cusp[1] = hsp->ac;
       acmc = swe_difdeg2n(hsp->ac, hsp->mc);
     }
+    hsp->cusp[1] = hsp->ac;  // may have been destroyed if defaulting from Gauquelin
+    hsp->cusp[10] = hsp->mc; // dito
     hsp->cusp[2] = swe_degnorm(hsp->ac + (180 - acmc) / 3);
     hsp->cusp[3] = swe_degnorm(hsp->ac + (180 - acmc) / 3 * 2);
     hsp->cusp[11] = swe_degnorm(hsp->mc + acmc / 3);
@@ -1291,6 +1305,7 @@ porphyry:
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
       retc = ERR;
       strcpy(hsp->serr, "within polar circle, switched to Porphyry"); 
+      hsy = (int) 'O';
       goto porphyry;
     }
     /*************** forth/second quarter ***************/
@@ -1307,7 +1322,8 @@ porphyry:
 	/* pole height */
 	f = atand(sind(asind(tanfi * tant) * ih2 / 9)  /tant);
         hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-        for (i = 1; i <= iteration_count; i++) {
+	cuspsv = 0;
+        for (i = 1; i <= niter_max; i++) {
 	  tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	  if (fabs(tant) < VERY_SMALL) {
 	    hsp->cusp[ih] = rectasc;
@@ -1316,7 +1332,19 @@ porphyry:
 	  /* pole height */
 	  f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
   	  hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+	  if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
+	    break;
+	  cuspsv = hsp->cusp[ih];
         }
+#ifdef DEBUG_PLAC_ITER
+  fprintf(stderr, "h=%d, niter=%d\n", ih, i);
+#endif
+	if (i >= niter_max) {
+	  retc = ERR;
+	  hsy = (int) 'O';
+	  strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
+	  goto porphyry;
+	}
       }
       hsp->cusp[ih+18] = swe_degnorm(hsp->cusp[ih] + 180);
     }
@@ -1332,7 +1360,8 @@ porphyry:
         f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
         /*  pole height */
         hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-        for (i = 1; i <= iteration_count; i++) {
+	cuspsv = 0;
+        for (i = 1; i <= niter_max; i++) {
 	  tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	  if (fabs(tant) < VERY_SMALL) {
 	    hsp->cusp[ih] = rectasc;
@@ -1341,6 +1370,18 @@ porphyry:
 	  f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
 	  /*  pole height */
   	  hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+	  if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
+	    break;
+	  cuspsv = hsp->cusp[ih];
+	}
+#ifdef DEBUG_PLAC_ITER
+  fprintf(stderr, "h=%d, niter=%d\n", ih, i);
+#endif
+	if (i >= niter_max) {
+	  retc = ERR;
+	  hsy = (int) 'O';
+	  strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
+	  goto porphyry;
 	}
       }
       hsp->cusp[ih-18] = swe_degnorm(hsp->cusp[ih] + 180);
@@ -1460,82 +1501,134 @@ porphyry:
     /* ************  house 11 ******************** */
     rectasc = swe_degnorm(30 + th);
     tant = tand(asind(sine * sind(Asc1(rectasc, fh1, sine, cose))));
+    ih = 11;
     if (fabs(tant) < VERY_SMALL) {
-      hsp->cusp[11] = rectasc;
+      hsp->cusp[ih] = rectasc;
     } else {
       /* pole height */
       f = atand(sind(asind(tanfi * tant) / 3)  /tant);  
-      hsp->cusp[11] = Asc1(rectasc, f, sine, cose);
-      for (i = 1; i <= iteration_count; i++) {
-	tant = tand(asind(sine * sind(hsp->cusp[11])));
+      hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+      cuspsv = 0;
+      for (i = 1; i <= niter_max; i++) {
+	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
-	  hsp->cusp[11] = rectasc;
+	  hsp->cusp[ih] = rectasc;
 	  break;
 	}
 	/* pole height */
 	f = atand(sind(asind(tanfi * tant) / 3) / tant);
-	hsp->cusp[11] = Asc1(rectasc, f, sine, cose);
+	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
+	  break;
+	cuspsv = hsp->cusp[ih];
       }
+      if (i >= niter_max) {
+	retc = ERR;
+	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
+	goto porphyry;
+      }
+#ifdef DEBUG_PLAC_ITER
+  fprintf(stderr, "h=%d, niter=%d\n", ih, i);
+#endif
     }
     /* ************  house 12 ******************** */
     rectasc = swe_degnorm(60 + th);
     tant = tand(asind(sine*sind(Asc1(rectasc,  fh2, sine, cose))));
+    ih = 12;
     if (fabs(tant) < VERY_SMALL) {
-      hsp->cusp[12] = rectasc;
+      hsp->cusp[ih] = rectasc;
     } else {
       f = atand(sind(asind(tanfi * tant) / 1.5) / tant);  
       /*  pole height */
-      hsp->cusp[12] = Asc1(rectasc, f, sine, cose);
-      for (i = 1; i <= iteration_count; i++) {
-	tant = tand(asind(sine * sind(hsp->cusp[12])));
+      hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+      cuspsv = 0;
+      for (i = 1; i <= niter_max; i++) {
+	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
-	  hsp->cusp[12] = rectasc;
+	  hsp->cusp[ih] = rectasc;
 	  break;
 	}
 	f = atand(sind(asind(tanfi * tant) / 1.5) / tant);  
 	/*  pole height */
-	hsp->cusp[12] = Asc1(rectasc, f, sine, cose);
+	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
+	  break;
+	cuspsv = hsp->cusp[ih];
       }
+      if (i >= niter_max) {
+	retc = ERR;
+	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
+	goto porphyry;
+      }
+#ifdef DEBUG_PLAC_ITER
+  fprintf(stderr, "h=%d, niter=%d\n", ih, i);
+#endif
     }
     /* ************  house  2 ******************** */
     rectasc = swe_degnorm(120 + th);
     tant = tand(asind(sine * sind(Asc1(rectasc, fh2, sine, cose))));
-	if (fabs(tant) < VERY_SMALL) {
-      hsp->cusp[2] = rectasc;
+    ih = 2;
+    if (fabs(tant) < VERY_SMALL) {
+      hsp->cusp[ih] = rectasc;
     } else {
       f = atand(sind(asind(tanfi * tant) / 1.5) / tant);
       /*  pole height */
-      hsp->cusp[2] = Asc1(rectasc, f, sine, cose);
-      for (i = 1; i <= iteration_count; i++) {
-	tant = tand(asind(sine * sind(hsp->cusp[2])));
+      hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+      cuspsv = 0;
+      for (i = 1; i <= niter_max; i++) {
+	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
-	  hsp->cusp[2] = rectasc;
+	  hsp->cusp[ih] = rectasc;
 	  break;
 	}
 	f = atand(sind(asind(tanfi * tant) / 1.5) / tant);
 	/*  pole height */
-	hsp->cusp[2] = Asc1(rectasc, f, sine, cose);
+	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
+	  break;
+	cuspsv = hsp->cusp[ih];
       }
+      if (i >= niter_max) {
+	retc = ERR;
+	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
+	goto porphyry;
+      }
+#ifdef DEBUG_PLAC_ITER
+  fprintf(stderr, "h=%d, niter=%d\n", ih, i);
+#endif
     }
     /* ************  house  3 ******************** */
     rectasc = swe_degnorm(150 + th);
     tant = tand(asind(sine * sind(Asc1(rectasc, fh1, sine, cose))));
+    ih = 3;
     if (fabs(tant) < VERY_SMALL) {
-      hsp->cusp[3] = rectasc;
+      hsp->cusp[ih] = rectasc;
     } else {
       f = atand(sind(asind(tanfi * tant) / 3) / tant);  
       /*  pole height */
-      hsp->cusp[3] = Asc1(rectasc, f, sine, cose);
-      for (i = 1; i <= iteration_count; i++) {
-	tant = tand(asind(sine * sind(hsp->cusp[3])));
+      hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+      cuspsv = 0;
+      for (i = 1; i <= niter_max; i++) {
+	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
-	  hsp->cusp[3] = rectasc;
+	  hsp->cusp[ih] = rectasc;
 	  break;
 	}
 	f = atand(sind(asind(tanfi * tant) / 3) / tant);
 	/*  pole height */
-	hsp->cusp[3] = Asc1(rectasc, f, sine, cose);
+	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
+	  break;
+	cuspsv = hsp->cusp[ih];
       }
+      if (i >= niter_max) {
+	retc = ERR;
+	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
+	goto porphyry;
+      }
+#ifdef DEBUG_PLAC_ITER
+  fprintf(stderr, "h=%d, niter=%d\n", ih, i);
+#endif
     }
     break;
   } /* end switch */

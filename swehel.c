@@ -75,7 +75,7 @@
 #define BNIGHT_FACTOR   1.0
 #define PI		M_PI
 #define Min2Deg   (1.0 / 60.0)
-#define DEBUG  0
+#define SWEHEL_DEBUG  0
 #define DONE  1
 #define MaxTryHours   4 
 #define TimeStepDefault	1
@@ -277,7 +277,7 @@ static double OpticFactor(double Bback, double kX, double *dobs, double JDNDaysU
   Fa = pow((Pst / OpticDia), 2);
   Fr = (1 + 0.03 * pow((OpticMag * ObjectSize / CVA(Bback, SNi, helflag)), 2)) / pow(SNi, 2);
   Fm = pow(OpticMag, 2);
-#if DEBUG
+#if SWEHEL_DEBUG
   fprintf(stderr, "Pst=%f\n", Pst);
   fprintf(stderr, "Fb =%f\n", Fb);
   fprintf(stderr, "Fe =%f\n", Fe);
@@ -1422,7 +1422,7 @@ if ((0)) {
   /*Bsk = Bsk / CorrFactor1;*/
   Bsk = Bsk * CorrFactor1;
   Th = C1 * pow(1 + sqrt(C2 * Bsk), 2) * CorrFactor2;
-#if DEBUG
+#if SWEHEL_DEBUG
   fprintf(stderr, "Bsk=%f, ", Bsk);
   fprintf(stderr, "kX =%f, ", kX);
   fprintf(stderr, "Th =%f, ", Th);
@@ -1505,7 +1505,7 @@ int32 CALL_CONV swe_vis_limit_mag(double tjdut, double *dgeo, double *datm, doub
     if (ObjectLoc(tjdut, dgeo, datm, "moon", 1, helflag, &AziM, serr) == ERR)
       return ERR;
   }
-#if DEBUG
+#if SWEHEL_DEBUG
 {
   int i;
   for (i = 0; i < 6;i++)

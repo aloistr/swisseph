@@ -2550,7 +2550,7 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
   int32 retc;
   int deltat_model = swed.astro_models[SE_MODEL_DELTAT];
   double tid_acc;
-  int32 denumret;
+  int32 denum, denumret;
   int32 epheflag, otherflag;
 //fprintf(stderr, "dmod=%f, %.f\n", (double) deltat_model, (double) SEMOD_DELTAT_DEFAULT);
   if (deltat_model == 0) deltat_model = SEMOD_DELTAT_DEFAULT;
@@ -2561,12 +2561,14 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
     retc = swi_get_tid_acc(tjd, 0, 9999, &denumret, &tid_acc, serr); /* for default tid_acc */
   /* otherwise we use tid_acc consistent with epheflag */
   } else {
+    denum = swed.jpldenum;
+    if (epheflag & SEFLG_SWIEPH) denum = swed.fidat[SEI_FILE_MOON].sweph_denum;
     if (swi_init_swed_if_start() == 1 && !(epheflag & SEFLG_MOSEPH)) {
       if (serr != NULL) 
 	strcpy(serr, "Please call swe_set_ephe_path() or swe_set_jplfile() before calling swe_deltat_ex()");
-      retc = swi_set_tid_acc(tjd, epheflag, 0, NULL);  /* _set_ saves tid_acc in swed */
+      retc = swi_set_tid_acc(tjd, epheflag, denum, NULL);  /* _set_ saves tid_acc in swed */
     } else {
-      retc = swi_set_tid_acc(tjd, epheflag, 0, serr);  /* _set_ saves tid_acc in swed */
+      retc = swi_set_tid_acc(tjd, epheflag, denum, serr);  /* _set_ saves tid_acc in swed */
     }
     tid_acc = swed.tid_acc;
   }
@@ -3195,7 +3197,6 @@ int32 swi_guess_ephe_flag()
 
 int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, double *tid_acc, char *serr)
 {
-  double xx[6], tjd_et;
   iflag &= SEFLG_EPHMASK;
   if (swed.is_tid_acc_manual) {
     *tid_acc = swed.tid_acc;
@@ -3210,33 +3211,12 @@ int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, 
     if (iflag & SEFLG_JPLEPH) {
       if (swed.jpl_file_is_open) {
 	denum = swed.jpldenum;
-      } else {
-	tjd_et = tjd_ut; /* + swe_deltat_ex(tjd_ut, 0, NULL); we do not add 
-	                    delta t, because it would result in a recursive 
-			    call of swi_set_tid_acc() */
-	iflag = SEFLG_JPLEPH|SEFLG_J2000|SEFLG_TRUEPOS|SEFLG_ICRS|SEFLG_BARYCTR;
-	iflag = swe_calc(tjd_et, SE_JUPITER, iflag, xx, serr);
-	if (swed.jpl_file_is_open && (iflag & SEFLG_JPLEPH)) {
-	  denum = swed.jpldenum;
-	}
       }
     }
     /* SEFLG_SWIEPH wanted or SEFLG_JPLEPH failed: */
-    if (denum == 0) {
-      tjd_et = tjd_ut; /* + swe_deltat_ex(tjd_ut, 0, NULL); we do not add 
-                          delta t, because it would result in a recursive 
-			  call of swi_set_tid_acc() */
-      if (swed.fidat[SEI_FILE_MOON].fptr == NULL ||
-          tjd_et < swed.fidat[SEI_FILE_MOON].tfstart + 1 ||
-	  tjd_et > swed.fidat[SEI_FILE_MOON].tfend - 1) {
-	iflag = SEFLG_SWIEPH|SEFLG_J2000|SEFLG_TRUEPOS|SEFLG_ICRS;
-	iflag = swe_calc(tjd_et, SE_MOON, iflag, xx, serr);
-      }
+    if (iflag & SEFLG_SWIEPH) {
       if (swed.fidat[SEI_FILE_MOON].fptr != NULL) {
 	denum = swed.fidat[SEI_FILE_MOON].sweph_denum;
-      /* Moon ephemeris file is not available, default to Moshier ephemeris */
-      } else {
-	denum = 404; /* DE number of Moshier ephemeris */
       }
     }
   }
@@ -3657,12 +3637,16 @@ void swi_gen_filename(double tjd, int ipli, char *fname)
     case SEI_PHOLUS:
       strcpy(fname, "seas");
       break;
-    default: 	/* asteroid */
-      sform = "ast%d%sse%05d.%s";
-      if (ipli - SE_AST_OFFSET > 99999) 
-	sform = "ast%d%ss%06d.%s";
-      sprintf(fname, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
-      return;	/* asteroids: only one file 3000 bc - 3000 ad */
+    default: 	/* asteroid or planetary moon */
+      if (ipli > SE_PLMOON_OFFSET && ipli < SE_AST_OFFSET) {
+        sprintf(fname, "sat%ssepm%d.%s", DIR_GLUE, ipli, SE_FILE_SUFFIX);
+      } else {
+	sform = "ast%d%sse%05d.%s";
+	if (ipli - SE_AST_OFFSET > 99999) 
+	  sform = "ast%d%ss%06d.%s";
+	sprintf(fname, sform, (ipli - SE_AST_OFFSET) / 1000, DIR_GLUE, ipli - SE_AST_OFFSET, SE_FILE_SUFFIX);
+      }
+      return;	/* asteroids or planetary moons: only one file 3000 bc - 3000 ad */
       /* break; */
   }
   /* century of tjd */

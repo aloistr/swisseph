@@ -124,6 +124,7 @@ extern "C" {
 
 #define SE_NPLANETS     23      
 
+#define SE_PLMOON_OFFSET   9000
 #define SE_AST_OFFSET   10000
 #define SE_VARUNA   (SE_AST_OFFSET + 20000)
 
@@ -212,6 +213,10 @@ extern "C" {
                                       * 1962 - today to 0.002 arcsec. */
 #define SEFLG_JPLHOR	SEFLG_DPSIDEPS_1980
 #define SEFLG_JPLHOR_APPROX	(512*1024)   /* approximate JPL Horizons 1962 - today */
+#define SEFLG_CENTER_BODY	(1024*1024)  /* calculate position of center of body (COB)
+                                                of planet, not barycenter of its system */
+#define SEFLG_TEST_PLMOON	(2*1024*1024 | SEFLG_J2000 | SEFLG_ICRS | SEFLG_HELCTR | SEFLG_TRUEPOS)  /* test raw data in files sepm9* */
+
 
 #define SE_SIDBITS		256
 /* for projection onto ecliptic of t0 */
@@ -701,6 +706,8 @@ ext_def( int32 ) swe_calc(
 ext_def(int32) swe_calc_ut(double tjd_ut, int32 ipl, int32 iflag, 
 	double *xx, char *serr);
 
+ext_def(int32) swe_calc_pctr(double tjd, int32 ipl, int32 iplctr, int32 iflag, double *xxret, char *serr);
+
 /* fixed stars */
 ext_def( int32 ) swe_fixstar(
         char *star, double tjd, int32 iflag, 
@@ -748,6 +755,7 @@ ext_def(double) swe_get_ayanamsa_ut(double tjd_ut);
 
 
 ext_def(const char *) swe_get_ayanamsa_name(int32 isidmode);
+ext_def(const char *) swe_get_current_file_data(int ifno, double *tfstart, double *tfend, int *denum);
 
 /*ext_def(void) swe_set_timeout(int32 tsec);*/
 
@@ -804,9 +812,17 @@ ext_def( int ) swe_houses_ex(
         double tjd_ut, int32 iflag, double geolat, double geolon, int hsys, 
 	double *cusps, double *ascmc);
 
+ext_def( int ) swe_houses_ex2(
+        double tjd_ut, int32 iflag, double geolat, double geolon, int hsys, 
+	double *cusps, double *ascmc, double *cusp_speed, double *ascmc_speed, char *serr);
+
 ext_def( int ) swe_houses_armc(
         double armc, double geolat, double eps, int hsys, 
 	double *cusps, double *ascmc);
+
+ext_def( int ) swe_houses_armc_ex2(
+        double armc, double geolat, double eps, int hsys, 
+	double *cusps, double *ascmc, double *cusp_speed, double *ascmc_speed, char *serr);
 
 ext_def(double) swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr);

@@ -62,7 +62,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.09" // "2.08.00b"
+#define SE_VERSION      "2.10" 
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -175,6 +175,7 @@
 #define SEI_FILE_MAIN_AST 2
 #define SEI_FILE_ANY_AST  3
 #define SEI_FILE_FIXSTAR  4
+#define SEI_FILE_PLMOON   5
 
 #if 0
 #define SEI_FILE_TEST_ENDIAN     (97L * 65536L + 98L * 256L + 99L) /*abc*/
@@ -466,7 +467,7 @@ static const struct aya_init ayanamsa[] = {
 {1684532.5, -4.44138598, TRUE, 0},  
 /*************************/
 /* 15: Hipparchos */
-{1674484, -9.33333, TRUE, -1},       // 15: Hipparchos
+{1674484.0, -9.33333, TRUE, -1},       // 15: Hipparchos
 /*************************/
 /* 16: Sassanian */
 {1927135.8747793, 0, TRUE, -1},      // 16: Sassanian 

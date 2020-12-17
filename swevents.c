@@ -159,12 +159,9 @@ static char *info = "\n\
 	-10		go back in time 10 days\n";
 /**************************************************************/
 
-#include "sweodef.h"/**/
 #include "swephexp.h"
-#include "swephlib.h"/**/
-//#include "swepcalc.h"
+#include "swephlib.h"
 #include "swevents.h"
-#include "astrolib.h"
 #include <time.h>
 
 #define J2000           2451545.0  /* 2000 January 1.5 */
@@ -182,6 +179,7 @@ static char *info = "\n\
 #define BIT_LZEROES	8
 
 #define STRLEN_OUT_TEXT 20
+#define UNUSED(expr) do { (void)(expr); } while (0)
 
 static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi", 
 			  "li", "sc", "sa", "cp", "aq", "pi"};
@@ -215,7 +213,7 @@ AS_BOOL ephemeris_time = FALSE;
 AS_BOOL do_not_round = FALSE;
 AS_BOOL verbose = FALSE;
 char scmd[AS_MAXCH];
-char sdate[20];
+char sdate[AS_MAXCH];
 
 static char *dms(double x, int iflag);
 static char *hms(double x, int32 iflag);
@@ -271,10 +269,9 @@ int main(int argc, char *argv[])
   EVENT *pev, *pev0;
   double dhour = 0, tend;
   char serr[256];
-  char s[AS_MAXCH], saves[AS_MAXCH]; 
+  char s[AS_MAXCH], saves[AS_MAXCH];
   char *sp, *spsave;
   char *spno;
-  char *fmt = "PLBRS";
   char *gap = " ";
   int i, n;
   int jmon, jday, jyear;
@@ -285,6 +282,7 @@ int main(int argc, char *argv[])
 /*  double x[6], xs[6], x0[6], x1[6], x2[6], xp[6];*/
   char ephepath[80] = "/users/ephe/";
   char fname[80] = "de431.eph";
+  char *fmt = "PLBRS";
   char *begindate = NULL;
   long iflag = SEFLG_SPEED;              /* external flag: helio, geo... */
   int whicheph = SEFLG_SWIEPH;   
@@ -295,6 +293,7 @@ int main(int argc, char *argv[])
   double delt;
   struct tm *tim;
   time_t tloc;
+  UNUSED(fmt);
   *saves = '\0';
   time(&tloc);
   tim = localtime (&tloc);
@@ -382,7 +381,8 @@ int main(int argc, char *argv[])
   iflag |= whicheph;
   if (begindate == NULL) {
     printf ("datum ?");
-    sp = gets(s);
+    if( !fgets(s, AS_MAXCH, stdin) ) exit(1);
+    sp = s;
   } else {
     sp = begindate;
     begindate = ".";  /* to exit afterwards */
@@ -961,7 +961,6 @@ int32 calc_mundane_aspects(int32 iflag, double tjd0, double tjde, double tstep,
   char *splan, char *sasp, EVENT *pev, char *serr)
 {
   int32 ipl, ipla, iplb, ipli, iplia, iplib, bpind;
-  int ist = -1;
   char *sp, *spa, *spb;
   char stnam[40], stnama[40], stnamb[40];
   double t, tt0, tret, tret2, dang = 0, dorb = 0;
@@ -981,6 +980,8 @@ int32 calc_mundane_aspects(int32 iflag, double tjd0, double tjde, double tstep,
   struct aspdat aspdat[NMAXPL * NMAXPL], *pasp;
   char foutnam[AS_MAXCH];
   FILE *fpout = NULL;
+  UNUSED(xa1);
+  UNUSED(xa1d);
   strcpy(foutnam, FOUTNAM);
   if ((fpout = fopen(foutnam, "w+")) == NULL) {
     sprintf(serr, "could not open file %s", foutnam);
@@ -1003,7 +1004,6 @@ int32 calc_mundane_aspects(int32 iflag, double tjd0, double tjde, double tstep,
   memset((void *) &(aspdat[0]), 0, NMAXPL * NMAXPL * sizeof(struct aspdat));
   /* *stnam = '\0';*/
   for (t = tjd0; t < tjde; t += tstep) {
-    ist = -1;
     nev = 0;
     pevd = &(events_day[0]);
     for (sp = splan, ipli = 0; *sp != '\0'; sp = forw_splan(sp), ipli++) {
@@ -1285,6 +1285,7 @@ static int32 extract_data_of_day(int32 doflag, double tjd, double dtol, char *sp
   char s[AS_MAXCH], *sp;
   FILE *fpout = NULL;
   char foutnam[AS_MAXCH];
+  UNUSED(tjd2);
   /* open aspects file */
   sprintf(foutnam, "%s%s", PATH_FOUTNAM, FOUTNAM);
 #if 0
@@ -1328,6 +1329,7 @@ return OK;
   nrecdif = (fposlast - fposfirst) / SWEASP_DAT_RECLEN;
   tjd0 = tjdbeg; tjd2 = tjdend; tjd1 = tjd0;
   fpos0 = fposfirst; fpos2 = fposlast;
+  fpos1 = fpos0;  // silence compiler
   while(fabs(tjdstart - tjd1) > 2) {
     fpos1 = fpos0 + (nrecdif / 2) * SWEASP_DAT_RECLEN;
     if ((retc = do_fread_double(fpout, foutnam, fpos1, &tjd1, serr)) == ERR) {

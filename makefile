@@ -57,6 +57,8 @@ PUBDOC = doc/swephin.cdr\
 
 INTSOURCE = $(PUBSOURCE) 
 
+EXE = swetest swevents
+
 .o :  
 	cc $(OP) $@ $?  -lastro  -lm -ldl
 .c.o :  
@@ -74,6 +76,9 @@ st9:	st9.o
 
 swetd: swetd.o $(SWEPH)
 	cc $(OP) -o swetd swetd.o $(SWEPH) -lastro -lm -ldl
+
+clean:
+	rm -f *.o $(EXE)
 
 
 # make a local library libswe.so

@@ -146,7 +146,7 @@ centisec *ephread(double jd, int plalist, int flag, char *errtext)
   for (p = 0, pf = 1; p < EP_NP; p++, pf = pf << 1)
     if ((plalist & pf) != 0) {
       inpolq_l((int) ix, qod[p], jfract, &(lon[p][0]), &(out[p]), &clp);
-      if (p <= CHIRON) {	/* normalize all except ecl and nut */
+      if (p <= PLACALC_CHIRON) {	/* normalize all except ecl and nut */
 	if (out[p] < 0)
 	  out[p] += DEG360;
 	else if (out[p] >= DEG360)
@@ -169,12 +169,12 @@ err_exit:
       sweflag = SEFLG_SPEED;
     if (errtext != NULL)
       sprintf(errtext,"ephread failed for jd=%f; used swe_calc().", jd);
-    for (p = 0, pf = 1; p < CALC_N; p++, pf = pf << 1) {
+    for (p = 0, pf = 1; p < PLACALC_CALC_N; p++, pf = pf << 1) {
       if ((plalist & pf) != 0) {
-	if ((iflagret = swe_calc(jd, plac2swe(p), sweflag, x, serr)) != ERR) {
-	  out[p] = d2l(x[0] * DEG);
+	if ((iflagret = swe_calc(jd, ephe_plac2swe(p), sweflag, x, serr)) != ERR) {
+	  out[p] = swe_d2l(x[0] * DEG);
 	  if (flag & EP_BIT_SPEED)
-	    out[p + EP_NP] = d2l(x[3] * DEG);
+	    out[p + EP_NP] = swe_d2l(x[3] * DEG);
 	  if (out[p] < 0)
 	    out[p] += DEG360;
 	  else if (out[p] >= DEG360)
@@ -192,8 +192,8 @@ err_exit:
       sprintf(errtext, "error in swe_calc() %s\n", serr);
       return NULL;
     }
-    out[EP_ECL_INDEX] = d2l(x[0] * DEG);	/* true ecliptic */
-    out[EP_NUT_INDEX] = d2l(x[2] * DEG);	/* nutation */
+    out[EP_ECL_INDEX] = swe_d2l(x[0] * DEG);	/* true ecliptic */
+    out[EP_NUT_INDEX] = swe_d2l(x[2] * DEG);	/* nutation */
     out[EP_ECL_INDEX + EP_NP] = 0;
     out[EP_NUT_INDEX + EP_NP] = 0;
     return out;
@@ -254,7 +254,7 @@ double *dephread2(double jd, int plalist, int flag, char *errtext)
   for (p = 0, pf = 1; p < EP_NP; p++, pf = pf << 1)
     if ((plalist & pf) != 0) {
       inpolq((int) ix, qod[p], jfract, &(lon[p][0]), &(out[p]), &lp);
-      if (p <= CHIRON) {	/* normalize all except ecl and nut */
+      if (p <= PLACALC_CHIRON) {	/* normalize all except ecl and nut */
 	if (out[p] < 0)
 	  out[p] += 360.0;
 	else if (out[p] >= 360.0)
@@ -277,9 +277,9 @@ err_exit:
       sweflag = SEFLG_SPEED;
     if (errtext != NULL)
       sprintf(errtext,"ephread failed for jd=%f; used swe_calc().", jd);
-    for (p = 0, pf = 1; p < CALC_N; p++, pf = pf << 1) {
+    for (p = 0, pf = 1; p < PLACALC_CALC_N; p++, pf = pf << 1) {
       if ((plalist & pf) != 0) {
-	if ((iflagret = swe_calc(jd, plac2swe(p), sweflag, x, serr)) != ERR) {
+	if ((iflagret = swe_calc(jd, ephe_plac2swe(p), sweflag, x, serr)) != ERR) {
 	  out[p] = x[0];
 	  if (flag & EP_BIT_SPEED)
 	    out[p + EP_NP] = x[3];
@@ -332,7 +332,7 @@ static int ephe4_unpack(int jdl, int plalist, centisec lon[][EPBS], int i0,char 
 #ifdef INTEL_BYTE_ORDER
   shortreorder((UCHAR *) &e, sizeof(struct ep4));
 #endif
-  for (p = SUN, pf = 1; p <= CHIRON; p++, pf = pf << 1) {
+  for (p = PLACALC_SUN, pf = 1; p <= PLACALC_CHIRON; p++, pf = pf << 1) {
     if ((plalist & pf) == 0) continue; 
     l_ret = e.elo[p].p0m * 6000L + e.elo[p].p0s;	/* csec */
     d_ret = e.elo[p].pd1m * 6000L + e.elo[p].pd1s;	/* csec */
@@ -346,7 +346,7 @@ static int ephe4_unpack(int jdl, int plalist, centisec lon[][EPBS], int i0,char 
       lon[p][i0+1] = l_ret;
     }
     for (i = 2; i < NDB; i++) {
-      if (p == MOON || p == MERCURY)
+      if (p == PLACALC_MOON || p == PLACALC_MERCURY)
 	d_ret += e.elo[p].pd2[i-2] * 10L;
       else
 	d_ret += e.elo[p].pd2[i-2];
@@ -389,7 +389,7 @@ static int ephe4_unpack_d(int jdl, int plalist, double lon[][EPBS], int i0,char 
 #ifdef INTEL_BYTE_ORDER
   shortreorder((UCHAR *) &e, sizeof(struct ep4));
 #endif
-  for (p = SUN, pf = 1; p <= CHIRON; p++, pf = pf << 1) {
+  for (p = PLACALC_SUN, pf = 1; p <= PLACALC_CHIRON; p++, pf = pf << 1) {
     if ((plalist & pf) == 0) continue; 
     l_ret = (e.elo[p].p0m * 6000 + e.elo[p].p0s) * CS2DEG;	
     d_ret = (e.elo[p].pd1m * 6000 + e.elo[p].pd1s) * CS2DEG;	
@@ -403,7 +403,7 @@ static int ephe4_unpack_d(int jdl, int plalist, double lon[][EPBS], int i0,char 
       lon[p][i0+1] = l_ret;
     }
     for (i = 2; i < NDB; i++) {
-      if (p == MOON || p == MERCURY)
+      if (p == PLACALC_MOON || p == PLACALC_MERCURY)
 	d_ret += (e.elo[p].pd2[i-2] * 10 * CS2DEG);
       else
 	d_ret += (e.elo[p].pd2[i-2] * CS2DEG);
@@ -569,8 +569,8 @@ static void inpolq_l(int n, int o, double p, centisec *x, centisec *axu, centise
     rl  += p5*d4p2 + q5*d4p1;
     rlp += u1*d4p2 - u2*d4p1;
   }
-  *axu = d2l (rl);
-  *adxu = d2l (rlp);
+  *axu = swe_d2l (rl);
+  *adxu = swe_d2l (rlp);
 }	/* end inpolq_l() */
 
 /*****************************************************
@@ -662,4 +662,17 @@ static char *my_makepath(char *d, char *s)
   while ((p = strchr(d, '/')) != NULL) *p = '\\';
 # endif
   return (d);
+}
+
+int ephe_plac2swe(int p)
+{
+  if (p >= PLACALC_SUN && p <= PLACALC_TRUE_NODE) return p;
+  if (p == PLACALC_CHIRON) return SE_CHIRON;
+  if (p == PLACALC_LILITH) return SE_MEAN_APOG;
+  if (p == PLACALC_CERES) return SE_CERES;
+  if (p == PLACALC_PALLAS) return SE_PALLAS;
+  if (p == PLACALC_JUNO) return SE_JUNO;
+  if (p == PLACALC_VESTA) return SE_VESTA;
+  if (p == PLACALC_EARTHHEL) return SE_EARTH;
+  return -1;
 }

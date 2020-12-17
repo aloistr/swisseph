@@ -91,15 +91,39 @@
 extern "C" {
 #endif
 
-#include "astrolib.h"
+// definitions must agree wit astrolib.h
+#define PLACALC_SUN	0		/* used synonymously for earth too */
+#define PLACALC_EARTH	0
+#define PLACALC_MOON	1
+#define PLACALC_MERCURY 2
+#define PLACALC_VENUS	3
+#define PLACALC_MARS	4
+#define PLACALC_JUPITER	5
+#define PLACALC_SATURN	6
+#define PLACALC_URANUS	7
+#define PLACALC_NEPTUNE 8
+#define PLACALC_PLUTO	9
+#define PLACALC_LASTPLANET PLUTO
+#define PLACALC_MEAN_NODE  10
+#define PLACALC_TRUE_NODE  11
+#define PLACALC_CHIRON	   12
+#define PLACALC_LILITH	   13	
+#define PLACALC_CALC_N	  14	/* number of planets in placalc module */
+#define PLACALC_CERES     14
+#define PLACALC_PALLAS    15
+#define PLACALC_JUNO      16
+#define PLACALC_VESTA     17
+#define PLACALC_EARTHHEL  18	/* heliocentric earth */
+#define PLACALC_PFORTUNAE 19
+// next numbers after 19 are reserved for AC, MC, houses, signs;
+# define PLACALC_AC	   20
+# define PLACALC_ASC	   20
+# define PLACALC_MC	   21
+# define PLACALC_CALC_N_MC  22	/* number of normal natal factors */
 
 # define EP4_BLOCKSIZE  sizeof(struct ep4)
 # if HPUNIX
-#   if 0
-#     define EP4_PATH "/users/dieter/"
-#   else
-#     define EP4_PATH "/users/ephe/"
-#   endif
+#   define EP4_PATH "/home/ephe/"
 # else
 #   define EP4_PATH  "ephe\\"
 # endif
@@ -109,19 +133,19 @@ extern "C" {
 
 /*
  * bits for plalist in ephread():
- * the planet flag bits SUN .. CHIRON, ECl, NUT can be set individually.
+ * the planet flag bits SUN .. PLACALC_CHIRON, ECl, NUT can be set individually.
  * plalist = 0 is equivalent to all planets and ecl,nut
- * EP_ALL_PLANETS sets all planet bits SUN .. CHIRON
+ * EP_ALL_PLANETS sets all planet bits SUN .. PLACALC_CHIRON
  * EP_ALL_BITS sets all bits.
  */
 
-# define EP_NP (CHIRON + 3)		/* total number of factors in ep4 */
+# define EP_NP (PLACALC_CHIRON + 3)		/* total number of factors in ep4 */
 					/* sun .. chiron, ecl, nut */
 
-# define EP_ALL_PLANETS  ((1 << (CHIRON + 1)) - 1)	/* bits 0..12 set */
-# define EP_CALC_N	(CHIRON+1)	/* 13 planets, SUN .. CHIRON */
-# define EP_ECL_INDEX  (CHIRON + 1)	/* index for ecliptic centisec */
-# define EP_NUT_INDEX  (CHIRON + 2)	/* index for nutation centisec */
+# define EP_ALL_PLANETS  ((1 << (PLACALC_CHIRON + 1)) - 1)	/* bits 0..12 set */
+# define EP_CALC_N	(PLACALC_CHIRON+1)	/* 13 planets, SUN .. PLACALC_CHIRON */
+# define EP_ECL_INDEX  (PLACALC_CHIRON + 1)	/* index for ecliptic centisec */
+# define EP_NUT_INDEX  (PLACALC_CHIRON + 2)	/* index for nutation centisec */
 # define EP_ECL_BIT   (1 << EP_ECL_INDEX)
 # define EP_NUT_BIT   (1 << EP_NUT_INDEX)
 # define EP_ALL_BITS   (EP_ALL_PLANETS|EP_ECL_BIT|EP_NUT_BIT)
@@ -152,7 +176,7 @@ struct ep4  {
   short ecl0s;		/*                      0.01" */
   short ecld1[NDB-1];	/* first differences 0.01", day 1..9 */
   short	nuts[NDB];	/* nutation in 0.01", day 0..9 */
-  struct  elon elo[CHIRON +1];	 	/* longitude sun...chiron */
+  struct  elon elo[PLACALC_CHIRON +1];	 	/* longitude sun...chiron */
 };
 
 
@@ -187,6 +211,10 @@ extern centisec *ephread(double jd, int plalist, int flag, char *errtext);
 extern double *dephread2(double jd, int plalist, int flag, char *errtext);
 
 extern int eph4_posit (int jlong, AS_BOOL writeflag, char *errtext);
+
+extern int ephe_plac2swe(int p);
+
+extern void shortreorder (UCHAR *p, int n);
 
 #ifdef __cplusplus
 }

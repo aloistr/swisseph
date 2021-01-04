@@ -1330,17 +1330,16 @@ porphyry:
     if (acmc < 0) {
       /* within polar circle we swap AC/DC if AC is on wrong side */
       hsp->ac = swe_degnorm(hsp->ac + 180);
-      hsp->cusp[1] = hsp->ac;
     }
     hsp->cusp[1] = swe_degnorm(hsp->ac - 15);
     for (i = 2; i <=12; i++)
       hsp->cusp[i] = swe_degnorm(hsp->cusp[1] + (i-1) * 30);
-    break;
     if (hsp->do_hspeed) {
       for (i = 1; i <=12; i++) {
 	hsp->cusp_speed[i] = hsp->ac_speed;
       }
     }
+    break;
   case 'W':	/* equal, whole-sign houses */
     acmc = swe_difdeg2n(hsp->ac, hsp->mc);
     if (acmc < 0) {

@@ -290,6 +290,16 @@ static char *infocmd4 = "\
 		DECIMAL fraction) and elevation (meters) can be given, with\n\
 		commas separated, + for east and north. If none are given,\n\
 		Greenwich is used 0.00,51.50,0\n\
+        -pc...  compute planetocentric positions\n\
+                to specify the central body, use the internal object number\n\
+		of Swiss Ephemeris, e.g. 3 for Venus, 4 for Mars, \n\
+        -pc3 	Venus-centric \n\
+        -pc4 	Mars-centric \n\
+        -pc5 	Jupiter-centric (barycenter)\n\
+	-pc9599 Jupiter-centric (center of body)\n\
+	-pc9699 Saturn-centric (center of body)\n\
+		For asteroids use MPC number + 10000, e.g.\n\
+	-pc10433 Eros-centric (Eros = 433 + 10000)\n\
      orbital elements:\n\
         -orbel  compute osculating orbital elements relative to the\n\
 	        mean ecliptic J2000. (Note, all values, including time of\n\
@@ -442,6 +452,8 @@ static char *infoplan = "\n\
         c intp. lunar apogee \n\
         g intp. lunar perigee \n\
         C Earth (in heliocentric or barycentric calculation)\n\
+        For planets Jupiter to Pluto the center of body (COB) can be\n\
+        calculated using the additional parameter -cob\n\
      dwarf planets, plutoids\n\
         F Ceres\n\
 	9 Pluto\n\
@@ -455,6 +467,18 @@ static char *infoplan = "\n\
         H Juno \n\
         I Vesta \n\
         s minor planet, with MPC number given in -xs\n\
+     some planetary moons and center of body of a planet:\n\
+        v with moon number given in -xv:\n\
+        v -xv9501 Io/Jupiter:\n\
+        v -xv9599 Jupiter, center of body (COB):\n\
+        v -xv94.. Mars moons:\n\
+        v -xv95.. Jupiter moons and COB:\n\
+        v -xv96.. Saturn moons and COB:\n\
+        v -xv97.. Uranus moons and COB:\n\
+        v -xv98.. Neptune moons and COB:\n\
+        v -xv99.. Pluto moons and COB:\n\
+          The numbers of the moons are given here: \n\
+	  https://www.astro.com/ftp/swisseph/ephe/sat/plmolist.txt\n\
      fixed stars:\n\
         f fixed star, with name or number given in -xf option\n\
 	f -xfSirius   Sirius\n\
@@ -1929,8 +1953,10 @@ int main(int argc, char *argv[])
 	  line_count++;
 	}
       }
-      if (line_count >= line_limit) 
+      if (line_count >= line_limit) {
+	printf("****** line count %d was exceeded\n", line_limit);
         break;
+      }
     }           /* for tjd */
     if (*serr_warn != '\0') {
       printf("\nwarning: ");

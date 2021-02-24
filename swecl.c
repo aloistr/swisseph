@@ -4378,13 +4378,15 @@ int32 CALL_CONV swe_rise_trans(
 {
   int32 retval = 0;
   /* Simple fast algorithm for risings and settings of 
-   * - planets Sun, Moon, Mercury - Pluto + Lunar Nodes and Fixed stars
+   * - planets Sun, Moon, Mercury - Pluto + Lunar Nodes
    * Does not work well for geographic latitudes
    * > 65 N/S for the Sun
    * > 60 N/S for the Moon and the planets
    * Beyond these limits, some risings or settings may be missed.
    */
-  if (1 && (rsmi & (SE_CALC_RISE|SE_CALC_SET)) 
+  AS_BOOL do_fixstar = (starname != NULL && *starname != '\0');
+  if (!do_fixstar
+    && (rsmi & (SE_CALC_RISE|SE_CALC_SET)) 
     && !(rsmi & SE_BIT_FORCE_SLOW_METHOD)
     && !(rsmi & (SE_BIT_CIVIL_TWILIGHT|SE_BIT_NAUTIC_TWILIGHT|SE_BIT_ASTRO_TWILIGHT))
     && (ipl >= SE_SUN && ipl <= SE_TRUE_NODE)

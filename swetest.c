@@ -2565,23 +2565,9 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
     	break;
       }
     case 'z': {	// Zenith distance
-        double geolat, lat90, dec90, coszd, zd;
-	double md = swe_difdeg2n(xequ[0], armc);	// meridian distance
 	if (is_label) { printf("ZD      "); break; }
-	geolat = geopos[1];
-	if (geolat >= 0) {  // North pole
-	  lat90 = 90 - geolat;	// distance zenith to pole
-	  dec90 = 90 - xequ[1];	// distance object to pole
-	} else {    // south pole
-	  lat90 = 90 + geolat;
-	  dec90 = 90 + xequ[1];
-	}
-	coszd = COSD(lat90) * COSD(dec90) + SIND(lat90) * SIND(dec90) * COSD(md);
-	if (fabs(coszd > 1)) {
-	  fprintf(stderr, "zenith distance error coszd=%lf\n", coszd);
-	  coszd = 0;
-        }
-	zd = ACOSD(coszd);
+	swe_azalt(tut, SE_EQU2HOR, geopos, datm[0], datm[1], xequ, xaz);
+	double zd = 90 - xaz[1];
 	if (output_extra_prec)
 	  printf("%# 11.11f", zd);
 	else

@@ -538,6 +538,8 @@ static char *infoform = "\n\
         q relative distance (1000=nearest, 0=furthest)\n\
         A right ascension in hh:mm:ss\n\
         a right ascension hours decimal\n\
+	m Meridian distance \n\
+	z Zenith distance \n\
         D declination degree\n\
         d declination decimal\n\
         I azimuth degree\n\
@@ -700,6 +702,9 @@ static char *infoexamp = "\n\
 #define SEARCH_RANGE_LUNAR_CYCLES 20000
 
 #define LEN_SOUT    1000 // length of output string variable
+#define SIND(x) sin((x) * DEGTORAD)
+#define COSD(x) cos((x) * DEGTORAD)
+#define ACOSD(x)        (acos((x)) * RADTODEG)
 
 static char se_pname[AS_MAXCH];
 static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi", 
@@ -1717,7 +1722,7 @@ int main(int argc, char *argv[])
 	  }
         }
         /* equator position */
-        if (strpbrk(fmt, "aADdQ") != NULL) {
+        if (strpbrk(fmt, "aADdQmz") != NULL) {
           iflag2 = iflag | SEFLG_EQUATORIAL;
           if (ipl == SE_FIXSTAR) {
             iflgret = call_swe_fixstar(star, te, iflag2, xequ, serr);
@@ -1824,7 +1829,7 @@ int main(int argc, char *argv[])
           }
         }
         /* house position */
-        if (strpbrk(fmt, "gGj") != NULL) {
+        if (strpbrk(fmt, "gGjzm") != NULL) {
 	  armc = swe_degnorm(swe_sidtime(tut) * 15 + geopos[0]);
 	  for (i = 0; i < 6; i++)
 	    xsv[i] = x[i];
@@ -2548,6 +2553,40 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
 	if (*sp == 'V')
 	  printf(" %2d%%", swe_d2l(100 * fmod(xhds / 0.9375, 1)));
         break;
+      }
+    case 'm': {	// Meridian distance
+	if (is_label) { printf("MD      "); break; }
+	double md = swe_difdeg2n(xequ[0], armc);
+	if (md < 0) md = -md;
+	if (output_extra_prec)
+	  printf("%# 11.11f", md);
+	else
+	  printf("%# 11.7f", md);
+    	break;
+      }
+    case 'z': {	// Zenith distance
+        double geolat, lat90, dec90, coszd, zd;
+	double md = swe_difdeg2n(xequ[0], armc);	// meridian distance
+	if (is_label) { printf("ZD      "); break; }
+	geolat = geopos[1];
+	if (geolat >= 0) {  // North pole
+	  lat90 = 90 - geolat;	// distance zenith to pole
+	  dec90 = 90 - xequ[1];	// distance object to pole
+	} else {    // south pole
+	  lat90 = 90 + geolat;
+	  dec90 = 90 + xequ[1];
+	}
+	coszd = COSD(lat90) * COSD(dec90) + SIND(lat90) * SIND(dec90) * COSD(md);
+	if (fabs(coszd > 1)) {
+	  fprintf(stderr, "zenith distance error coszd=%lf\n", coszd);
+	  coszd = 0;
+        }
+	zd = ACOSD(coszd);
+	if (output_extra_prec)
+	  printf("%# 11.11f", zd);
+	else
+	  printf("%# 11.7f", zd);
+    	break;
       }
     }     /* switch */
   }       /* for sp */

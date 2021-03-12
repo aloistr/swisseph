@@ -1,7 +1,8 @@
 /*******************************************************
 
- header file for structures and functions in module ephe.c
+ header file for structures and functions in module sweephe.c
  for reading and writing stored ephemerides in format ep4
+ a fast precomputed ephemeris used in some Astrodienst applications.
 
  The design of ephemeris type ep4:
  In all ASYS and transit application of stored ephemerides

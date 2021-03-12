@@ -1,6 +1,7 @@
 /********************************************************************
-ephe.c
+sweephe4.c
 access structures and functions for ephemeris file ep4_
+a fast precomputed ephemeris
 *********************************************************************/
 /* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
   

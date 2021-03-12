@@ -2,6 +2,7 @@
 sweephgen4.c	
 
 Create ephemeris file type 4   ep4_
+a fast precoomputed ephemeris used in some Astrodienst applications.
 
 options: -fYYY	(start) file number, required option
 	 -nNN	number of files to be created, default 1

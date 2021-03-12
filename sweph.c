@@ -5062,12 +5062,10 @@ static void rot_back(int ipli)
   double xrot, yrot, zrot;
   double *chcfx, *chcfy, *chcfz;
   double *refepx, *refepy;
-  //double seps2000 = swed.oec2000.seps;
-  //double ceps2000 = swed.oec2000.ceps;
   // epsilon as used in chopt.c
-  // double eps2000 = 0.409092804;       	/* eps 2000 */
-  double seps2000 = 0.39777715572793088;  /* sin(eps 2000) */
-  double ceps2000 = 0.91748206215761929;	/* sin(eps 2000) */
+  // double eps2000 = 0.409092804;       	// eps 2000 in radians 
+  double seps2000 = 0.39777715572793088;  	// sin(eps2000) 
+  double ceps2000 = 0.91748206215761929;	// cos(eps2000) 
   struct plan_data *pdp = &swed.pldat[ipli];
   int nco = pdp->ncoe;
   t = pdp->tseg0 + pdp->dseg / 2;

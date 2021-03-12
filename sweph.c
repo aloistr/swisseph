@@ -5062,8 +5062,12 @@ static void rot_back(int ipli)
   double xrot, yrot, zrot;
   double *chcfx, *chcfy, *chcfz;
   double *refepx, *refepy;
-  double seps2000 = swed.oec2000.seps;
-  double ceps2000 = swed.oec2000.ceps;
+  //double seps2000 = swed.oec2000.seps;
+  //double ceps2000 = swed.oec2000.ceps;
+  // epsilon as used in chopt.c
+  // double eps2000 = 0.409092804;       	/* eps 2000 */
+  double seps2000 = 0.39777715572793088;  /* sin(eps 2000) */
+  double ceps2000 = 0.91748206215761929;	/* sin(eps 2000) */
   struct plan_data *pdp = &swed.pldat[ipli];
   int nco = pdp->ncoe;
   t = pdp->tseg0 + pdp->dseg / 2;
@@ -8147,7 +8151,7 @@ int32 CALL_CONV swe_calc_pctr(double tjd, int32 ipl, int32 iplctr, int32 iflag, 
   iflag = plaus_iflag(iflag, ipl, tjd, serr);
   epheflag = iflag & SEFLG_EPHMASK;
   // this fills in obliquity and nutation values in swed
-  swe_calc(tjd + swe_deltat_ex(tjd, epheflag, serr), SE_ECL_NUT, 0, xx, serr);
+  swe_calc(tjd + swe_deltat_ex(tjd, epheflag, serr), SE_ECL_NUT, iflag, xx, serr);
   iflag &= ~(SEFLG_HELCTR|SEFLG_BARYCTR);
   iflag2 = epheflag;
   iflag2 |= (SEFLG_BARYCTR|SEFLG_J2000|SEFLG_ICRS|SEFLG_TRUEPOS|SEFLG_EQUATORIAL|SEFLG_XYZ|SEFLG_SPEED);
@@ -8375,13 +8379,13 @@ int32 CALL_CONV swe_calc_pctr(double tjd, int32 ipl, int32 iplctr, int32 iflag, 
 }
 
 // returns data from internal file structures sweph.fidat
-// used in last cal to swe_calc() or swe_fixstar()
+// used in last call to swe_calc() or swe_fixstar()
 // ifno = 0     planet file sepl_xxx, used for Sun .. Pluto, or jpl file
 // ifno = 1     moon file semo_xxx
 // ifno = 2     main asteroid file seas_xxx  if such an object was computed
 // ifno = 3     other asteroid or planetary moon file, if such object was computed
 // ifno = 4     star file
-// Return valuue: full file pathname, or NULL if no data
+// Return value: full file pathname, or NULL if no data
 // tfstart = start date of file,
 // tfend   = end data of fila,
 // denum   = jpl ephemeris number 406 or 431 from which file was derived

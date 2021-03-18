@@ -186,7 +186,7 @@ static char *infocmd2 = "\
 static char *infocmd3 = "\
         -geopos[long,lat,elev]	\n\
 		Geographic position. Can be used for azimuth and altitude\n\
-                or house cups calculations.\n\
+                or house cusps calculations.\n\
                 The longitude, latitude (degrees with DECIMAL fraction)\n\
 		and elevation (meters) can be given, with\n\
 		commas separated, + for east and north. If none are given,\n\
@@ -252,6 +252,10 @@ static char *infocmd3 = "\
 	   40 Cochrane (Gal.Center = 0 Cap)\n\
 	   41 Galactic Equator (Fiorenza)\n\
 	   42 Vettius Valens\n\
+	   43 Lahiri 1940\n\
+	   44 Lahiri VP285 (1980)\n\
+	   45 Krishnamurti VP291\n\
+	   46 Lahiri ICRC\n\
      ephemeris specifications:\n\
         -edirPATH change the directory of the ephemeris files \n\
         -eswe   swiss ephemeris\n\
@@ -2399,7 +2403,7 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
 	  swe_pheno(te, ipl, iflag, dret, serr);
 	  printf("%# 13.5f\"", dret[5] * 3600);
 	} else {
-	  printf("%# 14.9f", x[2]* SE_AUNIT_TO_LIGHTYEAR);
+	  printf("%# 14.9f", x[2]);
 	}
 	break;
     case 'q':

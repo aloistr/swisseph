@@ -284,7 +284,7 @@ static char *infocmd4 = "\
         -testaa97\n\
         -roundsec         round to seconds\n\
         -roundmin         round to minutes\n\
-	-ep		  use extended precision in output\n\
+	-ep		  use extra precision in output for some data\n\
 	-dms              use dms instead of fractions, at some places\n\
 	-lim		  print ephemeris file range\n\
      observer position:\n\

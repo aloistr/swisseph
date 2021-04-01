@@ -284,6 +284,7 @@ static char *infocmd4 = "\
         -testaa97\n\
         -roundsec         round to seconds\n\
         -roundmin         round to minutes\n\
+	-ep		  use extended precision in output\n\
 	-dms              use dms instead of fractions, at some places\n\
 	-lim		  print ephemeris file range\n\
      observer position:\n\
@@ -2253,7 +2254,7 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
 	      case 'r':   /* speed! */
 		if (is_label) { printf("AU/day"); break; }
 		if (output_extra_prec)
-		  printf("%# 16.11f", x[5]);
+		  printf("%# 16.14f", x[5]);
 		else
 		  printf("%# 14.9f", x[5]);
 		break;
@@ -2380,7 +2381,10 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
 	break;
     case 'R':
 	if (is_label) { printf("distAU   "); break; }
-	printf("%# 14.9f", x[2]);
+	if (output_extra_prec)
+	  printf("%# 16.14f", x[2]);
+	else
+	  printf("%# 14.9f", x[2]);
 	break;
     case 'W':
 	if (is_label) { printf("distLY   "); break; }

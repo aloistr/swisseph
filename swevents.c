@@ -88,7 +88,7 @@ static char *info = "\n\
 		to express the date as absolute Julian day number.\n\
 		Note: the date format is day month year (European style).\n\
 	 -eswe  swiss ephemeris\n\
-	 -ejpl  jpl ephemeris (DE404), or with ephemeris file name\n\
+	 -ejpl  jpl ephemeris (DE431), or with ephemeris file name\n\
 	 	-ejplde200.eph\n\
 	 -emos  moshier ephemeris\n\
 	 -true	true positions\n\
@@ -216,21 +216,11 @@ char scmd[AS_MAXCH];
 char sdate[AS_MAXCH];
 
 static char *dms(double x, int iflag);
+
+
 static char *hms(double x, int32 iflag);
-
-/*static int get_planet_names();*/
-#if 0
-static long init_next_step(double te, int ipl, long iflag, char *serr)
-static long do_conj_sun(double te, int ipl, long iflag, char *serr);
-static long do_visibility(double te, int ipl, long iflag, char *serr);
-static long do_max_elong(double te, int ipl, long iflag, char *serr);
-static long do_station(double te, int ipl, long iflag, char *serr);
-static long do_brillancy(double te, int ipl, long iflag, char *serr);
-static int get_next_ingress(double t, int32 ipl, int32 iflag, INGRESS *ding, char *serr);
-#endif
-
 static int32 get_next_voc(double tet0, int32 iflag, int32 vocmethod, VOC *pvoc, char *serr);
-int32 calc_all_crossings(
+static int32 calc_all_crossings(
               int32 iflag,    /* swiss ephemeris flags */
               int32 itype,    /* type of calculation:
                                * 0 = mundane aspects, 
@@ -248,18 +238,8 @@ int32 calc_all_crossings(
              );
 static int32 calc_all_voc(int32 iflag, double te, double tend, char *serr);
 static int32 extract_data_of_day(int32 doflag, double te, double dtol, char *splan, char *sasp, EVENT *pev, char *serr);
-
 static int letter_to_ipl(int letter);
 
-/* globals */
-#if 0
-static double xp0[6], xp1[6], xp2[6];		/* planet */
-static double xs0[6], xs1[6], xs2[6]; 		/* sun */
-static double xel0[6], xel1[6], xel2[6];	/* elongation in longitude */
-static double xang0[6], xang1[6], xang2[6];	/* angular distance from sun */
-static double xma0[6], xma1[6], xma2[6];	/* magnitude */
-static char sout[AS_MAXCH];
-#endif
 
 #define DOFLAG_ASP    1
 #define DOFLAG_VOC    2
@@ -433,10 +413,6 @@ int main(int argc, char *argv[])
     tjd = swe_julday(jyear, jmon, jday, jut, gregflag);
     tjd += dhour / 24.0;
   }
-#if 0
-    /*title */
-    do_print("Venus Phenomena 1000 BC - 2100 AD, computed by Astrodienst AG 30-Sep-1996\n");
-#endif
   t = tjd;
   if (t < 2299160.5)
     gregflag = FALSE;
@@ -456,7 +432,7 @@ int main(int argc, char *argv[])
   }
   iplto = iplfrom;
   tend = te + nstep;
-  /* hier die Berechnungen */
+  /* now compute */
   pev = pev0;
   /* moon void of course */
   if (doflag & DOFLAG_VOC) {
@@ -479,54 +455,6 @@ int main(int argc, char *argv[])
       return ERR;
     }
   }
-#if 0
-if ((0)) {   /* replace by a call of calc_all_crossings */
-  /* ingresses */
-  INGRESS ding;
-  char *splan = SPLAN_INGRESS;
-  splan = "01mA";
-  /* for each planet */
-  for (sp = splan; *sp != '\0'; sp++) {
-    ipl = letter_to_ipl((int) *sp);
-    for (t = te; t < tend; t = tnext) {
-      retc = get_next_ingress(t, ipl, iflag, &ding, serr);
-      if (retc == ERR) {
-	printf("%s\n", serr);
-	return ERR;
-      }
-      swe_revjul(ding.tingr, gregflag, &jyear, &jmon, &jday, &jut);
-      printf("INGRESS: t=%d.%d.%d %f, ipl=%d, isign=%d, direction=%d, ino=%d\n", jday, jmon, jyear, jut, ipl, ding.isign, ding.direction, ding.ino);
-      tnext = ding.tingr + 1;
-    }
-  }
-}
-#endif
-#if 0
-  for (ipl = iplfrom; ipl <= iplto; ipl++) {
-      /* 
-       * maximum elongation 
-       */   
-      if ((retc = do_max_elong(te, ipl, iflag, serr)) == ERR) {
-	fprintf(stderr, "return code %ld, mesg: %s\n", retc, serr);
-	exit(1);
-      }
-      /* 
-       * station
-       */
-      if ((retc = do_station(te, ipl, iflag, serr)) == ERR) {
-	fprintf(stderr, "return code %ld, mesg: %s\n", retc, serr);
-	exit(1);
-      }
-      /* 
-       * greatest brillancy 
-       */
-      if ((retc = do_brillancy(te, ipl, iflag, serr)) == ERR) {
-	fprintf(stderr, "return code %ld, mesg: %s\n", retc, serr);
-	exit(1);
-      }
-    }
-#endif
-  /*}*/
 
   /* close open files and free allocated space */
   swe_close();
@@ -882,8 +810,7 @@ static int pev_compare(const EVENT *a1, const EVENT *a2)
 #define NMAXPL 50
 #define NEAR_CROSSING_ORB 1
 #define FOUTNAM   "sweasp.dat"
-#define PATH_FOUTNAM   "/home/dieter/sweph"
-//#define PATH_FOUTNAM   "/home/ephe/"
+#define PATH_FOUTNAM   "."
 
 static int read_sweasp_dat(char *foutnam) 
 {
@@ -982,12 +909,12 @@ int32 calc_mundane_aspects(int32 iflag, double tjd0, double tjde, double tstep,
   FILE *fpout = NULL;
   UNUSED(xa1);
   UNUSED(xa1d);
-  strcpy(foutnam, FOUTNAM);
+  sprintf(foutnam, "%s/%s", PATH_FOUTNAM, FOUTNAM);
   if ((fpout = fopen(foutnam, "w+")) == NULL) {
     sprintf(serr, "could not open file %s", foutnam);
     return ERR;
   }
-  fprintf(fpout, "sweasp.dat, mundane aspects\ncreation date: %s\ncommand: swevents %s\n", sdate, scmd);
+  fprintf(fpout, "%s, mundane aspects\ncreation date: %s\ncommand: swevents %s\n", FOUTNAM, sdate, scmd);
   swe_revjul(tjd0, 1, &jyear, &jmon, &jday, &jut);
   fprintf(fpout, "start date: %d/%02d/%02d, ", jyear, jmon, jday);
   swe_revjul(tjde, 1, &jyear, &jmon, &jday, &jut);
@@ -1287,11 +1214,7 @@ static int32 extract_data_of_day(int32 doflag, double tjd, double dtol, char *sp
   char foutnam[AS_MAXCH];
   UNUSED(tjd2);
   /* open aspects file */
-  sprintf(foutnam, "%s%s", PATH_FOUTNAM, FOUTNAM);
-#if 0
-read_sweasp_dat(foutnam);
-return OK;
-#endif
+  sprintf(foutnam, "%s/%s", PATH_FOUTNAM, FOUTNAM);
   if ((fpout = fopen(foutnam, BFILE_R_ACCESS)) == NULL) {
     sprintf(serr, "could not open file %s", foutnam);
     return ERR;
@@ -1426,119 +1349,6 @@ end_extract:
   return retc;
 }
 
-#if 0
-/* Search for ingresses and transits
- */
-int32 get_all_transits(int32 iflag, double tjdut_nat, double tjd0, double tjde, double tstep, char *splan, char *splat, double *dpos, char *sasp, EVENT *pev, char *serr)
-{
-  int32 ipl, ipla, iplb, ipli, iplia, iplib;
-  char *sp, *spa, *spb;
-  double t, tt0, tret, tret2, dang = 0, dorb = 0, x[6], x1[30], x2[30];
-  double x1d[30], x2d[30];
-  double d1d, d2d;
-  double xta1, xta2, xtb1, xtb2, dt, d1, d2;
-  int jday, jmon, jyear; 
-  int32 retflag = 0;
-  double jut;
-  char saspi[30];
-  double dasp[30];
-  int iasp;
-  int nasp = get_aspect_angles(sasp, saspi, dasp, serr);
-  for (t = tjd0; t < tjde; t += tstep) {
-    for (sp = splan, ipli = 0; *sp != '\0'; sp++, ipli++) {
-      ipl = letter_to_ipl((int) *sp);
-      if (t == tjd0) {
-	if (swe_calc(t, ipl, iflag|SEFLG_SPEED, x, serr) == ERR)
-	  return ERR;
-	x1[ipli] = x[0];
-	x1d[ipli] = x[0] + tstep / 10.0 * x[3];
-      } else {
-        x1[ipli] = x2[ipli];
-	x1d[ipli] = x2d[ipli];
-      }
-      if (swe_calc(t + tstep, ipl, iflag|SEFLG_SPEED, x, serr) == ERR)
-	return ERR;
-      x2[ipli] = x[0];
-      x2d[ipli] = x[0] + tstep / 10.0 * x[3];
-    }
-    for (spa = splan, iplia = 0; *spa != '\0'; spa++, iplia++) {
-      ipla = letter_to_ipl((int) *spa);
-      for (spb = splat, iplib = 0; *spb != '\0'; spb++, iplib++) {
-	iplb = letter_to_ipl((int) *spb);
-	for (iasp = 0; iasp < nasp; iasp++) {
-	  dang = dasp[iasp];
-	  xta1 = x1[iplia];
-	  xta2 = x2[iplia];
-	  xtb = dpos[iplib];
-	  tt0 = t;
-	  dt = tstep;
-	  d1 = swe_degnorm(xta1 - xtb - dang);
-	  if (d1 > 180) d1 -= 360;
-	  d2 = swe_degnorm(xta2 - xtb - dang);
-	  if (d2 > 180) d2 -= 360;
-	  if (ipla == SE_MOON) {
-	    if (fabs(d1) >  20)
-	      continue;
-	  } else if (fabs(d1) > NEAR_CROSSING_ORB + 3) {
-	    continue;
-	  }
-	  d1d = swe_degnorm(x1d[iplia] - xtb - dang);
-	  if (d1d > 180) d1d -= 360;
-	  d2d = swe_degnorm(x2d[iplia] - xtb - dang);
-	  if (d2d > 180) d2d -= 360;
-	  /* 
-	   * crossing found 
-	   * find t of exact aspect
-	   * if exactness happens twice within step width, the aspect is
-	   * lost
-	   */
-	  if (d1 * d2 < 0) {
-	    /*
-	     * step width 1 day:     1min20sec/100 yr (1 or 2 asp lost per cty)
-	     * step width 0.1 day:   1min55sec/100 years
-	     * step width 0.01 day:  9min32sec/100 years 
-	     * (calculations with SEFLG_NONUT)
-	     * Still, we use 1-day step width. The lost aspects will
-	     * be found in the "else".
-	     */
-	    if ((retflag = get_crossing_bin_search(dt, tt0, dang, xta1, xta2, xtb, xtb, &tret, ipla, iplb, iflag, TRUE, serr)) == ERR)
-	      return ERR;
-	    swe_revjul(tret, 1, &jyear, &jmon, &jday, &jut);
-	    printf("%d%02d%02d %.3f: %c - %c %d\n", jyear, jmon, jday, jut, *spa, *spb, (int) dang);
-	  /* 
-	   * - near crossing occurs (t of smallest orb is found)
-	   * - or exact aspect occurs twice within step width
-	   *   (was lost by "if")
-	   */
-	  } else if (fabs(d1) < NEAR_CROSSING_ORB || fabs(d2) < NEAR_CROSSING_ORB) {
-	    /* printf("d1=%f, d1d=%f, d2=%f, d2d=%f\n", d1, d1d, d2, d2d);*/
-	    if (d1 > 0 && d2 > 0) {
-	      if (d1 > d2 && d2 > d2d) continue;
-	      if (d1 < d2 && d1 < d1d) continue;
-	    } else {
-	      if (d1 > d2 && d1 > d1d) continue;
-	      if (d1 < d2 && d2 < d2d) continue;
-	    }
-	    if ((retflag = get_near_crossing_bin_search(dt, tt0, dang, xta1, xta2, xtb1, xtb2, &tret, &tret2, &dorb, ipla, iplb, iflag, serr)) == ERR)
-	      return ERR;
-	    if (retflag == -2)
-	      continue;
-	    swe_revjul(tret, 1, &jyear, &jmon, &jday, &jut);
-	    printf("%d%02d%02d %.3f: %c - %c %d orb=%f\n", jyear, jmon, jday, jut, *spa, *spb, (int) dang, dorb);
-	    if (tret2 != 0) {
-	      swe_revjul(tret2, 1, &jyear, &jmon, &jday, &jut);
-	      printf("%d%02d%02d %.3f: %c - %c %d orb=%f\n", jyear, jmon, jday, jut, *spa, *spb, (int) dang, dorb);
-	    }
-	  }
-	}
-      }
-    }
-  }
-	//if (get_crossings(iflag, t, tstep, ipl1, ipl2, x1, x2, sasp, pev, serr) == ERR)
-  return OK;
-}
-#endif
-
 int32 calc_all_crossings(
               int32 iflag,    /* swiss ephemeris flags */
               int32 itype,    /* type of calculation:
@@ -1648,36 +1458,6 @@ static int32 get_sign_ingress_direct_body(double tet0, int32 ipl, int32 iflag, i
   *tret = t;
   return OK;
 }
-
-#if 0
-static int get_next_ingress(double t, int32 ipl, int32 iflag, INGRESS *ding, char *serr)
-{
-  double tingr;
-  int isign;
-  int direction = 1;
-  int ino = 1;
-  int retc;
-  switch (ipl) {
-  case SE_MOON: case SE_SUN: case SE_MEAN_NODE: case SE_MEAN_APOG:
-    if ((retc = get_sign_ingress_direct_body(t, ipl, iflag, 0, &tingr, &isign, serr)) == ERR)
-      return retc;
-    if (ipl == SE_MEAN_NODE)
-      direction = -1;
-    break;
-  default:
-    /* hier weitermachen */
-    if ((retc = get_sign_ingress_planet(t, ipl, iflag, 0, &tingr, &isign, serr)) == ERR)
-      return retc;
-    break;
-  }
-  ding->ipl = ipl;
-  ding->tingr = tingr;
-  ding->isign = isign;
-  ding->direction = direction;
-  ding->ino = ino;
-  return OK; 
-}
-#endif
 
 /*
 Lunar void-of-course phases
@@ -1943,410 +1723,3 @@ return_dms:;
   return(s);
 }
 
-#if 0
-/*
- * a planetary phenomenon ist printed; 
- * date time is alway printed (in UT)
- * ingresses: s is "ingress" or "ingress retro" , only  date and 0/30 sign
- * if delon or dmag are HUGE, they are not printed.
- */
-static void print_item(char *s, double teph, CSEC cspos, double delon, double dmag)
-{
-  char smag[10];
-  int mout, dout, yout, min;
-  double hout;
-  AS_BOOL is_ingress;
-  AS_BOOL gregflag = TRUE;
-  int ing_deg = 0;
-  char *jul = "";
-  is_ingress =  (strncmp(s, "ingr", 4) == 0);
-  if (teph < 2299160.5) {
-    gregflag = FALSE;
-    jul = "j";
-  } 
-  if (strstr(s, "ret") != NULL) 
-    ing_deg = 30;
-  /* compute UT and add 0.5 minutes for later rounding to minutes */
-  if (ephemeris_time) 
-    teph = teph + 0.5 / 1440; 
-  else
-    teph = teph - swe_deltat(teph) + 0.5 / 1440; 
-  //revjul(teph, gregflag, &mout, &dout, &yout, &hout);
-  swe_revjul(teph, gregflag, &yout, &mout, &dout, &hout);
-  min = floor (hout * 60);
-  if (dmag != HUGE) {
-    sprintf(smag, "    %.1fm", dmag);
-  } else {
-    *smag = '\0';
-  }
-}
-
-static int find_zero(double y00, double y11, double y2, double dx, 
-			double *dxret, double *dxret2)
-{
-  double a, b, c, x1, x2;
-  c = y11;
-  b = (y2 - y00) / 2.0;
-  a = (y2 + y00) / 2.0 - c;
-  if (b * b - 4 * a * c < 0) 
-    return ERR;
-  x1 = (-b + sqrt(b * b - 4 * a * c)) / 2 / a;
-  x2 = (-b - sqrt(b * b - 4 * a * c)) / 2 / a;
-  if (fabs(x1) < 1) {
-    *dxret = (x1 - 1) * dx;
-    *dxret2 = (x2 - 1) * dx;
-  } else {
-    *dxret = (x2 - 1) * dx;
-    *dxret2 = (x1 - 1) * dx;
-  }
-  return OK;
-}
-
-static int find_maximum(double y00, double y11, double y2, double dx, 
-			double *dxret, double *yret)
-{
-  double a, b, c, x, y;
-  c = y11;
-  b = (y2 - y00) / 2.0;
-  a = (y2 + y00) / 2.0 - c;
-  x = -b / 2 / a;
-  y = (4 * a * c - b * b) / 4 / a;
-  *dxret = (x - 1) * dx;
-  *yret = y;
-  return OK;
-}
-
-static long init_next_step(double te, int ipl, long iflag, char *serr)
-{
-  int i;
-  long iflgret;
-  double x[6], x1[6], x2[6];
-  double phase, rphel, phdeg;
-  /* 
-   * we have always 
-   * - three positions and speeds for venus
-   * - three positions and speeds for sun
-   * - three elongations of venus (with elongation speed)
-   * - three magnitudes
-   */
-  memcpy(xp0, xp1, 6 * sizeof(double));	/* planet */
-  memcpy(xp1, xp2, 6 * sizeof(double));
-  memcpy(xs0, xs1, 6 * sizeof(double));	/* sun */
-  memcpy(xs1, xs2, 6 * sizeof(double));
-  memcpy(xel0, xel1, 6 * sizeof(double));	/* elongation in longitude */
-  memcpy(xel1, xel2, 6 * sizeof(double));
-  memcpy(xang0, xang1, 6 * sizeof(double));/* ang. dist. from sun */
-  memcpy(xang1, xang2, 6 * sizeof(double));
-  memcpy(xma0, xma1, 6 * sizeof(double));	/* magnitude */
-  memcpy(xma1, xma2, 6 * sizeof(double));
-  iflgret = swe_calc(te, ipl, iflag, xp2, serr);
-  if (iflgret < 0) 
-    return iflgret;
-  iflgret = swe_calc(te, SE_SUN, iflag, xs2, serr);
-  if (iflgret < 0) 
-    return iflgret;
-  /* 
-   * elongation in longitude
-   */
-  for (i = 0; i <= 5; i++)
-    xel2[i] = xp2[i] - xs2[i];
-  if (xel2[0] > M_PI)
-    xel2[0] -= 2 * M_PI;
-  if (xel2[0] < -M_PI)
-    xel2[0] += 2 * M_PI;
-  /* 
-   * angular distance from sun 
-   */
-  swi_polcart(xp2, x1);
-  swi_polcart(xs2, x2);
-  for (i = 0; i <= 2; i++)
-    x[i] = -x2[i] + x1[i];
-	  /* 'apparent' hel. distance of planet*/
-  rphel = sqrt(square_sum(x));
-  xang2[0] = acos((xs2[2] * xs2[2] + xp2[2] * xp2[2] - rphel * rphel) /
-				  2.0 / xs2[2] / xp2[2]);
-  /* 
-   * magnitude 
-   */
-  phase = acos((rphel * rphel + xp2[2] * xp2[2] - xs2[2] * xs2[2]) /
-				  2.0 / rphel / xp2[2]); /* phase angle */
-  phdeg = phase * RADTODEG;
-  xma2[0] = 5 * log10(rphel * xp2[2])
-	    + mag_elem[ipl][1] * phdeg /100.0
-	    + mag_elem[ipl][2] * phdeg * phdeg / 10000.0
-	    + mag_elem[ipl][3] * phdeg * phdeg * phdeg / 1000000.0
-	    + mag_elem[ipl][0];
-  return 0;
-}
-
-static long do_conj_sun(double te, int ipl, long iflag, char *serr) 
-{
-  int i, j, k;
-  double dt, dt1, dt2, t2, t3;
-  double x[6], x0[6], x1[6], x2[6], xp[6], xs[6];
-  double rphel, sunrad, xel;
-  int iflgret;
-  if ((xel1[0] < 0 && xel2[0] >= 0) || (xel1[0] > 0 && xel2[0] <= 0)) {
-    find_zero(xel0[0], xel1[0], xel2[0], tstep, &dt, &dt2);
-    t2 = te + dt;
-    if ((iflgret = swe_calc(t2, ipl, iflag, x, serr)) == ERR)
-      return ERR;
-    if ((iflgret = swe_calc(t2, SE_SUN, iflag, xs, serr)) == ERR)
-      return ERR;
-    if (ipl != SE_VENUS && ipl != SE_MERCURY) {
-      if (fabs(xel1[0]) > M_PI / 2)
-	print_item("opposition", t2, x[0] * RADTOCS, HUGE, HUGE);
-      else
-	print_item("conjunction", t2, x[0] * RADTOCS, HUGE, HUGE);
-    } else {
-      if (x[3] > 0)
-	print_item("superior conj", t2, x[0] * RADTOCS, HUGE, HUGE);
-      else
-	print_item("inferior conj", t2, x[0] * RADTOCS, HUGE, HUGE);
-    }
-    /* occultation or transit */
-    for (j = 0, dt1 = tstep; j <= 3; j++, dt1 /= 3) {
-      for (k = 0; k <= 2; k++) {
-	t3 = t2 + (k-1) * dt1;
-	iflgret = swe_calc(t3, ipl, iflag, xp, serr);
-	iflgret = swe_calc(t3, SE_SUN, iflag, xs, serr);
-	swi_polcart(xp, x1);
-	swi_polcart(xs, x2);
-	for (i = 0; i <= 2; i++)
-	  x[i] = -x2[i] + x1[i];
-	rphel = sqrt(square_sum(x));
-	x0[k] = acos((xs[2] * xs[2] + xp[2] * xp[2] - rphel * rphel) /
-				      2.0 / xs[2] / xp[2]);
-	}
-      find_maximum(x0[0], x0[1], x0[2], dt1, &dt, &xel);
-      t2 = t2 + dt1 + dt;
-    }
-    if ((iflgret = swe_calc(t2, ipl, iflag, x, serr)) == ERR)
-      return ERR;
-    if ((iflgret = swe_calc(t2, SE_SUN, iflag, xs, serr)) == ERR)
-      return ERR;
-#if 0 	/* minimum elongation is not printed, but needed if occultation */
-      print_item("  minimum elong", t2, x[0] * RADTOCS, xel, HUGE);
-#endif
-    switch(ipl) {
-      case SE_VENUS: 
-	sunrad = SUN_RADIUS / xs[2] + VENUS_RADIUS / x[2];
-	break;
-      case SE_MERCURY:
-	sunrad = SUN_RADIUS / xs[2] + MERCURY_RADIUS / x[2];
-	break;
-      case SE_MARS:
-      default:
-	sunrad = SUN_RADIUS / xs[2] + MARS_RADIUS / x[2];
-	break;
-    }
-    if (sunrad > fabs(xel)) {
-      if (x[3] > 0 || ipl > SE_VENUS)
-	strcpy(sout, "  occultation begin");
-      else
-	strcpy(sout, "  transit begin");
-      dt = sqrt(sunrad * sunrad - xel * xel);
-      /*dt = acos(cos(sunrad) / cos(xel)); is not better */
-      dt /= sqrt((x[3]-xs[3]) * (x[3]-xs[3]) + (x[4]-xs[4]) * (x[4]-xs[4]));
-      if ((iflgret = swe_calc(t2-dt, ipl, iflag, x, serr)) == ERR)
-	return ERR;
-      print_item(sout, t2 - dt, x[0] * RADTOCS, HUGE, HUGE);
-      if (x[3] > 0 || ipl > SE_VENUS)
-	strcpy(sout, "  occultation end");
-      else
-	strcpy(sout, "  transit end");
-      if ((iflgret = swe_calc(t2+dt, ipl, iflag, x, serr)) == ERR)
-	return ERR;
-      print_item(sout, t2 + dt, x[0] * RADTOCS, HUGE, HUGE);
-    }
-  }
-  return OK;
-}
-
-static long do_visibility(double te, int ipl, long iflag, char *serr)
-{
-  double x[6];
-  double t2, dt, dt2;
-  long iflgret;
-  *sout = '\0';
-  if (xang1[0] * RADTODEG > 10 && xang2[0] * RADTODEG < 10) {
-    if (xel1[0] > 0) 
-      strcpy(sout, "evening set");
-    else
-      strcpy(sout, "morning set");
-    x[0] = xang0[0] - 10 * DEGTORAD;
-    x[1] = xang1[0] - 10 * DEGTORAD;
-    x[2] = xang2[0] - 10 * DEGTORAD;
-  }
-  if (xang1[0] * RADTODEG < 10 && xang2[0] * RADTODEG > 10) {
-    if (xel1[0] > 0) 
-      strcpy(sout, "evening rise");
-    else
-      strcpy(sout, "morning rise");
-    x[0] = xang0[0] - 10 * DEGTORAD;
-    x[1] = xang1[0] - 10 * DEGTORAD;
-    x[2] = xang2[0] - 10 * DEGTORAD;
-  }
-  if (*sout != '\0') {
-    find_zero(x[0], x[1], x[2], tstep, &dt, &dt2);
-    t2 = te + dt;
-    if ((iflgret = swe_calc(t2, ipl, iflag, x, serr)) == ERR)
-      return ERR;
-    print_item(sout, t2, x[0] * RADTOCS, HUGE, HUGE);
-  }
-  return OK;
-}
-
-static long do_max_elong(double te, int ipl, long iflag, char *serr)
-{
-  int i, j, k;
-  long iflgret;
-  double t2, t3, dt, dt1, xel;
-  double xp[6], xs[6], x0[6], x1[6], x2[6], x[6];
-  double rphel;
-  if ((fabs(xang0[0]) < fabs(xang1[0]) && fabs(xang2[0]) < fabs(xang1[0]))
-    || (fabs(xang0[0]) > fabs(xang1[0]) && fabs(xang2[0]) > fabs(xang1[0]))) {
-    find_maximum(xang0[0], xang1[0], xang2[0], tstep, &dt, &xel);
-    t2 = te + dt;
-    for (j = 0, dt1 = tstep; j <= 3; j++, dt1 /= 3) {
-      for (k = 0; k <= 2; k++) {
-	t3 = t2 + (k-1) * dt1;
-	if ((iflgret = swe_calc(t3, ipl, iflag, xp, serr)) == ERR)
-	  return ERR;
-	if ((iflgret = swe_calc(t3, SE_SUN, iflag, xs, serr)) == ERR)
-	  return ERR;
-	swi_polcart(xp, x1);
-	swi_polcart(xs, x2);
-	for (i = 0; i <= 2; i++)
-	  x[i] = -x2[i] + x1[i];
-	rphel = sqrt(square_sum(x));
-	x0[k] = acos((xs[2] * xs[2] + xp[2] * xp[2] - rphel * rphel) /
-				      2.0 / xs[2] / xp[2]);
-      }
-      find_maximum(x0[0], x0[1], x0[2], dt1, &dt, &xel);
-      t2 = t2 + dt1 + dt;
-    }
-    if ((iflgret = swe_calc(t2, ipl, iflag, x, serr)) == ERR)
-      return ERR;
-    if (ipl > SE_VENUS) {
-      if (xel < M_PI / 2)
-	strcpy(sout, "minimum elong.");
-      else
-	strcpy(sout, "maximum elong.");
-    } else if (xel1[0] > 12 * DEGTORAD)
-      strcpy(sout, "evening max el");
-    else if (xel1[0] < -12 * DEGTORAD)
-      strcpy(sout, "morning max el");
-    else
-      strcpy(sout, "minimum elong.");
-    print_item(sout, t2, x[0] * RADTOCS, xel, HUGE);
-  }
-  return OK;
-}
-
-static long do_station(double te, int ipl, long iflag, char *serr)
-{
-  int i, j, k;
-  long iflgret;
-  double x[6], x0[6], x1[6], xp[6];
-  double t2, t3, dt, dt1, dx, xel;
-#if 0
-	  /* retrograde or direct, zero speed */
-	  if (xp1[3] < 0 && xp2[3] >= 0 || xp1[3] > 0 && xp2[3] <= 0 ) {
-	    find_zero(xp0[3], xp1[3], xp2[3], tstep, &dt, &dt2);
-            t2 = te + dt;
-	    if((iflgret = swe_calc(t2, ipl, iflag, x, serr)) == ERR)
-	      return ERR;
-	    if (xp2[3] < 0)
-	      strcpy(sout, "retrograde (sp)");
-	    else
-	      strcpy(sout, "direct (sp)");
-	    print_item(sout, t2, x[0] * RADTOCS, HUGE, HUGE);
-          }
-#endif
-	  /* retrograde or direct, maximum position */
-	  if ((xp1[3] < 0 && xp2[3] >= 0) || (xp1[3] > 0 && xp2[3] <= 0)) {
-	    x0[0] = xp0[0];
-	    x0[1] = xp1[0];
-	    x0[2] = xp2[0];
-	    for (i = 1; i <= 2; i++) {
-	      dx = x0[i] - x0[0];
-	      if (dx > M_PI)
-		x0[i] -= M_PI;
-	      if (dx < -M_PI)
-		x0[i] += M_PI;
-	    }
-	    find_maximum(x0[0], x0[1], x0[2], tstep, &dt, &xel);
-            t2 = te + dt;
-	    for (j = 0, dt1 = tstep; j <= 3; j++, dt1 /= 3) {
-              for (k = 0; k <= 2; k++) {
-		t3 = t2 + (k-1) * dt1;
-		if((iflgret = swe_calc(t3, ipl, iflag, xp, serr)) == ERR)
-		  return ERR;
-		swi_polcart(xp, x1);
-		x0[k] = xp[0];
-	      }
-	      for (i = 1; i <= 2; i++) {
-		dx = x0[i] - x0[0];
-		if (dx > M_PI)
-		  x0[i] -= M_PI;
-		if (dx < -M_PI)
-		  x0[i] += M_PI;
-	      }
-	      find_maximum(x0[0], x0[1], x0[2], dt1, &dt, &xel);
-	      t2 = t2 + dt1 + dt;
-            }
-	    if((iflgret = swe_calc(t2, ipl, iflag, x, serr)) == ERR)
-	      return ERR;
-	    if (xp2[3] < 0)
-	      strcpy(sout, "retrograde");
-	    else
-	      strcpy(sout, "direct");
-	    print_item(sout, t2, x[0] * RADTOCS, HUGE, HUGE);
-          }
-  return OK;
-}
-
-static long do_brillancy(double te, int ipl, long iflag, char *serr)
-{
-  int i, j, k;
-  long iflgret;
-  double t2, t3, dt, dt1, xma, rphel, phdeg, phase;
-  double x[6], xp[6], xs[6], x0[6], x1[6], x2[6];
-  if (ipl <= SE_MARS 
-      && xma0[0] > xma1[0] 
-      && xma2[0] > xma1[0] 
-      && xang1[0] > 10*DEGTORAD) {
-    find_maximum(xma0[0], xma1[0], xma2[0], tstep, &dt, &xma);
-    t2 = te + dt;
-    for (j = 0, dt1 = tstep; j <= 3; j++, dt1 /= 3) {
-      for (k = 0; k <= 2; k++) {
-	t3 = t2 + (k-1) * dt1;
-	if ((iflgret = swe_calc(t3, ipl, iflag, xp, serr)) == ERR)
-	  return ERR;
-	if ((iflgret = swe_calc(t3, SE_SUN, iflag, xs, serr)) == ERR)
-	  return ERR;
-	swi_polcart(xp, x1);
-	swi_polcart(xs, x2);
-	for (i = 0; i <= 2; i++)
-	  x[i] = -x2[i] + x1[i];
-	rphel = sqrt(square_sum(x));
-	phase = acos((rphel * rphel + xp[2] * xp[2] 
-			- xs[2] * xs[2]) / 2.0 / rphel / xp[2]);
-	phdeg = phase * RADTODEG;
-        x0[k] = 5 * log10(rphel * xp[2])
-		+ mag_elem[ipl][1] * phdeg /100.0
-		+ mag_elem[ipl][2] * phdeg * phdeg / 10000.0
-		+ mag_elem[ipl][3] * phdeg * phdeg * phdeg / 1000000.0
-		+ mag_elem[ipl][0];
-      }
-      find_maximum(x0[0], x0[1], x0[2], dt1, &dt, &xma);
-      t2 = t2 + dt1 + dt;
-    }
-    if ((iflgret = swe_calc(t2, ipl, iflag, x, serr)) == ERR)
-      return ERR;
-    print_item("greatest brilliancy", t2, x[0] * RADTOCS, HUGE, xma);
-  }
-  return OK;
-}
-#endif

@@ -3230,6 +3230,8 @@ int32 swi_get_tid_acc(double tjd_ut, int32 iflag, int32 denum, int32 *denumret, 
     case 422: *tid_acc = SE_TIDAL_DE422; break;
     case 430: *tid_acc = SE_TIDAL_DE430; break;
     case 431: *tid_acc = SE_TIDAL_DE431; break;
+    case 440: *tid_acc = SE_TIDAL_DE441; break;
+    case 441: *tid_acc = SE_TIDAL_DE441; break;
     default: denum = SE_DE_NUMBER; *tid_acc = SE_TIDAL_DEFAULT; break;
   }
   *denumret = denum;

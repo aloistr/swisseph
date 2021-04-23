@@ -1,85 +1,63 @@
-# keep only a few active development files at the front, the rest 
-# should be sorted alphabetically
-#CFLAGS = -Aa -O -I/users/alois/lib +DA1.1
-#CFLAGS = -Aa -I/users/alois/lib +O4 
-#CFLAGS = -Aa -I/users/alois/lib -g -z +FPVZUO +DA1.1 -DNO_JPL -DNO_MOSHIER
-#CFLAGS = -Aa -I/users/alois/lib -g -z +FPVZUO -DTRACE
-#CFLAGS = -Aa -g -z
-#CFLAGS = -I/users/alois/lib -ggdb -Wall
-#CFLAGS = -ggdb -Wall
-#note, -DTLSOFF defines TLS as ''. This makes static data such as swed visible in gdb.
-#CFLAGS = -g -Wall -Wextra -DTLSOFF -fPIC -O2
-#CFLAGS = -g -Wall -DTLSOFF -fPIC 
-CFLAGS = -g -Wall -fPIC -O2
-CFLAGS = -g -Wall -fPIC -O2 -Wunused-but-set-variable
-#CFLAGS = -g -Wall -fPIC -Wunused-but-set-variable 
+# $Header$
+# this Makefile creates a SwissEph library and a swetest sample on 64-bit
+# Redhat Enterprise Linux RHEL 6.
 
-OP=$(CFLAGS)
-REV=1.30
-SWEVERSION=2.10
-SWEVERSIONOLD=2.09.03
+# The mode marked as 'Linux' should also work with the GNU C compiler
+# gcc on other systems. 
 
-MOSH = swemmoon.o swemplan.o
-SWEPH = sweph.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o swehouse.o swecl.o swehel.o
-SWEPHA = swepha.o swephlib.o swejpl.o swedate.o swemmoon.o swemplan.o
-SWEOBJ = swecl.o sweph.o swephlib.o swejpl.o \
-	swemmoon.o swemplan.o swedate.o swehouse.o swehel.o
-# extra modules needed by Astrodienst internal programs
-#ASWEOBJ = $(SWEOBJ)  sweephe4.o astrolib.o d2l.o
-ASWEOBJ = $(SWEOBJ)  sweephe4.o astrolib.o d2l.o
+# If you modify this makefile for another compiler, please
+# let us know. We would like to add as many variations as possible.
+# If you get warnings and error messages from your compiler, please
+# let us know. We like to fix the source code so that it compiles
+# free of warnings.
+# send email to the Swiss Ephemeris mailing list.
+#
 
-LIBSWESOURCE = swedll.h swemmoon.c sweph.h swephlib.h \
-	swehouse.c swephexp.h swetest.c \
-	swehouse.h swemplan.c sweph.c swecl.c \
-	swedate.c swejpl.c swemptab.h swehel.c \
-	swedate.h swejpl.h sweodef.h swephlib.c swemini.c \
-	swenut2000a.h 
+CFLAGS = -g -Wall -fPIC  	# for Linux and other gcc systems
+OP=$(CFLAGS)  
+CC=cc	#for Linux
 
-PUBSOURCE = LICENSE swedll.h swemmoon.c sweph.h swephlib.h \
-	swehouse.c swephexp.h swetest.c \
-	swehouse.h swemplan.c sweph.c swecl.c \
-	swedate.c swejpl.c swemptab.h swehel.c \
-	swedate.h swejpl.h sweodef.h swephlib.c swemini.c seorbel.txt \
-	sefstars.txt swenut2000a.h seleapsec.txt \
-	sedeltat.txt.inactive \
-	perl_swisseph/PerlSwissEph-*.tar.gz
+# compilation rule for general cases
+.o :
+	$(CC) $(OP) -o $@ $? -lm
+.c.o:
+	$(CC) -c $(OP) $<     
 
-PUBDOC = doc/swephin.cdr\
-	doc/swephin.gif\
-	doc/sweph.cdr\
-	doc/sweph.gif \
-	doc/swephprg.docx \
-	doc/swephprg.htm \
-	doc/swephprg.pdf \
-	doc/swisseph.docx \
-	doc/swisseph.htm \
-	doc/swisseph.pdf 
+SWEOBJ = swedate.o swehouse.o swejpl.o swemmoon.o swemplan.o sweph.o\
+	 swephlib.o swecl.o swehel.o
 
-INTSOURCE = $(PUBSOURCE) 
+swetest: swetest.o libswe.a
+	$(CC) $(OP) -o swetest swetest.o -L. -lswe -lm -ldl
 
-EXE = swetest swevents
+swevents: swevents.o libswe.a
+	$(CC) $(OP) -o swevents swevents.o -L. -lswe -lm -ldl
 
-.o :  
-	cc $(OP) $@ $?  -lm -ldl
-.c.o :  
-	cc $(OP) -c $< 
+swemini: swemini.o libswe.a
+	$(CC) $(OP) -o swemini swemini.o -L. -lswe -lm -ldl
 
-swetest: swetest.o $(SWEPH)
-	cc $(OP) -o swetest swetest.o $(SWEPH) -lm -ldl
+# create an archive and a dynamic link libary fro SwissEph
+# a user of this library will inlcude swephexp.h  and link with -lswe
+
+libswe.a: $(SWEOBJ)
+	ar r libswe.a	$(SWEOBJ)
+
+libswe.so: $(SWEOBJ)
+	$(CC) -shared -o libswe.so $(SWEOBJ)
 
 clean:
-	rm -f *.o $(EXE)
-
-
-#
-# make a local library libswe.so
-libswe: $(ASWEOBJ) 
-	cc -shared -Wl,-soname,libswe.so.1 -o libswe.so.$(SWEVERSION) $(ASWEOBJ) -lm 
-
-
-
-# statically linked library libsweph.a
-libsweph: $(ASWEOBJ) 
-	ar r libsweph.a $(ASWEOBJ)
-
-
+	rm -f *.o swetest libswe*
+	
+###
+swecl.o: swejpl.h sweodef.h swephexp.h swedll.h sweph.h swephlib.h
+sweclips.o: sweodef.h swephexp.h swedll.h
+swedate.o: swephexp.h sweodef.h swedll.h
+swehel.o: swephexp.h sweodef.h swedll.h
+swehouse.o: swephexp.h sweodef.h swedll.h swephlib.h swehouse.h
+swejpl.o: swephexp.h sweodef.h swedll.h sweph.h swejpl.h
+swemini.o: swephexp.h sweodef.h swedll.h
+swemmoon.o: swephexp.h sweodef.h swedll.h sweph.h swephlib.h
+swemplan.o: swephexp.h sweodef.h swedll.h sweph.h swephlib.h swemptab.h
+sweph.o: swejpl.h sweodef.h swephexp.h swedll.h sweph.h swephlib.h
+swephlib.o: swephexp.h sweodef.h swedll.h sweph.h swephlib.h
+swetest.o: swephexp.h sweodef.h swedll.h
+swevents.o: swephexp.h sweodef.h swedll.h

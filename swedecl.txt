@@ -1,0 +1,1083 @@
+' Swiss Ephemeris API
+' Declarations for Visual Basic 32-bit
+'
+' type Long of original version changed to Int32 on 2-jul-17
+' new functions for release 2.09.02 added 17-aug-2020
+'
+' The DLL file must exist in the same directory as the VB executable, or in a system
+' directory where it can be found at runtime
+
+Public Declare Function swe_azalt Lib "swedll32.dll" _
+        Alias "_swe_azalt@40" ( _
+          ByVal tjd_ut As Double, _
+          ByVal calc_flag As Int32, _
+          ByRef geopos As Double, _
+          ByVal atpress As Double, _
+          ByVal attemp As Double, _
+          ByRef xin As Double, _
+          ByRef xaz As Double _
+        ) As Int32  'geopos must be the first of three array elements
+                   'xin must be the first of two array elements
+                   'xaz must be the first of three array elements
+
+Public Declare Function swe_azalt_rev Lib "swedll32.dll" _
+        Alias "_swe_azalt_rev@24" ( _
+          ByVal tjd_ut As Double, _
+          ByVal calc_flag As Int32, _
+          ByRef geopos As Double, _
+          ByRef xin As Double, _
+          ByRef xout As Double _
+        ) As Int32  'geopos must be the first of three array elements
+                   'xin must be the first of two array elements
+                   'xout must be the first of three array elements
+
+Public Declare Function swe_calc Lib "swedll32.dll" _
+        Alias "_swe_calc@24" ( _
+          ByVal tjd As Double, _
+          ByVal ipl As Int32, _
+          ByVal iflag As Int32, _
+          ByRef x As Double, _
+          ByVal serr As String _
+        ) As Int32   ' x must be first of six array elements
+                    ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_calc_ut Lib "swedll32.dll" _
+        Alias "_swe_calc_ut@24" ( _
+          ByVal tjd_ut As Double, _
+          ByVal ipl As Int32, _
+          ByVal iflag As Int32, _
+          ByRef x As Double, _
+          ByVal serr As String _
+        ) As Int32   ' x must be first of six array elements
+                    ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_calc_pctr Lib "swedll32.dll" _
+        Alias "_swe_calc_ut@28" ( _
+          ByVal tjd_ut As Double, _
+          ByVal ipl As Int32, _
+          ByVal iplctr As Int32, _
+          ByVal iflag As Int32, _
+          ByRef x As Double, _
+          ByVal serr As String _
+        ) As Int32   ' x must be first of six array elements
+                    ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_close Lib "swedll32.dll" _
+        Alias "_swe_close@0" ( _
+        ) As Int32
+
+Public Declare Sub swe_cotrans Lib "swedll32.dll" _
+        Alias "_swe_cotrans@16" ( _
+          ByRef xpo As Double, _
+          ByRef xpn As Double, _
+          ByVal eps As Double _
+        )
+
+Public Declare Sub swe_cotrans_sp Lib "swedll32.dll" _
+        Alias "_swe_cotrans_sp@16" ( _
+          ByRef xpo As Double, _
+          ByRef xpn As Double, _
+          ByVal eps As Double _
+        )
+
+Public Declare Sub swe_cs2degstr Lib "swedll32.dll" _
+        Alias "_swe_cs2degstr@8" ( _
+          ByVal t As Int32, _
+          ByVal s As String _
+        )
+
+Public Declare Sub swe_cs2lonlatstr Lib "swedll32.dll" _
+        Alias "_swe_cs2lonlatstr@16" ( _
+          ByVal t As Int32, _
+          ByVal pchar As Byte, _
+          ByVal mchar As Byte, _
+          ByVal s As String _
+        )
+
+Public Declare Sub swe_cs2timestr Lib "swedll32.dll" _
+        Alias "_swe_cs2timestr@16" ( _
+          ByVal t As Int32, _
+          ByVal sep As Int32, _
+          ByVal supzero As Int32, _
+          ByVal s As String _
+        )
+
+Public Declare Function swe_split_deg Lib "swedll32.dll" _
+        Alias "_swe_split_deg@32" ( _
+          ByVal ddeg As Double, _
+          ByVal roundflag As Int32, _
+          ByRef ideg As Int32, _
+          ByRef imin As Int32, _
+          ByRef isec As Int32, _
+          ByRef dsecfr As Double, _
+          ByRef isgn As Int32, _
+        ) 
+
+Public Declare Function swe_csnorm Lib "swedll32.dll" _
+        Alias "_swe_csnorm@4" ( _
+          ByVal p As Int32 _
+        ) As Int32
+
+Public Declare Function swe_csroundsec Lib "swedll32.dll" _
+        Alias "_swe_csroundsec@4" ( _
+          ByVal p As Int32 _
+        ) As Int32
+
+Public Declare Function swe_d2l Lib "swedll32.dll" _
+        Alias "_swe_d2l@8" ( _
+        ) As Int32
+
+Public Declare Function swe_date_conversion Lib "swedll32.dll" _
+        Alias "_swe_date_conversion@28" ( _
+          ByVal Year As Int32, _
+          ByVal Month As Int32, _
+          ByVal Day As Int32, _
+          ByVal utime As Double, _
+          ByVal cal As Byte, _
+          ByRef tjd As Double _
+        ) As Int32
+
+Public Declare Function swe_day_of_week Lib "swedll32.dll" _
+        Alias "_swe_day_of_week@8" ( _
+          ByVal jd As Double _
+        ) As Int32
+
+Public Declare Function swe_degnorm Lib "swedll32.dll" _
+        Alias "_swe_degnorm@8" ( _
+          ByVal jd As Double _
+        ) As Double
+
+Public Declare Function swe_deltat Lib "swedll32.dll" _
+        Alias "_swe_deltat@8" ( _
+          ByVal jd As Double _
+        ) As Double
+
+Public Declare Function swe_deltat_ex Lib "swedll32.dll" _
+        Alias "_swe_deltat_ex@16" ( _
+          ByVal jd As Double, _
+          ByVal iflag As Int32, _
+          ByVal serr As String _
+        ) As Double
+
+Public Declare Function swe_difcs2n Lib "swedll32.dll" _
+        Alias "_swe_difcs2n@8" ( _
+          ByVal p1 As Int32, _
+          ByVal p2 As Int32 _
+        ) As Int32
+
+Public Declare Function swe_difcsn Lib "swedll32.dll" _
+        Alias "_swe_difcsn@8" ( _
+          ByVal p1 As Int32, _
+          ByVal p2 As Int32 _
+        ) As Int32
+
+Public Declare Function swe_difdeg2n Lib "swedll32.dll" _
+        Alias "_swe_difdeg2n@16" ( _
+          ByVal p1 As Double, _
+          ByVal p2 As Double _
+        ) As Double
+
+Public Declare Function swe_difdegn Lib "swedll32.dll" _
+        Alias "_swe_difdegn@16" ( _
+          ByVal p1 As Double, _
+          ByVal p2 As Double _
+        ) As Int32
+
+Public Declare Function swe_fixstar Lib "swedll32.dll" _
+        Alias "_swe_fixstar@24" ( _
+          ByVal star As String, _
+          ByVal tjd As Double, _
+          ByVal iflag As Int32, _
+          ByRef x As Double, _
+          ByVal serr As String _
+        ) As Int32      ' x must be first of six array elements
+                        ' serr must be able to hold 256 bytes
+                        ' star must be able to hold 40 bytes
+
+Public Declare Function swe_fixstar_ut Lib "swedll32.dll" _
+        Alias "_swe_fixstar_ut@24" ( _
+          ByVal star As String, _
+          ByVal tjd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByRef x As Double, _
+          ByVal serr As String _
+        ) As Int32      ' x must be first of six array elements
+                        ' serr must be able to hold 256 bytes
+                        ' star must be able to hold 40 bytes
+
+Public Declare Function swe_fixstar_mag Lib "swedll32.dll" _
+        Alias "_swe_fixstar_mag@12" ( _
+          ByVal star As String, _
+          ByRef mag As Double, _
+          ByVal serr As String _
+        ) As Int32      ' serr must be able to hold 256 bytes
+                        ' star must be able to hold 40 bytes
+
+Public Declare Function swe_fixstar2 Lib "swedll32.dll" _
+        Alias "_swe_fixstar2@24" ( _
+          ByVal star As String, _
+          ByVal tjd As Double, _
+          ByVal iflag As Int32, _
+          ByRef x As Double, _
+          ByVal serr As String _
+        ) As Int32      ' x must be first of six array elements
+                        ' serr must be able to hold 256 bytes
+                        ' star must be able to hold 40 bytes
+
+Public Declare Function swe_fixstar2_ut Lib "swedll32.dll" _
+        Alias "_swe_fixstar2_ut@24" ( _
+          ByVal star As String, _
+          ByVal tjd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByRef x As Double, _
+          ByVal serr As String _
+        ) As Int32      ' x must be first of six array elements
+                        ' serr must be able to hold 256 bytes
+                        ' star must be able to hold 40 bytes
+
+Public Declare Function swe_fixstar2_mag Lib "swedll32.dll" _
+        Alias "_swe_fixstar2_mag@12" ( _
+          ByVal star As String, _
+          ByRef mag As Double, _
+          ByVal serr As String _
+        ) As Int32      ' serr must be able to hold 256 bytes
+                        ' star must be able to hold 40 bytes
+
+Public Declare Function swe_gauquelin_sector Lib "swedll32.dll" _
+        Alias "_swe_gauquelin_sector@52" ( _
+          ByVal tjd_ut as Double, _
+          ByVal ipl as Int32, _
+          ByVal starname as String, _
+          ByVal iflag as Int32, _
+          ByVal imeth as Int32, _
+          ByRef geopos as Double, _
+          ByVal atpress as Double, _
+          ByVal attemp as Double, _
+          ByRef dgsect as Double, _
+          ByVal serr as String _
+        ) As Int32
+
+Public Declare Function swe_get_ayanamsa Lib "swedll32.dll" _
+        Alias "_swe_get_ayanamsa@8" ( _
+          ByVal tjd_et As Double _
+        ) As Double 
+
+Public Declare Function swe_get_ayanamsa_ut Lib "swedll32.dll" _
+        Alias "_swe_get_ayanamsa_ut@8" ( _
+          ByVal tjd_ut As Double _
+        ) As Double 
+
+Public Declare Function swe_get_ayanamsa_ex Lib "swedll32.dll" _
+        Alias "_swe_get_ayanamsa_ex@20" ( _
+          ByVal tjd_et As Double, _
+          ByVal iflag as Int32, _
+          ByRef ayan As Double, _
+          ByVal serr as String _
+        ) As Double 
+
+Public Declare Function swe_get_ayanamsa_ex_ut Lib "swedll32.dll" _
+        Alias "_swe_get_ayanamsa_ex_ut@20" ( _
+          ByVal tjd_ut As Double, _
+          ByVal iflag as Int32, _
+          ByRef ayan As Double, _
+          ByVal serr as String _
+        ) As Double 
+
+Public Declare Function swe_get_planet_name Lib "swedll32.dll" _
+        Alias "_swe_get_planet_name@8" ( _
+          ByVal ipl As Int32, _
+          ByVal pname As String _
+        ) As String
+
+Public Declare Function swe_get_ayanamsa_name Lib "swedll32.dll" _
+        Alias "_swe_get_planet_name@4" ( _
+          ByVal isidmode As Int32 _
+        ) As String
+
+Public Declare Function swe_get_current_file_data Lib "swedll32.dll" _
+        Alias "_swe_get_current_file_data@16" ( _
+          ByVal ifno As Int32, _
+          ByRef tfstart As Double, _
+          ByRef tfend As Double, _
+          ByRef denum As Int32 _
+        ) As String
+
+Public Declare Function swe_get_tid_acc Lib "swedll32.dll" _
+        Alias "_swe_get_tid_acc@0" ( _
+        ) As Double
+
+Public Declare Function swe_house_name Lib "swedll32.dll" _
+        Alias "_swe_house_name@4" ( _
+          ByVal ihsy As Int32 _
+        ) As String
+                        ' svers must be able to hold 256 bytes
+
+Public Declare Function swe_houses Lib "swedll32.dll" _
+        Alias "_swe_houses@36" ( _
+          ByVal tjd_ut As Double, _
+          ByVal geolat As Double, _
+          ByVal geolon As Double, _
+          ByVal ihsy As Int32, _
+          ByRef hcusps As Double, _
+          ByRef ascmc As Double _
+        ) As Int32      ' hcusps must be first of 13 array elements
+                        ' ascmc must be first of 10 array elements
+
+Public Declare Function swe_houses_ex Lib "swedll32.dll" _
+        Alias "_swe_houses_ex@40" ( _
+          ByVal tjd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByVal geolat As Double, _
+          ByVal geolon As Double, _
+          ByVal ihsy As Int32, _
+          ByRef hcusps As Double, _
+          ByRef ascmc As Double _
+        ) As Int32      ' hcusps must be first of 13 array elements
+                        ' ascmc must be first of 10 array elements
+
+Public Declare Function swe_houses_ex2 Lib "swedll32.dll" _
+        Alias "_swe_houses_ex2@52" ( _
+          ByVal tjd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByVal geolat As Double, _
+          ByVal geolon As Double, _
+          ByVal ihsy As Int32, _
+          ByRef hcusps As Double, _
+          ByRef ascmc As Double, _
+          ByRef cusp_speed As Double, _
+          ByRef ascmc_speed As Double, _
+          ByVal serr as String _
+        ) As Int32      ' hcusps must be first of 13 array elements
+                        ' ascmc must be first of 10 array elements
+                        ' cusp_speed must be first of 13 array elements
+                        ' ascmc_speed must be first of 10 array elements
+
+Public Declare Function swe_houses_armc Lib "swedll32.dll" _
+        Alias "_swe_houses_armc@36" ( _
+          ByVal armc As Double, _
+          ByVal geolat As Double, _
+          ByVal eps As Double, _
+          ByVal ihsy As Int32, _
+          ByRef hcusps As Double, _
+          ByRef ascmc As Double _
+        ) As Int32      ' hcusps must be first of 13 array elements
+                        ' ascmc must be first of 10 array elements
+
+Public Declare Function swe_houses_armc_ex2 Lib "swedll32.dll" _
+        Alias "_swe_houses_armc_ex2@48" ( _
+          ByVal armc As Double, _
+          ByVal geolat As Double, _
+          ByVal eps As Double, _
+          ByVal ihsy As Int32, _
+          ByRef hcusps As Double, _
+          ByRef ascmc As Double, _
+          ByRef cusp_speed As Double, _
+          ByRef ascmc_speed As Double, _
+          ByVal serr as String _
+        ) As Int32      ' hcusps must be first of 13 array elements
+                        ' ascmc must be first of 10 array elements
+                        ' cusp_speed must be first of 13 array elements
+                        ' ascmc_speed must be first of 10 array elements
+
+Public Declare Function swe_house_pos Lib "swedll32.dll" _
+        Alias "_swe_house_pos@36" ( _
+          ByVal armc As Double, _
+          ByVal geolat As Double, _
+          ByVal eps As Double, _
+          ByVal ihsy As Int32, _
+          ByRef xpin As Double, _
+          ByVal serr As String _
+        ) As Double     
+                        ' xpin must be first of 2 array elements
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_julday Lib "swedll32.dll" _
+        Alias "_swe_julday@24" ( _
+          ByVal Year As Int32, _
+          ByVal Month As Int32, _
+          ByVal Day As Int32, _
+          ByVal hour As Double, _
+          ByVal gregflg As Int32 _
+        ) As Double
+
+Public Declare Function swe_lun_eclipse_how Lib "swedll32.dll" _
+        Alias "_swe_lun_eclipse_how@24" ( _  
+          ByVal tjd_ut as Double, _
+          ByVal ifl as Int32, _
+          ByRef geopos as Double, _
+          ByRef attr as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_lun_eclipse_when_loc Lib "swedll32.dll" _
+        Alias "_swe_lun_eclipse_when_loc@32" ( _  
+          ByVal tjd_start as Double, _
+          ByVal ifl as Int32, _
+          ByRef geopos as Double, _
+          ByRef tret as Double, _
+          ByRef attr as Double, _
+          ByVal backward as Int32, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_lun_eclipse_when Lib "swedll32.dll" _
+        Alias "_swe_lun_eclipse_when@28" ( _  
+          ByVal tjd_start as Double, _
+          ByVal ifl as Int32, _
+          ByVal ifltype as Int32, _
+          ByRef tret as Double, _
+          ByVal backward as Int32, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_nod_aps Lib "swedll32.dll" _
+        Alias "_swe_nod_aps@40" ( _
+          ByVal tjd_et As Double, _
+          ByVal ipl As Int32, _
+          ByVal iflag As Int32, _
+          ByVal method As Int32, _
+          ByRef xnasc as Double, _
+          ByRef xndsc as Double, _
+          ByRef xperi as Double, _
+          ByRef xaphe as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_nod_aps_ut Lib "swedll32.dll" _
+        Alias "_swe_nod_aps_ut@40" ( _
+          ByVal tjd_ut As Double, _
+          ByVal ipl As Int32, _
+          ByVal iflag As Int32, _
+          ByVal method As Int32, _
+          ByRef xnasc as Double, _
+          ByRef xndsc as Double, _
+          ByRef xperi as Double, _
+          ByRef xaphe as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_pheno Lib "swedll32.dll" _
+        Alias "_swe_pheno@24" ( _  
+          ByVal tjd as Double, _
+          ByVal ipl as Int32, _
+          ByVal iflag as Int32, _
+          ByRef attr as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_pheno_ut Lib "swedll32.dll" _
+        Alias "_swe_pheno_ut@24" ( _  
+          ByVal tjd as Double, _
+          ByVal ipl as Int32, _
+          ByVal iflag as Int32, _
+          ByRef attr as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_refrac Lib "swedll32.dll" _
+        Alias "_swe_refrac@28" ( _
+          ByVal inalt As Double, _
+          ByVal atpress As Double, _
+          ByVal attemp As Double, _
+          ByVal calc_flag as Int32 _
+        ) As Double
+
+Public Declare Function swe_refrac_extended Lib "swedll32.dll" _
+        Alias "_swe_refrac_extended@48" ( _
+          ByVal inalt As Double, _
+          ByVal geoalt As Double, _
+          ByVal atpress As Double, _
+          ByVal attemp As Double, _
+          ByVal lapse_rate As Double, _
+          ByVal calc_flag as Int32, _
+          ByRef dret As Double _
+        ) As Double
+
+Public Declare Sub swe_revjul Lib "swedll32.dll" _
+        Alias "_swe_revjul@28" ( _
+          ByVal tjd As Double, _
+          ByVal gregflg As Int32, _
+          ByRef Year As Int32, _
+          ByRef Month As Int32, _
+          ByRef Day As Int32, _
+          ByRef hour As Double _
+        )
+
+Public Declare Function swe_rise_trans_true_hor Lib "swedll32.dll" _
+        Alias "_swe_rise_trans_true_hor@60" ( _
+          ByVal tjd_ut As Double, _
+          ByVal ipl As Int32, _
+          ByVal starname As String, _
+          ByVal epheflag As Int32, _
+          ByVal rsmi As Int32, _
+          ByRef geopos As Double, _
+          ByVal atpress As Double, _
+          ByVal attemp As Double, _
+          ByVal horhgt As Double, _
+          ByRef tret As Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_rise_trans Lib "swedll32.dll" _
+        Alias "_swe_rise_trans@52" ( _
+          ByVal tjd_ut As Double, _
+          ByVal ipl As Int32, _
+          ByVal starname As String, _
+          ByVal epheflag As Int32, _
+          ByVal rsmi As Int32, _
+          ByRef geopos As Double, _
+          ByVal atpress As Double, _
+          ByVal attemp As Double, _
+          ByRef tret As Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Sub swe_set_ephe_path Lib "swedll32.dll" _
+        Alias "_swe_set_ephe_path@4" ( _
+          ByVal path As String _
+        )
+
+Public Declare Sub swe_set_jpl_file Lib "swedll32.dll" _
+        Alias "_swe_set_jpl_file@4" ( _
+          ByVal file As String _
+        )
+
+Public Declare Function swe_set_sid_mode Lib "swedll32.dll" _
+        Alias "_swe_set_sid_mode@20" ( _
+          ByVal sid_mode As Int32, _
+          ByVal t0 As Double, _
+          ByVal ayan_t0 As Double _
+        ) As Int32
+
+Public Declare Sub swe_set_topo Lib "swedll32.dll" _
+        Alias "_swe_set_topo@24" ( _
+          ByVal geolon As Double, _
+          ByVal geolat As Double, _
+          ByVal altitude As Double _
+        ) 
+
+Public Declare Sub swe_set_lapse_rate Lib "swedll32.dll" _
+        Alias "_swe_set_lapse_rate@8" ( _
+          ByVal x As Double _
+        )
+
+Public Declare Sub swe_set_delta_t_userdef Lib "swedll32.dll" _
+        Alias "_swe_set_delta_t_userdef@8" ( _
+          ByVal x As Double _
+        )
+
+Public Declare Sub swe_set_delta_t_userdef Lib "swedll32.dll" _
+        Alias "_swe_set_delta_t_userdef@8" ( _
+          ByVal x As Double _
+        )
+
+Public Declare Sub swe_set_tid_acc Lib "swedll32.dll" _
+        Alias "_swe_set_tid_acc@8" ( _
+          ByVal x As Double _
+        )
+
+Public Declare Function swe_sidtime0 Lib "swedll32.dll" _
+        Alias "_swe_sidtime0@24" ( _
+          ByVal tjd_ut As Double, _
+          ByVal ecl As Double, _
+          ByVal nut As Double _
+        ) As Double
+
+Public Declare Function swe_sidtime Lib "swedll32.dll" _
+        Alias "_swe_sidtime@8" ( _
+          ByVal tjd_ut As Double _
+        ) As Double
+
+Public Declare Function swe_sol_eclipse_how Lib "swedll32.dll" _
+        Alias "_swe_sol_eclipse_how@24" ( _  
+          ByVal tjd_ut as Double, _
+          ByVal ifl as Int32, _
+          ByRef geopos as Double, _
+          ByRef attr as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_sol_eclipse_when_glob Lib "swedll32.dll" _
+        Alias "_swe_sol_eclipse_when_glob@28" ( _  
+          ByVal tjd_start as Double, _
+          ByVal ifl as Int32, _
+          ByVal ifltype as Int32, _
+          ByRef tret as Double, _
+          ByVal backward as Int32, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_lun_occult_when_glob Lib "swedll32.dll" _
+        Alias "_swe_lun_occult_when_glob@36" ( _  
+          ByVal tjd_start as Double, _
+          ByVal ipl as Int32, _
+          ByVal star As String, _
+          ByVal ifl as Int32, _
+          ByVal ifltype as Int32, _
+          ByRef tret as Double, _
+          ByVal backward as Int32, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_sol_eclipse_when_loc Lib "swedll32.dll" _
+        Alias "_swe_sol_eclipse_when_loc@32" ( _  
+          ByVal tjd_start as Double, _
+          ByVal ifl as Int32, _
+          ByRef tret as Double, _
+          ByRef attr as Double, _
+          ByVal backward as Int32, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_lun_occult_when_loc Lib "swedll32.dll" _
+        Alias "_swe_lun_occult_when_loc@40" ( _  
+          ByVal tjd_start as Double, _
+          ByVal ipl as Int32, _
+          ByVal star As String, _
+          ByVal ifl as Int32, _
+          ByRef tret as Double, _
+          ByRef attr as Double, _
+          ByVal backward as Int32, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_sol_eclipse_where Lib "swedll32.dll" _
+        Alias "_swe_sol_eclipse_where@24" ( _  
+          ByVal tjd_ut as Double, _
+          ByVal ifl as Int32, _
+          ByRef geopos as Double, _
+          ByRef attr as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_lun_occult_where Lib "swedll32.dll" _
+        Alias "_swe_lun_occult_where@32" ( _  
+          ByVal tjd_ut as Double, _
+          ByVal ipl as Int32, _
+          ByVal star As String, _
+          ByVal ifl as Int32, _
+          ByRef geopos as Double, _
+          ByRef attr as Double, _
+          ByVal serr as String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_time_equ Lib "swedll32.dll" _
+        Alias "_swe_time_equ@16" ( _
+          ByVal tjd_ut As Double, _
+          ByRef e As double, _
+          ByVal serr As String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_lmt_to_lat Lib "swedll32.dll" _
+        Alias "_swe_lmt_to_lat@24" ( _
+          ByVal tjd_lmt As Double, _
+          ByVal geolon As Double, _
+          ByRef tjd_lat As double, _
+          ByVal serr As String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_lat_to_lmt Lib "swedll32.dll" _
+        Alias "_swe_lat_to_lmt@24" ( _
+          ByVal tjd_lat As Double, _
+          ByVal geolon As Double, _
+          ByRef tjd_lmt As double, _
+          ByVal serr As String _
+        ) As Int32
+                        ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_version Lib "swedll32.dll" _
+        Alias "_swe_version@4" ( _
+          ByVal svers As String _
+        ) As String
+                        ' svers must be able to hold 256 bytes
+
+Public Declare Function swe_heliacal_ut Lib "swedll32.dll" _
+     Alias "_swe_heliacal_ut@40" ( _
+       ByVal tjd_start As Double, _
+       ByRef dgeo As Double, _
+       ByRef datm As Double, _
+       ByRef dobs As Double, _
+       ByVal ObjectName As String, _
+       ByVal TypeEvent As Int32, _
+       ByVal helflag As Int32, _
+       ByRef dret As Double, _
+       ByVal serr As String _
+     ) As Int32   ' dret must be first of 50 array elements
+                 ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_vis_limit_mag Lib "swedll32.dll" _
+   Alias "_swe_vis_limit_mag@36" ( _
+     ByVal tjd_ut As Double, _
+     ByRef dgeo As Double, _
+     ByRef datm As Double, _
+     ByRef dobs As Double, _
+     ByVal ObjectName As String, _
+     ByVal helflag As Int32, _
+     ByRef dret As Double, _
+     ByVal serr As String _
+   ) As Int32   ' dret must be first of 50 array elements
+               ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_utc_to_jd Lib "swedll32.dll" _
+   Alias "_swe_utc_to_jd@40" ( _
+     ByVal iyear As Int32, _
+     ByVal imonth As Int32, _
+     ByVal iday As Int32, _
+     ByVal ihour As Int32, _
+     ByVal imin As Int32, _
+     ByVal dsec As Double, _
+     ByVal gregflag As Int32, _
+     ByRef dret As Double, _
+     ByVal serr As String _
+   ) As Int32   ' dret must be first of 10 array elements
+               ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_jdet_to_utc Lib "swedll32.dll" _
+   Alias "_swe_jdet_to_utc@36" ( _
+     ByVal tjd_et As Double, _
+     ByVal gregflag As Int32, _
+     ByRef iyear As Int32, _
+     ByRef imonth As Int32, _
+     ByRef iday As Int32, _
+     ByRef ihour As Int32, _
+     ByRef imin As Int32, _
+     ByRef dsec As Double _
+   ) As Int32
+
+Public Declare Function swe_jdut1_to_utc Lib "swedll32.dll" _
+   Alias "_swe_jdut1_to_utc@36" ( _
+     ByVal tjd_ut As Double, _
+     ByVal gregflag As Int32, _
+     ByRef iyear As Int32, _
+     ByRef imonth As Int32, _
+     ByRef iday As Int32, _
+     ByRef ihour As Int32, _
+     ByRef imin As Int32, _
+     ByRef dsec As Double _
+   ) As Int32
+
+Public Declare Function swe_utc_time_zone Lib "swedll32.dll" _
+   Alias "_swe_utc_time_zone@60" ( _
+     ByVal iyear As Int32, _
+     ByVal imonth As Int32, _
+     ByVal iday As Int32, _
+     ByVal ihour As Int32, _
+     ByVal imin As Int32, _
+     ByVal dsec As Double, _
+     ByVal dtimezone As Double, _
+     ByRef iyear_out As Int32, _
+     ByRef imonth_out As Int32, _
+     ByRef iday_out As Int32, _
+     ByRef ihour_out As Int32, _
+     ByRef imin_out As Int32, _
+     ByRef dsec_out As Double _
+   ) As Int32 
+
+Public Declare Function swe_get_library_path Lib "swedll32.dll" _
+        Alias "_swe_get_library_path@4" ( _
+          ByVal svers As String _
+        ) As String
+                        ' svers must be able to hold 256 bytes
+
+Public Declare Function swe_get_orbital_elements Lib "swedll32.dll" _
+        Alias "_swe_get_orbital_elements@24" ( _
+          ByVal tjd As Double, _
+          ByVal ipl As Int32, _
+          ByVal iflag As Int32, _
+          ByRef dret As Double, _
+          ByVal serr As String _
+        ) As Int32 
+	      ' serr must be able to hold 256 bytes
+	      ' dret should be the first item of an array of 50 double
+
+Public Declare Function swe_orbit_max_min_true_distance Lib "swedll32.dll" _
+        Alias "_swe_orbit_max_min_true_distance@32" ( _
+          ByVal tjd As Double, _
+          ByVal ipl As Int32, _
+          ByVal iflag As Int32, _
+          ByRef dmax As Double, _
+          ByRef dmin As Double, _
+          ByRef dtrue As Double, _
+          ByVal serr As String _
+        ) As Int32 
+                        ' serr must be able to hold 256 bytes
+
+' values for gregflag in swe_julday() and swe_revjul()
+ Const SE_JUL_CAL As Integer = 0
+ Const SE_GREG_CAL As Integer = 1
+ 
+' planet and body numbers (parameter ipl) for swe_calc()
+ Const SE_ECL_NUT As Integer = -1
+
+ Const SE_SUN As Integer = 0
+ Const SE_MOON As Integer = 1
+ Const SE_MERCURY As Integer = 2
+ Const SE_VENUS As Integer = 3
+ Const SE_MARS As Integer = 4
+ Const SE_JUPITER As Integer = 5
+ Const SE_SATURN As Integer = 6
+ Const SE_URANUS As Integer = 7
+ Const SE_NEPTUNE As Integer = 8
+ Const SE_PLUTO   As Integer = 9
+ Const SE_MEAN_NODE As Integer = 10
+ Const SE_TRUE_NODE As Integer = 11
+ Const SE_MEAN_APOG As Integer = 12
+ Const SE_OSCU_APOG As Integer = 13
+ Const SE_EARTH     As Integer = 14
+ Const SE_CHIRON    As Integer = 15
+ Const SE_PHOLUS    As Integer = 16
+ Const SE_CERES     As Integer = 17
+ Const SE_PALLAS    As Integer = 18
+ Const SE_JUNO      As Integer = 19
+ Const SE_VESTA     As Integer = 20
+  
+ Const SE_NPLANETS  As Integer = 21
+ Const SE_AST_OFFSET  As Integer = 10000
+ Const SE_VARUNA    As Integer = (SE_AST_OFFSET + 20000)
+
+' Hamburger or Uranian ficticious "planets"
+ Const SE_FICT_OFFSET As Integer = 40
+ Const SE_FICT_MAX  As Integer = 999 'maximum number for ficticious planets
+                                     'if taken from file seorbel.txt
+ Const SE_NFICT_ELEM  As Integer = 19 'number of built-in ficticious planets
+ Const SE_CUPIDO As Integer =           40
+ Const SE_HADES As Integer =            41
+ Const SE_ZEUS As Integer =             42
+ Const SE_KRONOS As Integer =           43
+ Const SE_APOLLON As Integer =          44
+ Const SE_ADMETOS As Integer =          45
+ Const SE_VULKANUS As Integer =         46
+ Const SE_POSEIDON As Integer =         47
+' other ficticious bodies
+ Const SE_ISIS As Integer =             48
+ Const SE_NIBIRU As Integer =           49
+ Const SE_HARRINGTON As Integer =       50
+ Const SE_NEPTUNE_LEVERRIER As Integer =51
+ Const SE_NEPTUNE_ADAMS As Integer =    52
+ Const SE_PLUTO_LOWELL As Integer =     53
+ Const SE_PLUTO_PICKERING As Integer =  54
+ Const SE_VULCAN As Integer =  55
+ Const SE_WHITE_MOON As Integer =  56
+ Const SE_PROSERPINA As Integer =  57
+ Const SE_WALDEMATH As Integer =  58
+
+' points returned by swe_houses() and swe_houses_armc()
+' in array ascmc(0...10)
+ Const SE_ASC       As Integer = 0
+ Const SE_MC        As Integer = 1
+ Const SE_ARMC      As Integer = 2
+ Const SE_VERTEX    As Integer = 3
+ Const SE_EQUASC    As Integer = 4	' "equatorial ascendant"
+ Const SE_COASC1    As Integer = 5	' "co-ascendant (W. Koch)"
+ Const SE_COASC2    As Integer = 6	' "co-ascendant (M. Munkasey)"
+ Const SE_POLASC    As Integer = 7	' "polar ascendant (M. Munkasey)"
+ Const SE_NASCMC    As Integer = 8	' number of such points
+ 
+' iflag values for swe_calc()/swe_calc_ut() and swe_fixstar()/swe_fixstar_ut()
+Const SEFLG_JPLEPH As Int32 = 1
+Const SEFLG_SWIEPH As Int32 = 2
+Const SEFLG_MOSEPH As Int32 = 4
+Const SEFLG_SPEED As Int32 = 256
+Const SEFLG_HELCTR As Int32 = 8
+Const SEFLG_TRUEPOS As Int32 = 16
+Const SEFLG_J2000 As Int32 = 32
+Const SEFLG_NONUT As Int32 = 64
+Const SEFLG_NOGDEFL As Int32 = 512
+Const SEFLG_NOABERR As Int32 = 1024
+Const SEFLG_ASTROMETRIC As Int32 = 1536
+Const SEFLG_EQUATORIAL As Int32 = 2048
+Const SEFLG_XYZ As Int32 = 4096
+Const SEFLG_RADIANS As Int32 = 8192
+Const SEFLG_BARYCTR As Int32 = 16384
+Const SEFLG_TOPOCTR As Int32 = 32768
+Const SEFLG_ORBEL_AA As Int32 = SEFLG_TOPOCTR 
+Const SEFLG_SIDEREAL As Int32 = 65536
+Const SEFLG_ICRS As Int32 = (128 * 1024)
+Const SEFLG_DPSIDEPS_1980 As Int32 = (256 * 1024)
+Const SEFLG_JPLHOR As Int32 = (256 * 1024)
+Const SEFLG_JPLHOR_APPROX As Int32 = (512 * 1024)
+
+' used with swe_nod_aps() 
+Const SE_NODBIT_MEAN As Int32 = 1 ' mean nodes/apsides 
+Const SE_NODBIT_OSCU As Int32 = 2 ' osculating nodes/apsides 
+Const SE_NODBIT_OSCU_BAR As Int32 = 4 ' same, but motion about solar system barycenter considered 
+Const SE_NODBIT_FOPOINT As Int32 = 256 ' focal point of orbit instead of aphelion 
+
+'eclipse codes
+Const SE_ECL_CENTRAL As Int32 = 1
+Const SE_ECL_NONCENTRAL As Int32 = 2
+Const SE_ECL_TOTAL As Int32 = 4
+Const SE_ECL_ANNULAR As Int32 = 8
+Const SE_ECL_PARTIAL As Int32 = 16
+Const SE_ECL_ANNULAR_TOTAL As Int32 = 32
+Const SE_ECL_PENUMBRAL As Int32 = 64
+Const SE_ECL_VISIBLE As Int32 = 128
+Const SE_ECL_MAX_VISIBLE As Int32 = 256
+Const SE_ECL_1ST_VISIBLE As Int32 = 512
+Const SE_ECL_PARTBEG_VISIBLE As Int32 = 512
+Const SE_ECL_2ND_VISIBLE As Int32 = 1024
+Const SE_ECL_TOTBEG_VISIBLE As Int32 = 1024
+Const SE_ECL_3RD_VISIBLE As Int32 = 2048
+Const SE_ECL_TOTEND_VISIBLE As Int32 = 2048
+Const SE_ECL_4TH_VISIBLE As Int32 = 4096
+Const SE_ECL_PARTEND_VISIBLE As Int32 = 4096
+Const SE_ECL_PENUMBBEG_VISIBLE As Int32 = 8192
+Const SE_ECL_PENUMBEND_VISIBLE As Int32 = 16384
+Const SE_ECL_ONE_TRY As Int32 = 32768
+
+'sidereal modes, for swe_set_sid_mode()
+Const SE_SIDM_FAGAN_BRADLEY    As Int32 = 0
+Const SE_SIDM_LAHIRI           As Int32 = 1
+Const SE_SIDM_DELUCE           As Int32 = 2
+Const SE_SIDM_RAMAN            As Int32 = 3
+Const SE_SIDM_USHASHASHI       As Int32 = 4
+Const SE_SIDM_KRISHNAMURTI     As Int32 = 5
+Const SE_SIDM_DJWHAL_KHUL      As Int32 = 6
+Const SE_SIDM_YUKTESHWAR       As Int32 = 7
+Const SE_SIDM_JN_BHASIN        As Int32 = 8
+Const SE_SIDM_BABYL_KUGLER1    As Int32 = 9
+Const SE_SIDM_BABYL_KUGLER2   As Int32 = 10
+Const SE_SIDM_BABYL_KUGLER3   As Int32 = 11
+Const SE_SIDM_BABYL_HUBER     As Int32 = 12
+Const SE_SIDM_BABYL_ETPSC     As Int32 = 13
+Const SE_SIDM_ALDEBARAN_15TAU As Int32 = 14
+Const SE_SIDM_HIPPARCHOS      As Int32 = 15
+Const SE_SIDM_SASSANIAN       As Int32 = 16
+Const SE_SIDM_GALCENT_0SAG    As Int32 = 17
+Const SE_SIDM_J2000           As Int32 = 18
+Const SE_SIDM_J1900           As Int32 = 19
+Const SE_SIDM_B1950           As Int32 = 20
+Const SE_SIDM_SURYASIDDHANTA As Int32 = 21
+Const SE_SIDM_SURYASIDDHANTA_MSUN As Int32 = 22
+Const SE_SIDM_ARYABHATA       As Int32 = 23
+Const SE_SIDM_ARYABHATA_MSUN  As Int32 = 24
+Const SE_SIDM_SS_REVATI       As Int32 = 25
+Const SE_SIDM_SS_CITRA        As Int32 = 26
+Const SE_SIDM_TRUE_CITRA        As Int32 = 27
+Const SE_SIDM_TRUE_REVATI       As Int32 = 28
+Const SE_SIDM_TRUE_PUSHYA       As Int32 = 29
+Const SE_SIDM_GALCENT_RGILBRAND As Int32 = 30
+Const SE_SIDM_GALEQU_IAU1958  As Int32 = 31
+Const SE_SIDM_GALEQU_TRUE     As Int32 = 32
+Const SE_SIDM_GALEQU_MULA     As Int32 = 33
+Const SE_SIDM_GALALIGN_MARDYKS As Int32 = 34
+Const SE_SIDM_TRUE_MULA       As Int32 = 35
+Const SE_SIDM_GALCENT_MULA_WILHELM       As Int32 = 36
+Const SE_SIDM_ARYABHATA_522   As Int32 = 37
+Const SE_SIDM_BABYL_BRITTON   As Int32 = 38
+Const SE_SIDM_TRUE_SHEORAN   As Int32 = 39
+Const SE_SIDM_GALCENT_COCHRANE   As Int32 = 40
+Const SE_SIDM_GALEQU_FIORENZA   As Int32 = 41
+Const SE_SIDM_VALENS_MOON   As Int32 = 42
+Const SE_SIDM_LAHIRI_1940   As Int32 = 43
+Const SE_SIDM_LAHIRI_VP285  As Int32 = 44
+Const SE_SIDM_KRISHNAMURTI_VP291  As Int32 = 45
+Const SE_SIDM_LAHIRI_ICRC   As Int32 = 46
+
+Const SE_SIDM_USER            As Int32 = 255
+
+Const SE_NSIDM_PREDEF         As Int32 = 47
+
+Const SE_SIDBITS              As Int32 = 256
+'for projection onto ecliptic of t0
+Const SE_SIDBIT_ECL_T0        As Int32 = 256
+'for projection onto solar system plane
+Const SE_SIDBIT_SSY_PLANE     As Int32 = 512
+'with user-defined ayanamsha, t0 is UT
+Const SE_SIDBIT_USER_UT       As Int32 = 1024
+' ayanamsha measured on ecliptic of date;
+' see commentaries in sweph.c:swi_get_ayanamsa_ex(). 
+Const SE_SIDBIT_ECL_DATE      As Int32 = 2048
+
+' modes for planetary nodes/apsides, swe_nod_aps(), swe_nod_aps_ut()
+Const SE_NODBIT_MEAN		As Int32 = 1
+Const SE_NODBIT_OSCU		As Int32 = 2
+Const SE_NODBIT_OSCU_BAR	As Int32 = 3
+Const SE_NODBIT_FOPOINT		As Int32 = 256
+
+' indices for swe_rise_trans()
+Const SE_CALC_RISE		As Int32 = 1
+Const SE_CALC_SET		As Int32 = 2
+Const SE_CALC_MTRANSIT		As Int32 = 4
+Const SE_CALC_ITRANSIT		As Int32 = 8
+Const SE_BIT_DISC_CENTER        As Int32 = 256 '/* to be added to SE_CALC_RISE/SET */
+				    '/* for rise or set of disc center is */
+Const SE_BIT_DISC_BOTTOM        As Int32 = 8192 '/* to be added to SE_CALC_RISE/SET, */
+				    '/* for rise or set of lower limb of disc */
+Const SE_BIT_GEOCTR_NO_ECL_LAT  As Int32 = 128
+Const SE_BIT_NO_REFRACTION      As Int32 = 512 '/* to be added to SE_CALC_RISE/SET, */
+				    '/* if refraction is not to be considered */
+Const SE_BIT_CIVIL_TWILIGHT     As Int32 = 1024 '/* to be added to SE_CALC_RISE/SET, */
+Const SE_BIT_NAUTIC_TWILIGHT    As Int32 = 2048 '/* to be added to SE_CALC_RISE/SET, */
+Const SE_BIT_ASTRO_TWILIGHT     As Int32 = 4096 '/* to be added to SE_CALC_RISE/SET, */
+Const SE_BIT_FIXED_DISC_SIZE    As Int32 = 16384 '/* to be added to SE_CALC_RISE/SET, */
+Const SE_BIT_HINDU_RISING       As Int32 = 896
+
+
+
+' bits for data conversion with swe_azalt() and swe_azalt_rev()
+Const SE_ECL2HOR		As Int32 = 0
+Const SE_EQU2HOR		As Int32 = 1
+Const SE_HOR2ECL		As Int32 = 0
+Const SE_HOR2EQU		As Int32 = 1
+
+' for swe_refrac()
+Const SE_TRUE_TO_APP		As Int32 = 0
+Const SE_APP_TO_TRUE		As Int32 = 1
+
+' for heliacal risings etc.
+Const SE_HELIACAL_RISING        As Int32 = 1
+Const SE_HELIACAL_SETTING       As Int32 = 2
+Const SE_MORNING_FIRST          As Int32 = SE_HELIACAL_RISING
+Const SE_EVENING_LAST           As Int32 = SE_HELIACAL_SETTING
+Const SE_EVENING_FIRST          As Int32 = 3
+Const SE_MORNING_LAST           As Int32 = 4
+Const SE_ACRONYCHAL_RISING      As Int32 = 5  ' still not implemented
+Const SE_COSMICAL_SETTING       As Int32 = 6  ' still not implemented 
+Const SE_ACRONYCHAL_SETTING     As Int32 = SE_COSMICAL_SETTING
+
+Const SE_HELFLAG_LONG_SEARCH 		As Int32 = 128
+Const SE_HELFLAG_HIGH_PRECISION      	As Int32 = 256
+Const SE_HELFLAG_OPTICAL_PARAMS      	As Int32 = 512
+Const SE_HELFLAG_NO_DETAILS          	As Int32 = 1024
+Const SE_HELFLAG_SEARCH_1_PERIOD        As Int32 = 2048
+Const SE_HELFLAG_VISLIM_DARK            As Int32 = 4096
+Const SE_HELFLAG_VISLIM_NOMOON          As Int32 = 8196
+Const SE_HELFLAG_VISLIM_PHOTOPIC        As Int32 = 16384
+Const SE_HELFLAG_VISLIM_SCOTOPIC        As Int32 = 32768
+Const SE_HELFLAG_AV                     As Int32 = 65536
+
+Const SE_PHOTOPIC_FLAG    As Int32 = 0
+Const SE_SCOTOPIC_FLAG    As Int32 = 1
+Const SE_MIXEDOPIC_FLAG   As Int32 = 2
+
+Const define SE_AUNIT_TO_KM        As Double = (149597870.691)
+Const define SE_AUNIT_TO_LIGHTYEAR As Double = (1.0/63241.077088071)
+Const define SE_AUNIT_TO_PARSEC    As Double = (1.0/206264.8062471) 
+
+' for function swe_split_deg
+Const SE_SPLIT_DEG_ROUND_SEC    As Int32 = 1
+Const SE_SPLIT_DEG_ROUND_MIN    As Int32 = 2
+Const SE_SPLIT_DEG_ROUND_DEG    As Int32 = 4
+Const SE_SPLIT_DEG_ZODIACAL     As Int32 = 8
+Const SE_SPLIT_DEG_NAKSHATRA As Int32 = 1024
+Const SE_SPLIT_DEG_KEEP_SIGN   As Int32 = 16    ' don't round to next sign, e.g. 29.9999999 will be rounded to 29d59'59" (or 29d59' or 29d) 
+Const SE_SPLIT_DEG_KEEP_DEG    As Int32 = 32    ' don't round to next degree e.g. 13.9999999 will be rounded to 13d59'59" (or 13d59' or 13d) 

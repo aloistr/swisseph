@@ -972,11 +972,6 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
 
     Const SE_SIDBITS As Long = 256
 
-    ' modes for planetary nodes/apsides, swe_nod_aps(), swe_nod_aps_ut()
-    Const SE_NODBIT_MEAN As Long = 1
-    Const SE_NODBIT_OSCU As Long = 2
-    Const SE_NODBIT_OSCU_BAR As Long = 3
-    Const SE_NODBIT_FOPOINT As Long = 256
 
     ' indices for swe_rise_trans()
     Const SE_CALC_RISE As Long = 1

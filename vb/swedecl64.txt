@@ -887,7 +887,7 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
 
     Const SE_SIDBIT_ECL_T0 As Long = 256  ' for positions referred to equinox t0
     Const SE_SIDBIT_SSY_PLANE As Long = 256  ' for positions referred to solar system plane
-    Const SE_SIDBIT_ECL_DATE      As Int32 = 2048 ' ayanamsha measured on ecliptic of date;
+    Const SE_SIDBIT_ECL_DATE      As Long = 2048 ' ayanamsha measured on ecliptic of date;
 
     ' used with swe_nod_aps()
     Const SE_NODBIT_MEAN As Long = 1  ' mean nodes/apsides

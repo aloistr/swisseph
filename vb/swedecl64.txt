@@ -1,5 +1,7 @@
 ' Swiss Ephemeris 
 ' Declarations for 64_bit Visual Basic
+' This file is in the Public Domain
+'
 ' from posting by Anil Kelia in Swiss Ephemeris mailing list
 '
 ' The DLL file must exist in the same directory as the VB executable, or in a system

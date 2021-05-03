@@ -1,5 +1,6 @@
 ' Swiss Ephemeris API
 ' Declarations for Visual Basic 32-bit
+' This file is in the Public Domain
 '
 ' type Long of original version changed to Int32 on 2-jul-17
 ' new functions for release 2.09.02 added 17-aug-2020

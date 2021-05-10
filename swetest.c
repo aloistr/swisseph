@@ -3191,8 +3191,8 @@ ERR) {
       do_printf(sout);
     }
     if (with_chart_link) {
-      char snat[AS_MAXCH];
-      char stim[AS_MAXCH];
+      char snat[2 * AS_MAXCH];
+      char stim[80];
       int iflg = 0; 
       char cal = gregflag ? 'g' : 'j';
       strcpy(stim, hms(jut,BIT_LZEROES));

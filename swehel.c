@@ -476,10 +476,11 @@ if (eventflag & SE_CALC_RISE) {
   /* semidiurnal arc of sun */
   sda = acos(-tan(dgeo[1] * DEGTORAD) * tan(xx[1] * DEGTORAD)) * RADTODEG;
   /* rough rising and setting times */
-if (eventflag & SE_CALC_RISE)
-  tjdrise = tjdnoon - sda / 360.0;
-else
-  tjdrise = tjdnoon + sda / 360.0;
+  if (eventflag & SE_CALC_RISE) {
+    tjdrise = tjdnoon - sda / 360.0;
+  } else {
+    tjdrise = tjdnoon + sda / 360.0;
+  }
   /*ph->tset = tjd_start + sda / 360.0;*/
   /* now calculate more accurate rising and setting times.
    * use vertical speed in order to determine crossing of the horizon  

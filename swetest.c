@@ -1836,14 +1836,16 @@ int main(int argc, char *argv[])
         /* house position */
         if (strpbrk(fmt, "gGjzm") != NULL) {
 	  armc = swe_degnorm(swe_sidtime(tut) * 15 + geopos[0]);
-	  for (i = 0; i < 6; i++)
+	  for (i = 0; i < 6; i++) {
 	    xsv[i] = x[i];
+	  }
 	  if (hpos_meth == 1)
 	    xsv[1] = 0;
-	    if (ipl == SE_FIXSTAR) 
-	      strcpy(star2, star);
-	    else 
-	      *star2 = '\0';
+	  if (ipl == SE_FIXSTAR) {
+	    strcpy(star2, star);
+	  } else { 
+	    *star2 = '\0';
+	  }
 	  if (hpos_meth >= 2 && toupper(ihsy) == 'G') {
 	    swe_gauquelin_sector(tut, ipl, star2, iflag, hpos_meth, geopos, 0, 0, &hposj, serr);
 	  } else {
@@ -2045,7 +2047,7 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
   double y_frac;
   double ar, sinp;
   double dret[20];
-  char slon[20];
+  char slon[40];
   char pnam[30];
   AS_BOOL is_house = ((mode & MODE_HOUSE) != 0);
   AS_BOOL is_label = ((mode & MODE_LABEL) != 0);
@@ -2962,8 +2964,8 @@ static int32 call_lunar_eclipse(double t_ut, int32 whicheph, int32 special_mode,
   int i, ii, retc = OK, eclflag, ecl_type = 0;
   int rval, ihou, imin, isec, isgn;
   double dfrc, attr[30], dt, xx[6], geopos_max[3];
-  char s1[AS_MAXCH], s2[AS_MAXCH], sout_short[AS_MAXCH], sfmt[AS_MAXCH], *styp = "none", *sgj;
-  char slon[8], slat[8], saros[20];
+  char s1[AS_MAXCH], s2[AS_MAXCH], sout_short[LEN_SOUT + AS_MAXCH], sfmt[AS_MAXCH], *styp = "none", *sgj;
+  char slon[8], slat[8], saros[40];
   geopos_max[0] = 0; geopos_max[1] = 0;
   /* no selective eclipse type set, set all */
   if (with_chart_link) do_printf("<pre>");

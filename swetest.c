@@ -3416,8 +3416,8 @@ attr, direction_flag, serr)) == ERR) {
 	do_printf(sout);
       }
       if (with_chart_link) {
-	char snat[AS_MAXCH];
-	char stim[AS_MAXCH];
+	char snat[2 * AS_MAXCH];
+	char stim[80];
 	int iflg = 0; // NAT_IFLG_UNKNOWN_TIME;
 	char cal = gregflag ? 'g' : 'j';
 	format_lon_lat(slon, slat, geopos_max[0], geopos_max[1]);

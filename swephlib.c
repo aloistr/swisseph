@@ -4414,21 +4414,37 @@ void CALL_CONV swe_get_astro_models(char *samod, char *sdet, int32 iflag)
     imod = pmodel[i];
     switch(i) {
       case SE_MODEL_PREC_LONGTERM:
-	if (imod == SEMOD_PREC_DEFAULT) imod = 0; break;
+	if (imod == SEMOD_PREC_DEFAULT) 
+	  imod = 0;
+	break;
       case SE_MODEL_PREC_SHORTTERM:
-	if (imod == SEMOD_PREC_DEFAULT_SHORT) imod = 0; break;
+	if (imod == SEMOD_PREC_DEFAULT_SHORT)
+	  imod = 0;
+	break;
       case SE_MODEL_NUT:
-	if (imod == SEMOD_NUT_DEFAULT) imod = 0; break;
+	if (imod == SEMOD_NUT_DEFAULT)
+	  imod = 0;
+	break;
       case SE_MODEL_SIDT:
-	if (imod == SEMOD_SIDT_DEFAULT) imod = 0; break;
+	if (imod == SEMOD_SIDT_DEFAULT)
+	  imod = 0;
+	break;
       case SE_MODEL_BIAS:
-	if (imod == SEMOD_BIAS_DEFAULT) imod = 0; break;
+	if (imod == SEMOD_BIAS_DEFAULT)
+	  imod = 0;
+	break;
       case SE_MODEL_JPLHOR_MODE:
-	if (imod == SEMOD_JPLHOR_DEFAULT) imod = 0; break;
+	if (imod == SEMOD_JPLHOR_DEFAULT)
+	  imod = 0;
+	break;
       case SE_MODEL_JPLHORA_MODE:
-	if (imod == SEMOD_JPLHORA_DEFAULT) imod = 0; break;
+	if (imod == SEMOD_JPLHORA_DEFAULT)
+	  imod = 0;
+	break;
       case SE_MODEL_DELTAT:
-	if (imod == SEMOD_DELTAT_DEFAULT) imod = 0; break;
+	if (imod == SEMOD_DELTAT_DEFAULT)
+	  imod = 0;
+	break;
     }
     sprintf(samod0 + strlen(samod0), "%d,", imod);
   }

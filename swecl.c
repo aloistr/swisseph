@@ -4542,14 +4542,15 @@ nazalt++;
       for (; dt > 0.0001; dt /= 3) {
         for (i = 0, tt = tcu - dt; i < 3; tt += dt, i++) {
           te = tt + swe_deltat_ex(tt, epheflag, serr);
-          if (!do_fixstar)
+          if (!do_fixstar) {
             if (swe_calc(te, ipl, iflag, xc, serr) == ERR)
               return ERR;
-	    if (rsmi & SE_BIT_GEOCTR_NO_ECL_LAT)
-	      xc[1] = 0;
-ncalc++;
+	  }
+	  if (rsmi & SE_BIT_GEOCTR_NO_ECL_LAT)
+	    xc[1] = 0;
+	  ncalc++;
           swe_azalt(tt, tohor_flag, geopos, atpress, attemp, xc, ah);
-nazalt++;
+	  nazalt++;
 	  ah[1] -= horhgt;
           dc[i] = ah[1];
         }

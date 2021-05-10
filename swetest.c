@@ -2964,7 +2964,7 @@ static int32 call_lunar_eclipse(double t_ut, int32 whicheph, int32 special_mode,
   int i, ii, retc = OK, eclflag, ecl_type = 0;
   int rval, ihou, imin, isec, isgn;
   double dfrc, attr[30], dt, xx[6], geopos_max[3];
-  char s1[AS_MAXCH], s2[AS_MAXCH], sout_short[LEN_SOUT + AS_MAXCH], sfmt[AS_MAXCH], *styp = "none", *sgj;
+  char s1[AS_MAXCH], s2[AS_MAXCH], sout_short[2 * LEN_SOUT], sfmt[AS_MAXCH], *styp = "none", *sgj;
   char slon[8], slat[8], saros[40];
   geopos_max[0] = 0; geopos_max[1] = 0;
   /* no selective eclipse type set, set all */

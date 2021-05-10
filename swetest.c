@@ -2067,7 +2067,7 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
   } else if (diff_mode == DIFF_MIDP) {
     sprintf(pnam, "%.3s/%.3s", spnam, spnam2);
   } else {
-    sprintf(pnam, "%-15s", spnam);
+    sprintf(pnam, "%-15.15s", spnam);
   }
   if (list_hor && strchr(fmt, 'P') == NULL) {
     sprintf(slon, "%.8s %s", pnam, "long.");

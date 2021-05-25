@@ -86,11 +86,11 @@ static char *infocmd1 = "\n\
                 Note: the date format is day month year (European style).\n\
         -bj...  begin date as an absolute Julian day number; e.g. -bj2415020.5\n\
         -j...   same as -bj\n\
-        -tHH.MMSS  input time (as Ephemeris Time)\n\
+        -tHH[:MM[:SS]]  input time (as Ephemeris Time)\n\
         -ut     input date is Universal Time (UT1)\n\
-	-utHH:MM:SS input time (as Universal Time)\n\
-	-utHH.MMSS input time (as Universal Time)\n\
-	-utcHH.MM:SS input time (as Universal Time Coordinated UTC)\n\
+	-utHH[:MM[:SS]] input time (as Universal Time)\n\
+	-utcHH[:MM[:SS]] input time (as Universal Time Coordinated UTC)\n\
+		H,M,S can have one or two digits. Their limits are unchecked.\n\
      output time for eclipses, occultations, risings/settings is UT by default\n\
         -lmt    output date/time is LMT (with -geopos)\n\
         -lat    output date/time is LAT (with -geopos)\n\
@@ -1843,7 +1843,7 @@ int main(int argc, char *argv[])
 	    xsv[1] = 0;
 	  if (ipl == SE_FIXSTAR) {
 	    strcpy(star2, star);
-	  } else { 
+	  } else {
 	    *star2 = '\0';
 	  }
 	  if (hpos_meth >= 2 && toupper(ihsy) == 'G') {
@@ -3700,10 +3700,11 @@ static int32 call_heliacal_event(double t_ut, int32 ipl, char *star, int32 which
     helflag |= SE_HELFLAG_OPTICAL_PARAMS;
   if (hel_using_AV)
     helflag |= SE_HELFLAG_AV;
-  if (ipl == SE_FIXSTAR)
+  if (ipl == SE_FIXSTAR) {
     strcpy(obj_name, star);
-  else
+  } else {
     swe_get_planet_name(ipl, obj_name);
+  }
   if (with_header) {
     printf("\ngeo. long %f, lat %f, alt %f", geopos[0], geopos[1], geopos[2]);
     do_printf("\n");

@@ -111,7 +111,7 @@ Public Declare Function swe_split_deg Lib "swedll32.dll" _
           ByRef imin As Int32, _
           ByRef isec As Int32, _
           ByRef dsecfr As Double, _
-          ByRef isgn As Int32, _
+          ByRef isgn As Int32 _
         ) 
 
 Public Declare Function swe_csnorm Lib "swedll32.dll" _

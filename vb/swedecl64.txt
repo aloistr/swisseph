@@ -1016,6 +1016,17 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
     Const SE_TRUE_TO_APP As Long = 0
     Const SE_APP_TO_TRUE As Long = 1
 
+    ' defines for function swe_split_deg() 
+    Const SE_SPLIT_DEG_ROUND_SEC As Long = 1
+    Const SE_SPLIT_DEG_ROUND_MIN As Long = 2
+    Const SE_SPLIT_DEG_ROUND_DEG As Long = 4
+    Const SE_SPLIT_DEG_ZODIACAL As Long = 8
+    Const SE_SPLIT_DEG_NAKSHATRA As Long = 1024
+    Const SE_SPLIT_DEG_KEEP_SIGN As Long = 16  ' don't round to next sign,  e.g. 29.9999999 will be rounded
+					       ' to 29d59'59" (or 29d59' or 29d) 
+    Const SE_SPLIT_DEG_KEEP_DEG As Long = 32   ' don't round to next degree
+    					       ' e.g. 13.9999999 will be rounded  to 13d59'59" (or 13d59' or 13d) 
+
     ' for heliacal risings etc.
     Const SE_HELIACAL_RISING As Long = 1
     Const SE_HELIACAL_SETTING As Long = 2

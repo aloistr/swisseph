@@ -1014,17 +1014,6 @@ Const SE_NODBIT_OSCU		As Int32 = 2
 Const SE_NODBIT_OSCU_BAR	As Int32 = 3
 Const SE_NODBIT_FOPOINT		As Int32 = 256
 
-' defines for function swe_split_deg() 
-Const SE_SPLIT_DEG_ROUND_SEC As Int32 = 1
-Const SE_SPLIT_DEG_ROUND_MIN As Int32 = 2
-Const SE_SPLIT_DEG_ROUND_DEG As Int32 = 4
-Const SE_SPLIT_DEG_ZODIACAL As Int32 = 8
-Const SE_SPLIT_DEG_NAKSHATRA As Int32 = 1024
-Const SE_SPLIT_DEG_KEEP_SIGN As Int32 = 16  ' don't round to next sign,  e.g. 29.9999999 will be rounded
-					   ' to 29d59'59" (or 29d59' or 29d) 
-Const SE_SPLIT_DEG_KEEP_DEG As Int32 = 32   ' don't round to next degree
-					   ' e.g. 13.9999999 will be rounded  to 13d59'59" (or 13d59' or 13d) 
-
 ' indices for swe_rise_trans()
 Const SE_CALC_RISE		As Int32 = 1
 Const SE_CALC_SET		As Int32 = 2

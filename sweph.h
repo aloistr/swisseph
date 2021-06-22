@@ -324,8 +324,8 @@ static const double pla_diam[NDIAM] = {1392000000.0, /* Sun */
                            2500000.0 * 2, /* Pluto */
                            0, 0, 0, 0,    /* nodes and apogees */
                            6378140.0 * 2, /* Earth */
-                                 0.0, /* Chiron */
-                                 0.0, /* Pholus */
+                               271.0, /* Chiron */
+                               290.0, /* Pholus */
                             913000.0, /* Ceres */
                             523000.0, /* Pallas */
                             244000.0, /* Juno */

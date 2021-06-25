@@ -313,23 +313,23 @@
 /* planetary radii in meters */
 #define NDIAM  (SE_VESTA + 1)
 static const double pla_diam[NDIAM] = {1392000000.0, /* Sun */
-                           3476300.0, /* Moon */
-                           2439000.0 * 2, /* Mercury */
-                           6052000.0 * 2, /* Venus */
-                           3397200.0 * 2, /* Mars */
-                          71398000.0 * 2, /* Jupiter */
-                          60000000.0 * 2, /* Saturn */
-                          25400000.0 * 2, /* Uranus */
-                          24300000.0 * 2, /* Neptune */
-                           2500000.0 * 2, /* Pluto */
+                           3475000.0, /* Moon */
+                           2439400.0 * 2, /* Mercury */
+                           6051800.0 * 2, /* Venus */
+                           3389500.0 * 2, /* Mars */
+                          69911000.0 * 2, /* Jupiter */
+                          58232000.0 * 2, /* Saturn */
+                          25362000.0 * 2, /* Uranus */
+                          24622000.0 * 2, /* Neptune */
+                           1188300.0 * 2, /* Pluto */
                            0, 0, 0, 0,    /* nodes and apogees */
-                           6378140.0 * 2, /* Earth */
-                               271.0, /* Chiron */
-                               290.0, /* Pholus */
-                            913000.0, /* Ceres */
-                            523000.0, /* Pallas */
-                            244000.0, /* Juno */
-                            501000.0, /* Vesta */
+                           6371008.4 * 2, /* Earth */
+                            271370.0, /* Chiron */
+                            290000.0, /* Pholus */
+                            939400.0, /* Ceres */
+                            545000.0, /* Pallas */
+                            246596.0, /* Juno */
+                            525400.0, /* Vesta */
                         };
 
 

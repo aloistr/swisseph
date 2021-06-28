@@ -1378,7 +1378,7 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
 	sprintf(smag, "   %8.5f AU", dmag);
     }
   } else {
-    strcpy(smag, " ");
+    *smag = '\0';
   }
   if (do_motab) {
     if (yout != prev_yout && prev_yout != -999999)
@@ -1396,25 +1396,26 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
       putchar('\n');
     else if (ipl > SE_VENUS && strncmp(s, "conj", 4) == 0)
       putchar('\n');
-    if (*gap != '\t') printf("%-20s ", s);
+    printf("%-20s%s", s, gap);
     if (date_gap) {
       printf("%02d%s%s%s%2d%s%s%02d:%02d:%02d",
 	     yout, gap, month_nam[mout], gap, dout, jul, gap, hour, min, sec);
     } else {
-      printf("%02d %s %2d %s %02d:%02d:%02d  ",
+      printf("%02d %s %2d %s %02d:%02d:%02d ",
 	     yout, month_nam[mout], dout, jul, hour, min, sec);
     } 
     if (show_jd)
-      printf(" jd=%.8lf ", teph);
+      printf("%sjd=%.8lf", gap, teph);
+    printf("%s", gap);
     if (is_ingr45) {
-      printf("%s%s", gap, sign_deg);
+      printf("%s", sign_deg);
       izod = (int) (dpos + 0.1);
       if (date_gap)
 	printf("%s%s", gap, znam[izod]);
       else
 	printf(" %s", znam[izod]);
     } else if (is_ingress) {
-      printf("%s%s", gap, sign_deg);
+      printf("%s", sign_deg);
       izod = (int) (dpos + 0.1);
       if (date_gap)
 	printf("%s%s", gap, znam[izod]);
@@ -1432,18 +1433,20 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
       case 4:
 	strcpy(sout, " h/wane"); break;
       }
-      printf("%s%s%s%d", gap, sout, gap, izod);
+      printf("%s%s%d", sout, gap, izod);
       if (delon != HUGE) {
-	printf("%s%s", gap, dms(delon, BIT_ZODIAC|BIT_ROUND_SEC));
+	printf("%s", dms(delon, BIT_ZODIAC|BIT_ROUND_SEC));
 	delon = HUGE;
       }
     } else {
-      printf(" %s", dms(dpos, BIT_ZODIAC|BIT_ROUND_SEC));
+      printf("%s", dms(dpos, BIT_ZODIAC|BIT_ROUND_SEC));
     }
     if (delon != HUGE) {
-      printf(" %s", dms(delon, BIT_ROUND_SEC));
+      printf("%s%s", gap, dms(delon, BIT_ROUND_SEC));
     }
-    printf("%s\n", smag);  /**/
+    if (*smag)
+      printf("%s%s", gap, smag);  /**/
+    printf("\n");
   } 
 #if PRINTMOD
   else {

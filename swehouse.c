@@ -2188,7 +2188,7 @@ static double fix_asc_polar(double asc, double armc, double eps, double geolat)
  *
  * A simplified house position (distance_from_cusp / house_size)
  * is currently provided for the following house methods:
- * Y APC houses, L Pullen SD, Q Pullen SR, I Sunshine, S Sripati, J Savard-A.
+ * Y APC houses, L Pullen SD, Q Pullen SR, I Sunshine, S Sripati.
  *
  * IMPORTANT: This function should NOT be used for sidereal astrology.
  * If you cannot avoid doing so, please note:

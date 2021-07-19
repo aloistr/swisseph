@@ -656,6 +656,7 @@ int CALL_CONV swe_houses_armc_ex2(
   }
   retc = CalcH(armc, geolat, eps, (char)hsys, &h);
   cusp[0] = 0;
+  if (h.do_hspeed) cusp_speed[0] = 0;
   // on failure, we only have 12 Porphyry cusps
   if (retc < 0) {
     ito = 12;

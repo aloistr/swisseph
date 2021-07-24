@@ -1,0 +1,748 @@
+# Swiss Ephemeris test case repository - fixture file
+# Note: precision values have been tuned down to avoid 
+# errors in suite 1 and 4
+#precision:1e-9
+#precision-xx:1e-9,1e-9,1e-9,1e-9,1e-9,1e-9
+#precision:1e-7
+  TESTSUITE
+    section-id:1
+    section-descr: Various swe_calc and swe_calc_ut tests
+    jd: 2455334,2410858,2314654
+    #jd: 2455334,2436723
+    iephe: SEFLG_SWIEPH,SEFLG_MOSEPH,SEFLG_JPLEPH
+    initialize: 0
+    iflag: 0
+    TESTCASE
+      section-id:1
+      section-descr: swe_calc( ) - Julian Date with Ephemeris Time
+      #precision-xx:1e-7,1e-7,1e-7,1e-7,1e-7,1e-7
+      ITERATION 
+        ipl:SE_SUN,SE_MOON,SE_VENUS,SE_CERES,10433
+        iflag:0
+      ITERATION 
+        ipl:SE_JUPITER,SE_SATURN,SE_URANUS,SE_NEPTUNE,SE_PLUTO
+        iflag:0
+      ITERATION 
+        ipl:SE_JUPITER,SE_SATURN,SE_URANUS,SE_NEPTUNE,SE_PLUTO
+        iflag:SEFLG_CENTER_BODY
+      ITERATION 
+        ipl:9599,9501
+        iflag:0
+      ITERATION
+        ipl:SE_SUN
+        iflag:SEFLG_BARYCTR
+        jd:2455334
+      ITERATION		# equatorial before ecliptic
+        ipl:SE_SUN
+        iflag:SEFLG_EQUATORIAL
+        jd:2455334
+      ITERATION
+        ipl:SE_SUN
+        iflag:0
+        jd:2455334
+      ITERATION
+        ipl:SE_MERCURY
+        iflag:SEFLG_BARYCTR
+      ITERATION
+        ipl:SE_MERCURY
+        iflag:eval(SEFLG_RADIANS+SEFLG_SPEED)
+      ITERATION 
+        ipl:SE_VENUS
+        iflag:SEFLG_HELCTR
+      ITERATION
+        ipl:SE_MARS
+        iflag:SEFLG_XYZ
+      ITERATION
+        ipl:eval(SE_AST_OFFSET+10)    # Hygiea
+        iephe:SEFLG_SWIEPH
+      ITERATION
+        ipl:SE_VESTA
+        iflag:SEFLG_BARYCTR
+        iephe:SEFLG_SWIEPH
+      ITERATION
+        ipl:SE_JUNO
+        iflag:SEFLG_J2000
+        jd:2314654
+      ITERATION
+        ipl:SE_PALLAS
+        iflag:SEFLG_ICRS
+        jd:2451000
+      ITERATION
+        ipl:SE_CERES
+        iflag:SEFLG_DPSIDEPS_1980
+        jd:2450900
+      ITERATION
+        ipl:SE_JUNO
+        iflag:SEFLG_SPEED3
+        jd:2450800
+      ITERATION
+        ipl:SE_PALLAS
+        iflag:SEFLG_NONUT
+        jd:2450800
+      ITERATION
+        ipl:SE_VESTA
+        iflag:SEFLG_RADIANS
+        jd:2450700
+      ITERATION
+        ipl:SE_CERES
+        iflag:SEFLG_HELCTR
+        jd:2450600
+      ITERATION 
+        jd:2410858
+        ipl:SE_JUPITER
+        iflag:SEFLG_EQUATORIAL
+      ITERATION 
+        jd:2410858
+        ipl:SE_SATURN
+        iflag:SEFLG_SPEED
+      ITERATION
+        jd:2410858
+        ipl:SE_CHIRON
+        iflag:SEFLG_NOGDEFL
+      ITERATION
+        jd:2314654
+        ipl:SE_PHOLUS
+        iflag:SEFLG_NOABERR
+      ITERATION 
+        jd:2410858
+        ipl:SE_URANUS
+        iflag:SEFLG_ICRS
+      ITERATION 
+        jd:2410858
+        ipl:SE_NEPTUNE
+        iflag:eval(SEFLG_NOABERR+SEFLG_SPEED)
+      ITERATION 
+        jd:2410858
+        ipl:SE_PLUTO
+        iflag:SEFLG_TRUEPOS
+      ITERATION
+        jd:2314654
+        ipl:SE_MEAN_NODE
+        iflag:SEFLG_SPEED
+      ITERATION
+        jd:2314654
+        ipl:SE_TRUE_NODE
+        iflag:SEFLG_SPEED
+      ITERATION
+        jd:2410858
+        ipl:SE_MEAN_APOG
+        iflag:eval(SEFLG_SPEED+SEFLG_NONUT+SEFLG_EQUATORIAL)
+      ITERATION
+        jd:2314654
+        ipl:SE_OSCU_APOG
+        iflag:SEFLG_SPEED,0
+      ITERATION
+        jd:2410858
+        ipl:SE_INTP_APOG
+        iflag:SEFLG_SPEED,0
+      ITERATION
+        jd:2314654
+        ipl:SE_INTP_PERG
+        iflag:SEFLG_SPEED,0
+      ITERATION
+        jd:2314654
+        ipl:SE_CUPIDO
+        iflag:SEFLG_SPEED          
+      ITERATION
+        jd:2314654
+        ipl:SE_NIBIRU
+        iflag:SEFLG_SPEED          
+      ITERATION
+        jd:2451545
+        ipl:SE_ECL_NUT
+        iflag:0
+      ITERATION
+        section-descr: Mars in cor solis (or at least with low latitude)       
+        jd:2450946.3245456
+        ipl:SE_MARS
+        iflag:0  
+      ITERATION
+        ipl:SE_SUN
+        iflag:eval(SEFLG_HELCTR)
+        jd:2314654
+      ITERATION
+        ipl:SE_SUN
+        iflag:eval(SEFLG_BARYCTR + SEFLG_J2000 ) 
+      ITERATION
+        section-descr:barycentric Mercury, out of range
+        ipl:SE_MERCURY
+        iflag:eval(SEFLG_BARYCTR + SEFLG_J2000 ) 
+        jd:624942.5
+      ITERATION
+        section-descr:astrometric positions J2000
+        ipl:0-9,16-20,40,43,47
+        iflag:eval(SEFLG_J2000 + SEFLG_NONUT + SEFLG_NOABERR + SEFLG_NOGDEFL)
+        jd:2410858
+      ITERATION
+        section-descr:Boundary values Moon Moshier
+        ipl:SE_MOON,SE_INTP_APOG,SE_INTP_PERG
+        jd:625000.0,2818001.0
+        iflag:eval(SEFLG_BARYCTR),0        
+      ITERATION
+        section-descr:Inside boundary values Moon Moshier
+        ipl:SE_MOON,SE_INTP_APOG,SE_INTP_PERG
+        jd:625010.0,2818000.0
+        iflag:eval(SEFLG_BARYCTR),0        
+    TESTCASE
+      section-id:2
+      section-descr: swe_calc_ut( ) - Julian Date with Universal Time
+      #precision-xx:2e-5,2e-6,1e-7,1e-7,1e-7,1e-7
+      ITERATION
+        ipl:SE_MOON
+        iflag:0
+    TESTCASE
+      section-id:3
+      section-descr: swe_set_topo( ) - Using topographic coordinates
+      #precision-xx:2e-5,2e-6,1e-7,2e-3,1e-3,2e-4
+        ITERATION
+          geolon: 11
+          geolat: 52
+          altitude: 132
+          ipl: SE_MOON,SE_VENUS,SE_SUN,SE_CUPIDO
+          iflag: eval(SEFLG_SPEED+SEFLG_TOPOCTR)
+    TESTCASE
+      section-id:4
+      section-descr: swe_calc_ut( ) - ecl after equat
+      #precision-xx:2e-5,2e-6,1e-7,1e-7,1e-7,1e-7
+      ITERATION
+        ipl:SE_SUN
+	jd: 2455334
+    TESTCASE
+      section-id:5
+      section-descr: swe_calc_ptr( ) - planetocentric positions
+      #precision-xx:2e-5,2e-6,1e-7,1e-7,1e-7,1e-7
+      ITERATION
+        ipl:SE_MARS,9501
+        iplctr:SE_JUPITER
+	jd: 2455334
+      ITERATION
+        ipl:SE_MARS,9501
+        iplctr:9599
+	jd: 2455334
+
+  TESTSUITE
+    section-id:2
+    section-descr: Fixed stars
+    jd: 2410858,625307.5
+    iflag:0 
+    star: Barnard
+    TESTCASE
+      section-id:1
+      section-descr: Fixed stars with Ephemeris Time
+        ITERATION
+    TESTCASE
+      section-id:2
+      section-descr: Fixed stars with Universal Time
+        ITERATION
+    TESTCASE
+      section-id:3
+      section-descr: Magnitude of a fixed star
+        ITERATION
+    TESTCASE
+      section-id:6
+      section-descr: Fixed stars (swe_fixstar2) with Ephemeris Time
+        ITERATION
+    TESTCASE
+      section-id:7
+      section-descr: Fixed stars (swe_fixstar2) with Universal Time
+        ITERATION
+
+  TESTSUITE
+    section-id:3
+    section-descr: Various small functions (Delta T, names, time and date)
+    TESTCASE
+      section-id:1
+      section-descr: swe_get_planet_name( ) - Getting a planet name
+        ITERATION
+          ipl:SE_SUN-22
+    TESTCASE
+      section-id:2
+      section-descr: swe_get_aya_name( ) - Getting an ayanamsa name
+        ITERATION
+          sid_mode:5,6,9
+
+  TESTSUITE
+    section-id:4
+    section-descr: Some computations in sidereal mode
+    t0:0
+    ayan_t0:0
+    TESTCASE
+      #precision-xx:1e-5,1e-9,1e-9,1e-7,1e-7,1e-7
+      precision-xx:1e-8,1e-8,1e-8,1e-8,1e-8,1e-8
+      section-id:1
+      section-descr: swe_set_aynamsa( ) - Calc planet using a specific Ayanamsa
+        ITERATION
+          sid_mode:SE_SIDM_ALDEBARAN_15TAU,SE_SIDM_LAHIRI,eval(SE_SIDM_ALDEBARAN_15TAU+SE_SIDBIT_SSY_PLANE)
+          jd:2314654
+          iflag:eval(SEFLG_SPEED+SEFLG_SIDEREAL)
+          ipl:SE_MERCURY
+        ITERATION
+          sid_mode:SE_SIDM_HIPPARCHOS
+          jd:2314654
+          iflag:eval(SEFLG_SPEED+SEFLG_SIDEREAL)
+          ipl:SE_CERES
+        ITERATION
+          sid_mode:SE_SIDM_HIPPARCHOS
+          jd:2314654
+          iflag:eval(SEFLG_SPEED+SEFLG_SIDEREAL)
+          ipl:10433
+        ITERATION
+          t0:2374717
+          ayan_t0:30
+          sid_mode:SE_SIDM_USER,eval(SE_SIDM_USER+SE_SIDBIT_SSY_PLANE)
+          jd:2341500
+          iflag:eval(SEFLG_SPEED+SEFLG_SIDEREAL)
+          ipl:SE_PLUTO
+        ITERATION  
+          sid_mode:eval(SE_SIDM_J2000+SE_SIDBIT_ECL_T0)
+          jd:2451550
+          ipl:SE_OSCU_APOG
+          iflag:eval(SEFLG_SPEED+SEFLG_SIDEREAL)
+    TESTCASE
+      #precision:1e-5
+      precision:1e-8
+      section-id:2
+      section-descr: swe_get_ayanamsa_ex and swe_get_ayanamsa_ex_ut
+        ITERATION
+          sid_mode:SE_SIDM_ALDEBARAN_15TAU
+          jd:2314654
+          iephe:SEFLG_SWIEPH
+    TESTCASE
+      #precision:1e-5
+      precision:1e-8
+      section-id:3
+      section-descr: swe_get_aynamsa and swe_get_ayanamsa_ut
+        ITERATION
+          sid_mode:SE_SIDM_ALDEBARAN_15TAU
+          jd:2314654   
+          
+    TESTCASE
+      section-id:4
+      section-descr: Initialization problem with swe_set_sid_mode
+        ITERATION
+          sid_mode:SE_SIDM_LAHIRI
+          jd:2446725.143750   
+
+TESTSUITE
+    section-id:5
+    section-descr: Date and time functions
+    TESTCASE
+      section-id:1
+      section-descr: Julian Date from Calendar date
+        ITERATION
+          year:19
+          month:2
+          day:1964,1965
+          hour:22.5
+          gregflag:0,1
+    TESTCASE
+      section-id:2
+      section-descr: Calendar date from Julian Date
+        ITERATION
+          jd:2341524
+          gregflag:0,1
+    TESTCASE
+      section-id:3
+      section-descr: Delta T
+        ITERATION
+          iephe:0,SEFLG_SWIEPH,SEFLG_JPLEPH,SEFLG_MOSEPH
+          jd:2341524,1173182.5,2436723.5,2451550.5
+    TESTCASE
+      section-id:4
+      section-descr: Equation of time
+        ITERATION          
+          jd:2341524
+    TESTCASE
+      section-id:5
+      section-descr: Local Mean Time to Local Apparent Time
+        ITERATION
+          tjd_lmt:2451545.17232
+          geolon:17.234
+    TESTCASE
+      section-id:6
+      section-descr: Local Apparent Time to Local Mean Time
+        ITERATION
+          tjd_lat:2451545.17232
+          geolon:-17.234
+            
+          
+    TESTCASE
+      section-id:4
+      section-descr: swe_calc_ut( ) -  Equatorial followed by Ecliptic
+      ITERATION
+        ipl:SE_SUN
+        jd: 2455334
+                  
+## suite 66 is not used. To use it, renumber it to suite 6, and 
+## fast house suite with fewer iterations
+TESTSUITE
+    section-id:66
+    section-descr: Houses functions
+    ut:0-23:10.23
+    jd:2456334.5
+    geolon:0,60
+    geolat:50,0
+    initialize:0
+    disabled: 0
+    TESTCASE
+      section-id:1
+      section-descr: swe_houses() 
+        ITERATION
+	   ihsy:'P','K'
+	   # not in polar circle
+        ITERATION
+	   ihsy:'O','R','C','E','V','W','X','H','T','B','M','U','G'
+	   geolat:89.9,50,0
+        ITERATION
+  	   ihsy:'Y' # Y for APC
+  	   geolat:89.9,50,0
+    TESTCASE
+      section-id:2
+      section-descr: swe_houses_ex() - degrees and radians
+      disabled: 0
+        ITERATION
+	   iflag: 0
+	   ihsy:'P','W'
+        ITERATION
+	   iflag: SEFLG_RADIANS
+	   ihsy:'P','W'
+    TESTCASE
+      section-id:3
+      section-descr: swe_houses_ex() - sidereal
+        ITERATION
+	   isid:SE_SIDM_FAGAN_BRADLEY,SE_SIDM_TRUE_CITRA,SE_SIDM_J2000
+	   iflag: SEFLG_SIDEREAL
+	   ihsy:'P','W'
+    TESTCASE
+      section-id:4
+      section-descr: swe_houses_armc() 
+      disabled: 0
+        ITERATION
+	   ihsy:'P','K'
+        ITERATION
+	   ihsy:'O','R','C','E','V','W','X','H','T','B','M','U','G'
+        ITERATION
+  	   ihsy:'Y' # Y for APC,  buggy in 2.04
+    TESTCASE
+      section-id:5
+      section-descr: swe_house_name() 
+        ITERATION
+	   ut:0
+	   geolat:50
+	   geolon:0
+	   ihsy:'P','K','E','O','R','C','E','V','W','X','H','T','B','M','U','G'
+          ITERATION
+  	   ut:0
+  	   geolat:50
+  	   geolon:0
+  	   ihsy:'Y' # Y for APC,  buggy in 2.04
+    TESTCASE
+      section-id:6
+      section-descr: swe_house_pos() 
+        ITERATION
+	   ihsy:'P','K','E','O','R','C','E','V','W','X','H','T','B','M','U','G'
+        ITERATION
+  	   ihsy:'Y' # Y for APC,  buggy in 2.04
+    TESTCASE
+      section-id:7
+      section-descr: swe_gauquelin_sector
+      disabled: 0
+        ITERATION
+	   # very costly in time
+	   ihsy:'G'
+	   ut:0-23.8:2.2
+	   imeth:0,1,2,3
+	   geolat:50
+	   geolon:12
+
+## suite 66 is not used. To use it, renumber it to suite 6, and 
+## renumber suite 6 above to 66
+TESTSUITE
+    section-id:6
+    section-descr: Houses functions
+    ut:0-23:2
+    jd:2456334.5
+    geolon:0,60,-80
+    geolat:89.9,60,50,0,-60,-89.9
+    initialize:0
+    disabled: 0
+    precision:1e-3
+    TESTCASE
+      section-id:1
+      section-descr: swe_houses() 
+        ITERATION
+	   ihsy:'P','K'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   ihsy:'O','R','C','E','V','W','X','H','T','B','M','U','G','Y'
+	   geolat:89.9,60,50,0,-60,-89.9
+    TESTCASE
+      section-id:2
+      section-descr: swe_houses_ex() - degrees and radians
+        ITERATION
+	   iflag: 0
+	   ihsy:'P','W'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   iflag: SEFLG_RADIANS
+	   ihsy:'P','W'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+    TESTCASE
+      section-id:3
+      section-descr: swe_houses_ex() - sidereal
+        ITERATION
+	   isid:SE_SIDM_FAGAN_BRADLEY,SE_SIDM_TRUE_CITRA,SE_SIDM_J2000
+	   iflag: SEFLG_SIDEREAL
+	   ihsy:'P','W'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+    TESTCASE
+      section-id:4
+      section-descr: swe_houses_armc() 
+        ITERATION
+	   ihsy:'P','K'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   ihsy:'O','R','C','E','V','W','X','H','T','B','M','U','G','Y'
+	   geolat:89.9,60,50,0,-60,-89.9
+    TESTCASE
+      section-id:5
+      section-descr: swe_house_name() 
+        ITERATION
+	   ut:0
+	   geolat:50
+	   geolon:0
+	   ihsy:'P','K','E','O','R','C','E','V','W','X','H','T','B','M','U','G','Y'
+    TESTCASE
+      section-id:6
+      section-descr: swe_house_pos() 
+        ITERATION
+	   ihsy:'P','K','E','O','R','C','E','V','W','X','H','T','B','M','U','G','Y'
+	   geolat:50,0.0001,0,-75
+#	   geolat:0.001,0
+	   geolon:0,47
+    TESTCASE
+      section-id:7
+      section-descr: swe_gauquelin_sector
+        ITERATION
+	   # very costly in time
+	   ihsy:'G'
+	   ut:0-23.8:2.2
+	   imeth:0,1,2,3
+	   geolat:50
+	   geolon:12
+    TESTCASE
+      section-id:8
+      section-descr: swe_houses_ex2() - degrees with speeds
+        ITERATION
+	   iflag: 0
+	   ihsy:'P','W'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   iflag: SEFLG_RADIANS
+	   ihsy:'P','W'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+    TESTCASE
+      section-id:9
+      section-descr: swe_houses_armc_ex2() 
+        ITERATION
+	   ihsy:'P','K'
+	   # not in polar circle
+           geolat:66.5,50,0,-30,-66.5 
+
+  TESTSUITE
+    section-id:7
+    section-descr: Apsides and orbital elements functions
+    initialize:1
+    jd: 2450333.25
+    iephe: SEFLG_SWIEPH,SEFLG_JPLEPH
+##    iflag: eval(SEFLG_SPEED|SEFLG_HELCTR|SEFLG_TRUEPOS)
+    iflag: SEFLG_SPEED,SEFLG_HELCTR,SEFLG_TRUEPOS
+    TESTCASE
+      section-id:1
+      section-descr: swe_nod_aps( ) 
+      #precision:1e-8
+      precision-xx:1e-8,1e-8,1e-8,1e-6,1e-6,1e-6
+        ITERATION
+	  ipl:SE_MOON,SE_VENUS,SE_JUPITER,SE_NEPTUNE
+          method:1,2,4,5,257
+          ITERATION	# Sun has bugfix in 2.05, enable only later
+  	  ipl:SE_SUN
+           method:1,2,4,5,257
+    TESTCASE
+      section-id:2
+      section-descr: swe_nod_aps_ut( ) 
+      #precision:1e-8
+      precision-xx:1e-8,1e-8,1e-8,1e-6,1e-6,1e-6
+	    ITERATION
+	      ipl:SE_MOON,SE_VENUS,SE_JUPITER,SE_NEPTUNE
+	      method:1,2,4,5,257
+    TESTCASE
+      section-id:3
+      section-descr: swe_get_orbital_elements( ) 
+      #precision:1e-8
+      precision-xx:1e-8,1e-8,1e-8,1e-6,1e-6,1e-6
+	    ITERATION 
+	      ipl:SE_MOON,SE_VENUS,SE_EARTH,eval(SE_AST_OFFSET+433)  # Eros
+	      iephe: SEFLG_SWIEPH,SEFLG_JPLEPH,SEFLG_MOSEPH
+	      iflag: SEFLG_HELCTR,SEFLG_BARYCTR,SEFLG_TOPOCTR
+	      # SEFLG_TOPOCTR equals SEFLG_ORBEL_AA
+    TESTCASE
+      section-id:4
+      section-descr: swe_orbit_max_min_true_distance( ) 
+      #precision:1e-8
+      #precision-xx:1e-8,1e-8,1e-8,1e-6,1e-6,1e-6
+	    ITERATION
+	      ipl:SE_MOON,SE_VENUS,SE_SUN
+	      iephe: SEFLG_SWIEPH,SEFLG_JPLEPH,SEFLG_MOSEPH
+	      iflag: 0,SEFLG_HELCTR,SEFLG_BARYCTR
+	      # SEFLG_TOPOCTR equals SEFLG_ORBEL_AA
+
+  TESTSUITE
+    section-id:8
+    section-descr: Eclipses
+    initialize:1
+    jd: 2415020.6
+    iephe: SEFLG_SWIEPH,SEFLG_MOSEPH
+    geolon: 11
+    geolat: 52
+    altitude: 132
+    backward: 0,1
+##    iflag: eval(SEFLG_SPEED|SEFLG_HELCTR|SEFLG_TRUEPOS)
+    TESTCASE
+      section-id:1
+      section-descr: swe_sol_eclipse_when_glob( ) 
+##        precision:1e-8
+##        precision-xx:1e-8,1e-8,1e-8,1e-6,1e-6,1e-6
+        ITERATION
+##	  ifltype: SE_ECL_ANNULAR_TOTAL,SE_ECL_TOTAL,SE_ECL_PARTIAL,SE_ECL_CENTRAL,SE_ECL_NONCENTRAL
+	  ifltype: SE_ECL_ANNULAR_TOTAL,SE_ECL_TOTAL,SE_ECL_PARTIAL
+    TESTCASE
+      section-id:2
+      section-descr: swe_sol_eclipse_where( ) 
+#        precision:1e-8
+#        precision-xx:1e-8,1e-8,1e-8,1e-6,1e-6,1e-6
+        ITERATION
+	  jd: 2412924.662345123
+    TESTCASE
+      section-id:3
+      section-descr: swe_sol_eclipse_when_loc( ) 
+    TESTCASE
+      section-id:4
+      section-descr: swe_sol_eclipse_how( ) 
+      jd: 2414813.73
+    TESTCASE
+      section-id:5
+      section-descr: swe_lun_occult_when_glob( ) 
+      jd: 2414813.73
+      ifltype:SE_ECL_TOTAL
+        ITERATION
+	ipl:-1,SE_VENUS
+	star: Regulus
+    TESTCASE
+      section-id:6
+      section-descr: swe_lun_occult_where( ) 
+      jd: 2416978.38170
+      ifltype:SE_ECL_TOTAL
+        ITERATION
+	ipl:-1
+	star: Regulus
+    TESTCASE
+      section-id:7
+      section-descr: swe_lun_occult_when_loc( ) 
+      disabled: 0
+        ITERATION
+	ipl:-1,SE_VENUS
+	star: Regulus
+    TESTCASE
+      section-id:8
+      section-descr: swe_lun_eclipse_when( ) 
+##        precision:1e-8
+##        precision-xx:1e-8,1e-8,1e-8,1e-6,1e-6,1e-6
+        ITERATION
+##	  ifltype: SE_ECL_ANNULAR_TOTAL,SE_ECL_TOTAL,SE_ECL_PARTIAL,SE_ECL_CENTRAL,SE_ECL_NONCENTRAL
+	  ifltype: SE_ECL_TOTAL,SE_ECL_PARTIAL,SE_ECL_PENUMBRAL
+    TESTCASE
+      section-id:9
+      section-descr: swe_lun_eclipse_when_loc( ) 
+    TESTCASE
+      section-id:10
+      section-descr: swe_lun_eclipse_how( ) 
+      jd: 2415168.205931
+
+
+  TESTSUITE
+    section-id:9
+    section-descr: Rise and Set
+    initialize:1
+    jd: 2415020.6
+    iephe: SEFLG_SWIEPH
+    geolon: 11
+    geolat: 52
+    altitude: 132
+    horhgt: 5
+    method: 0
+    atpress: 1000
+    attemp: 15
+    athumid: 40
+    atktot: 0.25
+    obsage: 36
+    obsSN: 1
+    helflag: 0
+##    iflag: eval(SEFLG_SPEED|SEFLG_HELCTR|SEFLG_TRUEPOS)
+    TESTCASE
+      section-id:1
+      section-descr: swe_rise_trans( ) 
+        ITERATION
+	  ipl: -1
+	  star: Regulus
+	  ifltype: SE_CALC_RISE,SE_CALC_SET,SE_CALC_MTRANSIT,SE_CALC_ITRANSIT,SE_BIT_CIVIL_TWILIGHT
+        ITERATION
+	  ipl: 3
+	  ifltype: SE_CALC_RISE,SE_CALC_SET,SE_CALC_MTRANSIT,SE_CALC_ITRANSIT,SE_BIT_CIVIL_TWILIGHT
+    TESTCASE
+      section-id:2
+      section-descr: swe_rise_trans_true_hor( ) 
+        ITERATION
+	  ipl: -1
+	  star: Regulus
+	  ifltype: SE_CALC_RISE,SE_CALC_SET,SE_CALC_MTRANSIT,SE_CALC_ITRANSIT,SE_BIT_CIVIL_TWILIGHT
+        ITERATION
+	  ipl: 3
+	  ifltype: SE_CALC_RISE,SE_CALC_SET,SE_CALC_MTRANSIT,SE_CALC_ITRANSIT,SE_BIT_CIVIL_TWILIGHT
+    TESTCASE
+      section-id:3
+      section-descr: swe_heliacal_ut( ) 
+        ITERATION
+	  object: Regulus
+	  evtype: SE_HELIACAL_RISING,SE_HELIACAL_SETTING
+        ITERATION
+	  object: Venus
+	  evtype: SE_HELIACAL_RISING,SE_HELIACAL_SETTING,SE_EVENING_FIRST,SE_MORNING_LAST
+        ITERATION
+	  object: Moon
+	  evtype: SE_EVENING_FIRST,SE_MORNING_LAST
+    TESTCASE
+      section-id:4
+      section-descr: swe_heliacal_pheno_ut( ) 
+        ITERATION
+	  jd: 2450394.96239114
+	  object: Moon
+	  geolon: -75
+	  geolat: 40
+	  evtype: SE_EVENING_FIRST
+    TESTCASE
+      section-id:5
+      section-descr: swe_vis_limit_mag( ) 
+        ITERATION
+	  jd: 2450394.96239114
+	  object: Moon
+	  geolon: -75
+	  geolat: 40
+

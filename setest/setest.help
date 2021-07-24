@@ -1,0 +1,21 @@
+Syntax:
+  setest [options] [name]
+
+name: name of the fixture or expectations file (file extension optional)
+
+Allowed options:
+-g                Generate expectations from fixture file
+(--genmode)       If not specified: test mode
+-v                Verbose mode
+(--verbose)
+-p parmfile       Read parameters from parmfile first
+(--parameters)
+-P command        Generate fixture file from own command
+(--preprocess)
+-s selstring      Select test suite, test case or iteration
+-?                This help
+
+Return Value 
+  0: OK 
+  1: some tests failed
+

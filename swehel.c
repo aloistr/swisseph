@@ -476,11 +476,10 @@ if (eventflag & SE_CALC_RISE) {
   /* semidiurnal arc of sun */
   sda = acos(-tan(dgeo[1] * DEGTORAD) * tan(xx[1] * DEGTORAD)) * RADTODEG;
   /* rough rising and setting times */
-  if (eventflag & SE_CALC_RISE) {
+  if (eventflag & SE_CALC_RISE)
     tjdrise = tjdnoon - sda / 360.0;
-  } else {
+  else
     tjdrise = tjdnoon + sda / 360.0;
-  }
   /*ph->tset = tjd_start + sda / 360.0;*/
   /* now calculate more accurate rising and setting times.
    * use vertical speed in order to determine crossing of the horizon  
@@ -1817,7 +1816,7 @@ static void strcpy_VBsafe(char *sout, char *sin)
   sp = sin; 
   sp2 = sout;
   /* note, star name may begin with comma, such as ",zePsc" */
-  while((isalnum(*sp) || *sp == ' ' || *sp == '-' || *sp == ',') && iw < 30) {
+  while((isalnum((int) *sp) || *sp == ' ' || *sp == '-' || *sp == ',') && iw < 30) {
     *sp2 = *sp;
     sp++; sp2++; iw++;
   }

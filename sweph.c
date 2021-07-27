@@ -4678,7 +4678,7 @@ static int read_const(int ifno, char *serr)
     /* MPC number and name; will be analyzed below:
      * search "asteroid name" */
     while(*sp == ' ') sp++;
-    while(isdigit(*sp)) sp++;
+    while(isdigit((int) *sp)) sp++;
     sp++;
     i = (int) (sp - s);
     strncpy(sastnam, s, lastnam+i);	// fixed 19-nov-19

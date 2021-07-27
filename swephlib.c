@@ -4186,7 +4186,7 @@ void CALL_CONV swe_set_astro_models(char *samod, int32 iflag)
   double dversion;
   char s[30], *sp;
   swi_init_swed_if_start();
-  if (*samod != '\0' && isdigit(*samod)) {
+  if (*samod != '\0' && isdigit((int) *samod)) {
     set_astro_models(samod);
   } else if (*samod == '\0' || strncmp(samod, "SE", 2) == 0) {
     strncpy(s, samod, 20);
@@ -4414,36 +4414,28 @@ void CALL_CONV swe_get_astro_models(char *samod, char *sdet, int32 iflag)
     imod = pmodel[i];
     switch(i) {
       case SE_MODEL_PREC_LONGTERM:
-	if (imod == SEMOD_PREC_DEFAULT) 
-	  imod = 0;
+	if (imod == SEMOD_PREC_DEFAULT) imod = 0;
 	break;
       case SE_MODEL_PREC_SHORTTERM:
-	if (imod == SEMOD_PREC_DEFAULT_SHORT)
-	  imod = 0;
+	if (imod == SEMOD_PREC_DEFAULT_SHORT) imod = 0;
 	break;
       case SE_MODEL_NUT:
-	if (imod == SEMOD_NUT_DEFAULT)
-	  imod = 0;
+	if (imod == SEMOD_NUT_DEFAULT) imod = 0;
 	break;
       case SE_MODEL_SIDT:
-	if (imod == SEMOD_SIDT_DEFAULT)
-	  imod = 0;
+	if (imod == SEMOD_SIDT_DEFAULT) imod = 0;
 	break;
       case SE_MODEL_BIAS:
-	if (imod == SEMOD_BIAS_DEFAULT)
-	  imod = 0;
+	if (imod == SEMOD_BIAS_DEFAULT) imod = 0;
 	break;
       case SE_MODEL_JPLHOR_MODE:
-	if (imod == SEMOD_JPLHOR_DEFAULT)
-	  imod = 0;
+	if (imod == SEMOD_JPLHOR_DEFAULT) imod = 0;
 	break;
       case SE_MODEL_JPLHORA_MODE:
-	if (imod == SEMOD_JPLHORA_DEFAULT)
-	  imod = 0;
+	if (imod == SEMOD_JPLHORA_DEFAULT) imod = 0;
 	break;
       case SE_MODEL_DELTAT:
-	if (imod == SEMOD_DELTAT_DEFAULT)
-	  imod = 0;
+	if (imod == SEMOD_DELTAT_DEFAULT) imod = 0;
 	break;
     }
     sprintf(samod0 + strlen(samod0), "%d,", imod);

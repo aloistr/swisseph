@@ -17,15 +17,15 @@ clean:
 	rm -f $(TARGETS) ${OBJECTS} generated_tests.c
 
 test:	all
-	@cd t; ./test.sh -v
+	@cd t; ./test.sh 
 
 # Include path to a recent swisseph directory, the include file swephexp.h is needed
 #INCL = -I../sweph
 INCL = -I..
 
 CFLAGS = -std=gnu99 -fms-extensions -g -Wall -pthread -fPIC 
-LIBS = -l../libswe.a -lm  
-LIBSX = -l../libswe.a -lm  
+LIBS = ../libswe.a -lm  
+LIBSX = ../libswe.a -lm  
 CC=gcc	
 
 setest: $(OBJECTS)

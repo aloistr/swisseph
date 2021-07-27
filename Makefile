@@ -45,7 +45,8 @@ libswe.so: $(SWEOBJ)
 	$(CC) -shared -o libswe.so $(SWEOBJ)
 
 test:
-	cd setest && make && make test
+	# cd setest && make && make test
+	cd setest && make && ./setest t
 
 clean:
 	rm -f *.o swetest libswe*

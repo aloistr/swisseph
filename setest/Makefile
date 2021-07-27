@@ -24,8 +24,8 @@ test:	all
 INCL = -I..
 
 CFLAGS = -std=gnu99 -fms-extensions -g -Wall -pthread -fPIC 
-LIBS = -lswe -lm  
-LIBSX = -lswex -lm  
+LIBS = -l../libswe.a -lm  
+LIBSX = -l../libswe.a -lm  
 CC=gcc	
 
 setest: $(OBJECTS)

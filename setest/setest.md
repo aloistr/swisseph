@@ -1,5 +1,19 @@
 =head1 Swiss Ephemeris test cases
 
+This needs to be rewritten so that it works with git branches.
+
+The future procedure should be:
+
+- master branch is the released SE branch
+
+- branch 'devel' is a branch with correctes or additions to the source code
+
+- checkout master branch, build and run setest 
+  it should be statically linked with SE
+
+- checkout branch devel, build and run setestx
+  it should be statically linked with SE
+
 =head2 update 4-dec-20	translated to English
 
 In collaboration with Rüdiger Plantiko, we created a test suite for Swiss Ephemeris

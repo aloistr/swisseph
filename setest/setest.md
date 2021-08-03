@@ -10,8 +10,10 @@ The test procedure with git is:
 - branch 'devel' is a branch with correctes or additions to the source code
 
 - checkout master branch, command: make text.exp
+
   It builds setest/setest, statically linked with SE
-  It  creates expectations values setest t.exp
+
+  It  creates expectations values setest/t.exp
 
 - checkout branch devel, command: make test
 
@@ -55,6 +57,6 @@ for TESTSUITE with section-id:6 and added TESTCASES with section-id
 
 ## 3-aug-21 Alois
 
-added suite_10_solcross for the new swe_solcross function group
+added suite_10_solcross.c for the new swe_solcross function group
 
 

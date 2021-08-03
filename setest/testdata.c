@@ -180,11 +180,12 @@ void print_comment(const pair *rec,FILE *out) {
       }
       iflags >>= 1;
     }
-  } else if (equals(rec->name,"jd") || equals(rec->name,"jd_ut")) {
-    int day, month, year;
-    double ut;
+  } else if (equals(rec->name,"jd") || equals(rec->name,"jd_ut") || equals(rec->name,"jx")) {
+    int day, month, year, ihour, imin, isec, isgn;
+    double ut, dfr;
     swe_revjul(rec->tvalue.value.d,1,&year,&month,&day,&ut);
-    fprintf(out," # %d.%d.%d %7.4lfh",day,month,year,ut);
+    swe_split_deg(ut, SE_SPLIT_DEG_ROUND_SEC, &ihour, &imin, &isec, &dfr, &isgn);
+    fprintf(out," # %d.%d.%d %02d:%02d:%02d",day,month,year,ihour, imin, isec);
   } else if (rec->tvalue.type == I  && ival >=32 && ival < 128 ) {
     fprintf(out," # '%c'", ival);
   }

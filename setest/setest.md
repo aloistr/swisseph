@@ -1,4 +1,4 @@
-## Swiss Ephemeris test cases
+# Swiss Ephemeris test cases
 
 Developed in cooperation with Rüdiger Plantiko, by Dieter Koch.
 Maintained by Alois Treindl since July 2021.
@@ -16,9 +16,9 @@ The test procedure with git is:
 - checkout branch devel, command: make test
 
 
-## History
+# History
 ---------------
-# 25-jan-21 Dieter
+## 25-jan-21 Dieter
 
 Test cases added for:
   - Jupiter center of body, geocentric, apparent positions
@@ -53,7 +53,7 @@ Analogously, for the additions in suite_06_houses.c, I searched
 for TESTSUITE with section-id:6 and added TESTCASES with section-id
 8 and 9.
 
-# 3-aug-21 Alois
+## 3-aug-21 Alois
 
 added suite_10_solcross for the new swe_solcross function group
 

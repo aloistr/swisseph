@@ -746,3 +746,55 @@ TESTSUITE
 	  geolon: -75
 	  geolat: 40
 
+  TESTSUITE
+    section-id:10
+    section-descr: Various swe_*cross tests
+    jd: 2455334,625010.0,2818000.0
+    #jd: 2455334,2436723
+    iephe: SEFLG_SWIEPH,SEFLG_JPLEPH
+    initialize: 0
+    precision:1e-6
+    TESTCASE
+      section-id:1
+      section-descr: swe_solcross( ) - Sun transit
+      ITERATION
+        xcross:30,73.77,359
+    TESTCASE
+      section-id:2
+      section-descr: swe_solcross_ut( ) - Sun transit
+      ITERATION
+        xcross:30,73.77,359
+    TESTCASE
+      section-id:3
+      section-descr: swe_mooncross( ) - Moon transit
+      ITERATION
+        xcross:30,73.77,359
+    TESTCASE
+      section-id:4
+      section-descr: swe_mooncross_ut( ) - Moon transit
+      ITERATION
+        xcross:30,73.77,359
+    TESTCASE
+      section-id:5
+      section-descr: swe_mooncross_node( ) - Moon transit node
+      ITERATION
+        xcross:30
+    TESTCASE
+      section-id:6
+      section-descr: swe_mooncross_node_ut( ) - Moon transit node
+      ITERATION
+        xcross:30
+    TESTCASE
+      section-id:7
+      section-descr: swe_helio_cross( ) - heliocentric planet crossing
+      ITERATION
+        xcross:30,359
+	dir: 1,-1
+        ipl:SE_JUPITER,SE_SATURN,SE_MERCURY,SE_VENUS,SE_MARS,SE_URANUS,SE_NEPTUNE,SE_PLUTO
+    TESTCASE
+      section-id:8
+      section-descr: swe_helio_cross_ut( ) - heliocentric planet crossing
+      ITERATION
+        xcross:30,359
+	dir: 1,-1
+        ipl:SE_JUPITER,SE_SATURN,SE_MERCURY,SE_VENUS,SE_MARS,SE_URANUS,SE_NEPTUNE,SE_PLUTO

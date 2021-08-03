@@ -711,8 +711,8 @@ ext_def(int32) swe_calc_pctr(double tjd, int32 ipl, int32 iplctr, int32 iflag, d
 
 ext_def(double) swe_solcross(double x2cross, double jd0, int flag, char *serr);
 ext_def(double) swe_solcross_ut(double x2cross, double jd_ut, int flag, char *serr);
+ext_def(double) swe_mooncross(double x2cross, double jd0, int flag, char *serr);
 ext_def(double) swe_mooncross_ut(double x2cross, double jd_ut, int flag, char *serr);
-ext_def(double) swe_mooncross(double x2cross, double jd_ut, int flag, char *serr);
 ext_def(double) swe_mooncross_node(double jd0, int flag, double *xlon, double *xlat, char *serr);
 ext_def(double) swe_mooncross_node_ut(double jd_ut, int flag, double *xlon, double *xlat, char *serr);
 ext_def(int32) swe_helio_cross(int ipl, double x2cross, double jd0, int iflag, int dir, double *jd_cross, char *serr);

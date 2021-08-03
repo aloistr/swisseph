@@ -45,11 +45,9 @@ libswe.so: $(SWEOBJ)
 	$(CC) -shared -o libswe.so $(SWEOBJ)
 
 test:
-	# cd setest && make && make test
 	cd setest && make && ./setest t
 
 test.exp:
-	# cd setest && make && make test
 	cd setest && make && ./setest -g t
 
 clean:

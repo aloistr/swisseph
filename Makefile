@@ -48,6 +48,10 @@ test:
 	# cd setest && make && make test
 	cd setest && make && ./setest t
 
+test.exp:
+	# cd setest && make && make test
+	cd setest && make && ./setest -g t
+
 clean:
 	rm -f *.o swetest libswe*
 	cd setest && make clean

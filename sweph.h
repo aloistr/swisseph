@@ -62,7 +62,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.10.01a" 
+#define SE_VERSION      "2.10.02" 
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */

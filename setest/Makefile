@@ -17,7 +17,7 @@ clean:
 	rm -f $(TARGETS) ${OBJECTS} generated_tests.c
 
 test:	all
-	@cd t; ./test.sh -v
+	@cd t; ./test.sh 
 
 # Include path to a recent swisseph directory, the include file swephexp.h is needed
 #INCL = -I../sweph

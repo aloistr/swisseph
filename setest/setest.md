@@ -1,105 +1,26 @@
-=head1 Swiss Ephemeris test cases
+# Swiss Ephemeris test cases
 
-This needs to be rewritten so that it works with git branches.
+Developed in cooperation with Rüdiger Plantiko, by Dieter Koch.
+Maintained by Alois Treindl since July 2021.
 
-The future procedure should be:
+The test procedure with git is:
 
 - master branch is the released SE branch
 
 - branch 'devel' is a branch with correctes or additions to the source code
 
-- checkout master branch, build and run setest 
-  it should be statically linked with SE
+- checkout master branch, command: make text.exp
 
-- checkout branch devel, build and run setestx
-  it should be statically linked with SE
+  It builds setest/setest, statically linked with SE
 
-=head2 update 4-dec-20	translated to English
+  It  creates expectations values setest/t.exp
 
-In collaboration with Rüdiger Plantiko, we created a test suite for Swiss Ephemeris
-
------------ German original written by Dieter Koch
------------ is translated below into English by Google
------------ Memo will be continued in English only
------------ German version can be removed once English is verified
-
-------------
-=head 2 19-may-16
-
-After a few extensions everything seems stable.
-
-Our setup is as follows
-/uds ->/home/dieter/sweph
-         SE development work directory
-
-/udss ->/home/dieter/sweph/setest
-         Directory for SE testing
+- checkout branch devel, command: make test
 
 
-in /udss
-make setest	build setest, uses libswe.so from/usr/local/lib64/swe
-                 i.e. the 'released version' of SE
-
-make setestx	build setestx, uses libswex.so from/usr/local/lib64/swe
-
-libswex is made in /uds with: make libswex
-t.fix fixture file with the test data for the test suites suite_*.c
-        For each test case in the test suite, a fixture
-        exist with the variables for this test.
-
-        The first 5 test suites are from Rüdiger Plantiko, suite_06
-        von Alois with the house tests.
-
-        This exists in a lean version and a fat version.
-        The bold version has been renamed to Testsuite 66 within t.fix
-        and is therefore not addressed. If you want to use them, swap them
-        one in t.fix the numbers of the two suites 6 and 66.
-
-If you have made changes to the code suite*c, you have to do the following again:
-make setest setestx
-
-Then you have to generate new expected values ​​with
-setest -g t
-
-Even if you have made changes to t.fix, you need new expected values
-to generate.
-make t.exp
-
-To run the test:
-setestx t
-or
-setestx t> t.out
-
-In t.fix you can switch off entire suites or individual cases with
-disabled: 1 or 2 (1 = with warning, 2 = without warning).
-
-If changes are made to the suites, send them to the repository:
-git commit suite_06*c -m 'comment'
-git push
-
--------
-Test the new version of swisseph:
-
-1. Update the SE_VERSION variable in sweph.h
-    also the variable SWEVERSION in makefile
-2. make libswex
-3. cd setest
-4. if necessary regenerate the exp file (expected results):
-    setest -g t
-5. setestx t
-    or
-    setestx t> t.out
-
-------------------------------
-=head 2 4-dec-20 Alois
-
-translated to english
-git commit and push to remote origin (on Plantiko private host)
-
-test cases for new features of release 2.09 and 2.10 need to be written
-
+# History
 ---------------
-=head 2 25-jan-21 Dieter
+## 25-jan-21 Dieter
 
 Test cases added for:
   - Jupiter center of body, geocentric, apparent positions
@@ -134,5 +55,8 @@ Analogously, for the additions in suite_06_houses.c, I searched
 for TESTSUITE with section-id:6 and added TESTCASES with section-id
 8 and 9.
 
-Then I recompiled setest and setestx. 
+## 3-aug-21 Alois
+
+added suite_10_solcross.c for the new swe_solcross function group
+
 

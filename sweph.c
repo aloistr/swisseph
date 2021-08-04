@@ -8629,8 +8629,14 @@ int32 CALL_CONV swe_helio_cross(int ipl, double x2cross, double jd_et, int iflag
   double x[6], xlp, dist;
   double jd;
   int flag = SEFLG_SPEED | SEFLG_HELCTR;
-  if (ipl == SE_SUN) {
-    if (serr != NULL) strcpy(serr, "swe_helio_cross: not possible for SE_SUN");
+  if (ipl == SE_SUN 
+    || ipl == SE_MOON 
+    || (ipl >= SE_MEAN_NODE && ipl <= SE_OSCU_APOG)
+    || (ipl >= SE_INTP_APOG && ipl < SE_NPLANETS)
+  ) {
+    char snam[AS_MAXCH];
+    swe_get_planet_name(ipl, snam);
+    if (serr != NULL) sprintf(serr, "swe_helio_cross: not possible for object %d = %s", ipl, snam);
     return ERR;
   }
   if (swe_calc(jd_et, ipl, flag, x, serr) < 0) 
@@ -8669,8 +8675,14 @@ int32 CALL_CONV swe_helio_cross_ut(int ipl, double x2cross, double jd_ut, int if
   double x[6], xlp, dist;
   double jd;
   int flag = SEFLG_SPEED | SEFLG_HELCTR;
-  if (ipl == SE_SUN) {
-    if (serr != NULL) strcpy(serr, "swe_helio_cross: not possible for SE_SUN");
+  if (ipl == SE_SUN 
+    || ipl == SE_MOON 
+    || (ipl >= SE_MEAN_NODE && ipl <= SE_OSCU_APOG)
+    || (ipl >= SE_INTP_APOG && ipl < SE_NPLANETS)
+  ) {
+    char snam[AS_MAXCH];
+    swe_get_planet_name(ipl, snam);
+    if (serr != NULL) sprintf(serr, "swe_helio_cross: not possible for object %d = %s", ipl, snam);
     return ERR;
   }
   if (swe_calc_ut(jd_ut, ipl, flag, x, serr) < 0) 

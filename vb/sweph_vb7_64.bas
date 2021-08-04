@@ -1,4 +1,4 @@
-' Swiss Ephemeris 
+Attribute VB_Name = "sweph"
 
 
 ' Declarations for 64_bit Visual Basic
@@ -1134,4 +1134,137 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
   End Function
 
 
+Public Function Ayan(b As Double, N As Integer) As Double
+      TJ = b + 2415018.5
+      i = swe_set_sid_mode(N, 0, 0)
+      Ayan = swe_get_ayanamsa_ut(TJ)
+End Function
 
+Public Function bhav( _
+   latitude As Double, _
+   longitude As Double, _
+   nh As Integer, _
+   b As Double) _
+As Double
+
+Dim jul_day_UT As Double, x(13) As Double, A(10) As Double
+Dim i As Long
+
+   jul_day_UT = b + 2415018.5
+      i = swe_set_sid_mode(1, 0, 0)
+      i = swe_houses_ex(jul_day_UT, 65536, latitude, longitude, Asc("P"), x(0), A(0))
+   bhav = x(nh)
+
+End Function
+ 
+ Public Function risesetplanet( _
+   lat As Double, _
+   lon As Double, _
+   b As Double, _
+   riseset As Long, _
+   planet As Long) _
+As Double
+
+Dim jul_day_UT As Double, tret(10) As Double
+Dim ret_flag As Double, geopos(3) As Double, serr As String
+geopos(0) = lon
+geopos(1) = lat
+geopos(2) = 0
+    jul_day_UT = b + 2415017.5
+    ret_flag = swe_rise_trans(jul_day_UT, planet, "", 2, riseset, geopos(0), 1013.25, 10, tret(0), serr)
+    h = tret(0) - 2415018.5
+    risesetplanet = h
+End Function
+ 
+   Public Function Grah( _
+   b As Double, _
+N As Long) _
+As Double
+
+Dim x(6) As Double
+Dim TJ As Double
+Dim i As Long, serr As String
+
+    TJ = b + 2415018.5
+   i = swe_set_sid_mode(1, 0, 0)
+   i = swe_calc_ut(TJ, N, 65536, x(0), serr)
+Grah = x(0)
+
+End Function
+
+Public Function lagn( _
+   latitude As Double, _
+   longitude As Double, _
+   b As Double) _
+As Double
+
+Dim jul_day_UT As Double, x(13) As Double, A(10) As Double
+Dim i As Long
+
+   jul_day_UT = b + 2415018.5
+      i = swe_houses_ex(jul_day_UT, 65536, latitude, longitude, Asc("A"), x(0), A(0))
+   lagn = A(0)
+
+End Function
+
+Public Function lagnt( _
+   latitude As Double, _
+   longitude As Double, _
+   b As Double, y As Double) _
+As Double
+
+Dim jul_day_UT As Double, x(13) As Double, A(10) As Double
+Dim i As Long
+
+   bt = b + 2415018.5
+      i = swe_houses_ex(bt, 65536, latitude, longitude, Asc("A"), x(0), A(0))
+   s = A(0)
+bf = bt + (y - s) / 360
+If bf < bt - 1 Then bf = bf + 1
+If bf > bt + 1 Then bf = bf - 1
+
+For j = 1 To 5
+i = swe_houses_ex(bf, 65536, latitude, longitude, Asc("A"), x(0), A(0))
+   s = A(0)
+bf = bf + (y - s) / 360
+If bf < bt - 1 Then bf = bf + 1
+If bf > bt + 1 Then bf = bf - 1
+Next j
+lagnt = bf - 2415018.5
+End Function
+
+Public Function Gati( _
+   b As Double, _
+N As Long) _
+As Double
+
+Dim x(6) As Double
+Dim TJ As Double
+Dim i As Long, serr As String
+
+    TJ = b + 2415018.5
+   i = swe_set_sid_mode(1, 0, 0)
+   i = swe_calc_ut(TJ, N, 65536 + 256, x(0), serr)
+Gati = x(3)
+
+End Function
+
+
+Public Function sol(ByVal b As Double, ByVal y As Double) As Double
+Dim x(6) As Double
+Dim j As Long, serr As String
+b = b + 2415018.5
+j = swe_calc_ut(b, 0, 65536, x(0), serr)
+s = x(0)
+sf = (y * 360 / 365.25636 + s)
+20 If sf > 360 Then sf = sf - 360: GoTo 20
+30 If sf < 0 Then sf = sf + 360: GoTo 30
+sr = 0
+For i = 1 To 4
+j = swe_calc_ut(b + y, 0, 65536, x(0), serr)
+s1 = x(0)
+sr = sf - s1
+y = y + sr
+Next i
+sol = y + b - 2415018.5
+End Function

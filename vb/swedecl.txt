@@ -63,6 +63,78 @@ Public Declare Function swe_calc_pctr Lib "swedll32.dll" _
         ) As Int32   ' x must be first of six array elements
                     ' serr must be able to hold 256 bytes
 
+Public Declare Function swe_solcross Lib "swedll32.dll" _
+        Alias "_swe_solcross@24" ( _
+          ByVal x2cross As Double, _
+          ByVal jd_et As Double, _
+          ByVal iflag As Int32, _
+          ByVal serr As String _
+        ) As Double ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_solcross_ut Lib "swedll32.dll" _
+        Alias "_swe_solcross_ut@24" ( _
+          ByVal x2cross As Double, _
+          ByVal jd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByVal serr As String _
+        ) As Double ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_mooncross Lib "swedll32.dll" _
+        Alias "_swe_mooncross@24" ( _
+          ByVal x2cross As Double, _
+          ByVal jd_et As Double, _
+          ByVal iflag As Int32, _
+          ByVal serr As String _
+        ) As Double ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_mooncross_ut Lib "swedll32.dll" _
+        Alias "_swe_mooncross_ut@24" ( _
+          ByVal x2cross As Double, _
+          ByVal jd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByVal serr As String _
+        ) As Double ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_mooncross_node Lib "swedll32.dll" _
+        Alias "_swe_mooncross_node@24" ( _
+          ByVal jd_et As Double, _
+          ByVal iflag As Int32, _
+          ByRef xlon As Double, _
+          ByRef xlat As Double, _
+          ByVal serr As String _
+        ) As Double ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_mooncross_node_ut Lib "swedll32.dll" _
+        Alias "_swe_mooncross_node_ut@24" ( _
+          ByVal jd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByRef xlon As Double, _
+          ByRef xlat As Double, _
+          ByVal serr As String _
+        ) As Double ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_helio_cross Lib "swedll32.dll" _
+        Alias "_swe_helio_cross@36" ( _
+          ByVal ipl As Int32, _
+          ByVal x2cross As Double, _
+          ByVal jd_et As Double, _
+          ByVal iflag As Int32, _
+          ByVal dir As Int32, _
+          ByRef jx As Double, _
+          ByVal serr As String _
+        ) As Int32 ' serr must be able to hold 256 bytes
+
+Public Declare Function swe_helio_cross_ut Lib "swedll32.dll" _
+        Alias "_swe_helio_cross_ut@36" ( _
+          ByVal ipl As Int32, _
+          ByVal x2cross As Double, _
+          ByVal jd_ut As Double, _
+          ByVal iflag As Int32, _
+          ByVal dir As Int32, _
+          ByRef jx As Double, _
+          ByVal serr As String _
+        ) As Int32 ' serr must be able to hold 256 bytes
+
 Public Declare Function swe_close Lib "swedll32.dll" _
         Alias "_swe_close@0" ( _
         ) As Int32

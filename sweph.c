@@ -8628,7 +8628,7 @@ int32 CALL_CONV swe_helio_cross(int ipl, double x2cross, double jd_et, int iflag
 {
   double x[6], xlp, dist;
   double jd;
-  int flag = SEFLG_SPEED | SEFLG_HELCTR;
+  int flag = iflag | SEFLG_SPEED | SEFLG_HELCTR;
   if (ipl == SE_SUN 
     || ipl == SE_MOON 
     || (ipl >= SE_MEAN_NODE && ipl <= SE_OSCU_APOG)
@@ -8674,7 +8674,7 @@ int32 CALL_CONV swe_helio_cross_ut(int ipl, double x2cross, double jd_ut, int if
 {
   double x[6], xlp, dist;
   double jd;
-  int flag = SEFLG_SPEED | SEFLG_HELCTR;
+  int flag = iflag | SEFLG_SPEED | SEFLG_HELCTR;
   if (ipl == SE_SUN 
     || ipl == SE_MOON 
     || (ipl >= SE_MEAN_NODE && ipl <= SE_OSCU_APOG)

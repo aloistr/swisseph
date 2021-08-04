@@ -8630,7 +8630,7 @@ int32 CALL_CONV swe_helio_cross(int ipl, double x2cross, double jd_et, int iflag
   double jd;
   int flag = SEFLG_SPEED | SEFLG_HELCTR;
   if (ipl == SE_SUN) {
-    strcpy(serr, "swe_helio_cross: not possible for SE_SUN");
+    if (serr != NULL) strcpy(serr, "swe_helio_cross: not possible for SE_SUN");
     return ERR;
   }
   if (swe_calc(jd_et, ipl, flag, x, serr) < 0) 
@@ -8670,7 +8670,7 @@ int32 CALL_CONV swe_helio_cross_ut(int ipl, double x2cross, double jd_ut, int if
   double jd;
   int flag = SEFLG_SPEED | SEFLG_HELCTR;
   if (ipl == SE_SUN) {
-    strcpy(serr, "swe_helio_cross: not possible for SE_SUN");
+    if (serr != NULL) strcpy(serr, "swe_helio_cross: not possible for SE_SUN");
     return ERR;
   }
   if (swe_calc_ut(jd_ut, ipl, flag, x, serr) < 0) 

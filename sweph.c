@@ -8407,12 +8407,12 @@ const char *CALL_CONV swe_get_current_file_data(int ifno, double *tfstart, doubl
    SEFLG_HELCTR 		0 = geocentric, SUN, 1 = heliocentric, EARTH
    SEFLG_TRUEPOS 	   	0 = apparent positions, 1 = true positions
    SEFLG_NONUT 		0 = do nutation (true equinox of date)
- * returns juldate of the next crossing, with jd > jd0
+ * returns juldate of the next crossing, with jd > jd_et
  * The returned time is ephemeris time; to get UT we must do
  * jd_ut = jd - deltat(jd) or use swe_solcross_ut.
- * Errors are indicated by returning a jd < jd0!
+ * Errors are indicated by returning a jd < jd_et!
  *************************************************/
-double CALL_CONV swe_solcross(double x2cross, double jd0, int flag, char *serr)
+double CALL_CONV swe_solcross(double x2cross, double jd_et, int flag, char *serr)
 {
   double x[6], xlp, dist;
   double jd;
@@ -8421,14 +8421,14 @@ double CALL_CONV swe_solcross(double x2cross, double jd0, int flag, char *serr)
    * compute the SUN at start date, and then estimate the crossing date
    */
   flag |= SEFLG_SPEED;
-  if (swe_calc(jd0, ipl, flag, x, serr) < 0) 
-    return jd0 - 1;
+  if (swe_calc(jd_et, ipl, flag, x, serr) < 0) 
+    return jd_et - 1;
   xlp = 360.0 / 365.24;	/* mean solar speed */
   dist = swe_degnorm(x2cross - x[0]);
-  jd = jd0 + dist / xlp;
+  jd = jd_et + dist / xlp;
   for(;;) {
     if (swe_calc(jd, ipl, flag, x, serr) < 0) 
-      return jd0 - 1;
+      return jd_et - 1;
     dist = swe_difdeg2n(x2cross, x[0]);
     jd += dist / x[3];
     if (fabs(dist) < CROSS_PRECISION) break;
@@ -8475,12 +8475,12 @@ double CALL_CONV swe_solcross_ut(double x2cross, double jd_ut, int flag, char *s
  * flag covers the following bits as used by swe_calc():
    SEFLG_TRUEPOS 	   	0 = apparent positions, 1 = true positions
    SEFLG_NONUT 		0 = do nutation (true equinox of date)
- * returns juldate of the next crossing, with jd > jd0
+ * returns juldate of the next crossing, with jd > jd_et
  * The returned time is ephemeris time; to get UT we must do
  * jd_ut = jd - deltat(jd);
- * Errors are indicated by returning a jd < jd0!
+ * Errors are indicated by returning a jd < jd_et!
  *************************************************/
-double CALL_CONV swe_mooncross(double x2cross, double jd0, int flag, char *serr)
+double CALL_CONV swe_mooncross(double x2cross, double jd_et, int flag, char *serr)
 {
   double x[6], xlp, dist;
   double jd;
@@ -8489,14 +8489,14 @@ double CALL_CONV swe_mooncross(double x2cross, double jd0, int flag, char *serr)
    * compute the SUN at start date, and then estimate the crossing date
    */
   flag |= SEFLG_SPEED;
-  if (swe_calc(jd0, ipl, flag, x, serr) < 0) 
-    return jd0 - 1;
+  if (swe_calc(jd_et, ipl, flag, x, serr) < 0) 
+    return jd_et - 1;
   xlp = 360.0 / 27.32;	/* mean lunar speed */
   dist = swe_degnorm(x2cross - x[0]);
-  jd = jd0 + dist / xlp;
+  jd = jd_et + dist / xlp;
   for(;;) {
     if (swe_calc(jd, ipl, flag, x, serr) < 0) 
-      return jd0 - 1;
+      return jd_et - 1;
     dist = swe_difdeg2n(x2cross, x[0]);
     jd += dist / x[3];
     if (fabs(dist) < CROSS_PRECISION) break;
@@ -8542,24 +8542,24 @@ double CALL_CONV swe_mooncross_ut(double x2cross, double jd_ut, int flag, char *
 
 /*************************************************
  * compute next Moon crossing over node, by finding zero latitude crossing
- * returns juldate of the next crossing, with jd > jd0
+ * returns juldate of the next crossing, with jd > jd_et
  * The returned time is ephemeris time; to get UT we must do
  * jd_ut = jd - deltat(jd);
- * Errors are indicated by returning a jd < jd0!
+ * Errors are indicated by returning a jd < jd_et!
  *************************************************/
-double CALL_CONV swe_mooncross_node(double jd0, int flag, double *xlon, double *xla, char *serr)
+double CALL_CONV swe_mooncross_node(double jd_et, int flag, double *xlon, double *xla, char *serr)
 {
   double x[6], xlat, dist;
   double jd;
   int ipl = SE_MOON;
   flag |= SEFLG_SPEED;
-  if (swe_calc(jd0, ipl, flag, x, serr) < 0) 
-    return jd0 - 1;
+  if (swe_calc(jd_et, ipl, flag, x, serr) < 0) 
+    return jd_et - 1;
   xlat = x[1];
-  jd = jd0 + 1;
+  jd = jd_et + 1;
   for(;;) {	// get to sign change
     if (swe_calc(jd, ipl, flag, x, serr) < 0) 
-      return jd0 - 1;
+      return jd_et - 1;
     if ((x[1] >= 0 && xlat < 0) || (x[1] < 0 && xlat > 0)) 
       break;
     jd += 1;
@@ -8568,7 +8568,7 @@ double CALL_CONV swe_mooncross_node(double jd0, int flag, double *xlon, double *
   for(;;) {
     jd -= dist / x[4];
     if (swe_calc(jd, ipl, flag, x, serr) < 0) 
-      return jd0 - 1;
+      return jd_et - 1;
     dist = x[1];
     if (fabs(dist) < CROSS_PRECISION) {
       *xlon = x[0];
@@ -8618,13 +8618,13 @@ double CALL_CONV swe_mooncross_node_ut(double jd_ut, int flag, double *xlon, dou
 
 /*************************************************
  * compute a planets heliocentric crossing over some longitude
- * returns juldate of the next crossing, with jd > jd0 if dir >= 0,
+ * returns juldate of the next crossing, with jd > jd_et if dir >= 0,
  * or the previous crossing, if dir < 0.
  * The returned time is ephemeris time.
  * Errors are indicated by returning ERR;
  * This should only be used for rought house entry or exit times.
  *************************************************/
-int32 CALL_CONV swe_helio_cross(int ipl, double x2cross, double jd0, int iflag, int dir, double *jd_cross, char *serr)
+int32 CALL_CONV swe_helio_cross(int ipl, double x2cross, double jd_et, int iflag, int dir, double *jd_cross, char *serr)
 {
   double x[6], xlp, dist;
   double jd;
@@ -8633,17 +8633,17 @@ int32 CALL_CONV swe_helio_cross(int ipl, double x2cross, double jd0, int iflag, 
     strcpy(serr, "swe_helio_cross: not possible for SE_SUN");
     return ERR;
   }
-  if (swe_calc(jd0, ipl, flag, x, serr) < 0) 
+  if (swe_calc(jd_et, ipl, flag, x, serr) < 0) 
     return ERR;
   xlp = x[3];	
   if (ipl == SE_CHIRON)
     xlp = 0.01971;	// use mean speeed
   dist = swe_degnorm(x2cross - x[0]);
   if (dir >= 0) {
-    jd = jd0 + dist / xlp;
+    jd = jd_et + dist / xlp;
   } else {
     dist = 360.0 - dist;
-    jd = jd0 - dist / xlp;
+    jd = jd_et - dist / xlp;
   }
   for(;;) {
     if (swe_calc(jd, ipl, flag, x, serr) < 0) 

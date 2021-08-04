@@ -115,6 +115,23 @@ DllImport int32 CALL_CONV_IMP swe_calc_ut(
         double *xx,
         char *serr);
 
+DllImport double CALL_CONV_IMP swe_solcross(
+	double x2cross, double jd_et, int32 flag, char *serr);
+DllImport double CALL_CONV_IMP swe_solcross_ut(
+	double x2cross, double jd_ut, int32 flag, char *serr);
+DllImport double CALL_CONV_IMP swe_mooncross(
+	double x2cross, double jd_et, int32 flag, char *serr);
+DllImport double CALL_CONV_IMP swe_mooncross_ut(
+	double x2cross, double jd_ut, int32 flag, char *serr);
+DllImport double CALL_CONV_IMP swe_mooncross_node(
+	double jd_et, int32 flag, double *xlon, double *xlat, char *serr);
+DllImport double CALL_CONV_IMP swe_mooncross_node_ut(
+	double jd_ut, int32 flag, double *xlon, double *xlat, char *serr);
+DllImport int32 CALL_CONV_IMP swe_helio_cross(
+	int ipl, double x2cross, double jd_et, int32 iflag, int32 dir, double *jd_cross, char *serr);
+DllImport int32 CALL_CONV_IMP swe_helio_cross_ut(
+	int ipl, double x2cross, double jd_ut, int32 iflag, int32 dir, double *jd_cross, char *serr);
+
 DllImport int32 CALL_CONV_IMP swe_fixstar(
         char *star, double tjd, int32 iflag, 
         double *xx,

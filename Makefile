@@ -11,7 +11,7 @@
 # let us know. We like to fix the source code so that it compiles
 # free of warnings.
 # send email to the Swiss Ephemeris mailing list.
-#
+# dummy edit
 
 CFLAGS =  -g -Wall -fPIC # for Linux and other gcc systems
 OP=$(CFLAGS)  

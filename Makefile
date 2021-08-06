@@ -13,6 +13,8 @@
 # send email to the Swiss Ephemeris mailing list.
 #
 
+SE_VERSION=2.10.02
+
 CFLAGS =  -g -Wall -fPIC # for Linux and other gcc systems
 OP=$(CFLAGS)  
 CC=cc	#for Linux

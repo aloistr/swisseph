@@ -1,8 +1,7 @@
 /*******************************************************
 
- header file for structures and functions in module sweephe.c
+ header file for structures and functions in module ephe.c
  for reading and writing stored ephemerides in format ep4
- a fast precomputed ephemeris used in some Astrodienst applications.
 
  The design of ephemeris type ep4:
  In all ASYS and transit application of stored ephemerides
@@ -47,43 +46,29 @@
  The speeds are returned in the second half of the array;
  the speed is always there, even when the speed bit has not been set.
 ***********************************************************/
-/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
 
-  License conditions
-  ------------------
-
-  This file is part of Swiss Ephemeris.
-
+/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+  
+  This file is part of Swiss Ephemeris Free Edition.
+  
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  
+  or she says so in writing.  Refer to the Swiss Ephemeris Public License
+  ("SEPL" or the "License") for full details.
+  
+  Every copy of Swiss Ephemeris must include a copy of the License,
+  normally in a plain ASCII text file named LICENSE.  The License grants you
+  the right to copy, modify and redistribute Swiss Ephemeris, but only
+  under certain conditions described in the License.  Among other things, the
+  License requires that the copyright notices and this notice be preserved on
+  all copies.
 
-  Swiss Ephemeris is made available by its authors under a dual licensing
-  system. The software developer, who uses any part of Swiss Ephemeris
-  in his or her software, must choose between one of the two license models,
-  which are
-  a) GNU Affero General Public License (AGPL)
-  b) Swiss Ephemeris Professional License
-
-  The choice must be made before the software developer distributes software
-  containing parts of Swiss Ephemeris to others, and before any public
-  service using the developed software is activated.
-
-  If the developer choses the AGPL software license, he or she must fulfill
-  the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
-
-  If the developer choses the Swiss Ephemeris Professional license,
-  he must follow the instructions as found in http://www.astro.com/swisseph/ 
-  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
-  and sign the corresponding license contract.
-
-  The License grants you the right to use, copy, modify and redistribute
-  Swiss Ephemeris, but only under certain conditions described in the License.
-  Among other things, the License requires that the copyright notices and
-  this notice be preserved on all copies.
+  For uses of the Swiss Ephemeris which do not fall under the definitions
+  laid down in the Public License, the Swiss Ephemeris Professional Edition
+  must be purchased by the developer before he/she distributes any of his
+  software or makes available any product or service built upon the use of
+  the Swiss Ephemeris.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -100,46 +85,21 @@
   The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
   for promoting such software, products or services.
 */
-
 # ifndef _EPHE_INCLUDED
 # define _EPHE_INCLUDED
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// definitions must agree wit astrolib.h
-#define PLACALC_SUN	0		/* used synonymously for earth too */
-#define PLACALC_EARTH	0
-#define PLACALC_MOON	1
-#define PLACALC_MERCURY 2
-#define PLACALC_VENUS	3
-#define PLACALC_MARS	4
-#define PLACALC_JUPITER	5
-#define PLACALC_SATURN	6
-#define PLACALC_URANUS	7
-#define PLACALC_NEPTUNE 8
-#define PLACALC_PLUTO	9
-#define PLACALC_LASTPLANET PLUTO
-#define PLACALC_MEAN_NODE  10
-#define PLACALC_TRUE_NODE  11
-#define PLACALC_CHIRON	   12
-#define PLACALC_LILITH	   13	
-#define PLACALC_CALC_N	  14	/* number of planets in placalc module */
-#define PLACALC_CERES     14
-#define PLACALC_PALLAS    15
-#define PLACALC_JUNO      16
-#define PLACALC_VESTA     17
-#define PLACALC_EARTHHEL  18	/* heliocentric earth */
-#define PLACALC_PFORTUNAE 19
-// next numbers after 19 are reserved for AC, MC, houses, signs;
-# define PLACALC_AC	   20
-# define PLACALC_ASC	   20
-# define PLACALC_MC	   21
-# define PLACALC_CALC_N_MC  22	/* number of normal natal factors */
+#include "astrolib.h"
 
 # define EP4_BLOCKSIZE  sizeof(struct ep4)
 # if HPUNIX
-#   define EP4_PATH "/home/ephe/"
+#   if 0
+#     define EP4_PATH "/users/dieter/"
+#   else
+#     define EP4_PATH "/users/ephe/"
+#   endif
 # else
 #   define EP4_PATH  "ephe\\"
 # endif
@@ -149,19 +109,19 @@ extern "C" {
 
 /*
  * bits for plalist in ephread():
- * the planet flag bits SUN .. PLACALC_CHIRON, ECl, NUT can be set individually.
+ * the planet flag bits SUN .. CHIRON, ECl, NUT can be set individually.
  * plalist = 0 is equivalent to all planets and ecl,nut
- * EP_ALL_PLANETS sets all planet bits SUN .. PLACALC_CHIRON
+ * EP_ALL_PLANETS sets all planet bits SUN .. CHIRON
  * EP_ALL_BITS sets all bits.
  */
 
-# define EP_NP (PLACALC_CHIRON + 3)		/* total number of factors in ep4 */
+# define EP_NP (CHIRON + 3)		/* total number of factors in ep4 */
 					/* sun .. chiron, ecl, nut */
 
-# define EP_ALL_PLANETS  ((1 << (PLACALC_CHIRON + 1)) - 1)	/* bits 0..12 set */
-# define EP_CALC_N	(PLACALC_CHIRON+1)	/* 13 planets, SUN .. PLACALC_CHIRON */
-# define EP_ECL_INDEX  (PLACALC_CHIRON + 1)	/* index for ecliptic centisec */
-# define EP_NUT_INDEX  (PLACALC_CHIRON + 2)	/* index for nutation centisec */
+# define EP_ALL_PLANETS  ((1 << (CHIRON + 1)) - 1)	/* bits 0..12 set */
+# define EP_CALC_N	(CHIRON+1)	/* 13 planets, SUN .. CHIRON */
+# define EP_ECL_INDEX  (CHIRON + 1)	/* index for ecliptic centisec */
+# define EP_NUT_INDEX  (CHIRON + 2)	/* index for nutation centisec */
 # define EP_ECL_BIT   (1 << EP_ECL_INDEX)
 # define EP_NUT_BIT   (1 << EP_NUT_INDEX)
 # define EP_ALL_BITS   (EP_ALL_PLANETS|EP_ECL_BIT|EP_NUT_BIT)
@@ -192,7 +152,7 @@ struct ep4  {
   short ecl0s;		/*                      0.01" */
   short ecld1[NDB-1];	/* first differences 0.01", day 1..9 */
   short	nuts[NDB];	/* nutation in 0.01", day 0..9 */
-  struct  elon elo[PLACALC_CHIRON +1];	 	/* longitude sun...chiron */
+  struct  elon elo[CHIRON +1];	 	/* longitude sun...chiron */
 };
 
 
@@ -227,10 +187,6 @@ extern centisec *ephread(double jd, int plalist, int flag, char *errtext);
 extern double *dephread2(double jd, int plalist, int flag, char *errtext);
 
 extern int eph4_posit (int jlong, AS_BOOL writeflag, char *errtext);
-
-extern int ephe_plac2swe(int p);
-
-extern void shortreorder (UCHAR *p, int n);
 
 #ifdef __cplusplus
 }

@@ -4,13 +4,13 @@ module swehouse.c
 house and (simple) aspect calculation 
 
 ************************************************************/
-/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
-
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
+  
   License conditions
   ------------------
 
   This file is part of Swiss Ephemeris.
-
+  
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
@@ -20,17 +20,17 @@ house and (simple) aspect calculation
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU Affero General Public License (AGPL)
+  a) GNU public license version 2 or later
   b) Swiss Ephemeris Professional License
-
+  
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the AGPL software license, he or she must fulfill
+  If the developer choses the GNU GPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -66,11 +66,8 @@ house and (simple) aspect calculation
 #include <string.h>
 
 #define MILLIARCSEC 	(1.0 / 3600000.0)
-#define SOLAR_YEAR   365.24219893
-#define ARMCS ((SOLAR_YEAR+1) / SOLAR_YEAR * 360)
 
 static double Asc1(double, double, double, double);
-static double AscDash(double, double, double, double);
 static double Asc2(double, double, double, double);
 static int CalcH(double th, double fi, double ekl, char hsy, struct houses *hsp);
 static int sidereal_houses_ecl_t0(double tjde, 
@@ -80,10 +77,7 @@ static int sidereal_houses_ecl_t0(double tjde,
                            double lat, 
 			   int hsys, 
                            double *cusp, 
-                           double *ascmc,
-			   double *cusp_speed,
-			   double *ascmc_speed,
-			   char *serr);
+                           double *ascmc);
 static int sidereal_houses_trad(double tjde, 
 			   int32 iflag,
                            double armc, 
@@ -92,10 +86,7 @@ static int sidereal_houses_trad(double tjde,
                            double lat, 
 			   int hsys, 
                            double *cusp, 
-                           double *ascmc,
-			   double *cusp_speed,
-			   double *ascmc_speed,
-			   char *serr);
+                           double *ascmc);
 static int sidereal_houses_ssypl(double tjde, 
                            double armc, 
                            double eps, 
@@ -103,10 +94,7 @@ static int sidereal_houses_ssypl(double tjde,
                            double lat,
 			   int hsys, 
                            double *cusp, 
-                           double *ascmc,
-			   double *cusp_speed,
-			   double *ascmc_speed,
-			   char *serr);
+                           double *ascmc);
 static int sunshine_solution_makransky(double ramc, double lat, double ecl, struct houses *hsp);
 static int sunshine_solution_treindl(double ramc, double lat, double ecl, struct houses *hsp);
 #if 0
@@ -148,7 +136,7 @@ int CALL_CONV swe_houses(double tjd_ut,
     int result = swe_calc_ut(tjd_ut, SE_SUN, flags, xp, NULL);
     if (result < 0) {
       // in case of failure, Porphyry houses
-      result = swe_houses_armc_ex2(armc, geolat, eps + nutlo[1], 'O', cusp, ascmc, NULL, NULL, NULL);
+      result = swe_houses_armc(armc, geolat, eps + nutlo[1], 'O', cusp, ascmc);
       return ERR;
     }
     ascmc[9] = xp[1];	// declination in ascmc[9];
@@ -170,11 +158,24 @@ int CALL_CONV swe_houses(double tjd_ut,
     }
   }
 #endif
-  retc = swe_houses_armc_ex2(armc, geolat, eps + nutlo[1], hsys, cusp, ascmc, NULL, NULL, NULL);
+  retc = swe_houses_armc(armc, geolat, eps + nutlo[1], hsys, cusp, ascmc);
   return retc;
 }
 
-// For explanation see function swe_houses_ex2() below.
+/* housasp.c 
+ * cusps are returned in double cusp[13],
+ *                           or cusp[37] with house system 'G'.
+ * cusp[1...12]	houses 1 - 12
+ * additional points are returned in ascmc[10].
+ * ascmc[0] = ascendant
+ * ascmc[1] = mc
+ * ascmc[2] = armc
+ * ascmc[3] = vertex
+ * ascmc[4] = equasc		* "equatorial ascendant" *
+ * ascmc[5] = coasc1		* "co-ascendant" (W. Koch) *
+ * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
+ * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
+ */
 int CALL_CONV swe_houses_ex(double tjd_ut,
                                 int32 iflag, 
 				double geolat,
@@ -182,38 +183,6 @@ int CALL_CONV swe_houses_ex(double tjd_ut,
 				int hsys,
 				double *cusp,
 				double *ascmc)
-{
-  return swe_houses_ex2(tjd_ut, iflag, geolat, geolon, hsys, cusp, ascmc, NULL, NULL, NULL);
-}
-
-/* 
- * Function returns OK or ERR.
- * cusps are returned in double cusp[13],
- *                           or cusp[37] with house system 'G'.
- * cusp[1...12]	  houses 1 - 12
- * ascmc[0...10]  additional points:
- *                ascmc[0] = ascendant
- *                ascmc[1] = mc
- *                ascmc[2] = armc
- *                ascmc[3] = vertex
- *                ascmc[4] = equasc		* "equatorial ascendant" *
- *                ascmc[5] = coasc1		* "co-ascendant" (W. Koch) *
- *                ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
- *                ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
- * cusp_speed[1...12]  speeds (daily motions) of the cusps.
- * ascmc_speed[0...10] speeds (daily motions) of the additional points.
- * serr           error message or warning
- */
-int CALL_CONV swe_houses_ex2(double tjd_ut,
-                                int32 iflag, 
-				double geolat,
-				double geolon,
-				int hsys,
-				double *cusp,
-				double *ascmc,
-			        double *cusp_speed,
-				double *ascmc_speed,
-				char *serr)
 {
   int i, retc = 0;
   double armc, eps_mean, nutlo[2];
@@ -268,13 +237,13 @@ int CALL_CONV swe_houses_ex2(double tjd_ut,
   }
   if (iflag & SEFLG_SIDEREAL) { 
     if (sip->sid_mode & SE_SIDBIT_ECL_T0)
-      retc = sidereal_houses_ecl_t0(tjde, armc, eps_mean + nutlo[1], nutlo, geolat, hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);
+      retc = sidereal_houses_ecl_t0(tjde, armc, eps_mean + nutlo[1], nutlo, geolat, hsys, cusp, ascmc);
     else if (sip->sid_mode & SE_SIDBIT_SSY_PLANE)
-      retc = sidereal_houses_ssypl(tjde, armc, eps_mean + nutlo[1], nutlo, geolat, hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);
+      retc = sidereal_houses_ssypl(tjde, armc, eps_mean + nutlo[1], nutlo, geolat, hsys, cusp, ascmc);
     else
-      retc = sidereal_houses_trad(tjde, iflag, armc, eps_mean + nutlo[1], nutlo[0], geolat, hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);
+      retc = sidereal_houses_trad(tjde, iflag, armc, eps_mean + nutlo[1], nutlo[0], geolat, hsys, cusp, ascmc);
   } else {
-    retc = swe_houses_armc_ex2(armc, geolat, eps_mean + nutlo[1], hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);
+    retc = swe_houses_armc(armc, geolat, eps_mean + nutlo[1], hsys, cusp, ascmc);
     if (toupper(hsys) ==  'I') 	
       ascmc[9] = xp[1];	// declination in ascmc[9];
   }
@@ -322,10 +291,7 @@ static int sidereal_houses_ecl_t0(double tjde,
                            double lat, 
 			   int hsys, 
                            double *cusp, 
-                           double *ascmc,
-			   double *cusp_speed,
-			   double *ascmc_speed,
-			   char *serr)
+                           double *ascmc)
 {
   int i, j, retc = OK;
   double x[6], xvpx[6], x2[6], epst0, xnorm[6];
@@ -381,7 +347,7 @@ static int sidereal_houses_ecl_t0(double tjde,
   /* auxiliary armc */
   armcx = swe_degnorm(armc - dvpx);        /* 3 */
   /* compute axes and houses: */
-  retc = swe_houses_armc_ex2(armcx, lat, epsx, hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);  /* 4 */
+  retc = swe_houses_armc(armcx, lat, epsx, hsys, cusp, ascmc);  /* 4 */
   /* distance between auxiliary vernal point and
    * vernal point of t0 (a section on the sidereal plane) */
   dvpxe = acos(swi_dot_prod_unit(x, xvpx)) * RADTODEG;  /* 5 */
@@ -429,10 +395,7 @@ static int sidereal_houses_ssypl(double tjde,
                            double lat, 
 			   int hsys, 
                            double *cusp, 
-                           double *ascmc,
-			   double *cusp_speed,
-			   double *ascmc_speed,
-			   char *serr)
+                           double *ascmc)
 {
   int i, j, retc = OK;
   double x[6], x0[6], xvpx[6], x2[6], xnorm[6];
@@ -491,7 +454,7 @@ static int sidereal_houses_ssypl(double tjde,
   /* auxiliary armc */
   armcx = swe_degnorm(armc - dvpx);        /* 3 */
   /* compute axes and houses: */
-  retc = swe_houses_armc_ex2(armcx, lat, epsx, hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);  /* 4 */
+  retc = swe_houses_armc(armcx, lat, epsx, hsys, cusp, ascmc);  /* 4 */
   /* distance between the auxiliary vernal point at t and
    * the sidereal zero point of 2000 at t
    * (a section on the sidereal plane).
@@ -540,10 +503,7 @@ static int sidereal_houses_trad(double tjde,
                            double lat, 
 			   int hsys, 
                            double *cusp, 
-                           double *ascmc,
-			   double *cusp_speed,
-			   double *ascmc_speed,
-			   char *serr)
+                           double *ascmc) 
 {
   int i, retc = OK;
   double ay;
@@ -563,7 +523,7 @@ static int sidereal_houses_trad(double tjde,
     ihs2 = 'E';
 //fprintf(stderr, "armc=%f\n", armc);
 //if (hsys == 'P') fprintf(stderr, "ay=%f, t=%f %c", ay, tjde, (char) hsys);
-  retc = swe_houses_armc_ex2(armc, lat, eps, ihs2, cusp, ascmc, cusp_speed, ascmc_speed, serr);
+  retc = swe_houses_armc(armc, lat, eps, ihs2, cusp, ascmc);
 //if (hsys == 'P') fprintf(stderr, "  h1=%f", cusp[1]);
   for (i = 1; i <= ito; i++) {
     //cusp[i] = swe_degnorm(cusp[i] - ay - nutl);
@@ -586,7 +546,23 @@ static int sidereal_houses_trad(double tjde,
   return retc;
 }
 
-// For explanation see function swe_houses_armc_ex2() below.
+/* 
+ * this function is required for very special computations
+ * where no date is given for house calculation,
+ * e.g. for composite charts or progressive charts.
+ * cusps are returned in double cusp[13],
+ *                           or cusp[37] with house system 'G'.
+ * cusp[1...12]	houses 1 - 12
+ * additional points are returned in ascmc[10].
+ * ascmc[0] = ascendant
+ * ascmc[1] = mc
+ * ascmc[2] = armc
+ * ascmc[3] = vertex
+ * ascmc[4] = equasc		* "equatorial ascendant" *
+ * ascmc[5] = coasc1		* "co-ascendant" (W. Koch) *
+ * ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
+ * ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
+ */
 int CALL_CONV swe_houses_armc(
 				double armc,
 				double geolat,
@@ -595,43 +571,8 @@ int CALL_CONV swe_houses_armc(
 				double *cusp,
 				double *ascmc)
 {
-  return swe_houses_armc_ex2(armc, geolat, eps, hsys, cusp, ascmc, NULL, NULL, NULL);
-}
-
-/* 
- * Function returns OK or ERR.
- * this function is required for very special computations
- * where no date is given for house calculation,
- * e.g. for composite charts or progressive charts.
- * cusps are returned in double cusp[13],
- *                           or cusp[37] with house system 'G'.
- * cusp[1...12]	  houses 1 - 12
- * ascmc[0...10]  additional points:
- *                ascmc[0] = ascendant
- *                ascmc[1] = mc
- *                ascmc[2] = armc
- *                ascmc[3] = vertex
- *                ascmc[4] = equasc		* "equatorial ascendant" *
- *                ascmc[5] = coasc1		* "co-ascendant" (W. Koch) *
- *                ascmc[6] = coasc2		* "co-ascendant" (M. Munkasey) *
- *                ascmc[7] = polasc		* "polar ascendant" (M. Munkasey) *
- * cusp_speed[1...12]  speeds (daily motions) of the cusps.
- * ascmc_speed[0...10] speeds (daily motions) of the additional points.
- * serr           error message or warning
- */
-int CALL_CONV swe_houses_armc_ex2(
-				double armc,
-				double geolat,
-				double eps,
-				int hsys,
-				double *cusp,
-				double *ascmc,
-				double *cusp_speed,
-				double *ascmc_speed,
-				char *serr)
-{
-  struct houses h, hm1, hp1;
-  int i, retc = 0, rm1, rp1;
+  struct houses h;
+  int i, retc = 0;
   int ito;
   static double saved_sundec = 99;
   if (toupper(hsys) == 'G')
@@ -639,12 +580,6 @@ int CALL_CONV swe_houses_armc_ex2(
   else
     ito = 12;
   armc = swe_degnorm(armc);
-  h.do_speed = FALSE;
-  h.do_hspeed = FALSE;
-  if (ascmc_speed != NULL || cusp_speed != NULL)
-    h.do_speed = TRUE;	// is needed if cusp_speed wanted
-  if (cusp_speed != NULL)
-    h.do_hspeed = TRUE;
   if (toupper(hsys) ==  'I') {	// declination for sunshine houses
     if (ascmc[9] == 99) {
       h.sundec = 0;
@@ -656,15 +591,11 @@ int CALL_CONV swe_houses_armc_ex2(
   }
   retc = CalcH(armc, geolat, eps, (char)hsys, &h);
   cusp[0] = 0;
-  if (h.do_hspeed) cusp_speed[0] = 0;
   // on failure, we only have 12 Porphyry cusps
-  if (retc < 0) {
+  if (retc < 0) 
     ito = 12;
-    if (serr != NULL) strcpy(serr, h.serr);
-  }
   for (i = 1; i <= ito; i++) {
     cusp[i] = h.cusp[i];
-    if (h.do_hspeed) cusp_speed[i] = h.cusp_speed[i];   
   }
   ascmc[0] = h.ac;        /* Asc */    
   ascmc[1] = h.mc;        /* Mid */    
@@ -678,74 +609,29 @@ int CALL_CONV swe_houses_armc_ex2(
     ascmc[i] = 0;
   if (toupper(hsys) ==  'I') 	// declination for sunshine houses
     ascmc[9] = h.sundec ;
-  if (h.do_speed && ascmc_speed != NULL) {
-    ascmc_speed[0] = h.ac_speed;        /* Asc */    
-    ascmc_speed[1] = h.mc_speed;        /* Mid */    
-    ascmc_speed[2] = h.armc_speed;   
-    ascmc_speed[3] = h.vertex_speed;
-    ascmc_speed[4] = h.equasc_speed;
-    ascmc_speed[5] = h.coasc1_speed;	/* "co-ascendant" (W. Koch) */
-    ascmc_speed[6] = h.coasc2_speed;	/* "co-ascendant" (M. Munkasey) */
-    ascmc_speed[7] = h.polasc_speed;	/* "polar ascendant" (M. Munkasey) */
-    for (i = SE_NASCMC; i < 10; i++)
-      ascmc_speed[i] = 0;
-  }
-  if (h.do_interpol) {	// must compute cusp_speed via interpolation
-    double dt = 1.0 / 86400;
-    double darmc = dt * ARMCS;
-    hm1.do_speed = FALSE;
-    hm1.do_hspeed = FALSE;
-    hp1.do_speed = FALSE;
-    hp1.do_hspeed = FALSE;
-    if (toupper(hsys) ==  'I') {
-      hm1.sundec = h.sundec;
-      hp1.sundec = h.sundec;
-    }
-    rm1 = CalcH(armc - darmc, geolat, eps, (char)hsys, &hm1);
-    rp1 = CalcH(armc + darmc, geolat, eps, (char)hsys, &hp1);
-    if (rp1 >= 0 && rm1 >=0) {
-      if (fabs(swe_difdeg2n(hp1.ac, h.ac)) > 90) {
-	hp1 = h;	// use only upper interval
-	dt = dt / 2;
-      } else if (fabs(swe_difdeg2n(hm1.ac, h.ac)) > 90) {
-	hm1 = h;	// use only lower interval
-	dt = dt / 2;
-      }
-      for (i = 1; i <= 12; i++) {
-	double dx = swe_difdeg2n(hp1.cusp[i], hm1.cusp[i]);
-	cusp_speed[i] = dx / 2 / dt ;
-      }
-    }
-  }
 #ifdef TRACE
   swi_open_trace(NULL);
   if (swi_trace_count <= TRACE_COUNT_MAX) {
     if (swi_fp_trace_c != NULL) {
-      fputs("\n/*SWE_HOUSES_ARMC_EX2*/\n", swi_fp_trace_c);
+      fputs("\n/*SWE_HOUSES_ARMC*/\n", swi_fp_trace_c);
       fprintf(swi_fp_trace_c, "  armc = %.9f;", armc);
       fprintf(swi_fp_trace_c, " geolat = %.9f;", geolat);
       fprintf(swi_fp_trace_c, " eps = %.9f;", eps);
       fprintf(swi_fp_trace_c, " hsys = %d;\n", hsys);
-      fprintf(swi_fp_trace_c, "  retc = swe_houses_armc_ex2(armc, geolat, eps, hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);\n");
-      fputs("  printf(\"swe_houses_armc_ex2: %f\\t%f\\t%f\\t%c\\t\\n\", ", swi_fp_trace_c);
+      fprintf(swi_fp_trace_c, "  retc = swe_houses_armc(armc, geolat, eps, hsys, cusp, ascmc);\n");
+      fputs("  printf(\"swe_houses_armc: %f\\t%f\\t%f\\t%c\\t\\n\", ", swi_fp_trace_c);
       fputs("  armc, geolat, eps, hsys);\n", swi_fp_trace_c);
       fputs("  printf(\"retc = %d\\n\", retc);\n", swi_fp_trace_c);
       fputs("  printf(\"cusp:\\n\");\n", swi_fp_trace_c);
-      fputs("  for (i = 1; i <= 12; i++)\n", swi_fp_trace_c);
+      fputs("  for (i = 0; i < 12; i++)\n", swi_fp_trace_c);
       fputs("    printf(\"  %d\\t%f\\n\", i, cusp[i]);\n", swi_fp_trace_c);
       fputs("  printf(\"ascmc:\\n\");\n", swi_fp_trace_c);
       fputs("  for (i = 0; i < 10; i++)\n", swi_fp_trace_c);
       fputs("    printf(\"  %d\\t%f\\n\", i, ascmc[i]);\n", swi_fp_trace_c);
-      fputs("  printf(\"cusp_speed:\\n\");\n", swi_fp_trace_c);
-      fputs("  for (i = 1; i <= 12; i++)\n", swi_fp_trace_c);
-      fputs("    printf(\"  %d\\t%f\\n\", i, cusp_speed[i]);\n", swi_fp_trace_c);
-      fputs("  printf(\"ascmc_speed:\\n\");\n", swi_fp_trace_c);
-      fputs("  for (i = 0; i < 10; i++)\n", swi_fp_trace_c);
-      fputs("    printf(\"  %d\\t%f\\n\", i, ascmc_speed[i]);\n", swi_fp_trace_c);
       fflush(swi_fp_trace_c);
     }
     if (swi_fp_trace_out != NULL) {
-      fprintf(swi_fp_trace_out, "swe_houses_armc_ex2: %f\t%f\t%f\t%c\t\n", armc, geolat, eps, hsys);
+      fprintf(swi_fp_trace_out, "swe_houses_armc: %f\t%f\t%f\t%c\t\n", armc, geolat, eps, hsys);
       fprintf(swi_fp_trace_out, "retc = %d\n", retc);
       fputs("cusp:\n", swi_fp_trace_out);
       for (i = 1; i <= 12; i++)
@@ -835,7 +721,6 @@ char *CALL_CONV swe_house_name(int hsys)
   case 'H': return "horizon/azimut";
   case 'I': return "Sunshine";
   case 'i': return "Sunshine/alt.";
-  case 'J': return "Savard-A";
   case 'K': return "Koch";
   case 'L': return "Pullen SD";
   case 'M': return "Morinus";
@@ -856,8 +741,8 @@ char *CALL_CONV swe_house_name(int hsys)
 
 // How to deal with Sunshine houses if the southern crossing point of Equator
 // and Ecliptic is under the horizon:
-// We follow the proposal by Dieter Koch, who wants to keep it in analogy with
-// Regiomontanus, where we keep the MC above the horizon, by switching it to the north.
+// We follow the proposal by Dieter Koch, who wants to keep it in alalogy with
+// Regiomontanus, where we keep the MC above the horozon, by switching it to the noth.
 // This results in an clockwise sequence of house cusps in the chart.
 //
 // One can argue that the MC should be kept south, even when it is under the horizon.
@@ -900,7 +785,6 @@ static int CalcH(
  *                   H  horizon / azimut
  *                   I  Sunshine solution Treindl
  *                   i  Sunshine solution Makransky
- *                   J  Savard-A
  *                   K  Koch
  *                   L  Pullen SD "sinusoidal delta", ex Neo-Porphyry
  *                   M  Morinus
@@ -921,22 +805,21 @@ static int CalcH(
  * *********************************************************
  *  Koch and Placidus don't work in the polar circle.
  *  We swap MC/IC so that MC is always before AC in the zodiac
- *  We then divide the quadrants into 3 equal parts, ie apply Porphyry.
+ *  We than divide the quadrants into 3 equal parts.
  * *********************************************************
  *  All angles are expressed in degrees.
  *  Special trigonometric functions sind, cosd etc. are
  *  implemented for arguments in degrees.
  ***********************************************************/
 {
-  double tane, tanfi, cosfi, sinfi, tant, sina, cosa, th2;
-  double a, c, f, fh1, fh2, xh1, xh2, xs1, xs2, rectasc, ad3, acmc, vemc;
+  double tane, tanfi, cosfi, tant, sina, cosa, th2;
+  double a, c, f, fh1, fh2, xh1, xh2, rectasc, ad3, acmc, vemc;
   int 	i, ih, ih2, retc = OK;
   double sine, cose;
   double x[3], krHorizonLon; /* BK 14.02.2006 */
   int niter_max = 100; // maximum iterations allowed with Placidus
   double cuspsv;
   *hsp->serr = '\0';
-  hsp->do_interpol = 0;
   cose  = cosd(ekl);
   sine  = sind(ekl);
   tane  = tand(ekl);
@@ -962,23 +845,10 @@ static int CalcH(
       hsp->mc = 270;
   } /*  if */
   hsp->mc = swe_degnorm(hsp->mc);
-  if (hsp->do_speed) hsp->mc_speed = AscDash(th, 0, sine, cose); 
   /* ascendant */
   hsp->ac = Asc1(th + 90, fi, sine, cose);
-  if (hsp->do_speed) 
-    hsp->ac_speed = AscDash(th + 90, fi, sine, cose);
-  if (hsp->do_hspeed) {
-    for (i = 0; i <= 12; i++)
-      hsp->cusp_speed[i] = 0;
-  }
-  hsp->armc_speed = ARMCS;
-  // these cusp[1] and cusp[10] values may be changed further down for some house systems
   hsp->cusp[1] = hsp->ac;
   hsp->cusp[10] = hsp->mc;
-  if (hsp->do_hspeed) {	
-    hsp->cusp_speed[1] = hsp->ac_speed;
-    hsp->cusp_speed[10] = hsp->mc_speed;
-  }
   /* we respect smaller case letter for i, otherwise they are deprecated */
   if (hsy > 95 && hsy != 'i') {
     sprintf(hsp->serr, "use of lower case letters like %c for house systems is deprecated", hsy);
@@ -993,14 +863,8 @@ static int CalcH(
       hsp->ac = swe_degnorm(hsp->ac + 180);
       hsp->cusp[1] = hsp->ac;
     }
-    for (i = 2; i <=12; i++) {
+    for (i = 2; i <=12; i++)
       hsp->cusp[i] = swe_degnorm(hsp->cusp[1] + (i-1) * 30);
-    }
-    if (hsp->do_hspeed) {
-      for (i = 1; i <=12; i++) {
-	hsp->cusp_speed[i] = hsp->ac_speed;
-      }
-    }
     break;
   case 'D':	/* equal, begin  at MC */
     acmc = swe_difdeg2n(hsp->ac, hsp->mc);
@@ -1013,24 +877,25 @@ static int CalcH(
       hsp->cusp[i] = swe_degnorm(hsp->cusp[10] + (i-10) * 30);
     for (i = 1; i <= 9; i++) 
       hsp->cusp[i] = swe_degnorm(hsp->cusp[10] + (i + 2) * 30);
-    if (hsp->do_hspeed) {
-      for (i = 1; i <=12; i++) {
-	hsp->cusp_speed[i] = hsp->mc_speed;
-      }
-    }
     break;
-  case 'C': // Campanus houses:
-    // Prime vertical is divided into 3 parts of 30° each, great circles from
-    // north point to south point go through these points and intersect ecliptic.
-    // pole height = shortest distance of plane from North pole,
-    // measured along declination circle.
-    // NP = North Pole, N = north point, P11 = house 11 point in prime vertical
-    // triangle NP - N - P11 , angle 30 at N, side fi between NP and N
-    // sin fh1 = sin fi * sin 30°,
+  case 'C': /* Campanus houses and Horizon or Azimut system */
+  case 'H':
+    if (hsy == 'H') {
+      if (fi > 0)
+        fi = 90 - fi;
+      else
+        fi = -90 - fi;
+      /* equator */
+      if (fabs(fabs(fi) - 90) < VERY_SMALL) {
+        if (fi < 0)
+          fi = -90 + VERY_SMALL;
+        else
+	  fi = 90 - VERY_SMALL;
+      } 
+      th = swe_degnorm(th + 180);
+    }
     fh1 = asind(sind (fi) / 2);
-    // triangle NP - N - P12 , angle 60 at N, side fi between NP and N
-    // sin fh2 = sin fi * sin 60°,
-    fh2 = asind(sqrt (3.0) / 2 * sind(fi)); 
+    fh2 = asind(sqrt (3.0) / 2 * sind(fi));
     cosfi = cosd(fi);
     if (fabs(cosfi) == 0) {	/* '==' should be save! */ 
       if (fi > 0)
@@ -1038,26 +903,15 @@ static int CalcH(
       else
 	xh1 = xh2 = 270; /* cosfi = -VERY_SMALL; */
     } else {
-      // triangle formed by equator, prime vertical, great circle 
-      // through P11, S and N
-      // with right angle between prime vertical and great circle
-      // side length xh1 on equ, 60 on prime vertical, angle fi between
-      // tan xh1 = tan 60 / cos fi = √3 / cos fi
-      xh1 = atand(sqrt (3.0) / cosfi);	
-      // side length xh2 on equ, 30° on prime vertical, angle fi between
-      // tan xh2 = tan 30 / cos fi = 1/√3 / cos fi
+      xh1 = atand(sqrt (3.0) / cosfi);
       xh2 = atand(1 / sqrt (3.0) / cosfi);
     }
     hsp->cusp[11] = Asc1(th + 90 - xh1, fh1, sine, cose);
     hsp->cusp[12] = Asc1(th + 90 - xh2, fh2, sine, cose);
+    if (hsy == 'H') 
+      hsp->cusp[1] = Asc1(th + 90, fi, sine, cose);
     hsp->cusp[2] = Asc1(th + 90 + xh2, fh2, sine, cose);
     hsp->cusp[3] = Asc1(th + 90 + xh1, fh1, sine, cose);
-    if (hsp->do_hspeed) {
-      hsp->cusp_speed[11] = AscDash(th + 90 - xh1, fh1, sine, cose);
-      hsp->cusp_speed[12] = AscDash(th + 90 - xh2, fh2, sine, cose);
-      hsp->cusp_speed[2] = AscDash(th + 90 + xh2, fh2, sine, cose);
-      hsp->cusp_speed[3] = AscDash(th + 90 + xh1, fh1, sine, cose);
-    }
     /* within polar circle, when mc sinks below horizon and 
 	 * ascendant changes to western hemisphere, all cusps
      * must be added 180 degrees. 
@@ -1073,78 +927,21 @@ static int CalcH(
         }
       }
     }
-    break;
-  case 'H': /* Horizon or Azimut system, similar to Campanus calulation */
-    if (fi > 0)
-      fi = 90 - fi;
-    else
-      fi = -90 - fi;
-    /* equator */
-    if (fabs(fabs(fi) - 90) < VERY_SMALL) {
-      if (fi < 0)
-	fi = -90 + VERY_SMALL;
-      else
-	fi = 90 - VERY_SMALL;
-    } 
-    th = swe_degnorm(th + 180);
-    fh1 = asind(sind (fi) / 2);
-    fh2 = asind(sqrt (3.0) / 2 * sind(fi)); 
-    cosfi = cosd(fi);
-    if (fabs(cosfi) == 0) {	/* '==' should be save! */ 
+    if (hsy == 'H') {
+      for (i = 1; i <= 3; i++)
+        hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
+      for (i = 11; i <= 12; i++)
+        hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
+      /* restore fi and th */
       if (fi > 0)
-	xh1 = xh2 = 90; /* cosfi = VERY_SMALL; */
+        fi = 90 - fi;
       else
-	xh1 = xh2 = 270; /* cosfi = -VERY_SMALL; */
-    } else {
-      // triangle formed by equator, prime vertical, declination circle,
-      // with right angle between equator and declination circle:
-      // side length xh1 on equ, 60 on prime vertical, angle fi between
-      // tan xh1 = tan 60 / cos fi = √3 / cos fi
-      xh1 = atand(sqrt (3.0) / cosfi);	
-      // side length xh2 on equ, 30° on prime vertical, angle fi between
-      // tan xh2 = tan 30 / cos fi = 1/√3 / cos fi
-      xh2 = atand(1 / sqrt (3.0) / cosfi);
-    }
-    hsp->cusp[11] = Asc1(th + 90 - xh1, fh1, sine, cose);
-    hsp->cusp[12] = Asc1(th + 90 - xh2, fh2, sine, cose);
-    hsp->cusp[1] = Asc1(th + 90, fi, sine, cose);
-    hsp->cusp[2] = Asc1(th + 90 + xh2, fh2, sine, cose);
-    hsp->cusp[3] = Asc1(th + 90 + xh1, fh1, sine, cose);
-    if (hsp->do_hspeed) {
-      hsp->cusp_speed[11] = AscDash(th + 90 - xh1, fh1, sine, cose);
-      hsp->cusp_speed[12] = AscDash(th + 90 - xh2, fh2, sine, cose);
-      hsp->cusp_speed[1] = AscDash(th + 90, fi, sine, cose);
-      hsp->cusp_speed[2] = AscDash(th + 90 + xh2, fh2, sine, cose);
-      hsp->cusp_speed[3] = AscDash(th + 90 + xh1, fh1, sine, cose);
-    }
-    /* within polar circle, when mc sinks below horizon and 
-	 * ascendant changes to western hemisphere, all cusps
-     * must be added 180 degrees. 
-     * houses will be in clockwise direction */
-    if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
+	fi = -90 - fi;
+      th = swe_degnorm(th + 180);
       acmc = swe_difdeg2n(hsp->ac, hsp->mc);
       if (acmc < 0) {
         hsp->ac = swe_degnorm(hsp->ac + 180);
-        hsp->mc = swe_degnorm(hsp->mc + 180);
-	for (i = 1; i <= 12; i++) {
-	  if (i >= 4 && i < 10) continue;
-	  hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
-        }
       }
-    }
-    for (i = 1; i <= 3; i++)
-      hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
-    for (i = 11; i <= 12; i++)
-      hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
-    /* restore fi and th */
-    if (fi > 0)
-      fi = 90 - fi;
-    else
-      fi = -90 - fi;
-    th = swe_degnorm(th + 180);
-    acmc = swe_difdeg2n(hsp->ac, hsp->mc);
-    if (acmc < 0) {
-      hsp->ac = swe_degnorm(hsp->ac + 180);
     }
     break;
   case 'I': /* Sunshine houses, solution Treindl */
@@ -1171,75 +968,6 @@ static int CalcH(
       hsy = 'O';
       goto porphyry;
     }
-    hsp->do_interpol = hsp->do_hspeed;
-    break;
-  case 'J': /* Savard's supposed Albategnius houses */
-    // house 11: latitude circle at 2/3 fi intersects prime meridian at p11.
-    // house 12: latitude circle at fi / 3 intersects prime meridian at p12.
-    // triangle X-p12-E formed by equator, prime vertical, declination circle,
-    // side length xs1 or xs2 on prime vertical, 2/3 fi or fi/3  on declination circle,
-    // angle fi between prime vertical and equator at E, right angle between equator
-    // and declination circle.
-    // sin b = sin B sin c, with b = 1/3 or 2/3 fi, B = fi
-    sinfi = sind(fi);
-    cosfi = cosd(fi);
-    if (fabs(fi) < VERY_SMALL) {	
-      xs2 = 1 / 3.0;
-      xs1 = 2 / 3.0;
-    } else {
-      xs2 = sind(fi / 3) / sinfi;	
-      xs1 = sind(2 * fi / 3) / sinfi;
-    }
-    xs2 = asind(xs2);
-    xs1 = asind(xs1);
-    // now consider triangle great circle through h11, equ, prime vertical, with
-    // right angle between prime vertical and great circle
-    // side length xh1 on equ, xs1 on prime vertical, angle fi between
-    // tan xh1 = tan xs1 / cos fi 
-    if (cosfi == 0) {
-      if (fi > 0)
-	xh1 = xh2 = 90; 
-      else
-	xh1 = xh2 = 270;
-    } else {
-      xh1 = atand(tand(xs1) / cosfi);	
-      xh2 = atand(tand(xs2) / cosfi);	
-    }
-    // Pole height:
-    // great circle S - p11 - N has angle 90 - xs1 on North or South point,
-    // north point to south point go through these points and intersect ecliptic.
-    // pole height = shortest distance of plane from North pole,
-    // measured along declination circle.
-    // NP = North Pole, N = north point, H11 = house 11 point in prime vertical
-    // triangle NP - N - h11 , angle xs1 at N, side fi between NP and N
-    // sin fh1 = sin fi * sin (90 - xs1),
-    fh1 = asind(sind (fi) * sind(90 - xs1));
-    fh2 = asind(sind (fi) * sind(90 - xs2));
-    hsp->cusp[12] = Asc1(th + 90 - xh2, fh2, sine, cose);
-    hsp->cusp[11] = Asc1(th + 90 - xh1, fh1, sine, cose);
-    hsp->cusp[2] = Asc1(th + 90 + xh2, fh2, sine, cose);
-    hsp->cusp[3] = Asc1(th + 90 + xh1, fh1, sine, cose);
-    if (hsp->do_hspeed) {
-      hsp->cusp_speed[11] = AscDash(th + 90 - xh1, fh1, sine, cose);
-      hsp->cusp_speed[12] = AscDash(th + 90 - xh2, fh2, sine, cose);
-      hsp->cusp_speed[3] = AscDash(th + 90 + xh1, fh1, sine, cose);
-      hsp->cusp_speed[2] = AscDash(th + 90 + xh2, fh2, sine, cose);
-    }
-    /* within polar circle, when mc sinks below horizon and 
-	 * ascendant changes to western hemisphere, all cusps
-     * must be added 180 degrees. 
-     * houses will be in clockwise direction */
-    if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
-      acmc = swe_difdeg2n(hsp->ac, hsp->mc);
-      if (acmc < 0) {
-        hsp->ac = swe_degnorm(hsp->ac + 180);
-        hsp->mc = swe_degnorm(hsp->mc + 180);
-	for (i = 1; i <= 12; i++) {
-	  if (i >= 4 && i < 10) continue;
-	  hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
-        }
-      }
-    }
     break;
   case 'K': /* Koch houses */
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
@@ -1257,12 +985,6 @@ static int CalcH(
     hsp->cusp[12] = Asc1(th + 60 - ad3, fi, sine, cose);
     hsp->cusp[2] = Asc1(th + 120 + ad3, fi, sine, cose);
     hsp->cusp[3] = Asc1(th + 150 + 2 * ad3, fi, sine, cose);
-    if (hsp->do_hspeed) {
-      hsp->cusp_speed[11] = AscDash(th + 30 - 2 * ad3, fi, sine, cose);
-      hsp->cusp_speed[12] = AscDash(th + 60 - ad3, fi, sine, cose);
-      hsp->cusp_speed[2] = AscDash(th + 120 + ad3, fi, sine, cose);
-      hsp->cusp_speed[3] = AscDash(th + 150 + 2 * ad3, fi, sine, cose);
-    }
     break;
   case 'L':	/* Pullen SD sinusoidal delta, ex Neo-Porphyry */
     {
@@ -1290,7 +1012,6 @@ static int CalcH(
 	hsp->cusp[3] = swe_degnorm(hsp->ac + 60 + 3 * d);
       }
     }
-    hsp->do_interpol = hsp->do_hspeed;
     break;
   case 'N':	/* whole signs, begin at 0° Aries */
     acmc = swe_difdeg2n(hsp->ac, hsp->mc);
@@ -1316,16 +1037,6 @@ porphyry:
     hsp->cusp[3] = swe_degnorm(hsp->ac + (180 - acmc) / 3 * 2);
     hsp->cusp[11] = swe_degnorm(hsp->mc + acmc / 3);
     hsp->cusp[12] = swe_degnorm(hsp->mc + acmc / 3 * 2);
-    if (hsp->do_hspeed) {
-      double q1_speed = hsp->ac_speed - hsp->mc_speed;	// rate of growth of quadrant 1
-      // double q4_speed = hsp->mc_speed - hsp->ac_speed;	// rate of growth of quadrant 4
-      hsp->cusp_speed[1] = hsp->ac_speed;  // may have been destroyed if defaulting from Gauquelin
-      hsp->cusp_speed[10] = hsp->mc_speed; // dito
-      hsp->cusp_speed[2] = hsp->ac_speed  - q1_speed / 3;
-      hsp->cusp_speed[3] = hsp->ac_speed  - q1_speed / 3 * 2;
-      hsp->cusp_speed[11] = hsp->ac_speed  + q1_speed / 3;
-      hsp->cusp_speed[12] = hsp->ac_speed  + q1_speed / 3 * 2;
-    }
     break;
   case 'Q':	/* Pullen sinusoidal ratio */
     {
@@ -1370,7 +1081,6 @@ porphyry:
 	hsp->cusp[3] = swe_degnorm(hsp->cusp[2] + xr4);	// house 2 size xr^4
       }
     }
-    hsp->do_interpol = hsp->do_hspeed;
     break;
   case 'R':	/* Regiomontanus houses */
     fh1 = atand (tanfi * 0.5);
@@ -1379,12 +1089,6 @@ porphyry:
     hsp->cusp[12] = Asc1(60 + th, fh2, sine, cose); 
     hsp->cusp[2] = Asc1(120 + th, fh2, sine, cose);
     hsp->cusp[3] = Asc1(150 + th, fh1, sine, cose); 
-    if (hsp->do_hspeed) {
-      hsp->cusp_speed[11] = AscDash(30 + th, fh1, sine, cose); 
-      hsp->cusp_speed[12] = AscDash(60 + th, fh2, sine, cose); 
-      hsp->cusp_speed[2] = AscDash(120 + th, fh2, sine, cose);
-      hsp->cusp_speed[3] = AscDash(150 + th, fh1, sine, cose); 
-    }
     /* within polar circle, when mc sinks below horizon and 
      * ascendant changes to western hemisphere, all cusps
      * must be added 180 degrees.
@@ -1421,7 +1125,6 @@ porphyry:
       hsp->cusp[11] = swe_degnorm(hsp->mc + s4 * 0.5);
       hsp->cusp[12] = swe_degnorm(hsp->mc + s4 * 1.5);
     }
-    hsp->do_interpol = hsp->do_hspeed;
     break;
   case 'T':	/* 'topocentric' houses */
     fh1 = atand (tanfi / 3.0);
@@ -1430,12 +1133,6 @@ porphyry:
     hsp->cusp[12] =  Asc1(60 + th, fh2, sine, cose);
     hsp->cusp[2] =  Asc1(120 + th, fh2, sine, cose); 
     hsp->cusp[3] =  Asc1(150 + th, fh1, sine, cose);
-    if (hsp->do_hspeed) {
-      hsp->cusp_speed[11] =  AscDash(30 + th, fh1, sine, cose); 
-      hsp->cusp_speed[12] =  AscDash(60 + th, fh2, sine, cose);
-      hsp->cusp_speed[2] =  AscDash(120 + th, fh2, sine, cose); 
-      hsp->cusp_speed[3] =  AscDash(150 + th, fh1, sine, cose);
-    }
     /* within polar circle, when mc sinks below horizon and 
      * ascendant changes to western hemisphere, all cusps
      * must be added 180 degrees.
@@ -1455,15 +1152,11 @@ porphyry:
     if (acmc < 0) {
       /* within polar circle we swap AC/DC if AC is on wrong side */
       hsp->ac = swe_degnorm(hsp->ac + 180);
+      hsp->cusp[1] = hsp->ac;
     }
     hsp->cusp[1] = swe_degnorm(hsp->ac - 15);
     for (i = 2; i <=12; i++)
       hsp->cusp[i] = swe_degnorm(hsp->cusp[1] + (i-1) * 30);
-    if (hsp->do_hspeed) {
-      for (i = 1; i <=12; i++) {
-	hsp->cusp_speed[i] = hsp->ac_speed;
-      }
-    }
     break;
   case 'W':	/* equal, whole-sign houses */
     acmc = swe_difdeg2n(hsp->ac, hsp->mc);
@@ -1506,7 +1199,6 @@ porphyry:
     if (acmc < 0) {
       hsp->ac = swe_degnorm(hsp->ac + 180);
     }
-    hsp->do_interpol = hsp->do_hspeed;
     break; }
   case 'M': {
     /* 
@@ -1530,7 +1222,6 @@ porphyry:
     if (acmc < 0) {
       hsp->ac = swe_degnorm(hsp->ac + 180);
     }
-    hsp->do_interpol = hsp->do_hspeed;
     break; }
   case 'F': {
     /* 
@@ -1570,54 +1261,46 @@ porphyry:
 	hsp->cusp[i] = swe_degnorm(hsp->cusp[i]);
       }
     }
-    hsp->do_interpol = hsp->do_hspeed;
     break; }
   case 'B': {	/* Alcabitius */
-      // created by Alois 17-sep-2000, followed example in Matrix
-      // electrical library. The code reproduces the example!
-      // This corresponds to Munkasey 'The Alcibitius Semiarc House System'
-      // as described in his Astrological House Formulae'
-      double dek, r, sna, sda, sn3, sd3;
+    /* created by Alois 17-sep-2000, followed example in Matrix
+       electrical library. The code reproduces the example!
+       I think the Alcabitius code in Walter Pullen's Astrolog 5.40
+       is wrong, because he remains in RA and forgets the transform to
+       the ecliptic. */
+    double dek, r, sna, sda, sn3, sd3;
+    acmc = swe_difdeg2n(hsp->ac, hsp->mc);
+    if (acmc < 0) {
+      hsp->ac = swe_degnorm(hsp->ac + 180);
+      hsp->cusp[1] = hsp->ac;
       acmc = swe_difdeg2n(hsp->ac, hsp->mc);
-      if (acmc < 0) {
-	hsp->ac = swe_degnorm(hsp->ac + 180);
-	hsp->cusp[1] = hsp->ac;
-	acmc = swe_difdeg2n(hsp->ac, hsp->mc);
-      }
-      dek = asind(sind(hsp->ac) * sine);	/* declination of Ascendant */
-      // triangle horizon - decl circle - equator, right angle between equ and 
-      // decl circle, angle 90 - fi between horizon and equator A, decl = a
-      // tan a = sin b tan A, sin b = tan decl * cot (90-fi) = tan decl * tan fi
-      // We want semidiurnal circle  90 + b; cos (90 + b) = - sin b = r = -tan decl * tan fi
-      // sda = arccos r
-      // case fi == 90 or -90 is dealt with at entry into function
-      r = -tanfi * tand(dek);
-      // must treat the case of abs(r) > 1; happens very rarely
-      // because dek becomes smaller when fi is large, as ac is close to
-      // zero Aries/Libra in that case.
-      if (r > 1) r = 1;
-      if (r < -1) r = -1;
-      sda = acosd(r);	// semidiurnal arc, measured on equator 
-      sna = 180 - sda;	// complement, seminocturnal arc
-      sd3 = sda / 3;
-      sn3 = sna / 3;
-      rectasc = swe_degnorm(th + sd3);	/* cusp 11 */
-      // project rectasc onto eclipitic with pole height 0, i.e. along the
-      // declination circle 
-      hsp->cusp[11] = Asc1(rectasc, 0, sine, cose);
-      rectasc = swe_degnorm(th + 2 * sd3);	/* cusp 12 */
-      hsp->cusp[12] = Asc1(rectasc, 0, sine, cose);
-      rectasc = swe_degnorm(th + 180 - 2 * sn3);	/* cusp 2 */
-      hsp->cusp[2] = Asc1(rectasc, 0, sine, cose);
-      rectasc = swe_degnorm(th + 180 -  sn3);	/* cusp 3 */
-      hsp->cusp[3] = Asc1(rectasc, 0, sine, cose);
     }
-    hsp->do_interpol = hsp->do_hspeed;
+    dek = asind(sind(hsp->ac) * sine);	/* declination of Ascendant */
+    /* must treat the case fi == 90 or -90 */
+    r = -tanfi * tand(dek);
+    /* must treat the case of abs(r) > 1; probably does not happen
+     * because dek becomes smaller when fi is large, as ac is close to
+     * zero Aries/Libra in that case.
+     */
+    sda = acos(r) * RADTODEG;	/* semidiurnal arc, measured on equator */
+    sna = 180 - sda;		/* complement, seminocturnal arc */
+    sd3 = sda / 3;
+    sn3 = sna / 3;
+    rectasc = swe_degnorm(th + sd3);	/* cusp 11 */
+    /* project rectasc onto eclipitic with pole height 0, i.e. along the
+    declination circle */
+    hsp->cusp[11] = Asc1(rectasc, 0, sine, cose);
+    rectasc = swe_degnorm(th + 2 * sd3);	/* cusp 12 */
+    hsp->cusp[12] = Asc1(rectasc, 0, sine, cose);
+    rectasc = swe_degnorm(th + 180 - 2 * sn3);	/* cusp 2 */
+    hsp->cusp[2] = Asc1(rectasc, 0, sine, cose);
+    rectasc = swe_degnorm(th + 180 -  sn3);	/* cusp 3 */
+    hsp->cusp[3] = Asc1(rectasc, 0, sine, cose);
+    }
     break;
   case 'G': 	/* 36 Gauquelin sectors */
     for (i = 1; i <= 36; i++) {
       hsp->cusp[i] = 0;
-      hsp->cusp_speed[i] = 0;
     }
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
       retc = ERR;
@@ -1635,7 +1318,6 @@ porphyry:
       tant = tand(asind(sine * sind(Asc1(rectasc, fh1, sine, cose))));
       if (fabs(tant) < VERY_SMALL) {
 	hsp->cusp[ih] = rectasc;
-	if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
       } else {
 	/* pole height */
 	f = atand(sind(asind(tanfi * tant) * ih2 / 9)  /tant);
@@ -1645,13 +1327,12 @@ porphyry:
 	  tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	  if (fabs(tant) < VERY_SMALL) {
 	    hsp->cusp[ih] = rectasc;
-	    if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
 	    break;
 	  }
 	  /* pole height */
 	  f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
   	  hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-	  if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv)) < VERY_SMALL_PLAC_ITER)
+	  if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
 	    break;
 	  cuspsv = hsp->cusp[ih];
         }
@@ -1664,10 +1345,8 @@ porphyry:
 	  strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
 	  goto porphyry;
 	}
-	if (hsp->do_hspeed) hsp->cusp_speed[ih] = AscDash(rectasc, f, sine, cose);
       }
       hsp->cusp[ih+18] = swe_degnorm(hsp->cusp[ih] + 180);
-      if (hsp->do_hspeed) hsp->cusp_speed[ih + 18] = hsp->cusp_speed[ih];
     }
     /*************** first/third quarter ***************/
     for (ih = 29; ih <= 36; ih++) {
@@ -1677,7 +1356,6 @@ porphyry:
       tant = tand(asind(sine * sind(Asc1(rectasc, fh1, sine, cose))));
       if (fabs(tant) < VERY_SMALL) {
         hsp->cusp[ih] = rectasc;
-	if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
       } else {
         f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
         /*  pole height */
@@ -1687,13 +1365,12 @@ porphyry:
 	  tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	  if (fabs(tant) < VERY_SMALL) {
 	    hsp->cusp[ih] = rectasc;
-	    if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
 	    break;
 	  }
 	  f = atand(sind(asind(tanfi * tant) * ih2 / 9) / tant);
 	  /*  pole height */
   	  hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-	  if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv)) < VERY_SMALL_PLAC_ITER)
+	  if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
 	    break;
 	  cuspsv = hsp->cusp[ih];
 	}
@@ -1706,21 +1383,13 @@ porphyry:
 	  strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
 	  goto porphyry;
 	}
-	if (hsp->do_hspeed) hsp->cusp_speed[ih] = AscDash(rectasc, f, sine, cose);
       }
       hsp->cusp[ih-18] = swe_degnorm(hsp->cusp[ih] + 180);
-      if (hsp->do_hspeed) hsp->cusp_speed[ih - 18] = hsp->cusp_speed[ih];
     }
     hsp->cusp[1] = hsp->ac;
     hsp->cusp[10] = hsp->mc;
     hsp->cusp[19] = swe_degnorm(hsp->ac + 180);
     hsp->cusp[28] = swe_degnorm(hsp->mc + 180);
-    if (hsp->do_hspeed) {
-      hsp->cusp_speed[1] = hsp->ac_speed;
-      hsp->cusp_speed[10] = hsp->mc_speed;
-      hsp->cusp_speed[19] = hsp->ac_speed;
-      hsp->cusp_speed[28] = hsp->mc_speed;
-    }
     break;
   case 'U': /* Krusinski-Pisa */
     /*
@@ -1819,7 +1488,6 @@ porphyry:
 	  hsp->cusp[i] = swe_degnorm(hsp->cusp[i] + 180);
       }
     }
-    hsp->do_interpol = hsp->do_hspeed;
     break;
   default:	/* Placidus houses */
     if (fabs(fi) >= 90 - ekl) {  /* within polar circle */
@@ -1836,7 +1504,6 @@ porphyry:
     ih = 11;
     if (fabs(tant) < VERY_SMALL) {
       hsp->cusp[ih] = rectasc;
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
     } else {
       /* pole height */
       f = atand(sind(asind(tanfi * tant) / 3)  /tant);  
@@ -1846,13 +1513,12 @@ porphyry:
 	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
 	  hsp->cusp[ih] = rectasc;
-	  if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
 	  break;
 	}
 	/* pole height */
 	f = atand(sind(asind(tanfi * tant) / 3) / tant);
 	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv)) < VERY_SMALL_PLAC_ITER)
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
 	  break;
 	cuspsv = hsp->cusp[ih];
       }
@@ -1861,7 +1527,6 @@ porphyry:
 	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
 	goto porphyry;
       }
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = AscDash(rectasc, f, sine, cose);
 #ifdef DEBUG_PLAC_ITER
   fprintf(stderr, "h=%d, niter=%d\n", ih, i);
 #endif
@@ -1872,7 +1537,6 @@ porphyry:
     ih = 12;
     if (fabs(tant) < VERY_SMALL) {
       hsp->cusp[ih] = rectasc;
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
     } else {
       f = atand(sind(asind(tanfi * tant) / 1.5) / tant);  
       /*  pole height */
@@ -1882,13 +1546,12 @@ porphyry:
 	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
 	  hsp->cusp[ih] = rectasc;
-	  if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
 	  break;
 	}
 	f = atand(sind(asind(tanfi * tant) / 1.5) / tant);  
 	/*  pole height */
 	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv)) < VERY_SMALL_PLAC_ITER)
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
 	  break;
 	cuspsv = hsp->cusp[ih];
       }
@@ -1897,7 +1560,6 @@ porphyry:
 	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
 	goto porphyry;
       }
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = AscDash(rectasc, f, sine, cose);
 #ifdef DEBUG_PLAC_ITER
   fprintf(stderr, "h=%d, niter=%d\n", ih, i);
 #endif
@@ -1908,7 +1570,6 @@ porphyry:
     ih = 2;
     if (fabs(tant) < VERY_SMALL) {
       hsp->cusp[ih] = rectasc;
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
     } else {
       f = atand(sind(asind(tanfi * tant) / 1.5) / tant);
       /*  pole height */
@@ -1918,13 +1579,12 @@ porphyry:
 	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
 	  hsp->cusp[ih] = rectasc;
-	  if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
 	  break;
 	}
 	f = atand(sind(asind(tanfi * tant) / 1.5) / tant);
 	/*  pole height */
 	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv)) < VERY_SMALL_PLAC_ITER)
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
 	  break;
 	cuspsv = hsp->cusp[ih];
       }
@@ -1933,7 +1593,6 @@ porphyry:
 	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
 	goto porphyry;
       }
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = AscDash(rectasc, f, sine, cose);
 #ifdef DEBUG_PLAC_ITER
   fprintf(stderr, "h=%d, niter=%d\n", ih, i);
 #endif
@@ -1944,7 +1603,6 @@ porphyry:
     ih = 3;
     if (fabs(tant) < VERY_SMALL) {
       hsp->cusp[ih] = rectasc;
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
     } else {
       f = atand(sind(asind(tanfi * tant) / 3) / tant);  
       /*  pole height */
@@ -1954,13 +1612,12 @@ porphyry:
 	tant = tand(asind(sine * sind(hsp->cusp[ih])));
 	if (fabs(tant) < VERY_SMALL) {
 	  hsp->cusp[ih] = rectasc;
-	  if (hsp->do_hspeed) hsp->cusp_speed[ih] = hsp->armc_speed;
 	  break;
 	}
 	f = atand(sind(asind(tanfi * tant) / 3) / tant);
 	/*  pole height */
 	hsp->cusp[ih] = Asc1(rectasc, f, sine, cose);
-	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv)) < VERY_SMALL_PLAC_ITER)
+	if (i > 1 && fabs(swe_difdeg2n(hsp->cusp[ih], cuspsv) < VERY_SMALL_PLAC_ITER))
 	  break;
 	cuspsv = hsp->cusp[ih];
       }
@@ -1969,28 +1626,19 @@ porphyry:
 	strcpy(hsp->serr, "very close to polar circle, switched to Porphyry"); 
 	goto porphyry;
       }
-      if (hsp->do_hspeed) hsp->cusp_speed[ih] = AscDash(rectasc, f, sine, cose);
 #ifdef DEBUG_PLAC_ITER
   fprintf(stderr, "h=%d, niter=%d\n", ih, i);
 #endif
     }
     break;
   } /* end switch */
-  if (hsy != 'G' && hsy != 'Y' && toupper(hsy) != 'I' ) {
+  if (hsy != 'G' && hsy != 'Y' && toupper(hsy) != 'I') {
     hsp->cusp[4] = swe_degnorm(hsp->cusp[10] + 180);
     hsp->cusp[5] = swe_degnorm(hsp->cusp[11] + 180);
     hsp->cusp[6] = swe_degnorm(hsp->cusp[12] + 180);
     hsp->cusp[7] = swe_degnorm(hsp->cusp[1] + 180);
     hsp->cusp[8] = swe_degnorm(hsp->cusp[2] + 180);
     hsp->cusp[9] = swe_degnorm(hsp->cusp[3] + 180);
-    if (hsp->do_hspeed && ! hsp->do_interpol) {
-      hsp->cusp_speed[4] = hsp->cusp_speed[10];
-      hsp->cusp_speed[5] = hsp->cusp_speed[11];
-      hsp->cusp_speed[6] = hsp->cusp_speed[12];
-      hsp->cusp_speed[7] = hsp->cusp_speed[1];
-      hsp->cusp_speed[8] = hsp->cusp_speed[2];
-      hsp->cusp_speed[9] = hsp->cusp_speed[3];
-    }
   }
   /* vertex */
   if (fi >= 0)
@@ -1998,7 +1646,6 @@ porphyry:
   else
     f = -90 - fi;
   hsp->vertex = Asc1(th - 90, f, sine, cose);
-  if (hsp->do_speed) hsp->vertex_speed = AscDash(th - 90, f, sine, cose);
   /* with tropical latitudes, the vertex behaves strange, 
    * in a similar way as the ascendant within the polar
    * circle. we keep it always on the western hemisphere.*/
@@ -2025,30 +1672,22 @@ porphyry:
       hsp->equasc = 270;
   } /*  if */
   hsp->equasc = swe_degnorm(hsp->equasc);
-  if (hsp->do_speed) hsp->equasc_speed = AscDash(th + 90, 0, sine, cose); 
   /* "co-ascendant" W. Koch */
   hsp->coasc1 = swe_degnorm(Asc1(th - 90, fi, sine, cose) + 180);
-  if (hsp->do_speed) hsp->coasc1_speed = AscDash(th - 90, fi, sine, cose);
   /* "co-ascendant" M. Munkasey */
-  if (fi >= 0) {
+  if (fi >= 0)
     hsp->coasc2 = Asc1(th + 90, 90 - fi, sine, cose);
-    if (hsp->do_speed) hsp->coasc2_speed = AscDash(th + 90, 90 - fi, sine, cose);
-  } else { /* southern hemisphere */
+  else /* southern hemisphere */
     hsp->coasc2 = Asc1(th + 90, -90 - fi, sine, cose);
-    if (hsp->do_speed) hsp->coasc2_speed = AscDash(th + 90, -90 - fi, sine, cose);
-  }
   /* "polar ascendant" M. Munkasey */
   hsp->polasc = Asc1(th - 90, fi, sine, cose);
-  if (hsp->do_speed) hsp->polasc_speed = AscDash(th - 90, fi, sine, cose);
+#if 0
+  test_Asc1();
+#endif
   return retc;
 } /* procedure houses */
 
-/*****
- * oblique triangle formed by: great circle with pole height f, ecliptic and equator,
- * x = intersection equator - great circle.
- * return crossing of ecliptic with great circle.
- * Prepare quadrants before doing the work in Asc2.
- */
+/******************************/
 static double Asc1(double x1, double f, double sine, double cose) 
 { 
   int n;
@@ -2081,21 +1720,89 @@ static double Asc1(double x1, double f, double sine, double cose)
   return ass;
 }  /* Asc1 */
 
+#if 0
+/******************************/
+static double Asc1_old(double x1, double f, double sine, double cose) 
+{ 
+  int n;
+  double ass;
+  if (f == -90) f += VERY_SMALL / 1000;        // avoid exact pole 90, as tan() goes infinite
+  if (f == 90) f -= VERY_SMALL / 1000;
+  x1 = swe_degnorm(x1);
+  n  = (int) ((x1 / 90) + 1);
+  if (n == 1)
+    ass = ( Asc2(x1, f, sine, cose));
+  else if (n == 2) 
+    ass = (180 - Asc2(180 - x1, - f, sine, cose));
+  else if (n == 3)
+    ass = (180 + Asc2(x1 - 180, - f, sine, cose));
+  else
+    ass = (360 - Asc2(360- x1,  f, sine, cose));
+  ass = swe_degnorm(ass);
+  if (fabs(ass - 90) < VERY_SMALL)	/* rounding, e.g.: if */
+	ass = 90;				/* fi = 0 & st = 0, ac = 89.999... */
+  if (fabs(ass - 180) < VERY_SMALL)
+    ass = 180;
+  if (fabs(ass - 270) < VERY_SMALL)	/* rounding, e.g.: if */
+    ass = 270;				/* fi = 0 & st = 0, ac = 89.999... */
+  if (fabs(ass - 360) < VERY_SMALL)
+    ass = 0;
+  return ass;
+}  /* Asc1 */
+
+/******************************/
+static double Asc1_old_old (double x1, double f, double sine, double cose) 
+{ 
+  int n;
+  double ass;
+  x1 = swe_degnorm(x1);
+  n  = (int) ((x1 / 90) + 1);
+  if (n == 1)
+    ass = ( Asc2 (x1, f, sine, cose));
+  else if (n == 2) 
+    ass = (180 - Asc2 (180 - x1, - f, sine, cose));
+  else if (n == 3)
+    ass = (180 + Asc2 (x1 - 180, - f, sine, cose));
+  else
+    ass = (360 - Asc2 (360- x1,  f, sine, cose));
+  ass = swe_degnorm(ass);
+  if (fabs(ass - 90) < VERY_SMALL)	/* rounding, e.g.: if */
+	ass = 90;				/* fi = 0 & st = 0, ac = 89.999... */
+  if (fabs(ass - 180) < VERY_SMALL)
+    ass = 180;
+  if (fabs(ass - 270) < VERY_SMALL)	/* rounding, e.g.: if */
+    ass = 270;				/* fi = 0 & st = 0, ac = 89.999... */
+  if (fabs(ass - 360) < VERY_SMALL)
+    ass = 0;
+  return ass;
+}  /* Asc1 */
+
+static void test_Asc1()
+{
+  double armc, dlat, eps = 23.44, asc1, asc1_old, sine, cose;
+  sine = sind(eps);
+  cose = cosd(eps);
+  fprintf(stderr, "Test Asc1() <-> Asc1_old()\n");
+  for (dlat = -90; dlat <= 90; dlat++) {
+    for (armc = 0; armc <= 360; armc++) {
+      asc1 = Asc1(armc, dlat, sine, cose);
+      asc1_old = Asc1_old_old(armc, dlat, sine, cose);
+      if (asc1 != asc1_old)
+        fprintf(stderr, "armc=%f, lat=%f, Asc1: %.16f <-> Asc1_old: %.16f\n", armc, dlat, asc1, asc1_old);
+    }
+  }
+
+}
+#endif
 
 /*
  * x in range 0..90
  * f in range -90 .. +90
  * sine, cose around e=23°
- * oblique triangle formed by: great circle with pole height f, ecliptic and equator,
- * x = intersection equator - great circle.
- * return crossing of ecliptic with great circle.
  */
 static double Asc2(double x, double f, double sine, double cose) 
 {
   double ass, sinx;
-  // from https://en.wikipedia.org/wiki/Spherical_trigonometry CT5
-  // cot c sin a = cot C sin B + cos a cos B, with B = ecl, a = x, C = 90 +f
-  // cot 90 + f = - tan f
   ass = - tand(f) * sine + cose * cosd(x);
   if (fabs(ass) < VERY_SMALL)
     ass = 0;
@@ -2113,31 +1820,12 @@ static double Asc2(double x, double f, double sine, double cose)
     else
       ass = 90;
   } else {
-    // resolve ass = sin x cot c; cot c = ass / sini x; tan c = sin x / ass
     ass = atand(sinx / ass);
   }
   if (ass < 0)
     ass = 180 + ass;
   return (ass);
 } /* Asc2 */
-
-// derivative of Asc1, computes speed
-// code contributed by Graham Dawson
-static double AscDash(double x, double f, double sine, double cose)
-{
-  double cosx = cosd(x);
-  double sinx = sind(x);
-  double sinx2 = sinx * sinx;
-  double c = cose * cosx - tand(f) * sine;
-  double d = sinx2 + c * c;
-  double dudt;
-  if (d > VERY_SMALL) {
-      dudt = (cosx * c + cose * sinx2) / d;
-  } else {
-      dudt = 0.0; //  When we are on axis of ecliptic
-  }
-  return dudt * ARMCS;	// 360.985647366;
-}
 
 static double armc_to_mc(double armc, double eps)
 {
@@ -2212,8 +1900,8 @@ double CALL_CONV swe_house_pos(
   double xp[6], xeq[6], ra, de, mdd, mdn, sad, san;
   double hpos, sinad, ad, a, admc, adp, samc, asc, mc, acmc, tant;
   //double demc;
-  double fh, ra0, tanfi, sinfi, fac, dfac, tanx;
-  double x[3], xasc[3], xs1, xs2, raep, raaz, oblaz, xtemp; /* BK 21.02.2006 */
+  double fh, ra0, tanfi, fac, dfac, tanx;
+  double x[3], xasc[3], raep, raaz, oblaz, xtemp; /* BK 21.02.2006 */
   double hcusp[37], ascmc[10];
   double sine = sind(eps);
   double cose = cosd(eps);
@@ -2222,42 +1910,42 @@ double CALL_CONV swe_house_pos(
   double dsun = 0, darmc, harmc, y, sinpsi, sa;
   AS_BOOL is_western_half = FALSE;
   hsys = toupper(hsys);
-  if (1) {
-    /* input is a house cusp: no calculation is required */
-    ascmc[9] = 99;// dirty hack. Sunshine house system needs sun declination
-		  // which we do not know. If it sees ascmc[9] == 99, it uses
-		  // the one is saved from last call. can lead to bugs, but can 
-		  // also solve many problems.
-    if (swe_houses_armc_ex2(armc, geolat, eps, hsys, hcusp, ascmc, NULL, NULL, serr) == ERR) {
-      if (serr != NULL)
-	sprintf(serr, "swe_house_pos(): failed for system %c", hsys);
-    } else {
-      hpos = 0;
-      for (i = 1; i <= 12; i++) {
-	if (fabs(swe_difdeg2n(xpin[0], hcusp[i])) < MILLIARCSEC && xpin[1] == 0) {
-	  hpos = (double) i;
-	}
-      }
-      for (i = 1; i <= 12; i += 3) {
-	if (fabs(swe_difdeg2n(xpin[0], hcusp[i])) < MILLIARCSEC && xpin[1] == 0) {
-	  xp[0] = (double) i;
-	}
-      }
-      if (hpos > 0)
-	return hpos;
-      // for Sunshine houses: declination of Sun
-      if (hsys == 'I')
-	dsun = ascmc[9];  
-      // for APC houses: declination of ascendant into dsun
-      if (hsys == 'Y') {
-	xeq[0] = ascmc[0];
-	xeq[1] = 0;
-	xeq[2] = 1;
-	swe_cotrans(xeq, xeq, -eps);
-	dsun = xeq[1]; 
+if (1) {
+  /* input is a house position: no calculation is required */
+  ascmc[9] = 99;// dirty hack. Sunshine house system needs sun declination
+  		// which we do not know. If it sees ascmc[9] == 99, it uses
+		// the one is saved from last call. can lead to bugs, but can 
+		// also solve many problems.
+  if (swe_houses_armc(armc, geolat, eps, hsys, hcusp, ascmc) == ERR) {
+    if (serr != NULL)
+      sprintf(serr, "swe_house_pos(): failed for system %c", hsys);
+  } else {
+    hpos = 0;
+    for (i = 1; i <= 12; i++) {
+      if (fabs(swe_difdeg2n(xpin[0], hcusp[i])) < MILLIARCSEC && xpin[1] == 0) {
+	hpos = (double) i;
       }
     }
+    for (i = 1; i <= 12; i += 3) {
+      if (fabs(swe_difdeg2n(xpin[0], hcusp[i])) < MILLIARCSEC && xpin[1] == 0) {
+	xp[0] = (double) i;
+      }
+    }
+    if (hpos > 0)
+      return hpos;
+    // for Sunshine houses: declination of Sun
+    if (hsys == 'I')
+      dsun = ascmc[9];  
+    // for APC houses: declination of ascendant into dsun
+    if (hsys == 'Y') {
+      xeq[0] = ascmc[0];
+      xeq[1] = 0;
+      xeq[2] = 1;
+      swe_cotrans(xeq, xeq, -eps);
+      dsun = xeq[1]; 
+    }
   }
+}
   AS_BOOL is_above_hor = FALSE;
   AS_BOOL is_invalid = FALSE;
   AS_BOOL is_circumpolar = FALSE;
@@ -2385,6 +2073,37 @@ double CALL_CONV swe_house_pos(
       hpos = hpos / 30.0 + 1;
     }
       break;
+#if 0
+    /* old version of Koch method */
+    case 'K':
+      demc = atand(sind(armc) * tand(eps));
+      /* if body is within circumpolar region, error */
+      if (90 - fabs(geolat) <= fabs(de)) {
+        if (serr != NULL)
+          strcpy(serr, "no Koch house position, because planet is circumpolar.");
+        xp[0] = 0;
+	hpos = 0;	/* Error */
+      } else if (90 - fabs(geolat) <= fabs(demc)) {
+	if (serr != NULL)
+	  strcpy(serr, "no Koch house position, because mc is circumpolar.");
+        xp[0] = 0;
+	hpos = 0;	/* Error */
+      } else {
+        admc = asind(tand(eps) * tand(geolat) * sind(armc));
+        adp = asind(tand(geolat) * tand(de));
+	samc = 90 + admc;
+        if (mdd >= 0) {	/* east */
+          xp[0] = swe_degnorm(((mdd - adp + admc) / samc - 1) * 90);
+	} else {
+	  xp[0] = swe_degnorm(((mdd + 180 + adp + admc) / samc + 1) * 90);
+	}
+	/* to make sure that a call with a house cusp position returns
+	 * a value within the house, 0.001" is added */
+	xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
+	hpos = xp[0] / 30.0 + 1;
+      }
+      break;
+#endif
     /* version of Koch method: do calculations within circumpolar circle,
      * if possible; make sure house positions 4 - 9 only appear on western
      * hemisphere */
@@ -2406,9 +2125,16 @@ double CALL_CONV swe_house_pos(
       else {
 	adp = asind(tand(geolat) * tand(de));
       }
+#if 0
+      if (fabs(adp) == 90)
+        is_invalid = TRUE; /* omit this to use the above values */
+#endif
       admc = tand(eps) * tand(geolat) * sind(armc);
       /* midheaven is circumpolar */
       if (fabs(admc) > 1) {
+#if 0
+        is_invalid = TRUE; /* omit this line to use the below values */
+#endif
 	if (admc > 1)
 	  admc = 1;
 	else
@@ -2453,75 +2179,11 @@ double CALL_CONV swe_house_pos(
       break;
     case 'C': // Campanus
       xeq[0] = swe_degnorm(mdd - 90);
-      // we measure on equator from east point towards IC.
-      // transformation to prime vertical, with these coordinate references
-      // EP = 0, nadir = 90, WP = 180, Zenith = 270
       swe_cotrans(xeq, xp, -geolat);
       /* to make sure that a call with a house cusp position returns
        * a value within the house, 0.001" is added */
       xp[0] = swe_degnorm(xp[0] + MILLIARCSEC);
       hpos = xp[0] / 30.0 + 1;
-      break;
-    case 'J': // Savard-A
-      sinfi = sind(geolat);
-      if (fabs(geolat) < VERY_SMALL) {	
-	xs2 = 1 / 3.0;
-	xs1 = 2 / 3.0;
-      } else {
-	xs2 = sind(geolat / 3) / sinfi;	
-	xs1 = sind(2 * geolat / 3) / sinfi;
-      }
-      xs2 = asind(xs2);
-      xs1 = asind(xs1);
-      // xs1 and xs2 always in >= 0 < 90
-      // house borders on prime vertical are, measured from EP downwards
-      // h1 = 0, h4 = 90, h7 = 180, h10 = 270
-      // h2 = xs2, h3 = xs1, h12 = 360 - xs2, h11 = 360 - xs1
-      // h5 = h11 - 180, h6 = h12 - 180, h8 = h2 + 180, h9 = h3 + 180
-      hcusp[1] = 0;
-      hcusp[2] = xs2;
-      hcusp[3] = xs1;
-      hcusp[4] = 90;
-      hcusp[5] = 180 - xs1;
-      hcusp[6] = 180 - xs2;
-      hcusp[7] = 180;
-      hcusp[8] = 180 + xs2;
-      hcusp[9] = 180 + xs1;
-      hcusp[10] = 270;
-      hcusp[11] = 360 - xs1;
-      hcusp[12] = 360 - xs2;
-      xeq[0] = swe_degnorm(mdd - 90);
-      swe_cotrans(xeq, xp, -geolat);
-      a = xp[0];
-      if (swe_difdeg2n(hcusp[6], hcusp[1]) > 0) {
-	d = swe_degnorm(a - hcusp[1]);
-	for (i = 1; i <= 12; i++) {
-	  j = i + 1;
-	  if (j > 12) 
-	    c2 = 360;
-	  else 
-	    c2 = swe_degnorm(hcusp[j] - hcusp[1]);
-	  if (d < c2) break;
-	}
-	c1 = swe_degnorm(hcusp[i] - hcusp[1]);
-      } else {  // houses retrograde
-	d = swe_degnorm(hcusp[1] - a);
-	for (i = 1; i <= 12; i++) {
-	  j = i + 1;
-	  if (j > 12) 
-	    c2 = 360;
-	  else 
-	    c2 = swe_degnorm(hcusp[1] - hcusp[j]);
-	  if (d < c2) break;
-	}
-	c1 = swe_degnorm(hcusp[1] - hcusp[i]);
-      }
-      hsize = c2 - c1;
-      if (hsize == 0) {
-	hpos = i;
-      } else {
-	hpos = i + (d - c1) / hsize;
-      }
       break;
     case 'U': /* Krusinski-Pisa-Goelzer */
       if (fabs(geolat) < VERY_SMALL) {	/* code below does not like geolat 0 */
@@ -2827,7 +2489,7 @@ double CALL_CONV swe_house_pos(
     break;
   default:
     hpos = 0;
-    if (swe_houses_armc_ex2(armc, geolat, eps, hsys, hcusp, ascmc, NULL, NULL, serr) == ERR) {
+    if (swe_houses_armc(armc, geolat, eps, hsys, hcusp, ascmc) == ERR) {
       if (serr != NULL)
 	sprintf(serr, "swe_house_pos(): failed for system %c", hsys);
       break;

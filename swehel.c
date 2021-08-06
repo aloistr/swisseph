@@ -13,7 +13,6 @@
   Problem reports can be sent to victor.reijs@gmail.com or dieter@astro.ch
   
   Copyright (c) Victor Reijs, 2008
-  Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
 
   License conditions
   ------------------
@@ -29,17 +28,17 @@
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU Affero General Public License (AGPL)
+  a) GNU public license version 2 or later
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the AGPL software license, he or she must fulfill
+  If the developer choses the GNU GPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -51,13 +50,11 @@
   Among other things, the License requires that the copyright notices and
   this notice be preserved on all copies.
 
-  Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
-
   The authors of Swiss Ephemeris have no control or influence over any of
   the derived works, i.e. over software or services created by other
   programmers which use Swiss Ephemeris functions.
 
-  The names of the authors or of the copyright holder (Astrodienst) must not
+  The names of the authors or of the copyright holder must not
   be used for promoting any software, product or service which uses or contains
   the Swiss Ephemeris. This copyright notice is the ONLY place where the
   names of the authors can legally appear, except in cases where they have
@@ -66,7 +63,6 @@
   The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
   for promoting such software, products or services.
 */
-
 
 #include "swephexp.h"
 #include "sweph.h"
@@ -79,7 +75,7 @@
 #define BNIGHT_FACTOR   1.0
 #define PI		M_PI
 #define Min2Deg   (1.0 / 60.0)
-#define SWEHEL_DEBUG  0
+#define DEBUG  0
 #define DONE  1
 #define MaxTryHours   4 
 #define TimeStepDefault	1
@@ -281,7 +277,7 @@ static double OpticFactor(double Bback, double kX, double *dobs, double JDNDaysU
   Fa = pow((Pst / OpticDia), 2);
   Fr = (1 + 0.03 * pow((OpticMag * ObjectSize / CVA(Bback, SNi, helflag)), 2)) / pow(SNi, 2);
   Fm = pow(OpticMag, 2);
-#if SWEHEL_DEBUG
+#if DEBUG
   fprintf(stderr, "Pst=%f\n", Pst);
   fprintf(stderr, "Fb =%f\n", Fb);
   fprintf(stderr, "Fe =%f\n", Fe);
@@ -476,10 +472,10 @@ if (eventflag & SE_CALC_RISE) {
   /* semidiurnal arc of sun */
   sda = acos(-tan(dgeo[1] * DEGTORAD) * tan(xx[1] * DEGTORAD)) * RADTODEG;
   /* rough rising and setting times */
-  if (eventflag & SE_CALC_RISE)
-    tjdrise = tjdnoon - sda / 360.0;
-  else
-    tjdrise = tjdnoon + sda / 360.0;
+if (eventflag & SE_CALC_RISE)
+  tjdrise = tjdnoon - sda / 360.0;
+else
+  tjdrise = tjdnoon + sda / 360.0;
   /*ph->tset = tjd_start + sda / 360.0;*/
   /* now calculate more accurate rising and setting times.
    * use vertical speed in order to determine crossing of the horizon  
@@ -1426,7 +1422,7 @@ if ((0)) {
   /*Bsk = Bsk / CorrFactor1;*/
   Bsk = Bsk * CorrFactor1;
   Th = C1 * pow(1 + sqrt(C2 * Bsk), 2) * CorrFactor2;
-#if SWEHEL_DEBUG
+#if DEBUG
   fprintf(stderr, "Bsk=%f, ", Bsk);
   fprintf(stderr, "kX =%f, ", kX);
   fprintf(stderr, "Th =%f, ", Th);
@@ -1509,7 +1505,7 @@ int32 CALL_CONV swe_vis_limit_mag(double tjdut, double *dgeo, double *datm, doub
     if (ObjectLoc(tjdut, dgeo, datm, "moon", 1, helflag, &AziM, serr) == ERR)
       return ERR;
   }
-#if SWEHEL_DEBUG
+#if DEBUG
 {
   int i;
   for (i = 0; i < 6;i++)
@@ -1816,7 +1812,7 @@ static void strcpy_VBsafe(char *sout, char *sin)
   sp = sin; 
   sp2 = sout;
   /* note, star name may begin with comma, such as ",zePsc" */
-  while((isalnum((int) *sp) || *sp == ' ' || *sp == '-' || *sp == ',') && iw < 30) {
+  while((isalnum(*sp) || *sp == ' ' || *sp == '-' || *sp == ',') && iw < 30) {
     *sp2 = *sp;
     sp++; sp2++; iw++;
   }

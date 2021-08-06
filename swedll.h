@@ -4,7 +4,7 @@
  *
 
 **************************************************************/
-/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
 
   License conditions
   ------------------
@@ -20,17 +20,17 @@
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU Affero General Public License (AGPL)
+  a) GNU public license version 2 or later
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the AGPL software license, he or she must fulfill
+  If the developer choses the GNU GPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -57,6 +57,8 @@
   The trademarks 'Swiss Ephemeris' and 'Swiss Ephemeris inside' may be used
   for promoting such software, products or services.
 */
+
+/* $Id: swedll.h,v 1.75 2009/04/08 07:19:08 dieter Exp $ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -105,32 +107,11 @@ DllImport int32 CALL_CONV_IMP swe_calc(
         double tjd, int ipl, int32 iflag, 
         double *xx,
         char *serr);
-DllImport int32 CALL_CONV_IMP  swe_calc_pctr(
-        double tjd, int32 ipl, int32 iplctr, int32 iflag, 
-	double *xxret, 
-	char *serr);
 
 DllImport int32 CALL_CONV_IMP swe_calc_ut( 
         double tjd_ut, int32 ipl, int32 iflag, 
         double *xx,
         char *serr);
-
-DllImport double CALL_CONV_IMP swe_solcross(
-	double x2cross, double jd_et, int32 flag, char *serr);
-DllImport double CALL_CONV_IMP swe_solcross_ut(
-	double x2cross, double jd_ut, int32 flag, char *serr);
-DllImport double CALL_CONV_IMP swe_mooncross(
-	double x2cross, double jd_et, int32 flag, char *serr);
-DllImport double CALL_CONV_IMP swe_mooncross_ut(
-	double x2cross, double jd_ut, int32 flag, char *serr);
-DllImport double CALL_CONV_IMP swe_mooncross_node(
-	double jd_et, int32 flag, double *xlon, double *xlat, char *serr);
-DllImport double CALL_CONV_IMP swe_mooncross_node_ut(
-	double jd_ut, int32 flag, double *xlon, double *xlat, char *serr);
-DllImport int32 CALL_CONV_IMP swe_helio_cross(
-	int ipl, double x2cross, double jd_et, int32 iflag, int32 dir, double *jd_cross, char *serr);
-DllImport int32 CALL_CONV_IMP swe_helio_cross_ut(
-	int ipl, double x2cross, double jd_ut, int32 iflag, int32 dir, double *jd_cross, char *serr);
 
 DllImport int32 CALL_CONV_IMP swe_fixstar(
         char *star, double tjd, int32 iflag, 
@@ -172,17 +153,9 @@ DllImport int  CALL_CONV_IMP swe_houses_ex(
         double tjd_ut, int32 iflag, double geolat, double geolon, int hsys, 
         double *hcusps, double *ascmc);
 
-DllImport int  CALL_CONV_IMP swe_houses_ex2(
-        double tjd_ut, int32 iflag, double geolat, double geolon, int hsys, 
-        double *hcusps, double *ascmc, double *cusp_speed, double *ascmc_speed, char *serr);
-
 DllImport int  CALL_CONV_IMP swe_houses_armc(
         double armc, double geolat, double eps, int hsys, 
         double *hcusps, double *ascmc);
-
-DllImport int  CALL_CONV_IMP swe_houses_armc_ex2(
-        double armc, double geolat, double eps, int hsys, 
-        double *hcusps, double *ascmc, double *cusp_speed, double *ascmc_speed, char *serr);
 
 DllImport double  CALL_CONV_IMP swe_house_pos(
         double armc, double geolon, double eps, int hsys, double *xpin, char *serr);
@@ -202,7 +175,6 @@ DllImport double  CALL_CONV_IMP swe_get_ayanamsa(double tjd_et);
 DllImport double  CALL_CONV_IMP swe_get_ayanamsa_ut(double tjd_ut);
 
 DllImport char * CALL_CONV_IMP swe_get_ayanamsa_name(int32 isidmode);
-DllImport char * CALL_CONV_IMP swe_get_current_file_data(int ifno, double *tfstart, double *tfend, int *denum);
 
 DllImport int  CALL_CONV_IMP swe_date_conversion(
         int y , int m , int d ,         /* year, month, day */

@@ -4,7 +4,7 @@
     Author: Dieter Koch
 
 ************************************************************/
-/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
 
   License conditions
   ------------------
@@ -20,17 +20,17 @@
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU Affero General Public License (AGPL)
+  a) GNU public license version 2 or later
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the AGPL software license, he or she must fulfill
+  If the developer choses the GNU GPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -4378,15 +4378,13 @@ int32 CALL_CONV swe_rise_trans(
 {
   int32 retval = 0;
   /* Simple fast algorithm for risings and settings of 
-   * - planets Sun, Moon, Mercury - Pluto + Lunar Nodes
+   * - planets Sun, Moon, Mercury - Pluto + Lunar Nodes and Fixed stars
    * Does not work well for geographic latitudes
    * > 65 N/S for the Sun
    * > 60 N/S for the Moon and the planets
    * Beyond these limits, some risings or settings may be missed.
    */
-  AS_BOOL do_fixstar = (starname != NULL && *starname != '\0');
-  if (!do_fixstar
-    && (rsmi & (SE_CALC_RISE|SE_CALC_SET)) 
+  if (1 && (rsmi & (SE_CALC_RISE|SE_CALC_SET)) 
     && !(rsmi & SE_BIT_FORCE_SLOW_METHOD)
     && !(rsmi & (SE_BIT_CIVIL_TWILIGHT|SE_BIT_NAUTIC_TWILIGHT|SE_BIT_ASTRO_TWILIGHT))
     && (ipl >= SE_SUN && ipl <= SE_TRUE_NODE)
@@ -4542,15 +4540,14 @@ nazalt++;
       for (; dt > 0.0001; dt /= 3) {
         for (i = 0, tt = tcu - dt; i < 3; tt += dt, i++) {
           te = tt + swe_deltat_ex(tt, epheflag, serr);
-          if (!do_fixstar) {
+          if (!do_fixstar)
             if (swe_calc(te, ipl, iflag, xc, serr) == ERR)
               return ERR;
-	  }
-	  if (rsmi & SE_BIT_GEOCTR_NO_ECL_LAT)
-	    xc[1] = 0;
-	  ncalc++;
+	    if (rsmi & SE_BIT_GEOCTR_NO_ECL_LAT)
+	      xc[1] = 0;
+ncalc++;
           swe_azalt(tt, tohor_flag, geopos, atpress, attemp, xc, ah);
-	  nazalt++;
+nazalt++;
 	  ah[1] -= horhgt;
           dc[i] = ah[1];
         }

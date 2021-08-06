@@ -4,7 +4,7 @@
   Authors: Dieter Koch and Alois Treindl, Astrodienst Zurich
 
 ************************************************************/
-/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
 
   License conditions
   ------------------
@@ -20,17 +20,17 @@
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU Affero General Public License (AGPL)
+  a) GNU public license version 2 or later
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the AGPL software license, he or she must fulfill
+  If the developer choses the GNU GPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -62,7 +62,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.10.02" 
+#define SE_VERSION      "2.09" // "2.08.00b"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -175,7 +175,6 @@
 #define SEI_FILE_MAIN_AST 2
 #define SEI_FILE_ANY_AST  3
 #define SEI_FILE_FIXSTAR  4
-#define SEI_FILE_PLMOON   5
 
 #if 0
 #define SEI_FILE_TEST_ENDIAN     (97L * 65536L + 98L * 256L + 99L) /*abc*/
@@ -313,23 +312,23 @@
 /* planetary radii in meters */
 #define NDIAM  (SE_VESTA + 1)
 static const double pla_diam[NDIAM] = {1392000000.0, /* Sun */
-                           3475000.0, /* Moon */
-                           2439400.0 * 2, /* Mercury */
-                           6051800.0 * 2, /* Venus */
-                           3389500.0 * 2, /* Mars */
-                          69911000.0 * 2, /* Jupiter */
-                          58232000.0 * 2, /* Saturn */
-                          25362000.0 * 2, /* Uranus */
-                          24622000.0 * 2, /* Neptune */
-                           1188300.0 * 2, /* Pluto */
+                           3476300.0, /* Moon */
+                           2439000.0 * 2, /* Mercury */
+                           6052000.0 * 2, /* Venus */
+                           3397200.0 * 2, /* Mars */
+                          71398000.0 * 2, /* Jupiter */
+                          60000000.0 * 2, /* Saturn */
+                          25400000.0 * 2, /* Uranus */
+                          24300000.0 * 2, /* Neptune */
+                           2500000.0 * 2, /* Pluto */
                            0, 0, 0, 0,    /* nodes and apogees */
-                           6371008.4 * 2, /* Earth */
-                            271370.0, /* Chiron */
-                            290000.0, /* Pholus */
-                            939400.0, /* Ceres */
-                            545000.0, /* Pallas */
-                            246596.0, /* Juno */
-                            525400.0, /* Vesta */
+                           6378140.0 * 2, /* Earth */
+                                 0.0, /* Chiron */
+                                 0.0, /* Pholus */
+                            913000.0, /* Ceres */
+                            523000.0, /* Pallas */
+                            244000.0, /* Juno */
+                            501000.0, /* Vesta */
                         };
 
 
@@ -467,7 +466,7 @@ static const struct aya_init ayanamsa[] = {
 {1684532.5, -4.44138598, TRUE, 0},  
 /*************************/
 /* 15: Hipparchos */
-{1674484.0, -9.33333, TRUE, -1},       // 15: Hipparchos
+{1674484, -9.33333, TRUE, -1},       // 15: Hipparchos
 /*************************/
 /* 16: Sassanian */
 {1927135.8747793, 0, TRUE, -1},      // 16: Sassanian 

@@ -1,45 +1,29 @@
 /********************************************************************
-sweephe4.c
+ephe.c
 access structures and functions for ephemeris file ep4_
-a fast precomputed ephemeris
 *********************************************************************/
-/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
-
-  License conditions
-  ------------------
-
-  This file is part of Swiss Ephemeris.
-
+/* Copyright (C) 1997, 1998 Astrodienst AG, Switzerland.  All rights reserved.
+  
+  This file is part of Swiss Ephemeris Free Edition.
+  
   Swiss Ephemeris is distributed with NO WARRANTY OF ANY KIND.  No author
   or distributor accepts any responsibility for the consequences of using it,
   or for whether it serves any particular purpose or works at all, unless he
-  or she says so in writing.  
+  or she says so in writing.  Refer to the Swiss Ephemeris Public License
+  ("SEPL" or the "License") for full details.
+  
+  Every copy of Swiss Ephemeris must include a copy of the License,
+  normally in a plain ASCII text file named LICENSE.  The License grants you
+  the right to copy, modify and redistribute Swiss Ephemeris, but only
+  under certain conditions described in the License.  Among other things, the
+  License requires that the copyright notices and this notice be preserved on
+  all copies.
 
-  Swiss Ephemeris is made available by its authors under a dual licensing
-  system. The software developer, who uses any part of Swiss Ephemeris
-  in his or her software, must choose between one of the two license models,
-  which are
-  a) GNU Affero General Public License (AGPL)
-  b) Swiss Ephemeris Professional License
-
-  The choice must be made before the software developer distributes software
-  containing parts of Swiss Ephemeris to others, and before any public
-  service using the developed software is activated.
-
-  If the developer choses the AGPL software license, he or she must fulfill
-  the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
-
-  If the developer choses the Swiss Ephemeris Professional license,
-  he must follow the instructions as found in http://www.astro.com/swisseph/ 
-  and purchase the Swiss Ephemeris Professional Edition from Astrodienst
-  and sign the corresponding license contract.
-
-  The License grants you the right to use, copy, modify and redistribute
-  Swiss Ephemeris, but only under certain conditions described in the License.
-  Among other things, the License requires that the copyright notices and
-  this notice be preserved on all copies.
+  For uses of the Swiss Ephemeris which do not fall under the definitions
+  laid down in the Public License, the Swiss Ephemeris Professional Edition
+  must be purchased by the developer before he/she distributes any of his
+  software or makes available any product or service built upon the use of
+  the Swiss Ephemeris.
 
   Authors of the Swiss Ephemeris: Dieter Koch and Alois Treindl
 
@@ -162,7 +146,7 @@ centisec *ephread(double jd, int plalist, int flag, char *errtext)
   for (p = 0, pf = 1; p < EP_NP; p++, pf = pf << 1)
     if ((plalist & pf) != 0) {
       inpolq_l((int) ix, qod[p], jfract, &(lon[p][0]), &(out[p]), &clp);
-      if (p <= PLACALC_CHIRON) {	/* normalize all except ecl and nut */
+      if (p <= CHIRON) {	/* normalize all except ecl and nut */
 	if (out[p] < 0)
 	  out[p] += DEG360;
 	else if (out[p] >= DEG360)
@@ -185,12 +169,12 @@ err_exit:
       sweflag = SEFLG_SPEED;
     if (errtext != NULL)
       sprintf(errtext,"ephread failed for jd=%f; used swe_calc().", jd);
-    for (p = 0, pf = 1; p < PLACALC_CALC_N; p++, pf = pf << 1) {
+    for (p = 0, pf = 1; p < CALC_N; p++, pf = pf << 1) {
       if ((plalist & pf) != 0) {
-	if ((iflagret = swe_calc(jd, ephe_plac2swe(p), sweflag, x, serr)) != ERR) {
-	  out[p] = swe_d2l(x[0] * DEG);
+	if ((iflagret = swe_calc(jd, plac2swe(p), sweflag, x, serr)) != ERR) {
+	  out[p] = d2l(x[0] * DEG);
 	  if (flag & EP_BIT_SPEED)
-	    out[p + EP_NP] = swe_d2l(x[3] * DEG);
+	    out[p + EP_NP] = d2l(x[3] * DEG);
 	  if (out[p] < 0)
 	    out[p] += DEG360;
 	  else if (out[p] >= DEG360)
@@ -208,8 +192,8 @@ err_exit:
       sprintf(errtext, "error in swe_calc() %s\n", serr);
       return NULL;
     }
-    out[EP_ECL_INDEX] = swe_d2l(x[0] * DEG);	/* true ecliptic */
-    out[EP_NUT_INDEX] = swe_d2l(x[2] * DEG);	/* nutation */
+    out[EP_ECL_INDEX] = d2l(x[0] * DEG);	/* true ecliptic */
+    out[EP_NUT_INDEX] = d2l(x[2] * DEG);	/* nutation */
     out[EP_ECL_INDEX + EP_NP] = 0;
     out[EP_NUT_INDEX + EP_NP] = 0;
     return out;
@@ -270,7 +254,7 @@ double *dephread2(double jd, int plalist, int flag, char *errtext)
   for (p = 0, pf = 1; p < EP_NP; p++, pf = pf << 1)
     if ((plalist & pf) != 0) {
       inpolq((int) ix, qod[p], jfract, &(lon[p][0]), &(out[p]), &lp);
-      if (p <= PLACALC_CHIRON) {	/* normalize all except ecl and nut */
+      if (p <= CHIRON) {	/* normalize all except ecl and nut */
 	if (out[p] < 0)
 	  out[p] += 360.0;
 	else if (out[p] >= 360.0)
@@ -293,9 +277,9 @@ err_exit:
       sweflag = SEFLG_SPEED;
     if (errtext != NULL)
       sprintf(errtext,"ephread failed for jd=%f; used swe_calc().", jd);
-    for (p = 0, pf = 1; p < PLACALC_CALC_N; p++, pf = pf << 1) {
+    for (p = 0, pf = 1; p < CALC_N; p++, pf = pf << 1) {
       if ((plalist & pf) != 0) {
-	if ((iflagret = swe_calc(jd, ephe_plac2swe(p), sweflag, x, serr)) != ERR) {
+	if ((iflagret = swe_calc(jd, plac2swe(p), sweflag, x, serr)) != ERR) {
 	  out[p] = x[0];
 	  if (flag & EP_BIT_SPEED)
 	    out[p + EP_NP] = x[3];
@@ -348,7 +332,7 @@ static int ephe4_unpack(int jdl, int plalist, centisec lon[][EPBS], int i0,char 
 #ifdef INTEL_BYTE_ORDER
   shortreorder((UCHAR *) &e, sizeof(struct ep4));
 #endif
-  for (p = PLACALC_SUN, pf = 1; p <= PLACALC_CHIRON; p++, pf = pf << 1) {
+  for (p = SUN, pf = 1; p <= CHIRON; p++, pf = pf << 1) {
     if ((plalist & pf) == 0) continue; 
     l_ret = e.elo[p].p0m * 6000L + e.elo[p].p0s;	/* csec */
     d_ret = e.elo[p].pd1m * 6000L + e.elo[p].pd1s;	/* csec */
@@ -362,7 +346,7 @@ static int ephe4_unpack(int jdl, int plalist, centisec lon[][EPBS], int i0,char 
       lon[p][i0+1] = l_ret;
     }
     for (i = 2; i < NDB; i++) {
-      if (p == PLACALC_MOON || p == PLACALC_MERCURY)
+      if (p == MOON || p == MERCURY)
 	d_ret += e.elo[p].pd2[i-2] * 10L;
       else
 	d_ret += e.elo[p].pd2[i-2];
@@ -405,7 +389,7 @@ static int ephe4_unpack_d(int jdl, int plalist, double lon[][EPBS], int i0,char 
 #ifdef INTEL_BYTE_ORDER
   shortreorder((UCHAR *) &e, sizeof(struct ep4));
 #endif
-  for (p = PLACALC_SUN, pf = 1; p <= PLACALC_CHIRON; p++, pf = pf << 1) {
+  for (p = SUN, pf = 1; p <= CHIRON; p++, pf = pf << 1) {
     if ((plalist & pf) == 0) continue; 
     l_ret = (e.elo[p].p0m * 6000 + e.elo[p].p0s) * CS2DEG;	
     d_ret = (e.elo[p].pd1m * 6000 + e.elo[p].pd1s) * CS2DEG;	
@@ -419,7 +403,7 @@ static int ephe4_unpack_d(int jdl, int plalist, double lon[][EPBS], int i0,char 
       lon[p][i0+1] = l_ret;
     }
     for (i = 2; i < NDB; i++) {
-      if (p == PLACALC_MOON || p == PLACALC_MERCURY)
+      if (p == MOON || p == MERCURY)
 	d_ret += (e.elo[p].pd2[i-2] * 10 * CS2DEG);
       else
 	d_ret += (e.elo[p].pd2[i-2] * CS2DEG);
@@ -585,8 +569,8 @@ static void inpolq_l(int n, int o, double p, centisec *x, centisec *axu, centise
     rl  += p5*d4p2 + q5*d4p1;
     rlp += u1*d4p2 - u2*d4p1;
   }
-  *axu = swe_d2l (rl);
-  *adxu = swe_d2l (rlp);
+  *axu = d2l (rl);
+  *adxu = d2l (rlp);
 }	/* end inpolq_l() */
 
 /*****************************************************
@@ -678,17 +662,4 @@ static char *my_makepath(char *d, char *s)
   while ((p = strchr(d, '/')) != NULL) *p = '\\';
 # endif
   return (d);
-}
-
-int ephe_plac2swe(int p)
-{
-  if (p >= PLACALC_SUN && p <= PLACALC_TRUE_NODE) return p;
-  if (p == PLACALC_CHIRON) return SE_CHIRON;
-  if (p == PLACALC_LILITH) return SE_MEAN_APOG;
-  if (p == PLACALC_CERES) return SE_CERES;
-  if (p == PLACALC_PALLAS) return SE_PALLAS;
-  if (p == PLACALC_JUNO) return SE_JUNO;
-  if (p == PLACALC_VESTA) return SE_VESTA;
-  if (p == PLACALC_EARTHHEL) return SE_EARTH;
-  return -1;
 }

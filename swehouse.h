@@ -4,7 +4,7 @@ house and (simple) aspect calculation
 
 *******************************************************/
 
-/* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
+/* Copyright (C) 1997 - 2008 Astrodienst AG, Switzerland.  All rights reserved.
 
   License conditions
   ------------------
@@ -20,17 +20,17 @@ house and (simple) aspect calculation
   system. The software developer, who uses any part of Swiss Ephemeris
   in his or her software, must choose between one of the two license models,
   which are
-  a) GNU Affero General Public License (AGPL)
+  a) GNU public license version 2 or later
   b) Swiss Ephemeris Professional License
 
   The choice must be made before the software developer distributes software
   containing parts of Swiss Ephemeris to others, and before any public
   service using the developed software is activated.
 
-  If the developer choses the AGPL software license, he or she must fulfill
+  If the developer choses the GNU GPL software license, he or she must fulfill
   the conditions of that license, which includes the obligation to place his
-  or her whole software project under the AGPL or a compatible license.
-  See https://www.gnu.org/licenses/agpl-3.0.html
+  or her whole software project under the GNU GPL or a compatible license.
+  See http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
 
   If the developer choses the Swiss Ephemeris Professional license,
   he must follow the instructions as found in http://www.astro.com/swisseph/ 
@@ -60,26 +60,14 @@ house and (simple) aspect calculation
 
 struct houses {
 	  double cusp[37];
-	  double cusp_speed[37];
 	  double ac;
-	  double ac_speed;	// speed of ac
 	  double mc;
-	  double mc_speed;	// speed of mc
-	  double armc_speed;	// speed of armc
 	  double vertex;
-	  double vertex_speed;	// speed of vertex
 	  double equasc;
-	  double equasc_speed;	// speed
 	  double coasc1;
-	  double coasc1_speed;	// speed
 	  double coasc2;
-	  double coasc2_speed;	// speed
 	  double polasc;
-	  double polasc_speed;	// speed
 	  double sundec;	// declination of Sun for Sunshine houses
-	  AS_BOOL do_speed;
-	  AS_BOOL do_hspeed;
-	  AS_BOOL do_interpol;
 	  char serr[AS_MAXCH];
 	};
 

@@ -25,7 +25,9 @@ Swiss Ephemeris must be fulfilled. A copy of the license file is found in  file 
 Since Swiss Ephemeris release 2.10.01 the GPL license has been replaced with the AGPL license,
 as one of the options in Astrodienst's dual licensing model.
 
-#Contents
+[toc]
+
+
 
 
 # The programming steps to get a planet's position
@@ -1144,7 +1146,7 @@ lunar nodes and apsides, we use our standard methods.
 **swe_calc()** returns the coordinates of position and velocity in the
 following order:
 
-  ------------------------------ ----------------------------------------
+------------------------------ ----------------------------------------
   **Ecliptic position**          **Equatorial position
                                  (**SEFLG_EQUATORIAL**)**
 
@@ -1159,7 +1161,7 @@ following order:
   Speed in latitude (deg/day)    speed in declination (deg/day)
 
   Speed in distance (AU/day)     speed in distance (AU/day)
-  ------------------------------ ----------------------------------------
+------------------------------ ----------------------------------------
 
 If you need rectangular coordinates (SEFLG_XYZ), **swe_calc()** returns
 x, y, z, dx, dy, dz in AU.
@@ -3648,14 +3650,15 @@ double **swe_refrac_extended**(
 
 Function returns:
 
--   **case 1**, conversion from true altitude to apparent altitude:
+- **case 1**, conversion from true altitude to apparent altitude:
 
-    -   apparent altitude, if body appears above is observable above
-        > ideal horizon;
-
-    -   true altitude (the input value); otherwise \"ideal horizon\" is
-        > the horizon as seen above an ideal sphere (as seen from a
-        > plane over the ocean with a clear sky)
+  -   apparent altitude, if body appears above is observable above
+      
+      > ideal horizon;
+      
+  -   true altitude (the input value); otherwise \"ideal horizon\" is
+      > the horizon as seen above an ideal sphere (as seen from a
+      > plane over the ocean with a clear sky)
 
 -   **case 2**, conversion from apparent altitude to true altitude:
 
@@ -3669,10 +3672,11 @@ Function returns:
         -   dret\[0\] true altitude, if possible; otherwise input value;
 
         -   dret\[1\] apparent altitude, if possible; otherwise input
+            
             > value;
-
+            
         -   dret\[2\] refraction;
-
+        
         -   dret\[3\] dip of the horizon.
 
 The body is above the horizon if the dret\[0\] != dret\[1\].
@@ -7599,7 +7603,7 @@ Ephemeris DLL is made available. Users can choose to link the Swiss
 Ephemeris code directly into their applications. The source code is
 written in Ansi C and consists of these files:
 
-  ------------ ---------------- -------------- ----------------------------
+------------ ---------------- -------------- ----------------------------
   **Bytes**    **Date**         **File name**  **Comment**
 
   1639         Nov 28 17:09     Makefile       unix makefile for library
@@ -7646,7 +7650,7 @@ written in Ansi C and consists of these files:
   4886         Nov 27 10:06     swephlib.h     
 
   43421        Nov 28 19:33     swetest.c      
-  ------------ ---------------- -------------- ----------------------------
+------------ ---------------- -------------- ----------------------------
 
 In most cases the user will compile a linkable or shared library from
 the source code, using his favorite C compiler, and then link this
@@ -7842,7 +7846,7 @@ For further explanations, see 21.1.
 
 ## Updates of documention
 
-  ------------- -------- -------------- --------------- -------------------------------------------- -- ----
+------------- -------- -------------- --------------- -------------------------------------------- -- ----
   **Updated**            **By**                                                                         
 
   30-sep-1997            Alois                          added chapter 10 (sample programs)              
@@ -8022,7 +8026,7 @@ For further explanations, see 21.1.
   2-may-2021             Dieter                         Release notes for version 2.10.01               
 
   4-aug-2021             Alois                          Release notes for version 2.10.02               
-  ------------- -------- -------------- --------------- -------------------------------------------- -- ----
+------------- -------- -------------- --------------- -------------------------------------------- -- ----
 
 ## Release History
 
@@ -10159,7 +10163,7 @@ ephemeris module. We do not tell you:
 
 # Index
 
-  ------------------------------ ------------------------------------------------
+------------------------------ ------------------------------------------------
   **Flag**                       **Body, point**
 
   [DEFAULT EPHEMERIS             [ADDITIONAL ASTEROIDS](#additional-asteroids)
@@ -10174,11 +10178,11 @@ ephemeris module. We do not tell you:
   [SPEED FLAG](#speed-flag)      [HOW TO COMPUTE](#_Hlk477829414)
 
                                  [SPECIAL BODY SE_ECL_NUT](#_Hlk477832844)
-
+    
                                  [URANIAN PLANETS](#_Hlk477832209)
-  ------------------------------ ------------------------------------------------
+------------------------------ ------------------------------------------------
 
-  --------------------------------------------------------------------- ------------------------------------- ---------------------------------------------------
+--------------------------------------------------------------------- ------------------------------------- ---------------------------------------------------
   **Position**                                                          **What is ...**                       **How to ...**
 
   [ASTROMETRIC](#astrometric-positions)                                 [AYANAMSHA](#_Hlk477842381)           [CHANGE THE TIDAL ACCELERATION](#_Hlt477860200)
@@ -10209,9 +10213,9 @@ ephemeris module. We do not tell you:
   [TRUE/APPARENT](#true-or-apparent-positions)                                                                
 
   [X, Y, Z](#_Hlk477833826)                                                                                   
-  --------------------------------------------------------------------- ------------------------------------- ---------------------------------------------------
+--------------------------------------------------------------------- ------------------------------------- ---------------------------------------------------
 
-  --------------------------------- --------------------------------------------
+--------------------------------- --------------------------------------------
   **Variables**                     **Errors**
 
   [ARMC](#_Hlk477864589)            [ASTEROIDS](#_Hlk477863570)
@@ -10245,7 +10249,7 @@ ephemeris module. We do not tell you:
   [SID_MODE](#_Hlk477842160)        
 
   [STAR](#_Hlk477835149)            
-  --------------------------------- --------------------------------------------
+--------------------------------- --------------------------------------------
 
 +---+------------------+------------------------------------------------+
 |   | > **Function**   | > **Description**                              |
@@ -10507,7 +10511,7 @@ ephemeris module. We do not tell you:
 | 3 |                  |                                                |
 +---+------------------+------------------------------------------------+
 
-  ------------------------------------ -----------------------------------------------------
+------------------------------------ -----------------------------------------------------
   **PlaCalc function**                 **Description**
 
   [swe_csnorm](#_Hlk478111710)         normalize argument into interval \[0..DEG360\]
@@ -10533,6 +10537,6 @@ ephemeris module. We do not tell you:
   [swe_difdeg2n](#_Hlk478111928)       distance in degrees
 
   [swe_difdegn](#_Hlk478111884)        distance in degrees
-  ------------------------------------ -----------------------------------------------------
+------------------------------------ -----------------------------------------------------
 
 **End of SWEPHPRG.DOC**

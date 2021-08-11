@@ -8,7 +8,7 @@
 
 # Contents
 
-Removed table of contents and hope for auto-creation from .md version later
+[toc]
 
 
 # SWISS EPHEMERIS - computer ephemeris for developers of astrological software
@@ -657,7 +657,7 @@ been from three positions. A position with speed takes in average only
 position is computed. With Moshier, however, a computation with speed
 takes 2.5 times longer.
 
-### The Swiss Ephemeris compression mechanism
+### 2.1.4. The Swiss Ephemeris compression mechanism
 
 The idea behind our mechanism of ephemeris compression was developed by
 Dr. Peter Kammeyer of the U.S. Naval Observatory in 1987.
@@ -683,7 +683,7 @@ The data are stored in Chebyshew polynomials that cover a period of 4000
 days each. (This is the reason, why Swiss Ephemeris stops before the end
 date of the JPL ephemeris.)
 
-### The extension of DE406-based ephemerides to 10.800 years
+### 2.1.5. The extension of DE406-based ephemerides to 10.800 years
 
 This Chapter is only relevant to those who use pre-2014, DE406-based
 ephemeris files of the Swiss Ephemeris.
@@ -747,7 +747,6 @@ different from the integration errors in the upward integration.
   Moon                  12.2                      2.53
 
   Sun bary.             6.3                       0.39
-  -----------------------------------------------------------------------
 
 The same procedure was applied at the upper end of the DE406 range, to
 cover an extension period from 3000 CE to 5400 CE. The maximum
@@ -779,7 +778,6 @@ are given in the table below.
   Moon                  8.89                      3.43
 
   Sun bary.             0.61                      0.05
-  -----------------------------------------------------------------------
 
 Deviations in heliocentric longitude from new JPL ephemeris DE431
 (2013), time range 5400 BCE to 3000 BCE
@@ -800,7 +798,7 @@ Deviations in heliocentric longitude from new JPL ephemeris DE431
 >
 > Pluto \< 120"
 
-### Solar Ephemeris in the remote past
+### 2.1.6 Solar Ephemeris in the remote past
 
 Since SE 2.00 and the introduction of JPL ephemerid DE431, there has
 been a small inaccuracy with solar ephemerides in the remote past. In
@@ -827,9 +825,9 @@ The problem could be avoided if we used the precession theory Laskar
 1986 or Owen 1990. However, precession Vondrak 2011 is better for recent
 centuries. This seems more relevant to us.
 
-## Lunar and Planetary Nodes and Apsides
+## 2.2. Lunar and Planetary Nodes and Apsides
 
-### Mean Lunar Node and Mean Lunar Apogee (Lilith, Black Moon in astrology)
+### 2.2.1. Mean Lunar Node and Mean Lunar Apogee (Lilith, Black Moon in astrology)
 
 JPL ephemerides do not include a mean lunar node or mean lunar apsis
 (perigee/apogee). We therefore have to derive them from different
@@ -893,7 +891,7 @@ geocenter, not the Earth-Moon Barycenter.
 Computing topocentric positions of mean elements is also meaningless and
 should not be done.
 
-### The True Node
+### 2.2.2. The True Node
 
 The \'true\' lunar node is usually considered the osculating node
 element of the momentary lunar orbit. I.e., the axis of the lunar nodes
@@ -960,7 +958,7 @@ a smooth function is required for the osculating node and apogee. This
 problem does not occur if an original JPL ephemeris or the Moshier
 ephemeris is used.
 
-### The Osculating Apogee (astrological True Lilith or True Dark Moon)
+### 2.2.3. The Osculating Apogee (astrological True Lilith or True Dark Moon)
 
 The position of \'true Lilith\' is given in the New International
 Ephemerides (NIE, Editions St. Michel) and in Francis Santoni
@@ -1043,7 +1041,7 @@ compressed file
 
 See remarks in Chapter 2.2.2 on The True Node.
 
-### The Interpolated or Natural Apogee and Perigee (astrological Lilith and Priapus)
+### 2.2.4. The Interpolated or Natural Apogee and Perigee (astrological Lilith and Priapus)
 
 As has been said above, the osculating lunar apogee (so-called 'true
 Lilith') is a mathematical construct which assumes that the motion of
@@ -1100,7 +1098,7 @@ Literature (in German):
 
 -   http://www.expreso.co.cr/centaurs/blackMoon/barycentric.html
 
-### Planetary Nodes and Apsides
+### 2.2.5. Planetary Nodes and Apsides
 
 Differences between the Swiss Ephemeris and other ephemerides of the
 osculation nodes and apsides are probably due to different planetary
@@ -1271,7 +1269,6 @@ considerable, though:
   Uranus            806"          6540"                 
 
   Neptune           225"          11600"                (>3 deg!)
-  ------------------------------------------------------------------------
 
 Osculating nodes and apsides
 
@@ -1361,9 +1358,9 @@ For the reasons given above, method 4) seems to make best sense.
 In all of these modes, the second focal point of the ellipse can be
 computed instead of the aphelion.
 
-## Asteroids
+## 2.3. Asteroids
 
-### Asteroid ephemeris files
+### 2.3.1. Asteroid ephemeris files
 
 The standard distribution of SWISSEPH includes the main asteroids Ceres,
 Pallas, Juno, Vesta, as well as 2060 Chiron, and 5145 Pholus. To compute
@@ -1408,7 +1405,7 @@ the user can pick those few asteroids he/she is interested in.
 -   for all named asteroids also a long (6000 years) file is available
     in the download area.
 
-### How the asteroids were computed
+### 2.3.2. How the asteroids were computed
 
 To generate our asteroid ephemerides, we have modified the numerical
 integrator of Steve Moshier, which was capable to rebuild the DE200 JPL
@@ -1475,7 +1472,7 @@ determine the precise orbit prior to that date. Our integrator is able
 to detect such happenings and end the ephemeris generation to prevent
 our users working with meaningless data.
 
-### Ceres, Pallas, Juno, Vesta
+### 2.3.3. Ceres, Pallas, Juno, Vesta
 
 The orbital elements of the four main asteroids Ceres, Pallas, Juno, and
 Vesta are known very precisely, because these planets have been
@@ -1492,7 +1489,7 @@ perihelion, node, and inclination and seven digits with eccentricity and
 semi-axis. For the four main asteroids, this implies an uncertainty of a
 few arc seconds in 1600 CE and a few arc minutes in 3000 BCE.
 
-### Chiron
+### 2.3.4. Chiron
 
 Positions of Chiron can be well computed for the time between 700 CE and
 4650 CE. As a result of close encounters with Saturn in Sept. 720 CE and
@@ -1503,7 +1500,7 @@ the year 700.
 Do not rely on earlier Chiron ephemerides supplying a Chiron for
 Cesar\'s, Jesus\', or Buddha\'s birth chart. They are meaningless.
 
-### Pholus
+### 2.3.5. Pholus
 
 Pholus is a minor planet with orbital characteristics that are similar
 to Chiron\'s. It was discovered in 1992. Pholus\' orbital elements are
@@ -1511,7 +1508,7 @@ not yet as well-established as Chiron\'s. Our ephemeris is reliable from
 1500 CE through now. Outside the 20th century it will probably have to
 be corrected by several arc minutes during the coming years.
 
-### Asteroid 99942 Apophis
+### 2.3.6. Asteroid 99942 Apophis
 
 99942 Apophis is a near-Earth asteroid which sometime in the future
 impact Earth. The ephemeris of this object is particularly uncertain
@@ -1528,7 +1525,7 @@ We will have to update our ephemeris of Apophis after his close
 encounter with Earth in April 2029 in order to make it accurate at least
 until the year 2036.
 
-### Ceres - an application program for asteroid astrology
+### 2.3.7. Ceres - an application program for asteroid astrology
 
 Dieter Koch has written the application program **Ceres** which allows
 to compute all kinds of lists for asteroid astrology. E.g. you can
@@ -1546,7 +1543,7 @@ zodiac. But the program does much more:
 The program is found in the Swiss Ephermeris download area in the folder
 "programs".
 
-## Planetary Centers of Body (COB) and Planetary Moons
+## 2.4. Planetary Centers of Body (COB) and Planetary Moons
 
 Although nobody ever finds it worth mentioning and hardly anybody is
 aware of it, all hitherto ephemerides and astrology softwares provide
@@ -1589,7 +1586,7 @@ performance of this calculation is not as good as with the barycenters.
 Moreover, the time range is currently limited to the years 1900 to
 2047.*
 
-## Comets and Interstellar Objects
+## 2.5. Comets and Interstellar Objects
 
 The Swiss Ephemeris provides ephemerides of a few selected comets under
 the following pseudo-MPC numbers:
@@ -1609,7 +1606,7 @@ s999045.se1 999045 Oumuamua = 1I/\'Oumuamua (A/2017 U1)
 The ephemerides of these objects were downloaded from JPL Horizons and
 compressed in the format of Swiss Ephemeris data files.
 
-## Fixed stars and Galactic Center
+## 2.6. Fixed stars and Galactic Center
 
 A database of fixed stars is included with Swiss Ephemeris. It contains
 about 800 stars, which can be computed with the **swe_fixstar()**
@@ -1630,7 +1627,7 @@ created from the SIMBAD database with a data format that is compatible
 with the SIMBAD database. The file continues to be updated every few
 years.
 
-## Hypothetical bodies
+## 2.7. Hypothetical bodies
 
 We include some astrological factors in the ephemeris which have no
 astronomical basis -- they have never been observed physically. As the
@@ -1640,7 +1637,7 @@ who use these 'hypothetical' planets and factors. Of course neither of
 our scientific sources, JPL or Steve Moshier, have anything to do with
 this part of the Swiss Ephemeris.
 
-### Uranian planets (Hamburg planets: Cupido, Hades, Zeus, Kronos, Apollon, Admetos, Vulkanus, Poseidon)
+### 2.7.1. Uranian planets (Hamburg planets: Cupido, Hades, Zeus, Kronos, Apollon, Admetos, Vulkanus, Poseidon)
 
 There have been discussions whether these factors are to be called
 \'planets\' or \'Transneptunian points\'. However, their inventors, the
@@ -1673,7 +1670,7 @@ The hypothetical planets can again be called with any of the three
 ephemeris flags. The solar position needed for geocentric positions will
 then be taken from the ephemeris specified.
 
-### Transpluto (Isis)
+### 2.7.2. Transpluto (Isis)
 
 This hypothetical planet was postulated 1946 by the French astronomer
 M.E. Sevin because of otherwise unexplainable gravitational
@@ -1712,7 +1709,7 @@ The article does not say which equinox they are referred to. Therefore,
 we fitted it to the Astron ephemeris which apparently uses the equinox
 of 1945 (which, however, is rather unusual!).
 
-### Harrington
+### 2.7.3. Harrington
 
 This is another attempt to predict Planet X\'s orbit and position from
 perturbations in the orbits of Uranus and Neptune. It was published in
@@ -1722,7 +1719,7 @@ there is also the possibility that it is actually located in the
 opposite constellation, i.e. Taurus instead of Scorpio. The planet has a
 mean solar distance of about 100 AU and a period of about 1000 years.
 
-### Nibiru
+### 2.7.4. Nibiru
 
 A highly speculative planet derived from the theory of Zecharia Sitchin,
 who is an expert in ancient Mesopotamian history and a
@@ -1735,14 +1732,14 @@ In spite of its retrograde motion, it seems to move counterclockwise in
 recent centuries. The reason is that it is so slow that it does not even
 compensate the precession of the equinoxes.
 
-### Vulcan
+### 2.7.5. Vulcan
 
 This is a 'hypothetical' planet inside the orbit of Mercury (not
 identical to the "Uranian" planet Vulkanus). Orbital elements according
 to L.H. Weston. Note that the speed of this "planet" does not agree with
 the Kepler laws. It is too fast by 10 degrees per year.
 
-### Selena/White Moon
+### 2.7.6. Selena/White Moon
 
 This is a 'hypothetical' second Moon of the Earth (or a third one, after
 the "Black Moon") of obscure provenance. Many Russian astrologers use
@@ -1752,7 +1749,7 @@ perfect, unperturbed circle. Of course, the physical existence of such a
 body is not possible. The gravities of Sun, Earth, and Moon would
 strongly influence its orbit.
 
-### Dr. Waldemath's Black Moon
+### 2.7.7. Dr. Waldemath's Black Moon
 
 This is another hypothetical second Moon of the Earth, postulated by a
 Dr. Waldemath in the Monthly Wheather Review 1/1898. Its distance from
@@ -1769,7 +1766,7 @@ This body has never been confirmed. With its 700-km diameter and an
 apparent diameter of 2.5 arc min, this should have been possible very
 soon after Waldemath's publication.
 
-### The Planets X of Leverrier, Adams, Lowell and Pickering
+### 2.7.8. The Planets X of Leverrier, Adams, Lowell and Pickering
 
 These are the hypothetical planets that have led to the discovery of
 Neptune and Pluto or at least have been brought into connection with

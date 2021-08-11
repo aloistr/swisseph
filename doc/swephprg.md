@@ -395,99 +395,55 @@ To tell **swe_calc()** which celestial body or factor should be
 computed, a fixed set of body numbers is used. The []{#_Hlk477832010
 .anchor}body numbers are defined in swephexp.h:
 
-/\* planet numbers for the ipl parameter in swe_calc() \*/
-
+```c
+/* planet numbers for the ipl parameter in swe_calc() */
 #define SE_ECL_NUT -1
-
 #define SE_SUN 0
-
 #define SE_MOON 1
-
 #define SE_MERCURY 2
-
 #define SE_VENUS 3
-
 #define SE_MARS 4
-
 #define SE_JUPITER 5
-
 #define SE_SATURN 6
-
 #define SE_URANUS 7
-
 #define SE_NEPTUNE 8
-
 #define SE_PLUTO 9
-
 #define SE_MEAN_NODE 10
-
 #define SE_TRUE_NODE 11
-
 #define SE_MEAN_APOG 12
-
 #define SE_OSCU_APOG 13
-
 #define SE_EARTH 14
-
 #define SE_CHIRON 15
-
 #define SE_PHOLUS 16
-
 #define SE_CERES 17
-
 #define SE_PALLAS 18
-
 #define SE_JUNO 19
-
 #define SE_VESTA 20
-
 #define SE_INTP_APOG 21
-
 #define SE_INTP_PERG 22
-
 #define SE_NPLANETS 23
-
 #define SE_FICT_OFFSET 40 // offset for fictitious objects
-
 #define SE_NFICT_ELEM 15
-
 #define SE_PLMOON_OFFSET 9000 // offset for planetary moons
-
 #define SE_AST_OFFSET 10000 // offset for asteroids
-
-/\* Hamburger or []{#_Hlk477832209 .anchor}Uranian \"planets\" \*/
-
+/* Hamburger or Uranian "planets" */
 #define SE_CUPIDO 40
-
 #define SE_HADES 41
-
 #define SE_ZEUS 42
-
 #define SE_KRONOS 43
-
 #define SE_APOLLON 44
-
 #define SE_ADMETOS 45
-
 #define SE_VULKANUS 46
-
 #define SE_POSEIDON 47
-
-/\* other fictitious bodies \*/
-
+/* other fictitious bodies */
 #define SE_ISIS 48
-
 #define SE_NIBIRU 49
-
 #define SE_HARRINGTON 50
-
 #define SE_NEPTUNE_LEVERRIER 51
-
 #define SE_NEPTUNE_ADAMS 52
-
 #define SE_PLUTO_LOWELL 53
-
 #define SE_PLUTO_PICKERING 54
+```
 
 ### Additional asteroids
 
@@ -960,59 +916,31 @@ With this value of iflag, **swe_calc()** will compute true positions
 
 The flag bits, which are defined in swephexp.h, are:
 
+```c
 #define SEFLG_JPLEPH 1L // use JPL ephemeris
-
 #define SEFLG_SWIEPH 2L // use SWISSEPH ephemeris, default
-
 #define SEFLG_MOSEPH 4L // use Moshier ephemeris
-
 #define SEFLG_HELCTR 8L // return heliocentric position
-
 #define SEFLG_TRUEPOS 16L // return true positions, not apparent
-
 #define SEFLG_J2000 32L // no precession, i.e. give J2000 equinox
-
 #define SEFLG_NONUT 64L // no nutation, i.e. mean equinox of date
-
-#define SEFLG_SPEED3 128L // speed from 3 positions (**do** **not use
-it**, SEFLG_SPEED is faster and more precise.)
-
+#define SEFLG_SPEED3 128L // speed from 3 positions (**do not use it**, SEFLG_SPEED is faster and more precise.)
 #define SEFLG_SPEED 256L // high precision speed (analyt. comp.)
-
 #define SEFLG_NOGDEFL 512L // turn off gravitational deflection
-
-#define SEFLG_NOABERR 1024L // turn off \'annual\' aberration of light
-
-#define SEFLG_ASTROMETRIC (SEFLG_NOABERR\|SEFLG_NOGDEFL) // astrometric
-positions
-
+#define SEFLG_NOABERR 1024L // turn off 'annual' aberration of light
+#define SEFLG_ASTROMETRIC (SEFLG_NOABERR|SEFLG_NOGDEFL) // astrometric positions
 #define SEFLG_EQUATORIAL 2048L // equatorial positions are wanted
-
 #define SEFLG_XYZ 4096L // cartesian, not polar, coordinates
-
 #define SEFLG_RADIANS 8192L // coordinates in radians, not degrees
-
 #define SEFLG_BARYCTR 16384L // barycentric positions
-
-#define SEFLG_TOPOCTR (32\*1024L) // topocentric positions
-
-#define SEFLG_SIDEREAL (64\*1024L) // sidereal positions
-
-#define SEFLG_ICRS (128\*1024L) // ICRS (DE406 reference frame)
-
-#define SEFLG_DPSIDEPS_1980 (256\*1024) /\* reproduce JPL Horizons
-
-\* 1962 - today to 0.002 arcsec. \*/
-
+#define SEFLG_TOPOCTR (32*1024L) // topocentric positions
+#define SEFLG_SIDEREAL (64*1024L) // sidereal positions
+#define SEFLG_ICRS (128*1024L) // ICRS (DE406 reference frame)
+#define SEFLG_DPSIDEPS_1980 (256*1024) /* reproduce JPL Horizons * 1962 - today to 0.002 arcsec. */
 #define SEFLG_JPLHOR SEFLG_DPSIDEPS_1980
-
-#define SEFLG_JPLHOR_APPROX (512\*1024) /\* approximate JPL Horizons
-1962 - today \*/
-
-#define SEFLG_CENTER_BODY (1024\*1024) /\* calculate position of center
-of body (COB) of
-
-planet, not barycenter of its system \*/
+#define SEFLG_JPLHOR_APPROX (512*1024) /* approximate JPL Horizons 1962 - today */
+#define SEFLG_CENTER_BODY (1024*1024) /* calculate position of center of body (COB) of planet, not barycenter of its system */
+```
 
 // Note, COB can be calculated either
 

@@ -979,12 +979,6 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
     Const SE_SIDBIT_SSY_PLANE As Long = 256  ' for positions referred to solar system plane
     Const SE_SIDBIT_ECL_DATE      As Long = 2048 ' ayanamsha measured on ecliptic of date;
 
-    ' used with swe_nod_aps()
-    Const SE_NODBIT_MEAN As Long = 1  ' mean nodes/apsides
-    Const SE_NODBIT_OSCU As Long = 2  ' osculating nodes/apsides
-    Const SE_NODBIT_OSCU_BAR As Long = 4  ' same, but motion about solar system barycenter considered
-    Const SE_NODBIT_FOPOINT As Long = 256  ' focal point of orbit instead of aphelion
-
     'eclipse codes
     Const SE_ECL_CENTRAL As Long = 1
     Const SE_ECL_NONCENTRAL As Long = 2

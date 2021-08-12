@@ -1,138 +1,23 @@
-  last edit 11-aug-21 Alois
+---
+title: Swiss Ephemeris General Documentation
+date: 12-aug-21
+output:
+  html_document:
+   toc: true
+   toc_depth: 3
+---
 
 # **Swiss Ephemeris**
 
 ![](media/image1.png)
 
-# **Computer ephemeris for developers of astrological software**
-
-# Contents
-
-[toc]
-
-
-# SWISS EPHEMERIS - computer ephemeris for developers of astrological software
+## **A Computer ephemeris for developers of astrological software**
 
 © 1997 - 2021 by Astrodienst AG, Dammstr. 23,  CH-8702 Zollikon / Zürich, Switzerland
 
 Email of developers: via mailing list <https://groups.io/g/swisseph/>
 
 Authors: Dieter Koch and Dr. Alois Treindl
-
-## 0.1. Editing history
-
-Date.................         | what
--------------|--------------------------------------------------------------------
-14-sep-1997  | Appendix B by Alois
-15-sep-1997  | split docu, swephprg.doc now separate (programming interface)
-16-sep-1997  | Dieter: absolute precision of JPL, position and speed transformations
-24-sep-1997  | Dieter: main asteroids
-27-sep-1997  | Alois: restructured for better HTML conversion, added public function list
-8-oct-1997   | Dieter: Chapter 4 (houses) added
-28-nov-1997  | Dieter: Chapter 5 (delta t) added
-20-jan-1998  | Dieter: Chapter 3 (more than\...) added, Chapter 4 (houses) enlarged
-14-jul-1998  | Dieter: more about the precision of our asteroids
-21-jul-1998  | Alois: houses in PLACALC and ASTROLOG
-27-jul-1998  | Dieter: True node Chapter improved
-2-sep-1998   | Dieter: updated asteroid Chapter
-29-nov-1998  | Alois: added info on Public License and source code availability
-4-dec-1998   | Alois: updated asteroid file information
-17-dec-1998  | Alois: Section 2.1.5 added: extended time range to 10.800 years
-17-dec-1998  | Dieter: paragraphs on Chiron and Pholus ephemerides updated
-12-jan-1999  | Dieter: paragraph on eclipses
-19-apr-1999  | Dieter: paragraph on eclipses and planetary phenomena
-21-jun-1999  | Dieter: Chapter 2.27 on sidereal ephemerides
-27-jul-1999  | Dieter: Chapter 2.27 on sidereal ephemerides completed
-15-feb-2000  | Dieter: many things for Version 1.52
-11-sep-2000  | Dieter: a few additions for version 1.61
-24-jul-2001  | Dieter: a few additions for version 1.62
-5-jan-2002   | Alois: house calculation added to swetest for version 1.63
-26-feb-2002  | Dieter: Gauquelin sectors for version 1.64
-12-jun-2003  | Alois: code revisions for compatibility with 64-bit compilers, version 1.65
-10-jul-2003  | Dieter: Morinus houses for Version 1.66
-12-jul-2004  | Dieter: documentation of Delta T algorithms implemented with version 1.64
-7-feb-2005   | Alois: added note about mean lunar elements, section 2.2.1
-22-feb-2006  | Dieter: added documentation for version 1.70, see section 2.1.2.1-3
-17-jul-2007  | Dieter: updated documentation of Krusinski-Pisa house system.
-28-nov-2007 | Dieter: documentation of new Delta T calculation for version 1.72, see section 7
-17-jun-2008  | Alois: license change to dual license, GNU GPL or Professional License
-31-mar-2009  | Dieter: heliacal events
-26-feb-2010  | Alois: manual update, deleted references to CDROM
-25-jan-2011  | Dieter: Delta T updated, v. 1.77.
-2-aug-2012   | Dieter: new precession, v. 1.78.
-23-apr-2013  | Dieter: new ayanamshas
-11-feb-2014  | Dieter: many additions for v. 2.00
-18-mar-2015  | Dieter: documentation of APC house system and Pushya ayanamsha
-21-oct-2015  | Dieter: small correction in documentation of Lahiri ayanamsha
-3-feb-2016   | Dieter: documentation of house systems updated (equal, Porphyry, Pullen, Sripati)
-22-apr-2016  | Dieter: documentation of ayanamsha revised
-10-jan-2017  | Dieter: new Delta T
-29-nov-2017  | Dieter: update for comparison SwissEph - JPL Horizons using SE2.07; Ch. 2.1.6 added
-4-jan-2018   | Dieter: "Vedic"/Sheoran ayanamsha added
-13-jun-2019   | Dieter: small corrections for version 2.08
-11-sep-2019  | Simon Hren, documentation reformatted, merged with a recent unpublished update by Dieter
-6-jan-2020   | A few corrections by Simon Hren and updates by Dieter
-24-jun-2020  | Dieter: Chapters on ayanamsha improved; appendix E on Swiss Ephemeris versus IAE, IENA, RP
-24-jun-2020  | Dieter: Appendix C: added Test 2a concerning inertial apparent positions with JPL Horizons
-27-jun-2020  | Dieter: small corrections in chapter 7 on Delta T
-29-jun-2020  | Dieter: small changes in Appendix E
-1-dec-2020   | Dieter: several Additions in Appendix E, concerning the centers of body of the planets, planetary moons, comets and 99942 Apophis
-9-dec-2020   | Dieter: "AD" replaced by "CE" and "BC" replaced by "BCE".
-15-dec-2020  | Alois: minor corrections
-6-apr-2021   | Dieter: Improved chapter 2.1.2.2. "Swiss Ephemeris and JPL Horizons System of Nasa" 
-11-aug-2021 | Alois: converted from docx (Word) to md (Markdown) format as base format 
-
-## 0.2. Swiss Ephemeris release history
-
-1.00    |30-sept-1997   | what       
---------|---------------|--------------------------------------------------------
-1.01	|9-oct-1997	|simplified houses() and sidtime() functions, Vertex added.
-1.02	|16-oct-1997	|houses() changed again
-1.03	|28-oct-1997	|minor fixes
-1.04	|8-dec-1997	|minor fixes
-1.10	|9-jan-1998	|bug fix, pushed to all licensees
-1.11	|12-jan-1998	|minor fixes
-1.20	|21-jan-1998	|NEW: topocentric planets and house positions
-1.21	|28-jan-1998	|Delphi declarations and sample for Delphi 1.0
-1.22	|2-feb-1998	|asteroids moved to subdirectory. Swe_calc() finds them there.
-1.23	|11-feb-1998	|two minor bug fixes.
-1.24	|7-mar-1998	|documentation for Borland C++ Builder added
-1.25	|4-june-1998	|sample for Borland Delphi-2 added
-1.26	|29-nov-1998	|source added, Placalc API added
-1.30	|17-dec-1998	|NEW: Time range extended to 10.800 years
-1.31	|12-jan-1999	|NEW: Eclipses
-1.40	|19-apr-1999	|NEW: planetary phenomena
-1.50	|27-jul-1999	|NEW: sidereal ephemerides
-1.52	|15-feb-2000	|several NEW features, minor bug fixes
-1.60	|15-feb-2000	|major release with many new features and some minor bug fixes
-1.61	|11-sep-2000	|minor release, additions to se_rise_trans(), swe_houses(), fictitious planets
-1.62	|23-jul-2001	|minor release, fictitious Earth satellites, asteroid numbers \> 55535 possible
-1.63	|5-jan-2002	|minor release, house calculation added to swetest.c and swetest.exe
-1.64	|7-apr-2002	|NEW: occultations of planets, minor bug fixes, new Delta T algorithms
-1.65	|12-jun-2003	|minor release, small code renovations for 64-bit compilation
-1.66	|10-jul-2003	|NEW: Morinus houses
-1.67	|31-mar-2005	|minor release: Delta-T updated, minor bug fixes
-1.70	|2-mar-2006	|IAU resolutions up to 2005 implemented; \"interpolated\" lunar apsides
-1.72	|28-nov-2007	|Delta T calculation according to Morrison/Stephenson 2004
-1.74	|17-jun-2008	|license model changed to dual license, GNU GPL or Professional License
-1.76	|31-mar-2009	|NEW: Heliacal events
-1.77	|25-jan-2011	|Delta T calculation updated acc. to Espenak/Meeus 2006, new fixed stars file
-1.78	|2-aug-2012	|precession calculation updated acc. to Vondrák et alii 2012
-1.79	|23-apr-2013	|new ayanamshas, improved precision of eclipse functions, minor bug fixes
-1.80	|3-sep-2013	|security update and bugfixes
-2.00	|11-feb-2014	|Swiss Ephemeris now based on JPL ephemeris DE431
-2.01	|18-mar-2015	|bug fixes for version 2.00
-2.02	|11-aug-2015	|new functions swe_deltat_ex() and swe_get_ayanamsa_ex(); bug fixes.
-2.03	|16-oct-2015	|Swiss Ephemeris thread safe; minor bug fixes
-2.04	|21-oct-2015	|V. 2.03 had DLL with calling convention \_\_cdecl; we return to \_stdcall
-2.05	|22-apr-2015	|new house methods, new ayanamshas, minor bug fixes
-2.06	|10-jan-2017	|new Delta T, minor bug fixes
-2.07	|10-jan-2018	|better performance of swe_fixstar() and swe_rise_trans()
-2.08	|13-jun-2019	|update of Delta T and minor bug fixes
-2.09	|22-jul-2020	|Improved Placidus houses, sidereal ephemerides, planetary magnitudes; minor bug fixes
-2.10	|10-dec-2020	|NEW: planetary moons
-
-
 
 #  1. Introduction
 
@@ -557,8 +442,9 @@ have the same precision, but the ephemeris is at least continuous.
 More information on this and technical details are found in the
 programmer's documentation and in the source code, file swephlib.h.
 
-IERS Conventions 1996, 2003, and 2010 can be read or downloaded from
-here: http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html
+IERS Conventions 1996, 2003, and 2010 can be read or downloaded from here: 
+
+[http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html](http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html)
 
 Detailed instructions how to compare planetary positions as given by the
 Swiss Ephemeris with those of JPL are given in Appendix C at the end of
@@ -722,81 +608,52 @@ from 3000 BCE to 5400 BCE. It is reasonable to assume that the
 integration errors in the backward integration are not significantly
 different from the integration errors in the upward integration.
 
------------------------------------------------------------------------
-  **Planet**            **max. error\             **avg. error\
-                        arcsec**                  arcsec**
---------------------- ------------------------- -----------------------
-  Mercury               1.67                      0.61
-
-  Venus                 0.14                      0.03
-
-  Earth                 1.00                      0.42
-
-  Mars                  0.21                      0.06
-
-  Jupiter               0.85                      0.38
-
-  Saturn                0.59                      0.24
-
-  Uranus                0.20                      0.09
-
-  Neptune               0.12                      0.06
-
-  Pluto                 0.12                      0.04
-
-  Moon                  12.2                      2.53
-
-  Sun bary.             6.3                       0.39
+**Planet**| **max. error arcsec**| **avg. error arcsec**
+---------------------|-------------------------|-----------------------
+Mercury| 1.67| 0.61
+Venus| 0.14| 0.03
+Earth| 1.00| 0.42
+Mars| 0.21| 0.06
+Jupiter| 0.85| 0.38
+Saturn| 0.59| 0.24
+Uranus| 0.20| 0.09
+Neptune| 0.12| 0.06
+Pluto| 0.12| 0.04
+Moon| 12.2| 2.53
+Sun| bary.| 6.3| 0.39
 
 The same procedure was applied at the upper end of the DE406 range, to
 cover an extension period from 3000 CE to 5400 CE. The maximum
 integration errors as determined in the test run 3000 CE down to 600 CE
 are given in the table below.
 
------------------------------------------------------------------------
-  **Planet**            **max. error\             **avg. error\
-                        arcsec**                  arcsec**
---------------------- ------------------------- -----------------------
-  Mercury               2.01                      0.69
-
-  Venus                 0.06                      0.02
-
-  Earth                 0.33                      0.14
-
-  Mars                  1.69                      0.82
-
-  Jupiter               0.09                      0.05
-
-  Saturn                0.05                      0.02
-
-  Uranus                0.16                      0.07
-
-  Neptune               0.06                      0.03
-
-  Pluto                 0.11                      0.04
-
-  Moon                  8.89                      3.43
-
-  Sun bary.             0.61                      0.05
+**Planet**| **max. error arcsec**| **avg. error arcsec**
+---------------------|-------------------------|-----------------------
+Mercury| 2.01| 0.69
+Venus| 0.06| 0.02
+Earth| 0.33| 0.14
+Mars| 1.69| 0.82
+Jupiter| 0.09| 0.05
+Saturn| 0.05| 0.02
+Uranus| 0.16| 0.07
+Neptune| 0.06| 0.03
+Pluto| 0.11| 0.04
+Moon| 8.89| 3.43
+Sun| bary.| 0.61| 0.05
 
 Deviations in heliocentric longitude from new JPL ephemeris DE431
 (2013), time range 5400 BCE to 3000 BCE
 
-> Moon (geocentric) \< 40"
->
-> Earth, Mercury, Venus \< 1.4"
->
-> Mars \< 4"
->
-> Jupiter \< 9"
->
-> Saturn \< 1.2"
->
-> Uranus \< 36"
->
-> Neptune \< 76"
->
-> Pluto \< 120"
+planet|difference
+------|----------
+Moon (geocentric) | \< 40"
+Earth, Mercury, Venus | \< 1.4"
+Mars | \< 4"
+Jupiter | \< 9"
+Saturn | \< 1.2"
+Uranus | \< 36"
+Neptune | \< 76"
+Pluto | \< 120"
 
 ### 2.1.6 Solar Ephemeris in the remote past
 
@@ -825,6 +682,8 @@ The problem could be avoided if we used the precession theory Laskar
 1986 or Owen 1990. However, precession Vondrak 2011 is better for recent
 centuries. This seems more relevant to us.
 
+
+
 ## 2.2. Lunar and Planetary Nodes and Apsides
 
 ### 2.2.1. Mean Lunar Node and Mean Lunar Apogee (Lilith, Black Moon in astrology)
@@ -845,7 +704,7 @@ corrections to Moshier's mean node and apsis, which we derived from the
 true node and apsis that result from the DE431 lunar ephemeris.
 Estimated precision is 1 arcsec, relative to DE431.
 
-Notes for astrologers
+**Notes for astrologers**
 
 Astrological Lilith or the Dark Moon is either the apogee ("aphelion")
 of the lunar orbital ellipse or, according to some, its empty focal
@@ -929,13 +788,13 @@ to interpolate between the true node passages. The monthly oscillation
 of the node would be suppressed, and the maximum deviation from the
 conventional "true" node would be about 20 arc minutes.
 
-Precision of the true node
+**Precision of the true node**
 
 The true node can be computed from all of our three ephemerides. If you
 want a precision of the order of at least one arc second, you have to
 choose either the JPL or the Swiss Ephemeris.
 
-Maximum differences
+**Maximum differences**
 
 JPL-derived node -- Swiss-Ephemeris-derived node \~ 0.1 arc second
 
@@ -948,8 +807,8 @@ Distance of the true lunar node:
 The distance of the true node is calculated on the basis of the
 osculating ellipse of date.
 
-Small discontinuities in ephemeris of true node and apogee based on
-compressed file
+**Small discontinuities in ephemeris of true node and apogee based on**
+**compressed file**
 
 If our compressed lunar ephemeris files semo\*.se1 are used, then small
 discontinuities occur every 27.55 days at the segment boundaries of the
@@ -999,13 +858,13 @@ position and the speed vectors of the Moon. (By the way, there is also
 an error of +/- 1 arc minute in NIE\'s true node. The reason is probably
 the same.)
 
-Precision
+**Precision**
 
 The osculating apogee can be computed from any one of the three
 ephemerides. If a precision of at least one arc second is required, one
 has to choose either the JPL or the Swiss Ephemeris.
 
-Maximum differences
+**Maximum differences**
 
 JPL-derived apogee -- Swiss-Ephemeris-derived apogee \~ 0.9 arc second
 
@@ -1036,8 +895,8 @@ regard to the fact that the motion does not precisely have the shape of
 a sine. (Unfortunately, "Meridian" confused the labels of the columns of
 the apogee and the perigee.)
 
-Small discontinuities in ephemeris of true node and apogee based on
-compressed file
+**Small discontinuities in ephemeris of true node and apogee based on**
+**compressed file**
 
 See remarks in Chapter 2.2.2 on The True Node.
 
@@ -1071,7 +930,7 @@ Koch would prefer the designation \"natural\". The designation
 that astrologers used to do every day in old days, when they still used
 to work with printed ephemerides and house tables.
 
-Note on implementation (from Swiss Ephemeris Version 1.70 on)
+**Note on implementation (from Swiss Ephemeris Version 1.70 on)**
 
 Conventional interpolation algorithms do not work well in the case of
 the lunar apsides. The supporting points are too far away from each
@@ -1105,7 +964,7 @@ osculation nodes and apsides are probably due to different planetary
 ephemerides being used for their calculation. Small differences in the
 planetary ephemerides lead to greater differences in nodes and apsides.
 
-Definitions of the nodes
+**Definitions of the nodes**
 
 Methods described in small font are not supported by the Swiss Ephemeris
 software.
@@ -1167,7 +1026,7 @@ implemented in the Swiss Ephemeris.
     conjunction with one of its nodes. This possibility has not been
     implemented in the Swiss Ephemeris.
 
-Possible definitions for apsides and focal points
+**Possible definitions for apsides and focal points**
 
 The lunar apsides - the lunar apogee and lunar perigee - have already
 been discussed further above. Similar points exist for the planets, as
@@ -1190,7 +1049,7 @@ the Earth orbit.
 
 The Swiss Ephemeris supports both points of view.
 
-Special case: the Earth
+**Special case: the Earth**
 
 The Earth is a special case. Instead of the motion of the Earth herself,
 the heliocentric motion of the Earth-Moon-Barycenter (EMB) is used to
@@ -1202,7 +1061,7 @@ There is an axis around which the Earth\'s orbital plane slowly rotates
 due to planetary precession. The position points of this axis are not
 calculated by the Swiss Ephemeris.
 
-Special case: the Sun
+**Special case: the Sun**
 
 In addition to the Earth (EMB) apsides, our software computes so-to-say
 \"apsides\" of the solar orbit around the Earth, i.e. points on the
@@ -1216,7 +1075,7 @@ is called the \"Black Sun\", the other one, in Cancer, is called the
 So, for a complete set of apsides, one might want to calculate them for
 the Sun and the Earth and all other planets.
 
-Mean and osculating positions
+**Mean and osculating positions**
 
 There are serious problems about the ephemerides of planetary nodes and
 apsides. There are mean ones and osculating ones. Both are well-defined
@@ -1230,7 +1089,7 @@ gravity of the Sun and a single planet is considered and all other
 influences neglected. There are no planetary nodes or apsides, at least
 today, that really deserve the label "true".
 
-Mean positions
+**Mean positions**
 
 Mean nodes and apsides can be computed for the Moon, the Earth and the
 planets Mercury -- Neptune. They are taken from the planetary theory
@@ -1251,26 +1110,20 @@ time")
 The differences between the DE200 and the VSOP87 mean elements are
 considerable, though:
 
-------------------------------------------------------------------------
-                    **Node**      **Perihelion**        
------------------ ------------- --------------------- ------------------
-  Mercury           3"            4"                    
+|planet|**Node**|**Perihelion**
+|------|--------|-------------
+|Mercury|3"|4"
+|Venus|3"|107"
+|Earth|\-|35"
+|Mars|74"|4"
+|Jupiter|330"|1850"
+|Saturn|178"|1530"
+|Uranus|806"|6540"
+|Neptune|225"|11600" (>3°!)
 
-  Venus             3"            107"                  
 
-  Earth             \-            35"                   
 
-  Mars              74"           4"                    
-
-  Jupiter           330"          1850"                 
-
-  Saturn            178"          1530"                 
-
-  Uranus            806"          6540"                 
-
-  Neptune           225"          11600"                (>3 deg!)
-
-Osculating nodes and apsides
+**Osculating nodes and apsides**
 
 Nodes and apsides can also be derived from the osculating orbital
 elements of a body, the parameters that define an ideal unperturbed
@@ -1336,27 +1189,33 @@ The best choice of method will probably be:
 -   For Pluto and transjovian asteroids: osculating nodes/apsides from a
     barycentric ellipse.
 
-The modes of the Swiss Ephemeris function swe_nod_aps()
 
-The function **swe_nod_aps()** can be run in the following modes:
 
--   Mean positions are given for nodes and apsides of Sun, Moon, Earth,
-    and the planets up to Neptune. Osculating positions are given with
-    Pluto and all asteroids. This is the default mode.
+**The modes of the Swiss Ephemeris function swe_nod_aps()**
 
--   Osculating positions are returned for nodes and apsides of all
-    planets.
+The function ```  swe_nod_aps() ``` can be run in the following modes:
 
--   Same as 2), but for planets and asteroids beyond Jupiter, a
-    barycentric ellipse is used.
+1. Mean positions are given for nodes and apsides of Sun, Moon, Earth,
+   and the planets up to Neptune. Osculating positions are given with
+   Pluto and all asteroids. This is the default mode.
 
--   Same as 1), but for Pluto and asteroids beyond Jupiter, a
-    barycentric ellipse is used.
+2. Osculating positions are returned for nodes and apsides of all
+   planets.
+
+3. Same as 2), but for planets and asteroids beyond Jupiter, a
+   barycentric ellipse is used.
+
+4. Same as 1), but for Pluto and asteroids beyond Jupiter, a
+   barycentric ellipse is used.
 
 For the reasons given above, method 4) seems to make best sense.
 
 In all of these modes, the second focal point of the ellipse can be
 computed instead of the aphelion.
+
+
+
+
 
 ## 2.3. Asteroids
 
@@ -1369,14 +1228,14 @@ directory.
 
 The names of these files are of the following form:
 
-seas_18.se1 main asteroids for 600 years from 1800 - 2400
+seas_18.se1 	main asteroids for 600 years from 1800 - 2400
 
 The size of such a file is about 200 kb.
 
 All other asteroids are available in separate files. The names of
 additional asteroid files look like:
 
-se00433.se1 the file of asteroid no. 433 (= Eros)
+se00433.se1 	the file of asteroid no. 433 (= Eros)
 
 These files cover the period 3000 BCE - 3000 CE.
 
@@ -1386,8 +1245,8 @@ A short version for the years 1500 -- 2100 CE has the file name with an
 The numerical integration of the all numbered asteroids is an ongoing
 effort. In December 1998, 8000 asteroids were numbered, and their orbits
 computed by the developers of Swiss Ephemeris. In January 2001, the list
-of numbered asteroids reached 20957, in January 2014 more than 380.000,
-and it is still growing very fast.
+of numbered asteroids reached 20957, in January 2014 more than 380'000,
+in August 2021 there are 567'000.
 
 Any asteroid can be called either with the JPL, the Swiss, or the
 Moshier ephemeris flag, and the results will be slightly different. The
@@ -1396,7 +1255,7 @@ positions) will be taken from the ephemeris that has been specified.
 
 Availability of asteroid files
 
--   all short files (over 200000) are available for free download at our
+-   all short files (over 550'000) are available for free download at our
     ftp server ftp.astro.ch/pub/swisseph.
 
 The purpose of providing this large number of files for download is that
@@ -1556,17 +1415,14 @@ have moons, except the earth. We call the center of the real planets the
 The difference between the barycenters and the COBs are small. The
 maximum geocentric angular distances are as follows:
 
-Mars       (0.2 m, irrelevant to us)
-
-Jupiter    0.075 arcsec (jd 2468233.5)
-
-Saturn    0.053 arcsec (jd 2463601.5)
-
-Uranus   0.0032 arcsec (jd 2446650.5)
-
-Neptune 0.0036 arcsec (jd 2449131.5)
-
-Pluto      0.088 arcsec (jd 2437372.5)
+planet|angular distance
+------|----------------
+Mars |(0.2 m, irrelevant to us)
+Jupiter |0.075 arcsec (jd 2468233.5)
+Saturn |0.053 arcsec (jd 2463601.5)
+Uranus |0.0032 arcsec (jd 2446650.5)
+Neptune |0.0036 arcsec (jd 2449131.5)
+Pluto |0.088 arcsec (jd 2437372.5)
 
 (from one-day-step calculations over 150 years)
 
@@ -1591,17 +1447,14 @@ Moreover, the time range is currently limited to the years 1900 to
 The Swiss Ephemeris provides ephemerides of a few selected comets under
 the following pseudo-MPC numbers:
 
-s999032s.se1 999032 Churyumov-Ger = Comet 67P/Churyumov-Gerasimenko
-
-s999043s.se1 999043 Neowise = Comet C/2020 F3 (NEOWISE)
-
-s999044.se1 999044 Halley = Comet 1P/Halley
-
-s999046.se1 999046 Hale-Bopp = Comet Hale-Bopp (C/1995 O1)
-
-s999047.se1 999047 West = Comet West (C/1975 V1-A)
-
-s999045.se1 999045 Oumuamua = 1I/\'Oumuamua (A/2017 U1)
+file|pseudo number|comet
+----|-------------|------
+s999032s.se1|999032 Churyumov-Ger | Comet 67P/Churyumov-Gerasimenko
+s999043s.se1|999043 Neowise | Comet C/2020 F3 (NEOWISE)
+s999044.se1|999044 Halley | Comet 1P/Halley
+s999046.se1|999046 Hale-Bopp | Comet Hale-Bopp (C/1995 O1)
+s999047.se1|999047 West | Comet West (C/1975 V1-A)
+s999045.se1|999045 Oumuamua | 1I/\'Oumuamua (A/2017 U1)
 
 The ephemerides of these objects were downloaded from JPL Horizons and
 compressed in the format of Swiss Ephemeris data files.
@@ -1783,16 +1636,16 @@ from the Internet web page
 [swetest.htm](https://www.astro.com/swisseph/swetest.htm). The output
 will be:)
 
-| ............... | date       | **difference in longitude** | **difference in latitude** | **difference in solar distance** |
-| --------------- | ---------- | --------------------------- | -------------------------- | -------------------------------- |
-| Nep-Lev         | 01.01.1770 | -18°0\'52.3811              | 0°55\'0.0332               | -6.610753489                     |
-| Nep-Lev         | 01.01.1790 | -8°42\'9.1113               | 1°42\'55.7192              | -4.257690148                     |
-| Nep-Lev         | 02.01.1810 | -3°49\'45.2014              | 1°35\'12.0858              | -2.488363869                     |
-| Nep-Lev         | 02.01.1830 | -1°38\'2.8076               | 0°35\'57.0580              | -2.112570665                     |
-| Nep-Lev         | 02.01.1850 | 1°44\'23.0943               | -0°43\'38.5357             | -3.340858070                     |
-| Nep-Lev         | 02.01.1870 | 9°17\'34.4981               | -1°39\'24.1004             | -5.513270186                     |
-| Nep-Lev         | 02.01.1890 | 21°20\'56.6250              | -1°38\'43.1479             | -7.720578177                     |
-| Nep-Lev         | 03.01.1910 | 36°27\'56.1314              | -0°41\'59.4866             | -9.265417529                     |
+|           | date      | **diff. in longitude** | **diff. in latitude** | **diff. in solar distance** |
+| ----------|-----------|-------------------|------------------|---------------------|
+| Nep-Lev  | 01.01.1770 | -18°0\'52.3811  | 0°55\'0.0332  | -6.610753489  |
+| Nep-Lev  | 01.01.1790 | -8°42\'9.1113  | 1°42\'55.7192  | -4.257690148  |
+| Nep-Lev  | 02.01.1810 | -3°49\'45.2014  | 1°35\'12.0858  | -2.488363869  |
+| Nep-Lev  | 02.01.1830 | -1°38\'2.8076  | 0°35\'57.0580  | -2.112570665  |
+| Nep-Lev  | 02.01.1850 | 1°44\'23.0943  | -0°43\'38.5357  | -3.340858070  |
+| Nep-Lev  | 02.01.1870 | 9°17\'34.4981  | -1°39\'24.1004  | -5.513270186  |
+| Nep-Lev  | 02.01.1890 | 21°20\'56.6250  | -1°38\'43.1479  | -7.720578177  |
+| Nep-Lev  | 03.01.1910 | 36°27\'56.1314  | -0°41\'59.4866  | -9.265417529  |
 
 One can see that the error is in the range of 2 degrees between 1830 and
 1850 and grows very fast beyond that period.
@@ -2200,14 +2053,12 @@ Pushya/deCnC is always exactly at longitude 106°.
 
 Sources:
 
--   Surya-Siddhanta: A Text Book of Hindu Astronomy by Ebenezer Burgess,
-    
+-   Surya-Siddhanta: A Text Book of Hindu Astronomy by Ebenezer Burgess, 
     ed. Phanindralal Gangooly (1989/1997) with a 45-page commentary
     by P. C. Sengupta (1935).
     
--   D. Pingree, \"Precession and Trepidation in Indian Astronomy\", in
-    
-    JHA iii (1972), pp. 28f.
+-   D. Pingree, \"Precession and Trepidation in Indian Astronomy\", in 
+JHA iii (1972), pp. 28f.
 
 ### 2.8.5. The Spica/Citra tradition and the Lahiri ayanamsha
 
@@ -3252,76 +3103,46 @@ periods of time. Let us give two examples to illustrate this phenomenon.
 Long-term ephemeris of some fictitious star near the ecliptic that has
 no proper motion (small change in longitude):
 
-  **Date**               **Longitude**              **Latitude**
-
-  -12000                 335°16\'55.2211            0°55\'48.9448
-
-  -11000                 335°16\'54.9139            0°47\'55.3635
-
-  -10000                 335°16\'46.5976            0°40\'31.4551
-
-  -9000                  335°16\'32.6822            0°33\'40.6511
-
-  -8000                  335°16\'16.2249            0°27\'23.8494
-
-  -7000                  335°16\'00.1841            0°21\'41.0200
-
-  -6000                  335°15\'46.8390            0°16\'32.9298
-
-  -5000                  335°15\'37.4554            0°12\'01.7396
-
-  -4000                  335°15\'32.2252            0°08\'10.3657
-
-  -3000                  335°15\'30.4535            0°05\'01.3407
-
-  -2000                  335°15\'30.9235            0°02\'35.9871
-
-  -1000                  335°15\'32.3268            0°00\'54.2786
-
-  0                      335°15\'33.6425            -0°00\'04.7450
-
-  1000                   335°15\'34.3645            -0°00\'22.4060
-
-  2000                   335°15\'34.5249            -0°00\'00.0196
-
-  3000                   335°15\'34.5216            0°01\'01.1573
+|**Date**|**Longitude**|**Latitude**
+|--------|-------------|--------------
+|-12000|335°16\'55.2211|0°55\'48.9448
+|-11000|335°16\'54.9139|0°47\'55.3635
+|-10000|335°16\'46.5976|0°40\'31.4551
+|-9000|335°16\'32.6822|0°33\'40.6511
+|-8000|335°16\'16.2249|0°27\'23.8494
+|-7000|335°16\'00.1841|0°21\'41.0200
+|-6000|335°15\'46.8390|0°16\'32.9298
+|-5000|335°15\'37.4554|0°12\'01.7396
+|-4000|335°15\'32.2252|0°08\'10.3657
+|-3000|335°15\'30.4535|0°05\'01.3407
+|-2000|335°15\'30.9235|0°02\'35.9871
+|-1000|335°15\'32.3268|0°00\'54.2786
+|0|335°15\'33.6425|-0°00\'04.7450
+|1000|335°15\'34.3645|-0°00\'22.4060
+|2000|335°15\'34.5249|-0°00\'00.0196
+|3000|335°15\'34.5216|0°01\'01.1573
 
 Long-term ephemeris of some fictitious star with high ecliptic latitude
 and no proper motion (bigger change in longitude value):
 
-  **Date**                 **Longitude**            **Latitude**
-
-  -12000                   25°48\'34.9812           58°55\'17.4484
-
-  -11000                   25°33\'30.5709           58°53\'56.6536
-
-  -10000                   25°18\'18.1058           58°53\'20.5302
-
-  -9000                    25°03\'09.2517           58°53\'26.8693
-
-  -8000                    24°48\'12.6320           58°54\'12.3747
-
-  -7000                    24°33\'33.6267           58°55\'34.7330
-
-  -6000                    24°19\'16.3325           58°57\'33.3978
-
-  -5000                    24°05\'25.4844           59°00\'08.8842
-
-  -4000                    23°52\'06.9457           59°03\'21.4346
-
-  -3000                    23°39\'26.8689           59°07\'10.0515
-
-  -2000                    23°27\'30.5098           59°11\'32.3495
-
-  -1000                    23°16\'21.6081           59°16\'25.0618
-
-  0                        23°06\'02.6324           59°21\'44.7241
-
-  1000                     22°56\'35.5649           59°27\'28.1195
-
-  2000                     22°48\'02.6254           59°33\'32.3371
-
-  3000                     22°40\'26.4786           59°39\'54.5816
+|**Date**|**Longitude**|**Latitude**
+|--------|-------------|--------------
+|-12000|25°48\'34.9812|58°55\'17.4484
+|-11000|25°33\'30.5709|58°53\'56.6536
+|-10000|25°18\'18.1058|58°53\'20.5302
+|-9000|25°03\'09.2517|58°53\'26.8693
+|-8000|24°48\'12.6320|58°54\'12.3747
+|-7000|24°33\'33.6267|58°55\'34.7330
+|-6000|24°19\'16.3325|58°57\'33.3978
+|-5000|24°05\'25.4844|59°00\'08.8842
+|-4000|23°52\'06.9457|59°03\'21.4346
+|-3000|23°39\'26.8689|59°07\'10.0515
+|-2000|23°27\'30.5098|59°11\'32.3495
+|-1000|23°16\'21.6081|59°16\'25.0618
+|0|23°06\'02.6324|59°21\'44.7241
+|1000|22°56\'35.5649|59°27\'28.1195
+|2000|22°48\'02.6254|59°33\'32.3371
+|3000|22°40\'26.4786|59°39\'54.5816
 
 Exactly the same kind of thing happens to sidereal planetary positions
 if one calculates them in the traditional way. They are actually given
@@ -3354,69 +3175,39 @@ this way from solar positions gained in the traditional (inconsistent)
 way based on Lahiri ayanamsha. The solar positions are always calculated
 form 1 January in the Gregorian year.
 
-*year diff in "*
-
--3000 -9.633
-
--2500 -8.472
-
--2000 -7.049
-
--1500 -5.528
-
--1000 -4.052
-
--500 -2.735
-
-0 -1.656
-
-500 -0.854
-
-1000 -0.334
-
-1500 -0.067
-
-1600 -0.040
-
-1700 -0.020
-
-1800 -0.007
-
-1900 -0.001
-
-1920 -0.000
-
-1940 0.000
-
-1960 0.000
-
-1980 0.000
-
-2000 -0.000
-
-2020 -0.001
-
-2040 -0.002
-
-2060 -0.003
-
-2080 -0.004
-
-2100 -0.005
-
-2200 -0.015
-
-2300 -0.029
-
-2400 -0.046
-
-2500 -0.066
-
-3000 -0.190
-
-3500 -0.304
-
-4000 -0.357
+|*year*|*diff in \"*
+|--------|--------------
+|-3000|-9.633
+|-2500|-8.472
+|-2000|-7.049
+|-1500|-5.528
+|-1000|-4.052
+|-500|-2.735
+|0|-1.656
+|500|-0.854
+|1000|-0.334
+|1500|-0.067
+|1600|-0.040
+|1700|-0.020
+|1800|-0.007
+|1900|-0.001
+|1920|-0.000
+|1940|0.000
+|1960|0.000
+|1980|0.000
+|2000|-0.000
+|2020|-0.001
+|2040|-0.002
+|2060|-0.003
+|2080|-0.004
+|2100|-0.005
+|2200|-0.015
+|2300|-0.029
+|2400|-0.046
+|2500|-0.066
+|3000|-0.190
+|3500|-0.304
+|4000|-0.357
 
 Note that the differences are around a millisecond of arc or below for
 current decades, but greater than an arc second 2000 years ago.
@@ -3426,69 +3217,39 @@ ayanamsha is calculated from a zero ayanamsha epoch on the equinox 285
 CE, then the differences are near zero only near that epoch, but amount
 to 0.65" in 2020:
 
-*year diff in "*
-
--3000 -4.209
-
--2500 -3.250
-
--2000 -2.279
-
--1500 -1.408
-
--1000 -0.720
-
--500 -0.258
-
-0 -0.032
-
-500 -0.016
-
-1000 -0.161
-
-1500 -0.395
-
-1600 -0.446
-
-1700 -0.496
-
-1800 -0.546
-
-1900 -0.595
-
-1920 -0.604
-
-1940 -0.614
-
-1960 -0.623
-
-1980 -0.633
-
-2000 -0.642
-
-2020 -0.651
-
-2040 -0.660
-
-2060 -0.669
-
-2080 -0.677
-
-2100 -0.686
-
-2200 -0.727
-
-2300 -0.765
-
-2400 -0.799
-
-2500 -0.828
-
-3000 -0.895
-
-3500 -0.810
-
-4000 -0.572
+|*year*|*diff in \"*
+|--------|--------------
+|-3000|-4.209
+|-2500|-3.250
+|-2000|-2.279
+|-1500|-1.408
+|-1000|-0.720
+|-500|-0.258
+|0|-0.032
+|500|-0.016
+|1000|-0.161
+|1500|-0.395
+|1600|-0.446
+|1700|-0.496
+|1800|-0.546
+|1900|-0.595
+|1920|-0.604
+|1940|-0.614
+|1960|-0.623
+|1980|-0.633
+|2000|-0.642
+|2020|-0.651
+|2040|-0.660
+|2060|-0.669
+|2080|-0.677
+|2100|-0.686
+|2200|-0.727
+|2300|-0.765
+|2400|-0.799
+|2500|-0.828
+|3000|-0.895
+|3500|-0.810
+|4000|-0.572
 
 ##### 3\. Projection onto the ecliptic of t0 (implemented in Swiss Ephemeris
 
@@ -3509,136 +3270,76 @@ The differences from the traditional method look quite similar to method
 2 above, where the calculation is consistently done relative to the
 ecliptic of date:
 
-*year diff in "*
-
--3000 -9.522
-
--2500 -9.089
-
--2000 -7.970
-
--1500 -6.402
-
--1000 -4.763
-
--500 -3.207
-
-0 -1.897
-
-500 -0.939
-
-1000 -0.337
-
-1500 -0.058
-
-1600 -0.033
-
-1700 -0.016
-
-1800 -0.005
-
-1900 -0.000
-
-1920 -0.000
-
-1940 0.000
-
-1960 0.000
-
-1980 0.000
-
-2000 -0.000
-
-2020 -0.001
-
-2040 -0.001
-
-2060 -0.002
-
-2080 -0.003
-
-2100 -0.004
-
-2200 -0.008
-
-2300 -0.014
-
-2400 -0.019
-
-2500 -0.024
-
-3000 0.030
-
-3500 0.318
-
-4000 0.967
+|*year*|*diff in \"*
+|--------|--------------
+|-3000|-9.522
+|-2500|-9.089
+|-2000|-7.970
+|-1500|-6.402
+|-1000|-4.763
+|-500|-3.207
+|0|-1.897
+|500|-0.939
+|1000|-0.337
+|1500|-0.058
+|1600|-0.033
+|1700|-0.016
+|1800|-0.005
+|1900|-0.000
+|1920|-0.000
+|1940|0.000
+|1960|0.000
+|1980|0.000
+|2000|-0.000
+|2020|-0.001
+|2040|-0.001
+|2060|-0.002
+|2080|-0.003
+|2100|-0.004
+|2200|-0.008
+|2300|-0.014
+|2400|-0.019
+|2500|-0.024
+|3000|0.030
+|3500|0.318
+|4000|0.967
 
 A comparison of the two consistent methods 2 and 3 provides the
 following differences, which are considerably smaller:
 
-*year diff in "*
-
--3000 -0.111
-
--2500 0.617
-
--2000 0.921
-
--1500 0.874
-
--1000 0.711
-
--500 0.472
-
-0 0.241
-
-500 0.084
-
-1000 0.003
-
-1500 -0.009
-
-1600 -0.006
-
-1700 -0.004
-
-1800 -0.002
-
-1900 -0.000
-
-1920 0.000
-
-1940 0.000
-
-1960 0.000
-
-1980 0.000
-
-2000 0.000
-
-2020 -0.000
-
-2040 -0.001
-
-2060 -0.001
-
-2080 -0.001
-
-2100 -0.002
-
-2200 -0.006
-
-2300 -0.015
-
-2400 -0.027
-
-2500 -0.042
-
-3000 -0.219
-
-3500 -0.621
-
-4000 -1.324
+|*year*|*diff in \"*
+|--------|--------------
+|-3000|-0.111
+|-2500|0.617
+|-2000|0.921
+|-1500|0.874
+|-1000|0.711
+|-500|0.472
+|0|0.241
+|500|0.084
+|1000|0.003
+|1500|-0.009
+|1600|-0.006
+|1700|-0.004
+|1800|-0.002
+|1900|-0.000
+|1920|0.000
+|1940|0.000
+|1960|0.000
+|1980|0.000
+|2000|0.000
+|2020|-0.000
+|2040|-0.001
+|2060|-0.001
+|2080|-0.001
+|2100|-0.002
+|2200|-0.006
+|2300|-0.015
+|2400|-0.027
+|2500|-0.042
+|3000|-0.219
+|3500|-0.621
+|4000|-1.324
 
 A philosophical side note: This method is geometrically more correct
 than the traditional one, but still has a problem. For, if we want to
@@ -4786,9 +4487,6 @@ determine the sector position of a planet.
     ignored) and calculate the fraction of its diurnal or nocturnal arc
     it has completed
 
-```{=html}
-<!-- -->
-```
 9.  We can take the true planetary position (taking into account
     ecliptical latitude) for the same calculation.
 
@@ -4971,152 +4669,81 @@ Differences in ΔT, SE 2.06 -- SE 2.05 (new -- old)
 (with resulting differences for lunar and solar ephemerides calculated
 in UT)
 
--------------------------------------------------------------------------
-  **Year**     **ΔT sec**   **Difference in ΔT   **L (Moon)**   **L (Sun)**
-                            (new-old)**                         
------------- ------------ -------------------- -------------- -----------
-  -3000        75051        1174                 644\"          48\"
-
-  -2500        60203        865                  475\"          36\"
-
-  -2000        46979        588                  323\"          24\"
-
-  -1500        35377        342                  188\"          14\"
-
-  -1000        25398        129                  71\"           5\"
-
-  -900         23596        90                   49\"           4\"
-
-  -800         21860        52                   29\"           2\"
-
-  -700         20142        -31                  -17\"          -1\"
-
-  -600         18373        -229                 -126\"         -9\"
-
-  -500         16769        -325                 -179\"         -13\"
-
-  -400         15311        -119                 -65\"          -5\"
-
-  -300         13981        -5                   -3\"           -0\"
-
-  -200         12758        50                   27\"           2\"
-
-  -100         11623        62                   34\"           3\"
-
-  0            10557        43                   24\"           2\"
-
-  100          9540         6                    3\"            0\"
-
-  200          8554         -31                  -17\"          -1\"
-
-  300          7578         -53                  -29\"          -2\"
-
-  400          6593         -62                  -34\"          -3\"
-
-  500          5590         -81                  -45\"          -3\"
-
-  600          4596         -110                 -60\"          -5\"
-
-  700          3649         -135                 -74\"          -6\"
-
-  800          2786         -145                 -80\"          -6\"
-
-  900          2045         -135                 -74\"          -6\"
-
-  1000         1464         -94                  -52\"          -4\"
-
-  1100         1063         -13                  -7\"           -1\"
-
-  1200         802          76                   42\"           3\"
-
-  1300         625          141                  77\"           6\"
-
-  1400         473          157                  86\"           6\"
-
-  1500         292          97                   53\"           4\"
-
-  1600         89           -29                  -16\"          -1.2\"
-
-  1700         14           6.5                  3.6\"          0.27\"
-
-  1800         19           5.3                  2.9\"          0.22\"
-
-  1900         -2.0         0.78                 0.43\"         0.03\"
-
-  1920         22           0.47                 0.26\"         0.02\"
-
-  1940         24           0.10                 0.05\"         0.00\"
-
-  1960         33           0.00                 0.00\"         0.00\"
-
-  1970         40           0.00                 0.00\"         0.00\"
-
-  1980         51           0.00                 0.00\"         0.00\"
-
-  1990         57           0.00                 0.00\"         0.00\"
-
-  2000         64           0.00                 0.00\"         0.00\"
-
-  2010         66           0.00                 0.00\"         0.00\"
-
-  2020         70           0.00                 0.00\"         0.00\"
-
-  2030         74           -5.9                 -3.3\"         -0.24\"
-
-  2040         76           -21                  -12\"          -0.87\"
-
-  2050         78           -37                  -20\"          -1.5\"
-
-  2100         94           -119                 -65\"          -4.9\"
-
-  2200         163          -265                 -145\"         -11\"
-
-  2300         297          -397                 -218\"         -16\"
-
-  2400         520          -503                 -276\"         -21\"
-
-  2500         855          -558                 -307\"         -23\"
-
-  3000         3292         -1004                -551\"         -41\"
+**Year**|**ΔT sec**|**Difference in ΔT (new-old)**|**L (Moon)**|**L (Sun)**
+|--------|---------|---------------------------|------------|-----------
+-3000|75051|1174|644\"|48\"
+-2500|60203|865|475\"|36\"
+-2000|46979|588|323\"|24\"
+-1500|35377|342|188\"|14\"
+-1000|25398|129|71\"|5\"
+-900|23596|90|49\"|4\"
+-800|21860|52|29\"|2\"
+-700|20142|-31|-17\"|-1\"
+-600|18373|-229|-126\"|-9\"
+-500|16769|-325|-179\"|-13\"
+-400|15311|-119|-65\"|-5\"
+-300|13981|-5|-3\"|-0\"
+-200|12758|50|27\"|2\"
+-100|11623|62|34\"|3\"
+0|10557|43|24\"|2\"
+100|9540|6|3\"|0\"
+200|8554|-31|-17\"|-1\"
+300|7578|-53|-29\"|-2\"
+400|6593|-62|-34\"|-3\"
+500|5590|-81|-45\"|-3\"
+600|4596|-110|-60\"|-5\"
+700|3649|-135|-74\"|-6\"
+800|2786|-145|-80\"|-6\"
+900|2045|-135|-74\"|-6\"
+1000|1464|-94|-52\"|-4\"
+1100|1063|-13|-7\"|-1\"
+1200|802|76|42\"|3\"
+1300|625|141|77\"|6\"
+1400|473|157|86\"|6\"
+1500|292|97|53\"|4\"
+1600|89|-29|-16\"|-1.2\"
+1700|14|6.5|3.6\"|0.27\"
+1800|19|5.3|2.9\"|0.22\"
+1900|-2.0|0.78|0.43\"|0.03\"
+1920|22|0.47|0.26\"|0.02\"
+1940|24|0.10|0.05\"|0.00\"
+1960|33|0.00|0.00\"|0.00\"
+1970|40|0.00|0.00\"|0.00\"
+1980|51|0.00|0.00\"|0.00\"
+1990|57|0.00|0.00\"|0.00\"
+2000|64|0.00|0.00\"|0.00\"
+2010|66|0.00|0.00\"|0.00\"
+2020|70|0.00|0.00\"|0.00\"
+2030|74|-5.9|-3.3\"|-0.24\"
+2040|76|-21|-12\"|-0.87\"
+2050|78|-37|-20\"|-1.5\"
+2100|94|-119|-65\"|-4.9\"
+2200|163|-265|-145\"|-11\"
+2300|297|-397|-218\"|-16\"
+2400|520|-503|-276\"|-21\"
+2500|855|-558|-307\"|-23\"
+3000|3292|-1004|-551\"|-41\"
 
 Differences in ΔT, SE 1.77 -- SE 1.76
 
------------------------------------------------------------------------
-  **Year**           **Difference in\         
-                     seconds\                 
-                     (new - old)**            
------------------- ------------------------ ---------------------------
-  -3000              3                        
-
-  -2000              2                        
-
-  -1100              1                        
-
-  -1001              29                       
-
-  -900               -45                      
-
-  -800               -57                      
-
-  -700               -696                     (is a maximum!)
-
-  -500               -14                      
-
-  until -200         3 \> diff \> -25         
-
-  until 100          3 \> diff \> -15         
-
-  until 500          3 \> diff \> -03         
-
-  until 1600         4 \> diff \> -16         
-
-  until 1630         1 \> diff \> -30         
-
-  until 1700         0.1                      \| diff \|
-
-  until 1900         0.01                     
-
-  until 2100         0.001                    
+|**Year**|**Difference in seconds  (new - old)** 
+|--------|--------------
+|-3000|3                        
+|-2000|2                        
+|-1100|1                        
+|-1001|29                       
+|-900|-45                      
+|-800|-57                      
+|-700|-696                     (is a maximum!)
+|-500|-14                      
+|until|-200         3 \> diff \> -25         
+|until|100          3 \> diff \> -15         
+|until|500          3 \> diff \> -03         
+|until|1600         4 \> diff \> -16         
+|until|1630         1 \> diff \> -30         
+|until|1700         0.1                      \| diff \|
+|until|1900         0.01                     
+|until|2100         0.001                    
 
 The differences for --1000 to +1630 are explained as follows:
 
@@ -5128,61 +4755,35 @@ tabulated values.
 
 Differences in ΔT, SE 1.72 -- SE 1.71
 
------------------------------------------------------------------------
-  **Year**                **Difference in\
-                          seconds\
-                          (new - old)**
------------------------ -----------------------------------------------
-  -3000                   -4127
-
-  -2000                   -2130
-
-  -1000                   -760
-
-  0                       -20
-
-  1000                    -30
-
-  1600                    10
-
-  1619                    0.5
-
-  1620                    0
+|**Year**|**Difference in seconds (new - old)**
+|--------|--------------
+|-3000|-4127
+|-2000|-2130
+|-1000|-760
+|0|-20
+|1000|-30
+|1600|10
+|1619|0.5
+|1620|0
 
 Differences in ΔT, SE 1.64 -- SE 1.63
 
------------------------------------------------------------------------
-  **Year**                **Difference in\
-                          seconds\
-                          (new - old)**
------------------------ -----------------------------------------------
-  -3000                   2900
-
-  0                       1200
-
-  1600                    29
-
-  1619                    60
-
-  1620                    -0.6
-
-  1700                    -0.4
-
-  1800                    -0.1
-
-  1900                    -0.02
-
-  1940                    -0.001
-
-  1950                    0
-
-  2000                    0
-
-  2020                    2
-
-  2100                    23
-
-  3000                    -400
+|**Year**|**Difference in seconds (new - old)**
+|--------|--------------
+|-3000|2900
+|0|1200
+|1600|29
+|1619|60
+|1620|-0.6
+|1700|-0.4
+|1800|-0.1
+|1900|-0.02
+|1940|-0.001
+|1950|0
+|2000|0
+|2020|2
+|2100|23
+|3000|-400
 
 In 1620, where the ΔT table of the Astronomical Almanac starts, there
 was a discontinuity of a whole minute in the old algorithms. This has
@@ -5469,321 +5070,10 @@ double (64-bit floating point) for all angular measurements.
 
 
 
-#  Appendix 
+#  Appendices 
 
-##  A. Discussion of Differences between Versions
-
-#### Differences between Swiss Ephemeris 1.70 and older versions
-
-With version 1.70, the standard algorithms recommended by the IAU
-resolutions up to 2005 were implemented. The following calculations have
-been added or changed with Swiss Ephemeris version 1.70:
-
--   \"Frame Bias\" transformation from ICRS to J2000;
-
--   Nutation IAU 2000B (could be switched to 2000A by the user);
-
--   Precession model P03 (Capitaine/Wallace/Chapront 2003), including
-    improvements in ecliptic obliquity and sidereal time that were
-    achieved by this model.
-
-The differences between the old and new planetary positions in ecliptic
-longitude (arc seconds) are:
-
-  **Year**                    **New -- Old**
-
-  2000                        -0.00108
-
-  1995                        0.02448
-
-  1980                        0.05868
-
-  1970                        0.10224
-
-  1950                        0.15768
-
-  1900                        0.30852
-
-  1800                        0.58428
-
-  1799                        -0.04644
-
-  1700                        -0.07524
-
-  1500                        -0.12636
-
-  1000                        -0.25344
-
-  0                           -0.53316
-
-  -1000                       -0.85824
-
-  -2000                       -1.40796
-
-  -3000                       -3.33684
-
-  -4000                       -10.64808
-
-  -5000                       -32.68944
-
-  -5400                       -49.15188
-
-The discontinuity of the curve between 1800 and 1799 is explained by the
-fact that old versions of the Swiss Ephemeris used different precession
-models for different time ranges: the model IAU 1976 by Lieske for
-1800-2200, and the precession model by Williams 1994 outside that time
-range.
-
-**Note**: Precession model P03 is said to be accurate to 0.00005 arc
-second for CE 1000-3000.
-
-The differences between version 1.70 and older versions for the future
-are as follows:
-
-  **Year**                 **Difference**
-
-  2000                     -0.00108
-
-  2010                     -0.01620
-
-  2050                     -0.14004
-
-  2100                     -0.29448
-
-  2200                     -0.61452
-
-  2201                     0.05940
-
-  3000                     0.27252
-
-  4000                     0.48708
-
-  5000                     0.47592
-
-  5400                     0.40032
-
-The discontinuity in 2200 has the same explanation as the one in 1800.
-
-##### Jyotish / sidereal ephemerides
-
-The ephemeris changes by a constant value of about +0.3 arc second. This
-is because all our ayanamshas have the start epoch 1900, for which epoch
-precession was corrected by the same amount.
-
-##### Fictitious planets / bodies from the orbital elements file seorbel.txt
-
-There are changes of several 0.1 arcsec, depending on the epoch of the
-orbital elements and the correction of precession as can be seen in the
-tables above.
-
-##### The differences for ecliptic obliquity in arc seconds (new - old) are:
-
-  **Year**                   **Difference**
-
-  5400                       -1.71468
-
-  5000                       -1.25244
-
-  4000                       -0.63612
-
-  3000                       -0.31788
-
-  2100                       -0.06336
-
-  2000                       -0.04212
-
-  1900                       -0.02016
-
-  1800                       0.01296
-
-  1700                       0.04032
-
-  1600                       0.06696
-
-  1500                       0.09432
-
-  1000                       0.22716
-
-  0                          0.51444
-
-  -1000                      1.07064
-
-  -2000                      2.62908
-
-  -3000                      6.68016
-
-  -4000                      15.73272
-
-  -5000                      33.54480
-
-  -5400                      44.22924
-
-##### The differences for sidereal time in seconds (new - old) are:
-
-  **Year**                   **Difference**
-
-  5400                       -2.544
-
-  5000                       -1.461
-
-  4000                       -0.122
-
-  3000                       0.126
-
-  2100                       0.019
-
-  2000                       0.001
-
-  1900                       0.019
-
-  1000                       0.126
-
-  0                          -0.122
-
-  -500                       -0.594
-
-  -1000                      -1.461
-
-  -2000                      -5.029
-
-  -3000                      -12.355
-
-  -4000                      -25.330
-
-  -5000                      -46.175
-
-  -5400                      -57.273
-
-#### Differences between Swiss Ephemeris 1.78 and 1.77
-
-Former versions of the Swiss Ephemeris had used the precession model by
-Capitaine, Wallace, and Chapront of 2003 for the time range -5500 until
-9500 and the precession model Laskar 1986 for epochs outside this time
-range. (Since planetary ephemerides are restricted to -5400 to +5400,
-Laskar precession is only relevant for calculations of fixed stars.)
-
-Version 1.78 calculates precession and ecliptic obliquity according to
-Vondrák, Capitaine, and Wallace, "New precession expressions, valid for
-long time intervals", A&A 534, A22 (2011), which is good for +- 200
-millennia.
-
-This change has almost no ramifications for historical epochs. Planetary
-positions and the obliquity of the ecliptic change by less than an arc
-minute in 5400 BCE. However, for research concerning the prehistoric
-cave paintings (Lascaux, Altamira, etc., some of which may represent
-celestial constellations), fixed star positions are required for 15.000
-BCE or even earlier (the Chauvet cave was painted in 33.000 BCE). Such
-calculations are now possible using the Swiss Ephemeris version 1.78 or
-higher. However, the Sun, Moon, and the planets remain restricted to the
-time range 5400 BCE to 5400 CE.
-
-Differences (in arc sec) in precession (v. 1.78 -- v. 1.77, test star
-was Aldebaran)
-
-Only differences between -5500 and +9500 are differences Vondrák -- P03.
-Those outside this time range are actually differences Vondrák -- Laskar
-1986.
-
-  **Year**                      **Difference**
-
-  -20000                        -26716\"
-
-  -15000                        -2691\"
-
-  -10000                        -256\"
-
-  -5000                         -3.95352\"
-
-  -4000                         -9.77940\"
-
-  -3000                         -7.00524\"
-
-  -2000                         -3.40524\"
-
-  -1000                         -1.23732\"
-
-  0                             -0.33948\"
-
-  1000                          -0.05400\"
-
-  1800                          -0.00108\"
-
-  1900                          -0.00036\"
-
-  2000                          0.00000\"
-
-  2100                          -0.00036\"
-
-  2200                          -0.00072\"
-
-  3000                          0.03528\"
-
-  4000                          0.59904\"
-
-  5000                          2.90160\"
-
-  10000                         77\"
-
-  15000                         228\"
-
-  19000                         2839\"
-
-  20000                         5218\"
-
-##### Differences (in arc sec) in ecliptic obliquity:
-
-  **Year**                   **Difference**
-
-  -20000                     11074.43664\"
-
-  -15000                     3321.50652\"
-
-  -10000                     632.60532\"
-
-  -5000                      -33.42636\"
-
-  0                          0.01008\"
-
-  1000                       0.00972\"
-
-  2000                       0.00000\"
-
-  3000                       -0.01008\"
-
-  4000                       -0.05868\"
-
-  10000                      -72.91980\"
-
-  15000                      -772.91712\"
-
-  20000                      -3521.23488"
-
-#### Differences between Swiss Ephemeris 2.00 and 1.80
-
-These differences are explained by the fact that the Swiss Ephemeris is
-now based on JPL Ephemeris DE431, whereas before release 2.00 it was
-based on DE406. The differences are listed above in Ch. 2.1.1.3, see
-paragraph on "Comparison of JPL ephemerides DE406 (1998) with DE431
-(2013)".
-
-#### Differences between Swiss Ephemeris 2.05.01 and 2.06
-
-Swiss Ephemeris 2.06 has a new Delta T algorithm based on:
-
--   Stephenson, F.R., Morrison, L.V., and Hohenkerk, C.Y., \"Measurement
-    of the Earth\'s Rotation: 720 BCE to CE 2015\", Royal Society
-    Proceedings A, 7 Dec 2016,
-
-http://rspa.royalsocietypublishing.org/lookup/doi/10.1098/rspa.2016.0404
-
-The Swiss Ephemeris uses it for calculations before 1948.
-
-Differences resulting from this update are shown in Chapter 7 on Delta
-T.
-
-#  {#appendix .list-paragraph}
-
-## B. The gravity deflection for a planet passing behind the Sun {#a.-the-gravity-deflection-for-a-planet-passing-behind-the-sun .list-paragraph}
+## Appendix A.
+## The gravity deflection for a planet passing behind the Sun
 
 The calculation of the apparent position of a planet involves a
 relativistic effect, which is the curvature of space by the gravity
@@ -5884,673 +5174,338 @@ is his comment (private email to Alois Treindl, 12-Sep-1997):
 > ellipsoidal Sun is considered, but certainly that is an additional
 > refinement which cannot be crucial."*
 
-## C. A list of asteroids 
+## Appendix B. 
 
-> \# ====================================
->
-> \# At the same time a brief introduction into asteroids
->
-> \# ====================================================
->
-> \#
->
-> \# As of the year 2010, there is no longer any CDROM. All
->
-> \# parts of Swiss Ephemeris can be downloaded in the download area.
->
-> \#
->
-> \# Literature:
->
-> \# Lutz D. Schmadel, Dictionary of Minor Planet Names,
->
-> \# Springer, Berlin, Heidelberg, New York
->
-> \# Charles T. Kowal, Asteroids. Their Nature and Utilization,
->
-> \# Whiley & Sons, 1996, Chichester, England
->
-> \#
->
-> \# What is an asteroid?
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \#
->
-> \# Asteroids are small planets. Because there are too many
->
-> \# of them and because most of them are quite small,
->
-> \# astronomers did not like to call them \"planets\", but
->
-> \# invented names like \"asteroid\" (Greek \"star-like\",
->
-> \# because through telescopes they did not appear as planetary
->
-> \# discs but as star like points) or \"planetoid\" (Greek
->
-> \# \"something like a planet\"). However they are also often
->
-> \# called minor planets.
->
-> \# The minor planets can roughly be divided into two groups.
->
-> \# There are the inner asteroids, the majority of which
->
-> \# circles in the space between Mars and Jupiter, and
->
-> \# there are the outer asteroids, which have their realm
->
-> \# beyond Neptune. The first group consists of rather
->
-> \# dense, Earth-like material, whereas the Transneptunians
->
-> \# mainly consist of water ice and frozen gases. Many comets
->
-> \# are descendants of the \"asteroids\" (or should one say
->
-> \# \"comets\"?) belt beyond Neptune. The first Transneptunian
->
-> \# objects (except Pluto) were discovered only after 1992
->
-> \# and none of them has been given a name as yet.
->
-> \#
->
-> \# The largest asteroids
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# Most asteroids are actually only debris of collisions
->
-> \# of small planets that formed in the beginning of the
->
-> \# solar system. Only the largest ones are still more
->
-> \# or less complete and round planets.
->
-> 1 Ceres \# 913 km goddess of corn and harvest
->
-> 2 Pallas \# 523 km goddess of wisdom, war and liberal arts
->
-> 4 Vesta \# 501 km goddess of the hEarth fire
->
-> 10 Hygiea \# 429 km goddess of health
->
-> 511 Davida \# 324 km after an astronomer David P. Todd
->
-> 704 Interamnia \# 338 km \"between rivers\", ancient name of
->
-> \# its discovery place Teramo
->
-> 65 Cybele \# 308 km Phrygian Goddess, = Rhea, wife of Kronos-Saturn
->
-> 52 Europa \# 292 km beautiful mortal woman, mother of Minos by Zeus
->
-> 87 Sylvia \# 282 km
->
-> 451 Patientia \# 280 km patience
->
-> 31 Euphrosyne \# 270 km one of the three Graces, benevolence
->
-> 15 Eunomia \# 260 km one of the Hours, order and law
->
-> 324 Bamberga \# 252 km after a city in Bavaria
->
-> 3 Juno \# 248 km wife of Zeus
->
-> 16 Psyche \# 248 km \"soul\", name of a nymph
->
-> \#
->
-> \# Asteroid families
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# Most asteroids live in families. There are several kinds
->
-> \# of families.
->
-> \# - There are families that are separated from each other
->
-> \# by orbital resonances with Jupiter or other major planets.
->
-> \# - Other families, the so-called Hirayama families, are the
->
-> \# relics of asteroids that broke apart long ago when they
->
-> \# collided with other asteroids.
->
-> \# - Third, there are the Trojan asteroids that are caught
->
-> \# in regions 60 degrees ahead or behind a major planet
->
-> \# (Jupiter or Mars) by the combined gravitational forces
->
-> \# of this planet and the Sun.
->
-> \#
->
-> \# Near Earth groups:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# Aten family: they cross Earth; mean distance from Sun is less than
-> Earth
->
-> 2062 Aten \# an Egyptian Sun god
->
-> 2100 Ra-Shalom \# Ra is an Egyptian Sun god, Shalom is Hebrew
-> \"peace\"
->
-> \# was discovered during Camp David mid-east peace conference
->
-> \#
->
-> \# Apollo family: they cross Earth; mean distance is greater than
-> Earth
->
-> 1862 Apollo \# Greek Sun god
->
-> 1566 Icarus \# wanted to fly to the sky, fell into the ocean
->
-> \# Icarus crosses Mercury, Venus, Earth, and Mars
->
-> \# and has his perihelion very close to the Sun
->
-> 3200 Phaethon \# wanted to drive the solar chariot, crashed in flames
->
-> \# Phaethon crosses Mercury, Venus, Earth, and Mars
->
-> \# and has his perihelion very close to the Sun
->
-> \#
->
-> \# Amor family: they cross Mars, approach Earth
->
-> 1221 Amor \# Roman love god
->
-> 433 Eros \# Greek love god
->
-> \#
->
-> \# Mars Trojans:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\--
->
-> 5261 Eureka \# a mars Trojan
->
-> \#
->
-> \# Main belt families:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# Hungarias: asteroid group at 1.95 AU
->
-> 434 Hungaria \# after Hungary
->
-> \# Floras: Hirayama family at 2.2 AU
->
-> 8 Flora \# goddess of flowers
->
-> \# Phocaeas: asteroid group at 2.36 AU
->
-> 25 Phocaea \# maritime town in Ionia
->
-> \# Koronis family: Hirayama family at 2.88 AU
->
-> 158 Koronis \# mother of Asklepios by Apollo
->
-> \# Eos family: Hirayama family at 3.02 AU
->
-> 221 Eos \# goddess of dawn
->
-> \# Themis family: Hirayama family at 3.13 AU
->
-> 24 Themis \# goddess of justice
->
-> \#
->
-> \# Hildas: asteroid belt at 4.0 AU, in 3:2 resonance with Jupiter
->
-> \#
-> \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# The Hildas have fairly eccentric orbits and, at their
->
-> \# aphelion, are very close to the orbit of Jupiter. However,
->
-> \# at those times, Jupiter is ALWAYS somewhere else. As
->
-> \# Jupiter approaches, the Hilda asteroids move towards
->
-> \# their perihelion points.
->
-> 153 Hilda \# female first name, means \"heroine\"
->
-> \# a single asteroid at 4.26 AU, in 4:3 resonance with Jupiter
->
-> 279 Thule \# mythical center of Magic in the uttermost north
->
-> \#
->
-> \# Jupiter Trojans:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# Only the Trojans behind Jupiter are actually named after Trojan
-> heroes,
->
-> \# whereas the \"Trojans\" ahead of Jupiter are named after Greek
-> heroes that
->
-> \# participated in the Trojan war. However there have been made some
-> mistakes,
->
-> \# i.e. there are some Trojan \"spies\" in the Greek army and some
-> Greek \"spies\"
->
-> \# in the Trojan army.
->
-> \# Greeks ahead of Jupiter:
->
-> 624 Hector \# Trojan \"spy\" in the Greek army, by far the greatest
->
-> \# Trojan hero and the greatest Trojan asteroid
->
-> 588 Achilles \# slayer of Hector
->
-> 1143 Odysseus
->
-> \# Trojans behind Jupiter:
->
-> 1172 Äneas
->
-> 3317 Paris
->
-> 884 Priamus
->
-> \#
->
-> \# Jupiter-crossing asteroids:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 3552 Don Quixote \# perihelion near Mars, aphelion beyond Jupiter;
->
-> \# you know Don Quixote, don\'t you?
->
-> 944 Hidalgo \# perihelion near Mars, aphelion near Saturn;
->
-> \# after a Mexican national hero
->
-> 5335 Damocles \# perihelion near Mars, aphelion near Uranus;
->
-> \# the man sitting below a sword suspended by a thread
->
-> \#
->
-> \# Centaurs:
->
-> \# \-\-\-\-\-\-\-\--
->
-> 2060 Chiron \# perihelion near Saturn, aphelion near Uranus
->
-> \# educator of heros, specialist in healing and war arts
->
-> 5145 Pholus \# perihelion near Saturn, aphelion near Neptune
->
-> \# seer of the gods, keeper of the wine of the Centaurs
->
-> 7066 Nessus \# perihelion near Saturn, aphelion in Pluto\'s mean
-> distance
->
-> \# ferryman, killed by Hercules, kills Hercules
->
-> \#
->
-> \# Plutinos:
->
-> \# \-\-\-\-\-\-\-\--
->
-> \# These are objects with periods similar to Pluto, i.e. objects
->
-> \# that resonate with the Neptune period in a 3:2 ratio.
->
-> \# There are no Plutinos included in Swiss Ephemeris so far, but
->
-> \# PLUTO himself is considered to be a Plutino type asteroid!
->
-> \#
->
-> \# Cubewanos:
->
-> \# \-\-\-\-\-\-\-\-\--
->
-> \# These are non-Plutiono objects with periods greater than Pluto.
->
-> \# The word \"Cubewano\" is derived from the preliminary designation
->
-> \# of the first-discovered Cubewano: 1992 QB1
->
-> 20001 1992 QB1 \# will be given the name of a creation deity
->
-> \# (fictitious catalogue number 20001!)
->
-> \# Other Transplutonians:
->
-> 20001 1996 TL66 \# mean solar distance 85 AU, period 780 years
->
-> \# Asteroids that challenge hypothetical planets astrology
->
-> \#
-> \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 42 Isis \# not identical with \"Isis-Transpluto\"
->
-> \# Egyptian lunar goddess
->
-> 763 Cupido \# different from Witte\'s Cupido
->
-> \# Roman god of sexual desire
->
-> 4341 Poseidon \# not identical with Witte\'s Poseidon
->
-> \# Greek name of Neptune
->
-> 4464 Vulcano \# compare Witte\'s Vulkanus
->
-> \# and intramercurian hypothetical Vulcanus
->
-> \# Roman fire god
->
-> 5731 Zeus \# different from Witte\'s Zeus
->
-> \# Greek name of Jupiter
->
-> 1862 Apollo \# different from Witte\'s Apollon
->
-> \# Greek god of the Sun
->
-> 398 Admete \# compare Witte\'s Admetos
->
-> \# \"the untamed one\", daughter of Eurystheus
->
-> \#
->
-> \# Asteroids that challenge Dark Moon astrology
->
-> \#
-> \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 1181 Lilith \# not identical with Dark Moon \'Lilith\'
->
-> \# first evil wife of Adam
->
-> 3753 Cruithne \# often called the \"second Moon\" of Earth;
->
-> \# actually not a Moon, but an asteroid that
->
-> \# orbits around the Sun in a certain resonance
->
-> \# with the Earth.
->
-> \# After the first Celtic group to come to the British Isles.
->
-> \# Also try the two points 60 degrees in front of and behind the
->
-> \# Moon, the so called Lagrange points, where the combined
->
-> \# gravitational forces of the Earth and the Moon might imprison
->
-> \# rocks and stones. There have been some photographic hints
->
-> \# that there are clouds of such material around these points.
->
-> \# They are called the Kordylewski clouds.
->
-> \#
->
-> \# Other asteroids
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 5 Astraea \# a goddess of justice
->
-> 6 Hebe \# goddess of youth
->
-> 7 Iris \# rainbow goddess, messenger of the gods
->
-> 8 Flora \# goddess of flowers and gardens
->
-> 9 Metis \# goddess of prudence
->
-> 10 Hygiea \# goddess of health
->
-> 14 Irene \# goddess of peace
->
-> 16 Psyche \# \"soul\", a nymph
->
-> 19 Fortuna \# goddess of fortune
->
-> \#
->
-> \# Some frequent names:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# There are thousands of female first names in the asteroids list.
->
-> \# Very interesting for relationship charts!
->
-> 78 Diana
->
-> 170 Maria
->
-> 234 Barbara
->
-> 375 Ursula
->
-> 412 Elisabetha
->
-> 542 Susanna
->
-> \#
->
-> \# Wisdom asteroids:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 134 Sophrosyne \# equanimity, healthy mind and impartiality
->
-> 197 Arete \# virtue
->
-> 227 Philosophia
->
-> 251 Sophia \# wisdom (Greek)
->
-> 259 Aletheia \# truth
->
-> 275 Sapientia \# wisdom (Latin)
->
-> \#
->
-> \# Love asteroids:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 344 Desiderata
->
-> 433 Eros
->
-> 499 Venusia
->
-> 763 Cupido
->
-> 1221 Amor
->
-> 1387 Kama \# Indian god of sexual desire
->
-> 1388 Aphrodite \# Greek love Goddess
->
-> 1389 Onnie \# what is this, after 1387 and 1388 ?
->
-> 1390 Abastumani \# and this?
->
-> \#
->
-> \# The Nine Muses
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 18 Melpomene \# Muse of tragedy
->
-> 22 Kalliope \# Muse of heroic poetry
->
-> 23 Thalia \# Muse of comedy
->
-> 27 Euterpe \# Muse of music and lyric poetry
->
-> 30 Urania \# Muse of astronomy and astrology
->
-> 33 Polyhymnia \# Muse of singing and rhetoric
->
-> 62 Erato \# Muse of song and dance
->
-> 81 Terpsichore \# Muse of choral dance and song
->
-> 84 Klio \# Muse of history
->
-> \#
->
-> \# Money and big busyness asteroids
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 19 Fortuna \# goddess of fortune
->
-> 904 Rockefellia
->
-> 1338 Duponta
->
-> 3652 Soros
->
-> \#
->
-> \# Beatles asteroids:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 4147 Lennon
->
-> 4148 McCartney
->
-> 4149 Harrison
->
-> 4150 Starr
->
-> \#
->
-> \# Composer Asteroids:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> 2055 Dvorak
->
-> 1814 Bach
->
-> 1815 Beethoven
->
-> 1034 Mozartia
->
-> 3941 Haydn
->
-> And there are many more\...
->
-> \#
->
-> \# Astrodienst asteroids:
->
-> \# \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--
->
-> \# Programmers group:
->
-> 3045 Alois
->
-> 2396 Kochi
->
-> 2968 Iliya \# Alois\' dog
->
-> \# artists group:
->
-> 412 Elisabetha
->
-> \# Production family:
->
-> 612 Veronika
->
-> 1376 Michelle
->
-> 1343 Nicole
->
-> 1716 Peter
->
-> \# Children group
->
-> 105 Artemis
->
-> 1181 Lilith
->
-> \# Special interest group
->
-> 564 Dudu
->
-> 349 Dembowska
->
-> 484 Pittsburghia
->
-> \#
->
-> \# By the year 1997, the statistics of asteroid names looked as
-> follows:
->
-> \# Men (mostly family names) 2551
->
-> \# Astronomers 1147
->
-> \# Women (mostly first names) 684
->
-> \# Mythological terms 542
->
-> \# Cities, harbours buildings 497
->
-> \# Scientists (no astronomers) 493
->
-> \# Relatives of asteroid discoverers 277
->
-> \# Writers 249
->
-> \# Countries, provinces, islands 246
->
-> \# Amateur astronomers 209
->
-> \# Historical, political figures 176
->
-> \# Composers, musicians, dancers 157
->
-> \# Figures from literature, operas 145
->
-> \# Rivers, seas, mountains 135
->
-> \# Institutes, observatories 116
->
-> \# Painters, sculptors 101
->
-> \# Plants, trees, animals 63
+## A list of asteroids 
 
-##  D. How to Compare the Swiss Ephemeris with Ephemerides of the JPL Horizons System {#c.-how-to-compare-the-swiss-ephemeris-with-ephemerides-of-the-jpl-horizons-system .list-paragraph}
+```sh
+# At the same time a brief introduction into asteroids
+# ====================================================
+#
+# Literature:
+# Lutz D. Schmadel, Dictionary of Minor Planet Names,
+# Springer, Berlin, Heidelberg, New York
+# Charles T. Kowal, Asteroids. Their Nature and Utilization,
+# Whiley & Sons, 1996, Chichester, England
+#
+# What is an asteroid?
+# --------------------
+# Asteroids are small planets. Because there are too many
+# of them and because most of them are quite small,
+# astronomers did not like to call them "planets", but
+# invented names like "asteroid" (Greek "star-like",
+# because through telescopes they did not appear as planetary
+# discs but as star like points) or "planetoid" (Greek
+# "something like a planet"). However they are also often
+# called minor planets.
+# The minor planets can roughly be divided into two groups.
+# There are the inner asteroids, the majority of which
+# circles in the space between Mars and Jupiter, and
+# there are the outer asteroids, which have their realm
+# beyond Neptune. The first group consists of rather
+# dense, Earth-like material, whereas the Transneptunians
+# mainly consist of water ice and frozen gases. Many comets
+# are descendants of the "asteroids" (or should one say
+# "comets"?) belt beyond Neptune. The first Transneptunian
+# objects (except Pluto) were discovered only after 1992
+# and none of them has been given a name as yet.
+#
+# The largest asteroids
+# ---------------------
+# Most asteroids are actually only debris of collisions
+# of small planets that formed in the beginning of the
+# solar system. Only the largest ones are still more
+# or less complete and round planets.
+1 Ceres # 913 km goddess of corn and harvest
+2 Pallas # 523 km goddess of wisdom, war and liberal arts
+4 Vesta # 501 km goddess of the hEarth fire
+10 Hygiea # 429 km goddess of health
+511 Davida # 324 km after an astronomer David P. Todd
+704 Interamnia # 338 km "between rivers", ancient name of
+# its discovery place Teramo
+65 Cybele # 308 km Phrygian Goddess, = Rhea, wife of Kronos-Saturn
+52 Europa # 292 km beautiful mortal woman, mother of Minos by Zeus
+87 Sylvia # 282 km
+451 Patientia # 280 km patience
+31 Euphrosyne # 270 km one of the three Graces, benevolence
+15 Eunomia # 260 km one of the Hours, order and law
+324 Bamberga # 252 km after a city in Bavaria
+3 Juno # 248 km wife of Zeus
+16 Psyche # 248 km "soul", name of a nymph
+#
+# Asteroid families
+# -----------------
+# Most asteroids live in families. There are several kinds
+# of families.
+# - There are families that are separated from each other
+# by orbital resonances with Jupiter or other major planets.
+# - Other families, the so-called Hirayama families, are the
+# relics of asteroids that broke apart long ago when they
+# collided with other asteroids.
+# - Third, there are the Trojan asteroids that are caught
+# in regions 60 degrees ahead or behind a major planet
+# (Jupiter or Mars) by the combined gravitational forces
+# of this planet and the Sun.
+#
+# Near Earth groups:
+# ------------------
+# Aten family: they cross Earth; mean distance from Sun is less than Earth
+2062 Aten # an Egyptian Sun god
+2100 Ra-Shalom # Ra is an Egyptian Sun god, Shalom is Hebrew "peace"
+# was discovered during Camp David mid-east peace conference
+#
+# Apollo family: they cross Earth; mean distance is greater than Earth
+1862 Apollo # Greek Sun god
+1566 Icarus # wanted to fly to the sky, fell into the ocean
+# Icarus crosses Mercury, Venus, Earth, and Mars
+# and has his perihelion very close to the Sun
+3200 Phaethon # wanted to drive the solar chariot, crashed in flames
+# Phaethon crosses Mercury, Venus, Earth, and Mars
+# and has his perihelion very close to the Sun
+#
+# Amor family: they cross Mars, approach Earth
+1221 Amor # Roman love god
+433 Eros # Greek love god
+#
+# Mars Trojans:
+# -------------
+5261 Eureka # a mars Trojan
+#
+# Main belt families:
+# -------------------
+# Hungarias: asteroid group at 1.95 AU
+434 Hungaria # after Hungary
+# Floras: Hirayama family at 2.2 AU
+8 Flora # goddess of flowers
+# Phocaeas: asteroid group at 2.36 AU
+25 Phocaea # maritime town in Ionia
+# Koronis family: Hirayama family at 2.88 AU
+158 Koronis # mother of Asklepios by Apollo
+# Eos family: Hirayama family at 3.02 AU
+221 Eos # goddess of dawn
+# Themis family: Hirayama family at 3.13 AU
+24 Themis # goddess of justice
+#
+# Hildas: asteroid belt at 4.0 AU, in 3:2 resonance with Jupiter
+--------------------------------------------------------------
+# The Hildas have fairly eccentric orbits and, at their
+# aphelion, are very close to the orbit of Jupiter. However,
+# at those times, Jupiter is ALWAYS somewhere else. As
+# Jupiter approaches, the Hilda asteroids move towards
+# their perihelion points.
+153 Hilda # female first name, means "heroine"
+# a single asteroid at 4.26 AU, in 4:3 resonance with Jupiter
+279 Thule # mythical center of Magic in the uttermost north
+#
+# Jupiter Trojans:
+# ----------------
+# Only the Trojans behind Jupiter are actually named after Trojan heroes,
+# whereas the "Trojans" ahead of Jupiter are named after Greek heroes that
+# participated in the Trojan war. However there have been made some mistakes,
+# i.e. there are some Trojan "spies" in the Greek army and some Greek "spies"
+# in the Trojan army.
+# Greeks ahead of Jupiter:
+624 Hector # Trojan "spy" in the Greek army, by far the greatest
+# Trojan hero and the greatest Trojan asteroid
+588 Achilles # slayer of Hector
+1143 Odysseus
+# Trojans behind Jupiter:
+1172 Äneas
+3317 Paris
+884 Priamus
+#
+# Jupiter-crossing asteroids:
+# ---------------------------
+3552 Don Quixote # perihelion near Mars, aphelion beyond Jupiter;
+# you know Don Quixote, don't you?
+944 Hidalgo # perihelion near Mars, aphelion near Saturn;
+# after a Mexican national hero
+5335 Damocles # perihelion near Mars, aphelion near Uranus;
+# the man sitting below a sword suspended by a thread
+#
+# Centaurs:
+# ---------
+2060 Chiron # perihelion near Saturn, aphelion near Uranus
+# educator of heros, specialist in healing and war arts
+5145 Pholus # perihelion near Saturn, aphelion near Neptune
+# seer of the gods, keeper of the wine of the Centaurs
+7066 Nessus # perihelion near Saturn, aphelion in Pluto's mean distance
+# ferryman, killed by Hercules, kills Hercules
+#
+# Plutinos:
+# ---------
+# These are objects with periods similar to Pluto, i.e. objects
+# that resonate with the Neptune period in a 3:2 ratio.
+# There are no Plutinos included in Swiss Ephemeris so far, but
+# PLUTO himself is considered to be a Plutino type asteroid!
+#
+# Cubewanos:
+# ----------
+# These are non-Plutiono objects with periods greater than Pluto.
+# The word "Cubewano" is derived from the preliminary designation
+# of the first-discovered Cubewano: 1992 QB1
+20001 1992 QB1 # will be given the name of a creation deity
+# (fictitious catalogue number 20001!)
+# Other Transplutonians:
+20001 1996 TL66 # mean solar distance 85 AU, period 780 years
+# Asteroids that challenge hypothetical planets astrology
+------------------------------------------------------------------------------
+42 Isis # not identical with "Isis-Transpluto"
+# Egyptian lunar goddess
+763 Cupido # different from Witte's Cupido
+# Roman god of sexual desire
+4341 Poseidon # not identical with Witte's Poseidon
+# Greek name of Neptune
+4464 Vulcano # compare Witte's Vulkanus
+# and intramercurian hypothetical Vulcanus
+# Roman fire god
+5731 Zeus # different from Witte's Zeus
+# Greek name of Jupiter
+1862 Apollo # different from Witte's Apollon
+# Greek god of the Sun
+398 Admete # compare Witte's Admetos
+# "the untamed one", daughter of Eurystheus
+#
+# Asteroids that challenge Dark Moon astrology
+--------------------------------------------
+1181 Lilith # not identical with Dark Moon 'Lilith'
+# first evil wife of Adam
+3753 Cruithne # often called the "second Moon" of Earth;
+# actually not a Moon, but an asteroid that
+# orbits around the Sun in a certain resonance
+# with the Earth.
+# After the first Celtic group to come to the British Isles.
+# Also try the two points 60 degrees in front of and behind the
+# Moon, the so called Lagrange points, where the combined
+# gravitational forces of the Earth and the Moon might imprison
+# rocks and stones. There have been some photographic hints
+# that there are clouds of such material around these points.
+# They are called the Kordylewski clouds.
+#
+# Other asteroids
+# ---------------
+5 Astraea # a goddess of justice
+6 Hebe # goddess of youth
+7 Iris # rainbow goddess, messenger of the gods
+8 Flora # goddess of flowers and gardens
+9 Metis # goddess of prudence
+10 Hygiea # goddess of health
+14 Irene # goddess of peace
+16 Psyche # "soul", a nymph
+19 Fortuna # goddess of fortune
+#
+# Some frequent names:
+# --------------------
+# There are thousands of female first names in the asteroids list.
+# Very interesting for relationship charts!
+78 Diana
+170 Maria
+234 Barbara
+375 Ursula
+412 Elisabetha
+542 Susanna
+#
+# Wisdom asteroids:
+# -----------------
+134 Sophrosyne # equanimity, healthy mind and impartiality
+197 Arete # virtue
+227 Philosophia
+251 Sophia # wisdom (Greek)
+259 Aletheia # truth
+275 Sapientia # wisdom (Latin)
+#
+# Love asteroids:
+# ---------------
+344 Desiderata
+433 Eros
+499 Venusia
+763 Cupido
+1221 Amor
+1387 Kama # Indian god of sexual desire
+1388 Aphrodite # Greek love Goddess
+1389 Onnie # what is this, after 1387 and 1388 ?
+1390 Abastumani # and this?
+#
+# The Nine Muses
+# --------------
+18 Melpomene # Muse of tragedy
+22 Kalliope # Muse of heroic poetry
+23 Thalia # Muse of comedy
+27 Euterpe # Muse of music and lyric poetry
+30 Urania # Muse of astronomy and astrology
+33 Polyhymnia # Muse of singing and rhetoric
+62 Erato # Muse of song and dance
+81 Terpsichore # Muse of choral dance and song
+84 Klio # Muse of history
+#
+# Money and big busyness asteroids
+# --------------------------------
+19 Fortuna # goddess of fortune
+904 Rockefellia
+1338 Duponta
+3652 Soros
+#
+# Beatles asteroids:
+# ------------------
+4147 Lennon
+4148 McCartney
+4149 Harrison
+4150 Starr
+#
+# Composer Asteroids:
+# -------------------
+2055 Dvorak
+1814 Bach
+1815 Beethoven
+1034 Mozartia
+3941 Haydn
+And there are many more...
+#
+# Astrodienst asteroids:
+# ----------------------
+# Programmers group:
+3045 Alois
+2396 Kochi
+2968 Iliya # Alois' dog
+# artists group:
+412 Elisabetha
+# Production family:
+612 Veronika
+1376 Michelle
+1343 Nicole
+1716 Peter
+# Children group
+105 Artemis
+1181 Lilith
+# Special interest group
+564 Dudu
+349 Dembowska
+484 Pittsburghia
+#
+# By the year 1997, the statistics of asteroid names looked as follows:
+# Men (mostly family names) 2551
+# Astronomers 1147
+# Women (mostly first names) 684
+# Mythological terms 542
+# Cities, harbours buildings 497
+# Scientists (no astronomers) 493
+# Relatives of asteroid discoverers 277
+# Writers 249
+# Countries, provinces, islands 246
+# Amateur astronomers 209
+# Historical, political figures 176
+# Composers, musicians, dancers 157
+# Figures from literature, operas 145
+# Rivers, seas, mountains 135
+# Institutes, observatories 116
+# Painters, sculptors 101
+# Plants, trees, animals 63
+```
+
+
+##  Appendix C. 
+
+##  How to Compare the Swiss Ephemeris with Ephemerides of the JPL Horizons System 
 
 Time and again people complain that they find serious differences
 between the Swiss Ephemeris and JPL Horizons.
@@ -6590,7 +5545,7 @@ Using the online test page will be easier, because you need not worry
 about correct installation, and you will have the JPL data file
 available.
 
-### Test 1: Astrometric Positions ICRF/J2000 {#test-1-astrometric-positions-icrfj2000 .list-paragraph}
+### Test 1: Astrometric Positions ICRF/J2000
 
 In your Internet browser call the following URL:
 
@@ -6727,7 +5682,7 @@ Nutation 0° 0\' 0.0000 0° 0\' 0.0000
 
 Now the agreement is perfect, the precision thus better than 1 mas.
 
-### Test 2: Inertial Apparent Positions, RA and DE, in ICRF  {#test-2-inertial-apparent-positions-ra-and-de-in-icrf .list-paragraph}
+### Test 2: Inertial Apparent Positions, RA and DE, in ICRF 
 
 Now we are going to test apparent positions relative to the
 International Celestial Reference Frame (ICRF). This option was
@@ -6777,7 +5732,7 @@ Nutation 0° 0\' 0.00000000 0° 0\' 0.00000000
 This matches very well again, the differences being smaller than 0.001
 arc second.
 
-### Test 3: Apparent Positions, True Equinox of Date, RA, DE, Ecliptic Longitude and Latitude {#test-3-apparent-positions-true-equinox-of-date-ra-de-ecliptic-longitude-and-latitude .list-paragraph}
+### Test 3: Apparent Positions, True Equinox of Date, RA, DE, Ecliptic Longitude and Latitude
 
 Now we are going to test apparent positions relative to the true equinox
 of date.
@@ -6833,7 +5788,7 @@ Better precision for current or recent dates would require daily updates
 for unpredictable motions of the celestial pole (free core nutation) and
 other micro-improvements. We are not freaky enough to do that.
 
-### Test 4: Heliocentric Apparent Positions, Ecliptic Longitude and Latitude {#test-4-heliocentric-apparent-positions-ecliptic-longitude-and-latitude .list-paragraph}
+### Test 4: Heliocentric Apparent Positions, Ecliptic Longitude and Latitude 
 
 Now, let us do the same calculations heliocentrically by changing the
 observer location to "\@sun".
@@ -6888,7 +5843,7 @@ swetest -b25.10.2016 -p4 -fTPADlb -n3 -ejplde431.eph -jplhora -hel
 These values (the red ones) again match very well with Horizons's data
 ObsEcLon and ObsEcLat.
 
-### Test 5: Ephemerides before 1962 {#test-5-ephemerides-before-1962 .list-paragraph}
+### Test 5: Ephemerides before 1962
 
 The swetest call of Test 3 can reproduce JPL Horizons positions very
 well for its whole time range. For dates in the year 1800, Horizons
@@ -6949,7 +5904,7 @@ Nutation 0° 0\'14.26577554 0° 0\' 0.69489094
 
 The deviation amounts to only 3 milliarcsec.
 
-### Test 6: Jupiter versus Jupiter Barycentre {#test-6-jupiter-versus-jupiter-barycentre .list-paragraph}
+### Test 6: Jupiter versus Jupiter Barycentre
 
 There is another problem with planets that have a system of satellites,
 e.g. Jupiter.
@@ -7013,7 +5968,7 @@ The fundamental JPL ephemeris DE431 does not provide the position of the
 centre of the disk of a planet, but only the centre of gravity of the
 planet's satellite system.
 
-### Test 7: Jupiter's Center of Body {#test-7-jupiters-center-of-body .list-paragraph}
+### Test 7: Jupiter's Center of Body
 
 Since Swiss Ephemeris version 2.10 (Nov. 2020), the center of Jupiter's
 body can also be calculated as follows:
@@ -7056,7 +6011,7 @@ that the performance of this calculation is not as good as with the
 barycenters. Moreover, the time range is currently limited to the years
 1900 to 2047.
 
-### Test 8: Geocentric Position of a Planetary Moon {#test-8-geocentric-position-of-a-planetary-moon .list-paragraph}
+### Test 8: Geocentric Position of a Planetary Moon
 
 This test requires Swiss Ephemeris version 2.10 and the ephemeris files
 sepm\* of directory sat.
@@ -7082,7 +6037,7 @@ swetest -b25.10.2016 -pv -xv9501 -fTPlb -n3 -ejplde431.eph -jplhora
 
 27.10.2016 Io/Jupiter 190.1792187 1.1144514
 
-### Test 9: Planetocentric Position of a Planetary Moon {#test-9-planetocentric-position-of-a-planetary-moon .list-paragraph}
+### Test 9: Planetocentric Position of a Planetary Moon
 
 Now, we try the same choosing Jupiter himself as the observer location.
 
@@ -7161,7 +6116,7 @@ For quantity 1, this one:
 swetest -b25.10.2016 -pv -xv9501 -pc9599 -fTPAD -n3 -ejplde431.eph
 -j2000 -icrs -noaberr -nodefl
 
-### Test 10: Topocentric Position of a Planet {#test-10-topocentric-position-of-a-planet .list-paragraph}
+### Test 10: Topocentric Position of a Planet 
 
 To calculate the topocentric position of a planet proceed as follows:
 
@@ -7255,9 +6210,11 @@ Significant deviations from Horizons only appear with the topocentric
 Moon, where our error can amount to 0.2 arcsec. We have not studied this
 difference so far, so do not know its exact cause.
 
-##  E. How to compare the Swiss Ephemeris with Ephemerides of the Astronomical Almanac (apparent positions) {#d.-how-to-compare-the-swiss-ephemeris-with-ephemerides-of-the-astronomical-almanac-apparent-positions .list-paragraph}
+##  Appendix D. 
 
-### Test 1: Astronomical Almanac online {#test-1-astronomical-almanac-online .list-paragraph}
+##  How to compare the Swiss Ephemeris with Ephemerides of the Astronomical Almanac (apparent positions)
+
+### Test 1: Astronomical Almanac online
 
 Get a recent \"Astronomical Almanac\" from the library or your
 bookshelf. If you are too lazy to do that, go on the following page:
@@ -7303,7 +6260,7 @@ Nutation -0° 0\' 7.1942 -0° 0\' 8.4288
 
 which is identical to AA, but has more digits.
 
-### Test 2: Astronomical Almanac printed {#test-2-astronomical-almanac-printed .list-paragraph}
+### Test 2: Astronomical Almanac printed
 
 If you are not too lazy to get a printed AA of a recent year or manage
 to get pages B68-B70 from AA 2016 in google books, there you will find
@@ -7341,7 +6298,9 @@ Swiss Ephemeris:
 
 (2.1.2.2 Swiss Ephemeris and JPL Horizons System)
 
-## F. How to compare the Swiss Ephemeris Lahiri Ayanamsha with *Indian Astronomical Ephemeris* (IAE) {#e.-how-to-compare-the-swiss-ephemeris-lahiri-ayanamsha-with-indian-astronomical-ephemeris-iae .list-paragraph}
+## Appendix E. 
+
+## How to compare the Swiss Ephemeris Lahiri Ayanamsha with *Indian Astronomical Ephemeris* (IAE) 
 
 *Problems*
 
@@ -7734,6 +6693,344 @@ which is based on the more modern precession model Vondrák 2011. Of
 course, the latter is desirable, not the former. For an in-depth
 understanding of this phenomenon, please study chapter 2.7.11
 *Ayanamshas with different precession rates*.
+
+##  Appendix F. Discussion of Differences between Versions
+
+#### Differences between Swiss Ephemeris 1.70 and older versions
+
+With version 1.70, the standard algorithms recommended by the IAU
+resolutions up to 2005 were implemented. The following calculations have
+been added or changed with Swiss Ephemeris version 1.70:
+
+-   \"Frame Bias\" transformation from ICRS to J2000;
+
+-   Nutation IAU 2000B (could be switched to 2000A by the user);
+
+-   Precession model P03 (Capitaine/Wallace/Chapront 2003), including
+    improvements in ecliptic obliquity and sidereal time that were
+    achieved by this model.
+
+The differences between the old and new planetary positions in ecliptic
+longitude (arc seconds) are:
+
+|**Year**|**New -- Old**
+|--------|--------------
+|2000|-0.00108
+|1995|0.02448
+|1980|0.05868
+|1970|0.10224
+|1950|0.15768
+|1900|0.30852
+|1800|0.58428
+|1799|-0.04644
+|1700|-0.07524
+|1500|-0.12636
+|1000|-0.25344
+|0|-0.53316
+|-1000|-0.85824
+|-2000|-1.40796
+|-3000|-3.33684
+|-4000|-10.64808
+|-5000|-32.68944
+|-5400|-49.15188
+
+The discontinuity of the curve between 1800 and 1799 is explained by the
+fact that old versions of the Swiss Ephemeris used different precession
+models for different time ranges: the model IAU 1976 by Lieske for
+1800-2200, and the precession model by Williams 1994 outside that time
+range.
+
+**Note**: Precession model P03 is said to be accurate to 0.00005 arc
+second for CE 1000-3000.
+
+The differences between version 1.70 and older versions for the future
+are as follows:
+
+|**Year**|**Difference**
+|--------|--------------
+|2000|-0.00108
+|2010|-0.01620
+|2050|-0.14004
+|2100|-0.29448
+|2200|-0.61452
+|2201|0.05940
+|3000|0.27252
+|4000|0.48708
+|5000|0.47592
+|5400|0.40032
+
+The discontinuity in 2200 has the same explanation as the one in 1800.
+
+##### Jyotish / sidereal ephemerides
+
+The ephemeris changes by a constant value of about +0.3 arc second. This
+is because all our ayanamshas have the start epoch 1900, for which epoch
+precession was corrected by the same amount.
+
+##### Fictitious planets / bodies from the orbital elements file seorbel.txt
+
+There are changes of several 0.1 arcsec, depending on the epoch of the
+orbital elements and the correction of precession as can be seen in the
+tables above.
+
+##### The differences for ecliptic obliquity in arc seconds (new - old) are:
+
+|**Year**|**Difference**
+|--------|--------------
+|5400|-1.71468
+|5000|-1.25244
+|4000|-0.63612
+|3000|-0.31788
+|2100|-0.06336
+|2000|-0.04212
+|1900|-0.02016
+|1800|0.01296
+|1700|0.04032
+|1600|0.06696
+|1500|0.09432
+|1000|0.22716
+|0|0.51444
+|-1000|1.07064
+|-2000|2.62908
+|-3000|6.68016
+|-4000|15.73272
+|-5000|33.54480
+|-5400|44.22924
+
+##### The differences for sidereal time in seconds (new - old) are:
+
+|**Year**|**Difference**
+|--------|--------------
+|5400|-2.544
+|5000|-1.461
+|4000|-0.122
+|3000|0.126
+|2100|0.019
+|2000|0.001
+|1900|0.019
+|1000|0.126
+|0|-0.122
+|-500|-0.594
+|-1000|-1.461
+|-2000|-5.029
+|-3000|-12.355
+|-4000|-25.330
+|-5000|-46.175
+|-5400|-57.273
+
+#### Differences between Swiss Ephemeris 1.78 and 1.77
+
+Former versions of the Swiss Ephemeris had used the precession model by
+Capitaine, Wallace, and Chapront of 2003 for the time range -5500 until
+9500 and the precession model Laskar 1986 for epochs outside this time
+range. (Since planetary ephemerides are restricted to -5400 to +5400,
+Laskar precession is only relevant for calculations of fixed stars.)
+
+Version 1.78 calculates precession and ecliptic obliquity according to
+Vondrák, Capitaine, and Wallace, "New precession expressions, valid for
+long time intervals", A&A 534, A22 (2011), which is good for +- 200
+millennia.
+
+This change has almost no ramifications for historical epochs. Planetary
+positions and the obliquity of the ecliptic change by less than an arc
+minute in 5400 BCE. However, for research concerning the prehistoric
+cave paintings (Lascaux, Altamira, etc., some of which may represent
+celestial constellations), fixed star positions are required for 15.000
+BCE or even earlier (the Chauvet cave was painted in 33.000 BCE). Such
+calculations are now possible using the Swiss Ephemeris version 1.78 or
+higher. However, the Sun, Moon, and the planets remain restricted to the
+time range 5400 BCE to 5400 CE.
+
+Differences (in arc sec) in precession (v. 1.78 -- v. 1.77, test star
+was Aldebaran)
+
+Only differences between -5500 and +9500 are differences Vondrák -- P03.
+Those outside this time range are actually differences Vondrák -- Laskar
+1986.
+
+|**Year**|**Difference**
+|--------|--------------
+|-20000|-26716\"
+|-15000|-2691\"
+|-10000|-256\"
+|-5000|-3.95352\"
+|-4000|-9.77940\"
+|-3000|-7.00524\"
+|-2000|-3.40524\"
+|-1000|-1.23732\"
+|0|-0.33948\"
+|1000|-0.05400\"
+|1800|-0.00108\"
+|1900|-0.00036\"
+|2000|0.00000\"
+|2100|-0.00036\"
+|2200|-0.00072\"
+|3000|0.03528\"
+|4000|0.59904\"
+|5000|2.90160\"
+|10000|77\"
+|15000|228\"
+|19000|2839\"
+|20000|5218\"
+
+##### Differences (in arc sec) in ecliptic obliquity:
+
+|**Year**|**Difference**
+|--------|--------------
+|-20000|11074.43664\"
+|-15000|3321.50652\"
+|-10000|632.60532\"
+|-5000|-33.42636\"
+|0|0.01008\"
+|1000|0.00972\"
+|2000|0.00000\"
+|3000|-0.01008\"
+|4000|-0.05868\"
+|10000|-72.91980\"
+|15000|-772.91712\"
+|20000|-3521.23488"
+
+#### Differences between Swiss Ephemeris 2.00 and 1.80
+
+These differences are explained by the fact that the Swiss Ephemeris is
+now based on JPL Ephemeris DE431, whereas before release 2.00 it was
+based on DE406. The differences are listed above in Ch. 2.1.1.3, see
+paragraph on "Comparison of JPL ephemerides DE406 (1998) with DE431
+(2013)".
+
+#### Differences between Swiss Ephemeris 2.05.01 and 2.06
+
+Swiss Ephemeris 2.06 has a new Delta T algorithm based on:
+
+-   Stephenson, F.R., Morrison, L.V., and Hohenkerk, C.Y., \"Measurement
+    of the Earth\'s Rotation: 720 BCE to CE 2015\", Royal Society
+    Proceedings A, 7 Dec 2016,
+
+http://rspa.royalsocietypublishing.org/lookup/doi/10.1098/rspa.2016.0404
+
+The Swiss Ephemeris uses it for calculations before 1948.
+
+Differences resulting from this update are shown in Chapter 7 on Delta
+T.
+
+## Appendix G. 
+
+## Editing history
+
+Date         | what
+-------------|--------------------------------------------------------------------
+14-sep-1997  | Appendix A by Alois
+15-sep-1997  | split docu, swephprg.doc now separate (programming interface)
+16-sep-1997  | Dieter: absolute precision of JPL, position and speed transformations
+24-sep-1997  | Dieter: main asteroids
+27-sep-1997  | Alois: restructured for better HTML conversion, added public function list
+8-oct-1997   | Dieter: Chapter 4 (houses) added
+28-nov-1997  | Dieter: Chapter 5 (delta t) added
+20-jan-1998  | Dieter: Chapter 3 (more than\...) added, Chapter 4 (houses) enlarged
+14-jul-1998  | Dieter: more about the precision of our asteroids
+21-jul-1998  | Alois: houses in PLACALC and ASTROLOG
+27-jul-1998  | Dieter: True node Chapter improved
+2-sep-1998   | Dieter: updated asteroid Chapter
+29-nov-1998  | Alois: added info on Public License and source code availability
+4-dec-1998   | Alois: updated asteroid file information
+17-dec-1998  | Alois: Section 2.1.5 added: extended time range to 10.800 years
+17-dec-1998  | Dieter: paragraphs on Chiron and Pholus ephemerides updated
+12-jan-1999  | Dieter: paragraph on eclipses
+19-apr-1999  | Dieter: paragraph on eclipses and planetary phenomena
+21-jun-1999  | Dieter: Chapter 2.27 on sidereal ephemerides
+27-jul-1999  | Dieter: Chapter 2.27 on sidereal ephemerides completed
+15-feb-2000  | Dieter: many things for Version 1.52
+11-sep-2000  | Dieter: a few additions for version 1.61
+24-jul-2001  | Dieter: a few additions for version 1.62
+5-jan-2002   | Alois: house calculation added to swetest for version 1.63
+26-feb-2002  | Dieter: Gauquelin sectors for version 1.64
+12-jun-2003  | Alois: code revisions for compatibility with 64-bit compilers, version 1.65
+10-jul-2003  | Dieter: Morinus houses for Version 1.66
+12-jul-2004  | Dieter: documentation of Delta T algorithms implemented with version 1.64
+7-feb-2005   | Alois: added note about mean lunar elements, section 2.2.1
+22-feb-2006  | Dieter: added documentation for version 1.70, see section 2.1.2.1-3
+17-jul-2007  | Dieter: updated documentation of Krusinski-Pisa house system.
+28-nov-2007 | Dieter: documentation of new Delta T calculation for version 1.72, see section 7
+17-jun-2008  | Alois: license change to dual license, GNU GPL or Professional License
+31-mar-2009  | Dieter: heliacal events
+26-feb-2010  | Alois: manual update, deleted references to CDROM
+25-jan-2011  | Dieter: Delta T updated, v. 1.77.
+2-aug-2012   | Dieter: new precession, v. 1.78.
+23-apr-2013  | Dieter: new ayanamshas
+11-feb-2014  | Dieter: many additions for v. 2.00
+18-mar-2015  | Dieter: documentation of APC house system and Pushya ayanamsha
+21-oct-2015  | Dieter: small correction in documentation of Lahiri ayanamsha
+3-feb-2016   | Dieter: documentation of house systems updated (equal, Porphyry, Pullen, Sripati)
+22-apr-2016  | Dieter: documentation of ayanamsha revised
+10-jan-2017  | Dieter: new Delta T
+29-nov-2017  | Dieter: update for comparison SwissEph - JPL Horizons using SE2.07; Ch. 2.1.6 added
+4-jan-2018   | Dieter: "Vedic"/Sheoran ayanamsha added
+13-jun-2019   | Dieter: small corrections for version 2.08
+11-sep-2019  | Simon Hren, documentation reformatted, merged with a recent unpublished update by Dieter
+6-jan-2020   | A few corrections by Simon Hren and updates by Dieter
+24-jun-2020  | Dieter: Chapters on ayanamsha improved; appendix E on Swiss Ephemeris versus IAE, IENA, RP
+24-jun-2020  | Dieter: Appendix C: added Test 2a concerning inertial apparent positions with JPL Horizons
+27-jun-2020  | Dieter: small corrections in chapter 7 on Delta T
+29-jun-2020  | Dieter: small changes in Appendix E
+1-dec-2020   | Dieter: several Additions in Appendix E, concerning the centers of body of the planets, planetary moons, comets and 99942 Apophis
+9-dec-2020   | Dieter: "AD" replaced by "CE" and "BC" replaced by "BCE".
+15-dec-2020  | Alois: minor corrections
+6-apr-2021   | Dieter: Improved chapter 2.1.2.2. "Swiss Ephemeris and JPL Horizons System of Nasa" 
+11-aug-2021 | Alois: converted from docx (Word) to md (Markdown) format as base format 
+
+## Appendix H.  
+
+## Swiss Ephemeris release history
+
+1.00    |30-sept-1997   | what       
+--------|---------------|--------------------------------------------------------
+1.01	|9-oct-1997	|simplified houses() and sidtime() functions, Vertex added.
+1.02	|16-oct-1997	|houses() changed again
+1.03	|28-oct-1997	|minor fixes
+1.04	|8-dec-1997	|minor fixes
+1.10	|9-jan-1998	|bug fix, pushed to all licensees
+1.11	|12-jan-1998	|minor fixes
+1.20	|21-jan-1998	|NEW: topocentric planets and house positions
+1.21	|28-jan-1998	|Delphi declarations and sample for Delphi 1.0
+1.22	|2-feb-1998	|asteroids moved to subdirectory. Swe_calc() finds them there.
+1.23	|11-feb-1998	|two minor bug fixes.
+1.24	|7-mar-1998	|documentation for Borland C++ Builder added
+1.25	|4-june-1998	|sample for Borland Delphi-2 added
+1.26	|29-nov-1998	|source added, Placalc API added
+1.30	|17-dec-1998	|NEW: Time range extended to 10.800 years
+1.31	|12-jan-1999	|NEW: Eclipses
+1.40	|19-apr-1999	|NEW: planetary phenomena
+1.50	|27-jul-1999	|NEW: sidereal ephemerides
+1.52	|15-feb-2000	|several NEW features, minor bug fixes
+1.60	|15-feb-2000	|major release with many new features and some minor bug fixes
+1.61	|11-sep-2000	|minor release, additions to se_rise_trans(), swe_houses(), fictitious planets
+1.62	|23-jul-2001	|minor release, fictitious Earth satellites, asteroid numbers \> 55535 possible
+1.63	|5-jan-2002	|minor release, house calculation added to swetest.c and swetest.exe
+1.64	|7-apr-2002	|NEW: occultations of planets, minor bug fixes, new Delta T algorithms
+1.65	|12-jun-2003	|minor release, small code renovations for 64-bit compilation
+1.66	|10-jul-2003	|NEW: Morinus houses
+1.67	|31-mar-2005	|minor release: Delta-T updated, minor bug fixes
+1.70	|2-mar-2006	|IAU resolutions up to 2005 implemented; \"interpolated\" lunar apsides
+1.72	|28-nov-2007	|Delta T calculation according to Morrison/Stephenson 2004
+1.74	|17-jun-2008	|license model changed to dual license, GNU GPL or Professional License
+1.76	|31-mar-2009	|NEW: Heliacal events
+1.77	|25-jan-2011	|Delta T calculation updated acc. to Espenak/Meeus 2006, new fixed stars file
+1.78	|2-aug-2012	|precession calculation updated acc. to Vondrák et alii 2012
+1.79	|23-apr-2013	|new ayanamshas, improved precision of eclipse functions, minor bug fixes
+1.80	|3-sep-2013	|security update and bugfixes
+2.00	|11-feb-2014	|Swiss Ephemeris now based on JPL ephemeris DE431
+2.01	|18-mar-2015	|bug fixes for version 2.00
+2.02	|11-aug-2015	|new functions swe_deltat_ex() and swe_get_ayanamsa_ex(); bug fixes.
+2.03	|16-oct-2015	|Swiss Ephemeris thread safe; minor bug fixes
+2.04	|21-oct-2015	|V. 2.03 had DLL with calling convention \_\_cdecl; we return to \_stdcall
+2.05	|22-apr-2015	|new house methods, new ayanamshas, minor bug fixes
+2.06	|10-jan-2017	|new Delta T, minor bug fixes
+2.07	|10-jan-2018	|better performance of swe_fixstar() and swe_rise_trans()
+2.08	|13-jun-2019	|update of Delta T and minor bug fixes
+2.09	|22-jul-2020	|Improved Placidus houses, sidereal ephemerides, planetary magnitudes; minor bug fixes
+2.10	|10-dec-2020	|NEW: planetary moons
+
+#
 
 [^1]: 9--11 = Swiss Ephemeris ayanamsha numbers
 

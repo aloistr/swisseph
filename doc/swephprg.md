@@ -1,12 +1,6 @@
   last edit 11-aug-21 Alois
 
-**Programming**
-
-**interface**
-
-**to the**
-
-Swiss Ephemeris
+# Programming interface to the Swiss Ephemeris
 
 Copyright **Astrodienst AG** 1997-2021.
 
@@ -30,30 +24,36 @@ as one of the options in Astrodienst's dual licensing model.
 
 
 
-# The programming steps to get a planet's position
+# 1. The programming steps to get a planet's position
 
-[]{#_Hlk477829414 .anchor}To compute a celestial body or point with
+To compute a celestial body or point with
 SWISSEPH, you have to do the following steps (use swetest.c as an
 example). The details of the functions will be explained in the
 following chapters.
 
 1.  Set the directory path of the ephemeris files, e.g.:
 
-**swe_set_ephe_path**("C:\\\\SWEPH\\\\EPHE");
+```c
+swe_set_ephe_path("C:\SWEPH\EPHE");
+```
 
 2.  From the birth date, compute the Julian day number:
 
-jul_day_UT = **swe_julday**(year, month, day, hour, gregflag);
+```c
+jul_day_UT = swe_julday(year, month, day, hour, gregflag);
+```
 
 3.  Compute a planet or other bodies:
 
-ret_flag = **swe_calc_ut**(jul_day_UT, planet_no, flag, lon_lat_rad,
-err_msg);
+```c
+ret_flag = swe_calc_ut(jul_day_UT, planet_no, flag, lon_lat_rad, err_msg);
+```
 
 or a fixed star:
 
-ret_flag = **swe_fixstar_ut**(star_nam, jul_day_UT, flag, lon_lat_rad,
-err_msg);
+```c
+ret_flag = swe_fixstar_ut(star_nam, jul_day_UT, flag, lon_lat_rad, err_msg);
+```
 
 **NOTE**:
 
@@ -66,17 +66,21 @@ with Ephemeris Time, you have to proceed as follows instead:
 -   first, if necessary, convert universal time (UT) to ephemeris time
     (ET):
 
-jul_day_ET = jul_day_UT + **swe_deltat**(jul_day_UT);
+```c
+jul_day_ET = jul_day_UT + swe_deltat(jul_day_UT);
+```
 
 -   then compute a planet or other bodies:
 
-ret_flag = **swe_calc**(jul_day_ET, planet_no, flag, lon_lat_rad,
-err_msg);
+```c
+ret_flag = swe_calc(jul_day_ET, planet_no, flag, lon_lat_rad, err_msg);
+```
 
 -   or a fixed star:
 
-ret_flag = **swe_fixstar**(star_nam, jul_day_ET, flag, lon_lat_rad,
-err_msg);
+```c
+ret_flag = swe_fixstar(star_nam, jul_day_ET, flag, lon_lat_rad, err_msg);
+```
 
 4.  At the end of your computations close all files and free memory
     calling **swe_close();**
@@ -126,7 +130,7 @@ int main()
 }
 ```
 
-# The Ephemeris file related functions
+# 2. The Ephemeris file related functions
 
 ## swe_set_ephe_path()
 
@@ -142,14 +146,16 @@ Swiss Ephemeris is used, its content is used to find the ephemeris
 files. The variable can contain a directory name, or a list of directory
 names separated by ; (semicolon) on Windows or : (colon) on Unix.
 
-void **swe_set_ephe_path**(
-
-char \*path);
+```c
+void swe_set_ephe_path(char *path);
+```
 
 Usually an application will want to set its own ephemeris, e.g. as
 follows:
 
-**swe_set_ephe_path**("C:\\\\SWEPH\\\\EPHE");
+```c
+swe_set_ephe_path("C:\SWEPH\EPHE");
+```
 
 The argument can be a single directory name or a list of directories,
 which are then searched in sequence. The argument of this call is
@@ -158,13 +164,13 @@ empty.\
 If you want to make sure that your program overrides any environment
 variable setting, you can use **putenv()** to set it to an empty string.
 
-If the path is longer than **256 bytes**, **swe_set_ephe_path()** sets
+If the path is longer than 256 bytes, ``` swe_set_ephe_path() ``` sets
 the path \\SWEPH\\EPHE instead.
 
-If no environment variable exists and **swe_set_ephe_path()** is never
+If no environment variable exists and ``` swe_set_ephe_path()```  is never
 called, the built-in ephemeris path is used. On Windows it is
 "\\sweph\\ephe" relative to the current working drive, on Unix it is
-\"/users/ephe\".
+\"/home/ephe\".
 
 Asteroid ephemerides are looked for in the subdirectories ast0, ast1,
 ast2 .. ast9 of the ephemeris directory and, if not found there, in the
@@ -184,11 +190,10 @@ exploit it.
 
 ## swe_close()
 
-/\* close Swiss Ephemeris \*/
 
-void **swe_close**(
-
-void);
+```c
+void swe_close( void);
+```
 
 At the end of your computations you can release all resources (open
 files and allocated memory) used by the Swiss Ephemeris DLL.
@@ -199,20 +204,18 @@ unless you call **swe_set_ephe_path()** again and, if required,
 
 ## swe_set_jpl_file()
 
-/\* set name of JPL ephemeris file \*/
+```c
+/* set name of JPL ephemeris file */
 
-void **swe_set_jpl_file**(
+void swe_set_jpl_file(char *fname);
+```
 
-char \*fname);
-
-If you work with the JPL ephemeris, SwissEph uses the default file name
-which is defined in swephexp.h as SE_FNAME_DFT. Currently, it has the
-value "de406.eph" or "de431.eph".
+If you work with the JPL ephemeris, SwissEph uses the default file name which is defined in swephexp.h as SE_FNAME_DFT. Currently, it has the "de431.eph".
 
 If a different JPL ephemeris file is required, call the function
 **swe_set_jpl_file()** to make the file name known to the software, e.g.
 
-**swe_set_jpl_file**("de405.eph");
+**swe_set_jpl_file**("de430.eph");
 
 This file must reside in the ephemeris path you are using for all your
 ephemeris files.
@@ -224,28 +227,27 @@ positions and an error message.
 
 ## swe_version()
 
-/\* find out version number of your Swiss Ephemeris version \*/
+```c
+/* find out version number of your Swiss Ephemeris version */
 
-char \***swe_version**(
-
-char \*svers);
-
-/\* svers is a string variable with sufficient space to contain the
-version number (255 char) \*/
+char *swe_version(char *svers); 
+/* svers is a string variable with sufficient space to contain the
+version number (255 char) */
+```
 
 The function returns a pointer to the string svers, i.e. to the version
 number of the Swiss Ephemeris that your software is using.
 
 ## swe_get_library_path()
 
-/\* find out the library path of the DLL or executable \*/
+```c
+/* find out the library path of the DLL or executable */
 
-char \***swe_get_library_path**(
+char *swe_get_library_path(char *spath);
 
-char \*spath);
-
-/\* spath is a string variable with sufficient space to contain the
-library path (255 char) \*/
+/* spath is a string variable with sufficient space to contain the
+library path (255 char) */
+```
 
 The function returns a pointer to the string spath, which contains the
 path in which the executable resides. If it is running with a DLL, then
@@ -259,41 +261,26 @@ This is function can be used to find out the start and end date of an
 The function returns data from internal file structures sweph.fidat used
 in the *last call* to swe_calc() or swe_fixstar(). Data returned are
 (currently) 0 with JPL files and fixed star files. Thus, the function is
-only useful for ephemerides of planets or asteroids that are based on
-\*.se1 files.
+only useful for ephemerides of planets or asteroids that are based on \*.se1 files.
 
+```c
+
+const char *swe_get_current_file_data(int ifno, double *tfstart, double *tfend, int *denum);
 // ifno = 0 planet file sepl_xxx, used for Sun .. Pluto, or jpl file
-
 // ifno = 1 moon file semo_xxx
-
 // ifno = 2 main asteroid file seas_xxx if such an object was computed
-
-// ifno = 3 other asteroid or planetary moon file, if such object was
-computed
-
+// ifno = 3 other asteroid or planetary moon file, if such object was computed
 // ifno = 4 star file
-
 // Return value: full file pathname, or NULL if no data
-
 // tfstart = start date of file,
-
 // tfend = end data of fila,
-
 // denum = jpl ephemeris number 406 or 431 from which file was derived
-
 // all three return values are zero for a jpl file or a star file.
+```
 
-const char \*CALL_CONV **swe_get_current_file_data**(
+# Planetary Positions: 
 
-int ifno,
-
-double \*tfstart,
-
-double \*tfend,
-
-int \*denum);
-
-# Planetary Positions: The functions swe_calc_ut(), swe_calc(), and swe_calc_pctr()
+# The functions swe_calc_ut(), swe_calc(), and swe_calc_pctr()
 
 Before calling one of these functions or any other Swiss Ephemeris
 function, **it is strongly recommended** to call the function
@@ -303,7 +290,7 @@ and use the Moshier ephemeris, it is nevertheless recommended to call
 initializations**. If you don't do that, the Swiss Ephemeris may work
 but the results may be not 100% consistent.
 
-## The call parameters
+### The call parameters
 
 **swe_calc_ut()** was introduced with Swisseph **version 1.60** and
 makes planetary calculations a bit simpler. For the steps required, see
@@ -312,7 +299,7 @@ position](#_Toc476664303).
 
 **swe_calc_ut()** and **swe_calc()** work exactly the same way except
 that **swe_calc()** requires [Ephemeris Time](#_Hlk477830987) (more
-accurate: []{#_Hlk477831317 .anchor}Terrestrial Time (TT)) as a
+accurate: Terrestrial Time (TT)) as a
 parameter whereas **swe_calc_ut()** expects Universal Time (UT). For
 common astrological calculations, you will only need **swe_calc_ut()**
 and will not have to think any more about the conversion between
@@ -321,54 +308,27 @@ Universal Time and Ephemeris Time.
 **swe_calc_ut()** and **swe_calc()** compute positions of planets,
 asteroids, lunar nodes and apogees. They are defined as follows:
 
-[]{#_Hlk477830210 .anchor}int32 **swe_calc_ut**(
+```c
+int32 **swe_calc_ut**(double tjd_ut, int32 ipl, int32 iflag, double *xx, char *serr);
 
-double tjd_ut,
-
-int32 ipl,
-
-int32 iflag,
-
-double\* xx,
-
-char\* serr);
-
-where
-
-tjd_ut = [Julian day](#_Hlk477330118), Universal Time
-
-ipl = body number
-
-iflag = a 32 bit integer containing bit flags that indicate what kind of
-computation is wanted
-
-xx = array of 6 doubles for longitude, latitude, distance, speed in
-long., speed in lat., and speed in dist.
-
-serr\[256\] = character string to return error messages in case of
-error.
+// tjd_ut = [Julian day], Universal Time 
+// ipl = body number
+// iflag = a 32 bit integer containing bit flags that indicate what kind of computation is wanted
+// xx = array of 6 doubles for longitude, latitude, distance, speed in long., speed in lat., and speed in dist.
+// serr[256] = character string to return error messages in case of error.
+```
 
 and
 
-[]{#_Hlk477320293 .anchor}int32 **swe_calc**(
-
-double tjd_et,
-
-int32 ipl,
-
-int32 iflag,
-
-double \*xx,
-
-char \*serr);
+```c
+int32 swe_calc_ut(double tjd_et, int32 ipl, int32 iflag, double *xx, char *serr);
+```
 
 same but
 
-tjd_et = Julian day, Ephemeris time, where tjd_et = tjd_ut +
-**swe_deltat**(tjd_ut)
+tjd_et = Julian day, Ephemeris time, where tjd_et = tjd_ut + swe_deltat(tjd_ut)
 
-A detailed description of these variables will be given in the following
-sections.
+A detailed description of these variables will be given in the following sections.
 
 **swe_calc_pctr()** calculates planetocentric positions of planets, i.
 e. positions as observed from some different planet, e.g.
@@ -377,25 +337,20 @@ object as observed from any other object, e.g. also the position of some
 asteroid as observed from another asteroid or from a planetary moon. The
 function declaration is as follows:
 
-int32 **swe_calc_pctr**(
+```c
+int32 swe_calc_pctr(double tjd_et, int32 ipl, int32 iplctr, int32 iflag, double xxret, char serr);
+// tjd_et = [Julian day], Ephemeris Time 
+// ipl = body number
+// iplctr = body number of center body
+// iflag = a 32 bit integer containing bit flags
+// xx = array of 6 doubles
+// serr[256] = character string to return error messages in case of error.
+```
 
-double tjd, // input time in TT
-
-int32 ipl, // target object
-
-int32 iplctr, // center object
-
-int32 iflag,
-
-double \*xxret,
-
-char \*serr);
-
-## Bodies (int ipl)
+### Bodies (int ipl)
 
 To tell **swe_calc()** which celestial body or factor should be
-computed, a fixed set of body numbers is used. The []{#_Hlk477832010
-.anchor}body numbers are defined in swephexp.h:
+computed, a fixed set of body numbers is used. The body numbers are defined in swephexp.h:
 
 ```c
 /* planet numbers for the ipl parameter in swe_calc() */
@@ -452,81 +407,58 @@ computed, a fixed set of body numbers is used. The []{#_Hlk477832010
 Body numbers of other asteroids are above SE_AST_OFFSET (= 10000) and
 have to be constructed as follows:
 
+```c
 ipl = SE_AST_OFFSET + minor_planet_catalogue_number;
+```
 
-e.g. Eros : ipl = SE_AST_OFFSET + 433 (= 10433)
+e.g. Eros:
+```c
+ipl = SE_AST_OFFSET + 433;	// (= 10433)
+```
 
 The names of the asteroids and their catalogue numbers can be found in
 seasnam.txt.
 
 Examples are:
 
+```
 5 Astraea
-
 6 Hebe
-
 7 Iris
-
 8 Flora
-
 9 Metis
-
 10 Hygiea
-
 30 Urania
-
-42 Isis not identical with \"Isis-Transpluto\"
-
+42 Isis not identical with "Isis-Transpluto"
 153 Hilda has an own asteroid belt at 4 AU
-
 227 Philosophia
-
 251 Sophia
-
 259 Aletheia
-
 275 Sapientia
-
 279 Thule asteroid close to Jupiter
-
 375 Ursula
-
 433 Eros
-
-763 Cupido different from Witte\'s Cupido
-
+763 Cupido different from Witte's Cupido
 944 Hidalgo
-
-1181 Lilith not identical with Dark Moon \'Lilith\'
-
+1181 Lilith not identical with Dark Moon 'Lilith'
 1221 Amor
-
 1387 Kama
-
 1388 Aphrodite
-
-1862 Apollo different from Witte\'s Apollon
-
+1862 Apollo different from Witte's Apollon
 3553 Damocles highly eccentric orbit between Mars and Uranus
-
-3753 Cruithne \"second moon\" of Earth
-
-4341 Poseidon Greek Neptune - different from Witte\'s Poseidon
-
-4464 Vulcano fire god - different from Witte\'s Vulkanus and
-intramercurian Vulcan
-
-5731 Zeus Greek Jupiter - different from Witte\'s Zeus
-
+3753 Cruithne "second moon" of Earth
+4341 Poseidon Greek Neptune - different from Witte's Poseidon
+4464 Vulcano fire god - different from Witte's Vulkanus and
 7066 Nessus third named Centaur - between Saturn and Pluto
+```
 
 There are two ephemeris files for each asteroid (except the main
 asteroids), a long one and a short one:
 
-se09999.se1 long-term ephemeris of asteroid number 9999, 3000 BCE --
+- se09999.se1 long-term ephemeris of asteroid number 9999, 3000 BCE --
 3000 CE
 
-se09999s.se1 short ephemeris of asteroid number 9999, 1500 -- 2100 CE
+- se09999s.se1 short ephemeris of asteroid number 9999, 1500 -- 2100 CE
 
 The larger file is about 10 times the size of the short ephemeris. If
 the user does not want an ephemeris for the time before 1500 he might
@@ -540,10 +472,10 @@ the ephemeris directory itself. Asteroids with numbers 0 -- 999 are
 expected in directory ast0, those with numbers 1000 -- 1999 in directory
 ast1 etc.
 
-Note that not all []{#_Hlk477863570 .anchor}asteroids can be computed
+Note that not all asteroids can be computed
 for the whole period of Swiss Ephemeris. The orbits of some of them are
 extremely sensitive to perturbations by major planets. E.g.
-[]{#_Hlk478116834 .anchor}**CHIRON**, cannot be computed for the time
+**CHIRON**, cannot be computed for the time
 before **650 CE** and after **4650 CE** because of close encounters with
 Saturn. Outside this time range, Swiss Ephemeris returns the error code,
 an error message, and a position value 0. Be aware, that the user will
@@ -568,131 +500,96 @@ with Swiss Ephemeris version 2.10.
 Their Swiss Ephemeris body numbers are between SE_PLMOON_OFFSET (= 9000)
 and SE_AST_OFFSET (= 10000) and are constructed as follows:
 
-ipl = SE_PLMOON_OFFSET + planet_number \* 100 + moon number in JPL
-Horizons;
+```c
+ipl = SE_PLMOON_OFFSET + planet_number * 100 + moon_number_in_JPL_Horizons;
+```
 
-e.g., Jupiter moon Io: ipl = SE_PLMOON_OFFSET + SE_JUPITER (= 5) \* 100
-+ 1 (= 9501).
+e.g., Jupiter moon Io:
+```c
+ipl = SE_PLMOON_OFFSET + SE_JUPITER * 100 + 1;	// (= 9501)
+```
 
 Centers of body (COB) are calculated the same way, i.e. like a planetary
 moon but with the "moon number" 99;
 
-e.g. Jupiter center of body: ipl = SE_PLMOON_OFFSET + SE_JUPITER \* 100
-+ 99 (= 9599)
+e.g. Jupiter center of body:
+```c
+ipl = SE_PLMOON_OFFSET + SE_JUPITER * 100 + 99;	//(= 9599)
+```
 
-Moons of Mars: 9401 -- 9402
-
-Moons of Jupiter: 9501 -- 95xx; Center of body: 9599
-
-Moons of Saturn: 9601 -- 96xx; Center of body: 9699
-
-Moons of Uranus: 9701 -- 97xx; Center of body: 9799
-
-Moons of Neptune: 9801 -- 98xx; Center of body: 9899
-
-Moons of Pluto: 9901 -- 99xx; Center of body: 9999
+- Moons of Mars: 9401 -- 9402
+- Moons of Jupiter: 9501 -- 95xx; Center of body: 9599
+- Moons of Saturn: 9601 -- 96xx; Center of body: 9699
+- Moons of Uranus: 9701 -- 97xx; Center of body: 9799
+- Moons of Neptune: 9801 -- 98xx; Center of body: 9899
+- Moons of Pluto: 9901 -- 99xx; Center of body: 9999
 
 A full list of existing planetary moons is found here:
+
 https://en.wikipedia.org/wiki/List_of_natural_satellites .
 
-The ephemeris files of the planetary moons and COB are in **the
-subdirectory sat.** Like the subdirectories of asteroids, the directory
+The ephemeris files of the planetary moons and COB are in **the subdirectory sat.**
+Like the subdirectories of asteroids, the directory
 sat must be created in the path which is defined using the function
 swe_set_ephe_path().
 
 The ephemeris files can be downloaded from here:
 
-<https://www.astro.com/ftp/swisseph/ephe/sat/>.
+https://www.astro.com/ftp/swisseph/ephe/sat/.
 
 The list of objects available in the Swiss Ephemeris is:
 
-9401 Phobos/Mars
-
-9402 Deimos/Mars
-
-9501 Io/Jupiter
-
-9502 Europa/Jupiter
-
-9503 Ganymede/Jupiter
-
-9504 Callisto/Jupiter
-
-9599 Jupiter/COB
-
-9601 Mimas/Saturn
-
-9602 Enceladus/Saturn
-
-9603 Tethys/Saturn
-
-9604 Dione/Saturn
-
-9605 Rhea/Saturn
-
-9606 Titan/Saturn
-
-9607 Hyperion/Saturn
-
-9608 Iapetus/Saturn
-
-9699 Saturn/COB
-
-9701 Ariel/Uranus
-
-9702 Umbriel/Uranus
-
-9703 Titania/Uranus
-
-9704 Oberon/Uranus
-
-9705 Miranda/Uranus
-
-9799 Uranus/COB
-
-9801 Triton/Neptune
-
-9802 Triton/Nereid
-
-9808 Proteus/Neptune
-
-9899 Neptune/COB
-
-9901 Charon/Pluto
-
-9902 Nix/Pluto
-
-9903 Hydra/Pluto
-
-9904 Kerberos/Pluto
-
-9905 Styx/Pluto
-
-9999 Pluto/COB
+- 9401 Phobos/Mars
+- 9402 Deimos/Mars
+- 9501 Io/Jupiter
+- 9502 Europa/Jupiter
+- 9503 Ganymede/Jupiter
+- 9504 Callisto/Jupiter
+- 9599 Jupiter/COB
+- 9601 Mimas/Saturn
+- 9602 Enceladus/Saturn
+- 9603 Tethys/Saturn
+- 9604 Dione/Saturn
+- 9605 Rhea/Saturn
+- 9606 Titan/Saturn
+- 9607 Hyperion/Saturn
+- 9608 Iapetus/Saturn
+- 9699 Saturn/COB
+- 9701 Ariel/Uranus
+- 9702 Umbriel/Uranus
+- 9703 Titania/Uranus
+- 9704 Oberon/Uranus
+- 9705 Miranda/Uranus
+- 9799 Uranus/COB
+- 9801 Triton/Neptune
+- 9802 Triton/Nereid
+- 9808 Proteus/Neptune
+- 9899 Neptune/COB
+- 9901 Charon/Pluto
+- 9902 Nix/Pluto
+- 9903 Hydra/Pluto
+- 9904 Kerberos/Pluto
+- 9905 Styx/Pluto
+- 9999 Pluto/COB
 
 The maximum differences between barycenter and center of body (COB) are:
 
-Mars (0.2 m, irrelevant to us)
-
-Jupiter 0.075 arcsec (jd 2468233.5)
-
-Saturn 0.053 arcsec (jd 2463601.5)
-
-Uranus 0.0032 arcsec (jd 2446650.5)
-
-Neptune 0.0036 arcsec (jd 2449131.5)
-
-Pluto 0.088 arcsec (jd 2437372.5)
+- Mars (0.2 m, irrelevant to us)
+- Jupiter 0.075 arcsec (jd 2468233.5)
+- Saturn 0.053 arcsec (jd 2463601.5)
+- Uranus 0.0032 arcsec (jd 2446650.5)
+- Neptune 0.0036 arcsec (jd 2449131.5)
+- Pluto 0.088 arcsec (jd 2437372.5)
 
 (from one-day-step calculations over 150 years)
 
 If you prefer using COB rather than barycenters, you should understand
 that:
 
-\- The performance is not as good for COB as for barycenters. With
+- The performance is not as good for COB as for barycenters. With
 transit calculations you could run into troubles.
 
-\- The ephemerides are limited to the time range 1900 to 2047.
+- The ephemerides are limited to the time range 1900 to 2047.
 
 ### Fictitious planets
 
@@ -702,10 +599,12 @@ these planets must be written into the file seorbel.txt. The function
 **swe_calc()** looks for the file seorbel.txt in the ephemeris path set
 by **swe_set_ephe_path()**. If no orbital elements file is found,
 **swe_calc()** uses the built-in orbital elements of the above mentioned
-[Uranian planets](#_Hlk477832209) and some other bodies. The planet
+[Uranian planets] and some other bodies. The planet
 number of a fictitious planet is defined as
 
+```c
 ipl = SE_FICT_OFFSET_1 + number_of_elements_set;
+```
 
 e.g. for Kronos: ipl = 39 + 4 = 43.
 

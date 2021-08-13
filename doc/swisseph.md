@@ -445,7 +445,7 @@ programmer's documentation and in the source code, file swephlib.h.
 IERS Conventions 1996, 2003, and 2010 can be read or downloaded from here: 
 
 [http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html](http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html)
-
+- 
 Detailed instructions how to compare planetary positions as given by the
 Swiss Ephemeris with those of JPL are given in Appendix C at the end of
 this documentation.
@@ -4401,22 +4401,6 @@ Placalc, it uses its own house calculation module by Walter Pullen.
 Various releases of Astrolog contain different approaches to this
 problem.
 
-#### ASTROLOG on www.astro.com
-
-ASTROLOG is also used on Astrodienst's website for displaying free
-charts. This version of Astrolog used on our website however is
-different from the Astrolog program as distributed on the Internet. Our
-webserver version of Astrolog contains calls to Swiss Ephemeris for
-planetary positions. For Ascendant, MC and houses it still uses Walter
-Pullen\'s code. This will change in due time because we intend to
-replace ASTROLOG on the website with our own charting software.
-
-#### Other astrology programs
-
-Because most astrology programs still use the Placalc module, they
-follow the Placalc method for houses inside the polar circles. They give
-priority to keep the MC above the horizon and switch the Ascendant by
-180 degrees if necessary to keep the quadrants in order.
 
 ## 6.5. House position of a planet
 
@@ -4483,18 +4467,18 @@ arcs of ecliptic points or planets are subdivided.
 Three different algorithms have been used by Gauquelin and others to
 determine the sector position of a planet.
 
-1.  We can take the ecliptic point of the planet (ecliptical latitude
-    ignored) and calculate the fraction of its diurnal or nocturnal arc
-    it has completed
+-  We can take the ecliptic point of the planet (ecliptical latitude
+ignored) and calculate the fraction of its diurnal or nocturnal arc
+it has completed
 
-9.  We can take the true planetary position (taking into account
-    ecliptical latitude) for the same calculation.
+-  We can take the true planetary position (taking into account
+ecliptical latitude) for the same calculation.
 
-10. We can use the exact times for rise and set of the planet to
-    determine the ratio between the time the planet has already spent
-    above (or below) the horizon and its diurnal (or nocturnal) arc.
-    Times of rise and set are defined by the appearance or disappearance
-    of the center of the planet's disks.
+- We can use the exact times for rise and set of the planet to
+determine the ratio between the time the planet has already spent
+above (or below) the horizon and its diurnal (or nocturnal) arc.
+Times of rise and set are defined by the appearance or disappearance
+of the center of the planet's disks.
 
 All three methods are supported by the Swiss Ephemeris.
 

@@ -964,11 +964,13 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
     Const SEFLG_NONUT As Long = 64
     Const SEFLG_NOGDEFL As Long = 512
     Const SEFLG_NOABERR As Long = 1024
+    Const SEFLG_ASTROMETRIC As Long = 1536
     Const SEFLG_EQUATORIAL As Long = 2048
     Const SEFLG_XYZ As Long = 4096
     Const SEFLG_RADIANS As Long = 8192
     Const SEFLG_BARYCTR As Long = 16384
     Const SEFLG_TOPOCTR As Long = 32768
+    Const SEFLG_ORBEL_AA As Long = 32768	' same as SEFLG_TOPOCTR
     Const SEFLG_SIDEREAL As Long = 65536
     Const SEFLG_ICRS As Long = 131072
     Const SEFLG_DPSIDEPS_1980 As Long = 262144
@@ -976,14 +978,9 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
     Const SEFLG_JPLHOR_APPROX As Long = 1048576
 
     Const SE_SIDBIT_ECL_T0 As Long = 256  ' for positions referred to equinox t0
-    Const SE_SIDBIT_SSY_PLANE As Long = 256  ' for positions referred to solar system plane
+    Const SE_SIDBIT_SSY_PLANE As Long = 512  ' for positions referred to solar system plane
+    Const SE_SIDBIT_USER_UT As Long = 1024  ' with user-defined ayanamsha, t0 is UT
     Const SE_SIDBIT_ECL_DATE      As Long = 2048 ' ayanamsha measured on ecliptic of date;
-
-    ' used with swe_nod_aps()
-    Const SE_NODBIT_MEAN As Long = 1  ' mean nodes/apsides
-    Const SE_NODBIT_OSCU As Long = 2  ' osculating nodes/apsides
-    Const SE_NODBIT_OSCU_BAR As Long = 4  ' same, but motion about solar system barycenter considered
-    Const SE_NODBIT_FOPOINT As Long = 256  ' focal point of orbit instead of aphelion
 
     'eclipse codes
     Const SE_ECL_CENTRAL As Long = 1
@@ -1074,6 +1071,7 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
     Const SE_CALC_SET As Long = 2
     Const SE_CALC_MTRANSIT As Long = 4
     Const SE_CALC_ITRANSIT As Long = 8
+    Const SE_BIT_GEOCTR_NO_ECL_LAT As Long = 128
     Const SE_BIT_DISC_CENTER As Long = 256  '/* to be added to SE_CALC_RISE/SET */
     '/* if rise or set of disc center is */
     '/* requried */
@@ -1082,7 +1080,9 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
     Const SE_BIT_CIVIL_TWILIGHT As Long = 1024  '/* to be added to SE_CALC_RISE/SET, */
     Const SE_BIT_NAUTIC_TWILIGHT As Long = 2048  '/* to be added to SE_CALC_RISE/SET, */
     Const SE_BIT_ASTRO_TWILIGHT As Long = 4096  '/* to be added to SE_CALC_RISE/SET, */
+    Const SE_BIT_DISC_BOTTOM As Long = 8192
     Const SE_BIT_FIXED_DISC_SIZE As Long = 16384  '/* to be added to SE_CALC_RISE/SET, */
+    Const SE_BIT_HINDU_RISING As Long = 896
 
 
 
@@ -1122,6 +1122,12 @@ Private Declare PtrSafe Function swe_orbit_max_min_true_distance Lib "swedll.32.
     Const SE_HELFLAG_HIGH_PRECISION As Long = 256
     Const SE_HELFLAG_OPTICAL_PARAMS As Long = 512
     Const SE_HELFLAG_NO_DETAILS As Long = 1024
+    Const SE_HELFLAG_SEARCH_1_PERIOD As Long = 2048
+    Const SE_HELFLAG_VISLIM_DARK As Long = 4096
+    Const SE_HELFLAG_VISLIM_NOMOON As Long = 8196
+    Const SE_HELFLAG_VISLIM_PHOTOPIC As Long = 16384
+    Const SE_HELFLAG_VISLIM_SCOTOPIC As Long = 32768
+    Const SE_HELFLAG_AV As Long = 65536
 
     Const SE_PHOTOPIC_FLAG As Long = 0
     Const SE_SCOTOPIC_FLAG As Long = 1

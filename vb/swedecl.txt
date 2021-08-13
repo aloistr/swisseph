@@ -1080,12 +1080,6 @@ Const SE_SIDBIT_USER_UT       As Int32 = 1024
 ' see commentaries in sweph.c:swi_get_ayanamsa_ex(). 
 Const SE_SIDBIT_ECL_DATE      As Int32 = 2048
 
-' modes for planetary nodes/apsides, swe_nod_aps(), swe_nod_aps_ut()
-Const SE_NODBIT_MEAN		As Int32 = 1
-Const SE_NODBIT_OSCU		As Int32 = 2
-Const SE_NODBIT_OSCU_BAR	As Int32 = 3
-Const SE_NODBIT_FOPOINT		As Int32 = 256
-
 ' indices for swe_rise_trans()
 Const SE_CALC_RISE		As Int32 = 1
 Const SE_CALC_SET		As Int32 = 2

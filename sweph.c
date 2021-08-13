@@ -7719,8 +7719,8 @@ static int32 swi_fixstar_calc_from_record(char *srecord, double tjd, int32 iflag
   int32 epheflag, iflgsave;
   // char s[AS_MAXCH];
   struct epsilon *oe = &swed.oec2000;
-  iflag |= SEFLG_SPEED; /* we need this in order to work correctly */
   iflgsave = iflag;
+  iflag |= SEFLG_SPEED; /* we need this in order to work correctly */
   if (serr != NULL)
     *serr = '\0';
   iflag = plaus_iflag(iflag, -1, tjd, serr);
@@ -7964,13 +7964,13 @@ if ((0)) {
   for (i = 0; i <= 5; i++)
     xx[i] = x[i];
   if (!(iflgsave & SEFLG_SPEED)) {
+    iflag = iflag & ~SEFLG_SPEED;
     for (i = 3; i <= 5; i++)
       xx[i] = 0;
   }
   /* if no ephemeris has been specified, do not return chosen ephemeris */
   if ((iflgsave & SEFLG_EPHMASK) == 0)
     iflag = iflag & ~SEFLG_DEFAULTEPH;
-  iflag = iflag & ~SEFLG_SPEED;
   return iflag;
 }
 

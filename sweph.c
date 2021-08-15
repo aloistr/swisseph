@@ -7644,8 +7644,9 @@ static int32 swi_fixstar_load_record(char *star, char *srecord, char *sname, cha
     }
     // search string is traditional name
     *sp = '\0';	/* cut off after first field to get star name, ',' -> '\0' */
-    //strncpy(fstar, s, SWI_STAR_LENGTH);
-    slen = swi_strnlen(s, SE_MAX_STNAME);
+    //slen = swi_strnlen(s, SE_MAX_STNAME);
+    slen = strlen(s);
+    if (slen > SE_MAX_STNAME) slen = SE_MAX_STNAME;
     memcpy(fstar, s, slen);
     fstar[slen] = '\0';  /* force termination */
     *sp = ',';  /* add comma again */

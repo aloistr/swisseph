@@ -1,6 +1,7 @@
 ---
 title: Swiss Ephemeris General Documentation
-date: 12-aug-21
+date: 14-aug-21
+version: 2.10.02
 output:
   html_document:
    toc: true

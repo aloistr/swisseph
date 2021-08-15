@@ -1,4 +1,12 @@
-  last edit 11-aug-21 Alois
+---
+title: Programming Interface to the Swiss Ephemeris
+date: 14-aug-21
+version: 2.10.02
+output:
+  html_document:
+   toc: true
+   toc_depth: 3
+---
 
 # Programming interface to the Swiss Ephemeris
 
@@ -132,7 +140,7 @@ int main()
 
 # 2. The Ephemeris file related functions
 
-## swe_set_ephe_path()
+## 2.1. swe_set_ephe_path()
 
 This is the first function that should be called before any other
 function of the Swiss Ephemeris. Even if you don't want to set an
@@ -188,7 +196,7 @@ installed ephemeris files for all different applications. A developer
 should accept this override feature and allow the sophisticated users to
 exploit it.
 
-## swe_close()
+## 2.2. swe_close()
 
 
 ```c
@@ -202,7 +210,7 @@ After **swe_close()**, **no** Swiss Ephemeris functions should be used
 unless you call **swe_set_ephe_path()** again and, if required,
 **swe_set_jpl_file()**.
 
-## swe_set_jpl_file()
+## 2.3. swe_set_jpl_file()
 
 ```c
 /* set name of JPL ephemeris file */
@@ -225,7 +233,7 @@ the file name to a length of 256 bytes. The error will become visible
 after the first call of **swe_calc()**, when it will return zero
 positions and an error message.
 
-## swe_version()
+## 2.4. swe_version()
 
 ```c
 /* find out version number of your Swiss Ephemeris version */
@@ -238,7 +246,7 @@ version number (255 char) */
 The function returns a pointer to the string svers, i.e. to the version
 number of the Swiss Ephemeris that your software is using.
 
-## swe_get_library_path()
+## 2.5. swe_get_library_path()
 
 ```c
 /* find out the library path of the DLL or executable */
@@ -253,7 +261,7 @@ The function returns a pointer to the string spath, which contains the
 path in which the executable resides. If it is running with a DLL, then
 spath contains the path of the DLL.
 
-## swe_get_current_file_data()
+## 2.6. swe_get_current_file_data()
 
 This is function can be used to find out the start and end date of an
 \*se1 ephemeris file after a call of swe_calc().
@@ -278,7 +286,7 @@ const char *swe_get_current_file_data(int ifno, double *tfstart, double *tfend, 
 // all three return values are zero for a jpl file or a star file.
 ```
 
-# Planetary Positions: 
+# 3. Planetary Positions: 
 
 # The functions swe_calc_ut(), swe_calc(), and swe_calc_pctr()
 
@@ -290,15 +298,15 @@ and use the Moshier ephemeris, it is nevertheless recommended to call
 initializations**. If you don't do that, the Swiss Ephemeris may work
 but the results may be not 100% consistent.
 
-### The call parameters
+## 3.1. The call parameters
 
 **swe_calc_ut()** was introduced with Swisseph **version 1.60** and
 makes planetary calculations a bit simpler. For the steps required, see
 the chapter [The programming steps to get a planet's
-position](#_Toc476664303).
+position]                
 
 **swe_calc_ut()** and **swe_calc()** work exactly the same way except
-that **swe_calc()** requires [Ephemeris Time](#_Hlk477830987) (more
+that **swe_calc()** requires [Ephemeris Time]                 (more
 accurate: Terrestrial Time (TT)) as a
 parameter whereas **swe_calc_ut()** expects Universal Time (UT). For
 common astrological calculations, you will only need **swe_calc_ut()**
@@ -347,7 +355,7 @@ int32 swe_calc_pctr(double tjd_et, int32 ipl, int32 iplctr, int32 iflag, double 
 // serr[256] = character string to return error messages in case of error.
 ```
 
-### Bodies (int ipl)
+## 3.2. Bodies (int ipl)
 
 To tell **swe_calc()** which celestial body or factor should be
 computed, a fixed set of body numbers is used. The body numbers are defined in swephexp.h:
@@ -539,47 +547,51 @@ https://www.astro.com/ftp/swisseph/ephe/sat/.
 
 The list of objects available in the Swiss Ephemeris is:
 
-- 9401 Phobos/Mars
-- 9402 Deimos/Mars
-- 9501 Io/Jupiter
-- 9502 Europa/Jupiter
-- 9503 Ganymede/Jupiter
-- 9504 Callisto/Jupiter
-- 9599 Jupiter/COB
-- 9601 Mimas/Saturn
-- 9602 Enceladus/Saturn
-- 9603 Tethys/Saturn
-- 9604 Dione/Saturn
-- 9605 Rhea/Saturn
-- 9606 Titan/Saturn
-- 9607 Hyperion/Saturn
-- 9608 Iapetus/Saturn
-- 9699 Saturn/COB
-- 9701 Ariel/Uranus
-- 9702 Umbriel/Uranus
-- 9703 Titania/Uranus
-- 9704 Oberon/Uranus
-- 9705 Miranda/Uranus
-- 9799 Uranus/COB
-- 9801 Triton/Neptune
-- 9802 Triton/Nereid
-- 9808 Proteus/Neptune
-- 9899 Neptune/COB
-- 9901 Charon/Pluto
-- 9902 Nix/Pluto
-- 9903 Hydra/Pluto
-- 9904 Kerberos/Pluto
-- 9905 Styx/Pluto
-- 9999 Pluto/COB
+```
+9401 Phobos/Mars
+9402 Deimos/Mars
+9501 Io/Jupiter
+9502 Europa/Jupiter
+9503 Ganymede/Jupiter
+9504 Callisto/Jupiter
+9599 Jupiter/COB
+9601 Mimas/Saturn
+9602 Enceladus/Saturn
+9603 Tethys/Saturn
+9604 Dione/Saturn
+9605 Rhea/Saturn
+9606 Titan/Saturn
+9607 Hyperion/Saturn
+9608 Iapetus/Saturn
+9699 Saturn/COB
+9701 Ariel/Uranus
+9702 Umbriel/Uranus
+9703 Titania/Uranus
+9704 Oberon/Uranus
+9705 Miranda/Uranus
+9799 Uranus/COB
+9801 Triton/Neptune
+9802 Triton/Nereid
+9808 Proteus/Neptune
+9899 Neptune/COB
+9901 Charon/Pluto
+9902 Nix/Pluto
+9903 Hydra/Pluto
+9904 Kerberos/Pluto
+9905 Styx/Pluto
+9999 Pluto/COB
+```
 
 The maximum differences between barycenter and center of body (COB) are:
 
-- Mars (0.2 m, irrelevant to us)
-- Jupiter 0.075 arcsec (jd 2468233.5)
-- Saturn 0.053 arcsec (jd 2463601.5)
-- Uranus 0.0032 arcsec (jd 2446650.5)
-- Neptune 0.0036 arcsec (jd 2449131.5)
-- Pluto 0.088 arcsec (jd 2437372.5)
+```
+Mars (0.2 m, irrelevant to us)
+Jupiter 0.075 arcsec (jd 2468233.5)
+Saturn 0.053 arcsec (jd 2463601.5)
+Uranus 0.0032 arcsec (jd 2446650.5)
+Neptune 0.0036 arcsec (jd 2449131.5)
+Pluto 0.088 arcsec (jd 2437372.5)
+```
 
 (from one-day-step calculations over 150 years)
 
@@ -610,134 +622,64 @@ e.g. for Kronos: ipl = 39 + 4 = 43.
 
 The file seorbel.txt has the following structure:
 
-\# Orbital elements of fictitious planets
-
-\# 27 Jan. 2000
-
-\#
-
-\# This file is part of the Swiss Ephemeris, from Version 1.60 on.
-
-\#
-
-\# Warning! These planets do not exist!
-
-\#
-
-\# The user can add his or her own elements.
-
-\# 960 is the maximum number of fictitious planets.
-
-\#
-
-\# The elements order is as follows:
-
-\# 1. epoch of elements (Julian day)
-
-\# 2. equinox (Julian day or \"J1900\" or \"B1950\" or \"J2000\" or
-"JDATE")
-
-\# 3. mean anomaly at epoch
-
-\# 4. semi-axis
-
-\# 5. eccentricity
-
-\# 6. argument of perihelion (ang. distance of perihelion from node)
-
-\# 7. ascending node
-
-\# 8. inclination
-
-\# 9. name of planet
-
-\#
-
-\# use \'#\' for comments
-
-\# to compute a body with swe_calc(), use planet number
-
-\# ipl = SE_FICT_OFFSET_1 + number_of_elements_set,
-
-\# e.g. number of Kronos is ipl = 39 + 4 = 43
-
-\#
-
-\# Witte/Sieggruen planets, refined by James Neely
-
-J1900, J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833,
-Cupido \# 1
-
-J1900, J1900, 27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500,
-Hades \# 2
-
-J1900, J1900, 165.1232, 59.21436, 0.00120, 299.0440, 0.0000, 0.0000,
-Zeus \# 3
-
-J1900, J1900, 169.0193, 64.81960, 0.00305, 208.8801, 0.0000, 0.0000,
-Kronos \# 4
-
-J1900, J1900, 138.0533, 70.29949, 0.00000, 0.0000, 0.0000, 0.0000,
-Apollon \# 5
-
-J1900, J1900, 351.3350, 73.62765, 0.00000, 0.0000, 0.0000, 0.0000,
-Admetos \# 6
-
-J1900, J1900, 55.8983, 77.25568, 0.00000, 0.0000, 0.0000, 0.0000,
-Vulcanus \# 7
-
-J1900, J1900, 165.5163, 83.66907, 0.00000, 0.0000, 0.0000, 0.0000,
-Poseidon \# 8
-
-\#
-
-\# Isis-Transpluto; elements from \"Die Sterne\" 3/1952, p. 70ff.
-
-\# Strubell does not give an equinox. 1945 is taken in order to
-
-\# reproduce the as best as ASTRON ephemeris. (This is a strange
-
-\# choice, though.)
-
-\# The epoch according to Strubell is 1772.76.
-
-\# 1772 is a leap year!
-
-\# The fraction is counted from 1 Jan. 1772
-
-2368547.66, 2431456.5, 0.0, 77.775, 0.3, 0.7, 0, 0, Isis-Transpluto \# 9
-
-\# Nibiru, elements from Christian Woeltge, Hannover
-
-1856113.380954, 1856113.380954, 0.0, 234.8921, 0.981092, 103.966,
--44.567, 158.708, Nibiru \# 10
-
-\# Harrington, elements from Astronomical Journal 96(4), Oct. 1988
-
-2374696.5, J2000, 0.0, 101.2, 0.411, 208.5, 275.4, 32.4, Harrington \#
-11
-
-\# according to W.G. Hoyt, \"Planets X and Pluto\", Tucson 1980, p. 63
-
-2395662.5, 2395662.5, 34.05, 36.15, 0.10761, 284.75, 0, 0, Leverrier
-(Neptune) \# 12
-
-2395662.5, 2395662.5, 24.28, 37.25, 0.12062, 299.11, 0, 0, Adams
-(Neptune) \# 13
-
-2425977.5, 2425977.5, 281, 43.0, 0.202, 204.9, 0, 0, Lowell (Pluto) \#
-14
-
-2425977.5, 2425977.5, 48.95, 55.1, 0.31, 280.1, 100, 15, Pickering
-(Pluto) \# 15
-
-J1900,JDATE, 252.8987988 + 707550.7341 \* T, 0.13744, 0.019,
-322.212069+1670.056\*T, 47.787931-1670.056\*T, 7.5, Vulcan \# 16
-
-\# Selena/White Moon
-
-J2000,JDATE, 242.2205555, 0.05279142865925, 0.0, 0.0, 0.0, 0.0,
-Selena/White Moon, geo \# 17
+```
+# Orbital elements of fictitious planets
+# 27 Jan. 2000
+#
+# This file is part of the Swiss Ephemeris, from Version 1.60 on.
+#
+# Warning! These planets do not exist!
+#
+# The user can add his or her own elements.
+# 960 is the maximum number of fictitious planets.
+#
+# The elements order is as follows:
+# 1. epoch of elements (Julian day)
+# 2. equinox (Julian day or "J1900" or "B1950" or "J2000" or "JDATE")
+# 3. mean anomaly at epoch
+# 4. semi-axis
+# 5. eccentricity
+# 6. argument of perihelion (ang. distance of perihelion from node)
+# 7. ascending node
+# 8. inclination
+# 9. name of planet
+#
+# use '#' for comments
+# to compute a body with swe_calc(), use planet number
+# ipl = SE_FICT_OFFSET_1 + number_of_elements_set,
+# e.g. number of Kronos is ipl = 39 + 4 = 43
+#
+# Witte/Sieggruen planets, refined by James Neely
+J1900, J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833, Cupido # 1
+J1900, J1900, 27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500, Hades # 2
+J1900, J1900, 165.1232, 59.21436, 0.00120, 299.0440, 0.0000, 0.0000, Zeus # 3
+J1900, J1900, 169.0193, 64.81960, 0.00305, 208.8801, 0.0000, 0.0000, Kronos # 4
+J1900, J1900, 138.0533, 70.29949, 0.00000, 0.0000, 0.0000, 0.0000, Apollon # 5
+J1900, J1900, 351.3350, 73.62765, 0.00000, 0.0000, 0.0000, 0.0000, Admetos # 6
+J1900, J1900, 55.8983, 77.25568, 0.00000, 0.0000, 0.0000, 0.0000, Vulcanus # 7
+J1900, J1900, 165.5163, 83.66907, 0.00000, 0.0000, 0.0000, 0.0000, Poseidon # 8
+#
+# Isis-Transpluto; elements from "Die Sterne" 3/1952, p. 70ff.
+# Strubell does not give an equinox. 1945 is taken in order to
+# reproduce the as best as ASTRON ephemeris. (This is a strange
+# choice, though.)
+# The epoch according to Strubell is 1772.76.
+# 1772 is a leap year!
+# The fraction is counted from 1 Jan. 1772
+2368547.66, 2431456.5, 0.0, 77.775, 0.3, 0.7, 0, 0, Isis-Transpluto # 9
+# Nibiru, elements from Christian Woeltge, Hannover
+1856113.380954, 1856113.380954, 0.0, 234.8921, 0.981092, 103.966, -44.567, 158.708, Nibiru # 10
+# Harrington, elements from Astronomical Journal 96(4), Oct. 1988
+2374696.5, J2000, 0.0, 101.2, 0.411, 208.5, 275.4, 32.4, Harrington # 11
+# according to W.G. Hoyt, "Planets X and Pluto", Tucson 1980, p. 63
+2395662.5, 2395662.5, 34.05, 36.15, 0.10761, 284.75, 0, 0, Leverrier (Neptune) # 12
+2395662.5, 2395662.5, 24.28, 37.25, 0.12062, 299.11, 0, 0, Adams (Neptune) # 13
+2425977.5, 2425977.5, 281, 43.0, 0.202, 204.9, 0, 0, Lowell (Pluto) # 14
+2425977.5, 2425977.5, 48.95, 55.1, 0.31, 280.1, 100, 15, Pickering (Pluto) # 15
+J1900,JDATE, 252.8987988 + 707550.7341 * T, 0.13744, 0.019, 322.212069+1670.056*T, 47.787931-1670.056*T, 7.5, Vulcan # 16
+# Selena/White Moon
+J2000,JDATE, 242.2205555, 0.05279142865925, 0.0, 0.0, 0.0, 0.0, Selena/White Moon, geo # 17
+```
 
 All orbital elements except epoch and equinox may have T terms, where:
 
@@ -766,7 +708,7 @@ the body, ", geo" has to be added.
 
 ### Obliquity and nutation
 
-A []{#_Hlk477832844 .anchor}special body number SE_ECL_NUT is provided
+A special body number SE_ECL_NUT is provided
 to compute the obliquity of the ecliptic and the nutation. Of course
 nutation is already added internally to the planetary coordinates by
 **swe_calc()** but sometimes it will be needed as a separate value.
@@ -785,13 +727,13 @@ x\[3\] = nutation in obliquity
 
 x\[4\] = x\[5\] = 0
 
-## Options chosen by flag bits (long iflag)
+## 3.3. Options chosen by flag bits (int32 iflag)
 
 ### The use of flag bits
 
 If no bits are set, i.e. if iflag == 0, **swe_calc()** computes what
 common astrological ephemerides (as available in book shops) supply,
-i.e. an [apparent](#_Hlk477833007) body position in **geocentric**
+i.e. an [apparent]                 body position in **geocentric**
 ecliptic polar coordinates (longitude, latitude, and distance) relative
 to the true [equinox of the date](#true-or-mean-equinox-of-date).
 
@@ -806,11 +748,13 @@ following paragraphs (c.f. swephexp.h). Their names begin with
 ‚SEFLG\_'. To combine them, you have to concatenate them (inclusive-or)
 as in the following example:
 
-iflag = SEFLG_SPEED \| SEFLG_TRUEPOS; (or: iflag = SEFLG_SPEED +
+```c
+iflag = SEFLG_SPEED | SEFLG_TRUEPOS; // (or: iflag = SEFLG_SPEED +
 SEFLG_TRUEPOS;) // C
 
-iflag = SEFLG_SPEED or SEFLG_TRUEPOS;(or: iflag = SEFLG_SPEED +
+iflag = SEFLG_SPEED or SEFLG_TRUEPOS; // (or: iflag = SEFLG_SPEED +
 SEFLG_TRUEPOS;) // Pascal
+```
 
 With this value of iflag, **swe_calc()** will compute true positions
 (i.e. not accounted for light-time) with speed.
@@ -843,30 +787,32 @@ The flag bits, which are defined in swephexp.h, are:
 #define SEFLG_CENTER_BODY (1024*1024) /* calculate position of center of body (COB) of planet, not barycenter of its system */
 ```
 
-// Note, COB can be calculated either
+Note, COB can be calculated either
 
-// - ipl = SE_JUPITER with iflag \|= SEFLG_CENTER_BODY or
+- ipl = SE_JUPITER with iflag \|= SEFLG_CENTER_BODY or
 
-// - ipl = 9599 (= 9000 + SE_JUPITER \* 100 + 99) without any additional
-bit in iflag
+- ipl = 9599 (= 9000 + SE_JUPITER \* 100 + 99) without any additional
+  bit in iflag
 
 ### Ephemeris flags
 
 The flags to choose an ephemeris are: (s. swephexp.h)
 
-SEFLG_JPLEPH /\* use JPL ephemeris \*/
-
-SEFLG_SWIEPH /\* use Swiss Ephemeris \*/
-
-SEFLG_MOSEPH /\* use Moshier ephemeris \*/
+```c
+	SEFLG_JPLEPH /* use JPL ephemeris */
+	SEFLG_SWIEPH /* use Swiss Ephemeris */
+	SEFLG_MOSEPH /* use Moshier ephemeris */
+```
 
 If none of this flags is specified, **swe_calc()** tries to compute the
 default ephemeris. The default ephemeris is defined in swephexp.h:
 
-#define SEFLG_DEFAULTEPH SEFLG_SWIEPH
+```c
+	#define SEFLG_DEFAULTEPH SEFLG_SWIEPH
+```
 
 In this case the default ephemeris is Swiss Ephemeris. If you have
-[]{#_Hlk477833574 .anchor}not specified an ephemeris in iflag,
+not specified an ephemeris in iflag,
 **swe_calc()** tries to compute a Swiss Ephemeris position. If it does
 not find the required Swiss Ephemeris file either, it computes a Moshier
 position.
@@ -876,25 +822,29 @@ position.
 **Swe_calc()** does not compute speed if you do not add the speed flag
 SEFLG_SPEED. E.g.
 
-iflag \|= SEFLG_SPEED;
+```c
+	iflag |= SEFLG_SPEED;
+```
 
 The computation of speed is usually cheap, so you may set this bit by
 default even if you do not need the speed.
 
 ### Coordinate systems, degrees and radians
 
-SEFLG_EQUATORIAL returns []{#_Hlk477833734 .anchor}equatorial positions:
+- SEFLG_EQUATORIAL returns equatorial positions:
 right ascension and declination.
 
-SEFLG_XYZ returns []{#_Hlk477833826 .anchor}x, y, z coordinates instead
+- SEFLG_XYZ returns x, y, z coordinates instead
 of longitude, latitude, and distance.
 
-SEFLG_RADIANS returns position in []{#_Hlk477833841 .anchor}radians, not
+- SEFLG_RADIANS returns position in radians, not
 degrees.
 
 E.g. to compute right ascension and declination, write:
 
-iflag = SEFLG_SWIEPH \| SEFLG_SPEED \| SEFLG_EQUATORIAL;
+```c
+	iflag = SEFLG_SWIEPH | SEFLG_SPEED | SEFLG_EQUATORIAL;
+```
 
 **NOTE** concerning equatorial coordinates: With sidereal modes
 SE_SIDM_J2000, SE_SIDM_B1950, SE_SIDM_J1900, SE_SIDM_GALALIGN_MARDYKS or
@@ -909,30 +859,29 @@ are given relative to the mean equinox of date.
 
 #### True or apparent positions
 
-Common ephemerides supply []{#_Hlk477833007 .anchor}apparent geocentric
+Common ephemerides supply apparent geocentric
 positions. Since the journey of the light from a planet to the Earth
 takes some time, the planets are never seen where they actually are, but
 where they were a few minutes or hours before. Astrology uses to work
 with the positions **we see**. (More precisely: with the positions we
 would see, if we stood at the center of the Earth and could see the sky.
 Actually, the geographical position of the observer could be of
-importance as well and [topocentric positions](#_Hlk477833975) could be
+importance as well and [topocentric positions] could be
 computed, but this is usually not taken into account in astrology.). The
 geocentric position for the Earth (SE_EARTH) is returned as zero.
 
-To compute the []{#_Hlk477834072 .anchor}**true** geometrical position
+To compute the **true** geometrical position
 of a planet, disregarding light-time, you have to add the flag
 SEFLG_TRUEPOS.
 
 #### Topocentric positions
 
-To compute []{#_Hlk477833975 .anchor}topocentric positions, i.e.
+To compute topocentric positions, i.e.
 positions referred to the place of the observer (the birth place) rather
 than to the center of the Earth, do as follows:
 
 -   call **swe_set_topo**(geo_lon, geo_lat, altitude_above_sea) (The
-    > geographic longitude and latitude must be in degrees, the altitude
-    > in meters.)
+geographic longitude and latitude must be in degrees, the altitude in meters.)
 
 -   add the flag SEFLG_TOPOCTR to iflag
 
@@ -1002,7 +951,7 @@ daily-measured celestial pole offsets (delta_psi and delta_epsilon) to
 nutation. (IERS Conventions 1996, p. 22) While this approach is more
 accurate in some respect, it is not referred to the same reference
 frame. For more details see the general documentation of the Swiss
-Ephemeris in swisseph.doc or
+Ephemeris in 
 <http://www.astro.com/swisseph/swisseph.htm>, ch. 2.1.2.2.
 
 Apparent positions of JPL Horizons can be reproduced with about 0.001
@@ -1016,19 +965,13 @@ files are found on the IERS website:
 
 The following files are required:
 
-1\. EOP 08 C04 (IAU1980) - one file (1962-now)
-
+  * EOP 08 C04 (IAU1980) - one file (1962-now)
 <http://datacenter.iers.org/eop/-/somos/5Rgv/document/tx14iers.0z9/eopc04_08.62-now>
+Put this file into your ephemeris path and rename it as "eop_1962_today.txt".
 
-Put this file into your ephemeris path and rename it as
-"eop_1962_today.txt".
-
-2\. finals.data (IAU1980)
-
+  * finals.data (IAU1980)
 <http://datacenter.iers.org/eop/-/somos/5Rgv/document/tx14iers.0q0/finals.data>
-
-Put this file into your ephemeris path, too, and rename it as
-"eop_finals.txt".
+Put this file into your ephemeris path, too, and rename it as "eop_finals.txt".
 
 If the Swiss Ephemeris does not find these files, it defaults to
 SEFLG_JPLHORA, which is a very good approximation of Horizons, at least
@@ -1040,27 +983,19 @@ Swiss Ephemeris.
 Note, the Horizons mode works only with planets and fixed stars. With
 lunar nodes and apsides, we use our standard methods.
 
-## Position and Speed (double xx\[6\])
+## 3.4. Position and Speed (double xx\[6\])
 
 **swe_calc()** returns the coordinates of position and velocity in the
 following order:
 
------------------------------- ----------------------------------------
-  **Ecliptic position**          **Equatorial position
-                                 (**SEFLG_EQUATORIAL**)**
-
-  Longitude                      right ascension
-
-  Latitude                       declination
-
-  Distance in AU                 distance in AU
-
-  Speed in longitude (deg/day)   speed in right ascension (deg/day)
-
-  Speed in latitude (deg/day)    speed in declination (deg/day)
-
-  Speed in distance (AU/day)     speed in distance (AU/day)
------------------------------- ----------------------------------------
+index|**Ecliptic position**         |**Equatorial position (SEFLG_EQUATORIAL)**
+-|------------------------------|----------------------------------------
+0|Longitude                     |right ascension
+1|Latitude                      |declination
+2|Distance in AU                |distance in AU
+3|Speed in longitude (deg/day)  |speed in right ascension (deg/day)
+4|Speed in latitude (deg/day)   |speed in declination (deg/day)
+5|Speed in distance (AU/day)    |speed in distance (AU/day)
 
 If you need rectangular coordinates (SEFLG_XYZ), **swe_calc()** returns
 x, y, z, dx, dy, dz in AU.
@@ -1072,7 +1007,7 @@ You can get them very cheaply (little CPU time used), calling again
 SEFLG_XYZ to iflag, **swe_calc()** will not compute the body again, just
 return the data specified from internal storage.
 
-## Error handling and return values
+## 3.5. Error handling and return values
 
 **swe_calc()** (as well as **swe_calc_ut()**, **swe_fixstar()**, and
 **swe_fixstar_ut()**) returns a 32-bit integer value. This value is \>=
@@ -1080,26 +1015,20 @@ return the data specified from internal storage.
 occurred. In addition an error string or a warning can be returned in
 the string parameter serr.
 
-A []{#_Hlk477831866 .anchor}**fatal error code (\< 0)** and an error
+A **fatal error code (\< 0)** and an error
 string are returned in one of the following cases:
 
--   if an illegal [body number](#_Hlk477832010) has been specified;
-
+-   if an illegal [body number] has been specified;
 -   if a Julian day beyond the ephemeris limits has been specified;
-
 -   if the length of the ephemeris file is not correct (damaged file);
-
 -   on read error, e.g. a file index points to a position beyond file
     length (data on file are corrupt);
-
 -   if the copyright section in the ephemeris file has been destroyed.
 
 If any of these errors occurs:
 
 -   the return code of the function is -1;
-
 -   the position and speed variables are set to zero;
-
 -   the type of error is indicated in the error string serr.
 
 **On success**, the return code contains flag bits that indicate what
@@ -1131,8 +1060,7 @@ has been done by the function.
 Some flags may be removed, if they are incompatible with other flags,
 e.g.:
 
--   if two or more ephemerides (SEFLG_JPLEPH, SEFLG_SWIEPH,
-    SEFLG_MOSEPH) are combined.
+-   if two or more ephemerides (SEFLG_JPLEPH, SEFLG_SWIEPH, SEFLG_MOSEPH) are combined.
 
 -   if the topocentric flag (SEFLG_TOPOCTR) is combined with the
     heliocentric (SEFLG_HELCTR) or the barycentric flag (SEFLG_BARYCTR).
@@ -1151,192 +1079,15 @@ Some flags may be added in the following cases:
     calculations, the flags for "no aberration" (SEFLG_NOABERR) and "no
     light deflection" (SEFLG_NOGDEFL) are added.
 
-# Functions to find crossings of planets over positions
+# 4. Other functions for planet and asteroid data
 
-These functions find the crossing of the Sun over a given ecliptic
-position:
+# 4.1 swe_get_planet_name()
 
-double **swe_solcross**(
+This function allows to find a planetary or asteroid name, when the planet number is given. The function definition is:
 
-double x2cross,
-
-double tjd_et,
-
-int32 iflag,
-
-char \*serr);
-
-double **swe_solcross_ut**(
-
-double x2cross,
-
-double tjd_ut,
-
-int32 iflag,
-
-char \*serr);
-
-Return value: double jx = time of next crossing, in Ephemeris Time or
-Universal Time.
-
-In case of error, a value of jx \< tjd is returned. Because the crossing
-search is always forward in time, returning an earlier time is an
-indication of error. In addition, string serr will contain error
-details.
-
-The precision is 1 milliarcsecond, i.e. at the returned time the Sun is
-closer than 0.001 arcsec to x2cross.
-
-These flag bits in iflag can be useful:
-
-SEFLG_TRUEPOS
-
-SEFLG_NONUT
-
-SEFLG_EQUATORIAL (x2cross is a rectascension value, a point on the
-equator, and not on the ecliptic)
-
-These functions find the crossing of the Moon over a given ecliptic
-position:
-
-double **swe_mooncross**(
-
-double x2cross,
-
-double tjd_et,
-
-int32 iflag,
-
-char \*serr);
-
-double **swe_mooncross_ut**(
-
-double x2cross,
-
-double tjd_ut,
-
-int32 iflag,
-
-char \*serr);
-
-Return value: double jx = time of next crossing, in Ephemeris Time or
-Universal Time.
-
-In case of error, a value of jx \< tjd is returned. Because the crossing
-search is always forward in time, returning an earlier time is an
-indication of error. In addition, string serr will contain error details
-(unless it is a NULL pointer)
-
-The precision is 1 milliarcsecond, i.e. at the returned time the Moon is
-closer than 0.001 arcsec to x2cross.
-
-These flag bits in iflag can be useful:
-
-SEFLG_TRUEPOS
-
-SEFLG_NONUT
-
-SEFLG_EQUATORIAL (x2cross is a rectascension value, a point on the
-equator, and not on the ecliptic)
-
-These functions find the crossing of the Moon over its true node, i.e.
-crossing through the ecliptic.
-
-double **swe_mooncross_node**(
-
-double tjd_et,
-
-int32 iflag,
-
-double \*xlon,
-
-double \*xlat,
-
-char \*serr);
-
-double **swe_mooncross_node_ut**(
-
-double tjd_ut,
-
-int32 iflag,
-
-double \*xlon,
-
-double \*xlat,
-
-char \*serr);
-
-Return value: double jx = time of next crossing, in Ephemeris Time or
-Universal Time.
-
-In case of error, a value of jx \< tjd is returned. Because the crossing
-search is always forward in time, returning an earlier time is an
-indication of error. In addition, string serr will contain error details
-(unless it is a NULL pointer)
-
-The position of the Moon at the moment of crossing is returned in xlon
-and xlat, with xlat very close to zero.
-
-There are currently no functions for geocentric crossings of other
-planets. Their movement is more complex because they can become
-stationary and retrograde and make multiple crossings in the short
-period of time.
-
-There are however functions for heliocentric crossings over a position
-x2cross:
-
-int32 **swe_helio_cross**(\
-int32 ipl,
-
-double x2cross,
-
-double tjd_ut,
-
-int32 iflag,
-
-int32 dir,
-
-double \*jx,
-
-char \*serr);
-
-int32 **swe_helio_cross_ut**(\
-int32 ipl,
-
-double x2cross,
-
-double tjd_ut,
-
-int32 iflag,
-
-int32 dir,
-
-double \*jx,
-
-char \*serr);
-
-ipl is the planet number. Only objects which have a heliocentric orbit
-are possible.
-
-dir \>= 0 indicates search forward in time, dir \< 0 indicates search
-backward in time. It is recommended to use dir = 1 or dir = -1.
-
-Return value \< 0 indicates an error, with error details in string serr
-(unless serr is a NULL pointer).
-
-The crossing time is returned via parameter jx.
-
-# The function swe_get_planet_name()
-
-This function allows to []{#_Hlk477834622 .anchor}find a planetary or
-asteroid name, when the planet number is given. The function definition
-is:
-
-char\*[]{#_Hlk477324852 .anchor} **swe_get_planet_name**(
-
-int32 ipl,
-
-char \*spname);
+```c
+	char* swe_get_planet_name( int32 ipl, char *spname);
+```
 
 If an asteroid name is wanted, the function does the following:
 
@@ -1352,36 +1103,122 @@ If an asteroid name is wanted, the function does the following:
     **swe_calc()** finds a preliminary designation, it looks for a name
     in this file.
 
-The file seasnam.txt can be updated by the user. To do this, download
-the names list from the Minor Planet Center
-<http://cfa-www.harvard.edu/iau/lists/MPNames.html>, rename it as
-seasnam.txt and move it into your ephemeris directory.
+## 4.2 swe_solcross() and swe_solcross_ut()
 
-The file seasnam.txt need not be ordered in any way. There must be one
-asteroid per line, first its catalogue number, then its name. The
-asteroid number may or may not be in brackets.
+These functions find the crossing of the Sun over a given ecliptic
+position:
 
-Example:
+```c
+	double swe_solcross(double x2cross, double tjd_et, int32 iflag, char *serr);
 
-\(3192\) A\'Hearn
+	double swe_solcross_ut(double x2cross, double tjd_ut, int32 iflag, char *serr);
+```
 
-\(3654\) AAS
+Return value: double jx = time of next crossing, in Ephemeris Time or
+Universal Time.
 
-\(8721\) AMOS
+In case of error, a value of jx \< tjd is returned. Because the crossing
+search is always forward in time, returning an earlier time is an
+indication of error. In addition, string serr will contain error
+details.
 
-\(3568\) ASCII
+The precision is 1 milliarcsecond, i.e. at the returned time the Sun is
+closer than 0.001 arcsec to x2cross.
 
-\(2848\) ASP
+These flag bits in iflag can be useful:
 
-\(677\) Aaltje
+```c
+SEFLG_TRUEPOS
 
-\...
+SEFLG_NONUT
 
-# Fixed stars functions
+SEFLG_EQUATORIAL (x2cross is a rectascension value, a point on the equator, and not on the ecliptic)
+```
+
+## 4.3 swe_mooncross() and swe_mooncross_ut()
+These functions find the crossing of the Moon over a given ecliptic
+position:
+
+```c
+	double swe_mooncross(double x2cross, double tjd_et, int32 iflag, char *serr);
+
+	double swe_mooncross_ut(double x2cross, double tjd_ut, int32 iflag, char *serr);
+```
+
+Return value: double jx = time of next crossing, in Ephemeris Time or
+Universal Time.
+
+In case of error, a value of jx \< tjd is returned. Because the crossing
+search is always forward in time, returning an earlier time is an
+indication of error. In addition, string serr will contain error details
+(unless it is a NULL pointer)
+
+The precision is 1 milliarcsecond, i.e. at the returned time the Moon is
+closer than 0.001 arcsec to x2cross.
+
+These flag bits in iflag can be useful:
+
+```
+SEFLG_TRUEPOS
+SEFLG_NONUT
+SEFLG_EQUATORIAL (x2cross is a rectascension value, a point on the
+equator, and not on the ecliptic)
+```
+
+## 4.4 swe_mooncross_node() and swe_mooncross_node_ut()
+
+These functions find the crossing of the Moon over its true node, i.e.
+crossing through the ecliptic.
+
+```c
+	double swe_mooncross_node(double tjd_et, int32 iflag, double *xlon, double *xlat, char *serr);
+
+	double swe_mooncross_node_ut(double tjd_ut, int32 iflag, double *xlon, double *xlat, char *serr);
+```
+
+Return value: double jx = time of next crossing, in Ephemeris Time or
+Universal Time.
+
+In case of error, a value of jx \< tjd is returned. Because the crossing
+search is always forward in time, returning an earlier time is an
+indication of error. In addition, string serr will contain error details
+(unless it is a NULL pointer)
+
+The position of the Moon at the moment of crossing is returned in xlon
+and xlat, with xlat very close to zero.
+
+## 4.5 swe_helio_cross() and swe_helio_cross_ut()
+
+There are currently no functions for geocentric crossings of other
+planets. Their movement is more complex because they can become
+stationary and retrograde and make multiple crossings in the short
+period of time.
+
+There are however functions for heliocentric crossings over a position
+x2cross:
+
+```c
+	int32 swe_helio_cross(int32 ipl, double x2cross, double tjd_ut, int32 iflag, int32 dir, double *jx, char *serr);
+
+	int32 swe_helio_cross_ut(int32 ipl, double x2cross, double tjd_ut, int32 iflag, int32 dir, double *jx, char *serr);
+```
+
+ipl is the planet number. Only objects which have a heliocentric orbit
+are possible.
+
+dir \>= 0 indicates search forward in time, dir \< 0 indicates search
+backward in time. It is recommended to use dir = 1 or dir = -1.
+
+Return value \< 0 indicates an error, with error details in string serr
+(unless serr is a NULL pointer).
+
+The crossing time is returned via parameter jx.
+
+# 5. Fixed stars functions
 
 The following functions are used to calculate positions of fixed stars.
 
-## Different functions for calculating fixed star positions
+## 5.1. Different functions for calculating fixed star positions
 
 The function **swe_fixstar_ut()** does exactly the same as
 **swe_fixstar()** except that it expects Universal Time rather than
@@ -1405,55 +1242,17 @@ the old functions by the new ones. However, the output should be checked
 carefully, because the behavior of old and new functions is not exactly
 identical. (explained below)
 
-## swe_fixstar2_ut(), swe_fixstar2(), swe_fixstar_ut(), swe_fixstar()
+## 5.2. swe_fixstar2_ut(), swe_fixstar2(), swe_fixstar_ut(), swe_fixstar()
 
-[]{#_Hlk477325162 .anchor}int32 **swe_fixstar_ut**(
+```c
+	int32 swe_fixstar_ut(char* star, double tjd_ut, int32 iflag, double* xx, char* serr);
 
-char\* star,
+	int32 swe_fixstar(char *star, double tjd_et, int32 iflag, double* xx, char* serr);
 
-double tjd_ut,
+	int32 swe_fixstar2_ut(char* star, double tjd_ut, int32 iflag, double* xx, char* serr);
 
-int32 iflag,
-
-double\* xx,
-
-char\* serr);
-
-[]{#_Hlk477325176 .anchor}int32 **swe_fixstar**(
-
-char \*star,
-
-double tjd_et,
-
-int32 iflag,
-
-double\* xx,
-
-char\* serr);
-
-int32 **swe_fixstar2_ut**(
-
-char\* star,
-
-double tjd_ut,
-
-int32 iflag,
-
-double\* xx,
-
-char\* serr);
-
-int32 **swe_fixstar2**(
-
-char \*star,
-
-double tjd_et,
-
-int32 iflag,
-
-double\* xx,
-
-char\* serr);
+	int32 swe_fixstar2(char *star, double tjd_et, int32 iflag, double* xx, char* serr);
+```
 
 where:
 
@@ -1479,7 +1278,7 @@ present. However, **it is strongly recommended to** \***not**\* use the
 old file anymore. The data in the file are outdated, and the algorithms
 are also not as accurate as those used with the file sefstars.txt.
 
-The parameter []{#_Hlk477835149 .anchor}star must provide for at least
+The parameter star must provide for at least
 41 characters for the returned star name. If a star is found, its name
 is returned in this field in the following format:\
 traditional_name, nomenclature_name e.g. \"Aldebaran,alTau\".
@@ -1494,7 +1293,7 @@ Barycentric positions are not implemented. The difference between
 geocentric and heliocentric fix star position is noticeable and arises
 from parallax and gravitational deflection.
 
-The function has three modes to []{#_Hlk477835264 .anchor}search for a
+The function has three modes to search for a
 star in the file sefstars.txt:
 
 Behavior of new functions **swe_fixstar2()** and **swe_fixstar2_ut()**:
@@ -1574,20 +1373,15 @@ The searching of stars by sequential number (instead of name or
 nomenclature name) is a practical feature if one wants to list all
 stars:
 
-for i=1; i\<10000; i++) { // choose any number greater than number of
-lines (stars) in file
-
-sprintf(star, \"%d\", i);
-
-returncode = swe_fixstar2(star, tjd, \...);
-
-... whatever you want to do with the star positions ...
-
-if (returncode == ERR)
-
-break;
-
-}
+```c
+  for i=1; i<10000; i++) { // choose any number greater than number of lines (stars) in file
+    sprintf(star, "%d", i);
+    returncode = swe_fixstar2(star, tjd, ...);
+    // ... whatever you want to do with the star positions ...
+    if (returncode == ERR)
+      break;
+  }
+```
 
 The function and the DLL should survive damaged sefstars.txt files which
 contain illegal data and star names exceeding the accepted length. Such
@@ -1595,81 +1389,36 @@ fields are cut to acceptable length.
 
 There are a few special entries in the file sefstars.txt:
 
-\# Gal. Center (SgrA\*) according to Simbad database,
-
-\# speed of SgrA\* according to Reid (2004), \"The Proper Motion of
-Sagittarius A\*",
-
-\# p. 873: -3.151 +- 0.018 mas/yr, -5.547 +- 0.026 mas/yr. Component in
-RA must be
-
-\# multiplied with cos(decl).
-
-Galactic
-Center,SgrA\*,ICRS,17,45,40.03599,-29,00,28.1699,-2.755718425,-5.547,
-0.0,0.125,999.99, 0, 0
-
-\# Great Attractor, near Galaxy Cluster ACO 3627, at gal. coordinates
-
-\# 325.3, -7.2, 4844 km s-1 according to Kraan-Korteweg et al. 1996,
-
-\# Woudt 1998
-
-Great
-Attractor,GA,2000,16,15,02.836,-60,53,22.54,0.000,0.00,0.0,0.0000159,999.99,
-0, 0
-
-\# Virgo Cluster, according to NED (Nasa Extragalactic Database)
-
-Virgo Cluster,VC,2000,12,26,32.1,12,43,24,0.000, 0.00,
-0.0,0.0000,999.99, 0, 0
-
-\# The solar apex, or the Apex of the Sun\'s Way, refers to the
-direction that the Sun travels
-
-\# with respect to the so-called Local Standard of Rest.
-
-Apex ,Apex,1950,18,03,50.2, 30,00,16.8, 0.000, 0.00,-16.5,0.0000,999.99,
-0, 0
-
-\# Galactic Pole acc. to Liu/Zhu/Zhang, „Reconsidering the galactic
-coordinate system",
-
-\# Astronomy & Astrophysics No. AA2010, Oct. 2010, p. 8.
-
-\# It is defined relative to a plane that contains the galactic center
-and the Sun and
-
-\# approximates the galactic plane.
-
+```
+# Gal. Center (SgrA*) according to Simbad database,
+# speed of SgrA* according to Reid (2004), "The Proper Motion of Sagittarius A*",
+# p. 873: -3.151 +- 0.018 mas/yr, -5.547 +- 0.026 mas/yr. Component in RA must be
+# multiplied with cos(decl).
+Galactic Center,SgrA*,ICRS,17,45,40.03599,-29,00,28.1699,-2.755718425,-5.547, 0.0,0.125,999.99, 0, 0
+# Great Attractor, near Galaxy Cluster ACO 3627, at gal. coordinates
+# 325.3, -7.2, 4844 km s-1 according to Kraan-Korteweg et al. 1996, Woudt 1998
+Great Attractor,GA,2000,16,15,02.836,-60,53,22.54,0.000,0.00,0.0,0.0000159,999.99, 0, 0
+# Virgo Cluster, according to NED (Nasa Extragalactic Database)
+Virgo Cluster,VC,2000,12,26,32.1,12,43,24,0.000, 0.00, 0.0,0.0000,999.99, 0, 0
+# The solar apex, or the Apex of the Sun's Way, refers to the direction that the Sun travels
+# with respect to the so-called Local Standard of Rest.
+Apex ,Apex,1950,18,03,50.2, 30,00,16.8, 0.000, 0.00,-16.5,0.0000,999.99, 0, 0
+# Galactic Pole acc. to Liu/Zhu/Zhang, „Reconsidering the galactic coordinate system",
+# Astronomy & Astrophysics No. AA2010, Oct. 2010, p. 8.
+# It is defined relative to a plane that contains the galactic center and the Sun and
+# approximates the galactic plane.
 Gal.Pole,GPol,ICRS,12,51,36.7151981,27,06,11.193172,0.0,0.0,0.0,0.0,0.0,0,0
-
-\# Old Galactic Pole IAU 1958 relative to ICRS according to the same
-publication p. 7
-
-Gal.Pole
-IAU1958,GP1958,ICRS,12,51,26.27469,27,07,41.7087,0.0,0.0,0.0,0.0,0.0,0,0
-
-\# Old Galactic Pole relative to ICRS according to the same publication
-p. 7
-
-Gal.Pole
-IAU1958,GP1958,ICRS,12,51,26.27469,27,07,41.7087,0.0,0.0,0.0,0.0,0.0,0,0
-
-\# Pole of true galactic plane, calculated by DK
-
-Gal.Plane
-Pole,GPPlan,ICRS,12,51,5.731104,27,10,39.554849,0.0,0.0,0.0,0.0,0.0,0,0
-
-\# The following \"object\" played an important role in 2011 and 2017
-dooms day predictions,
-
-\# as well as in some conspiration theories. It consists of the infrared
-objects
-
-\# IRAS 13458-0823 and IRAS 13459-0812. Central point measured by DK.
-
+# Old Galactic Pole IAU 1958 relative to ICRS according to the same publication p. 7
+Gal.Pole IAU1958,GP1958,ICRS,12,51,26.27469,27,07,41.7087,0.0,0.0,0.0,0.0,0.0,0,0
+# Old Galactic Pole relative to ICRS according to the same publication p. 7
+Gal.Pole IAU1958,GP1958,ICRS,12,51,26.27469,27,07,41.7087,0.0,0.0,0.0,0.0,0.0,0,0
+# Pole of true galactic plane, calculated by DK
+Gal.Plane Pole,GPPlan,ICRS,12,51,5.731104,27,10,39.554849,0.0,0.0,0.0,0.0,0.0,0,0
+# The following "object" played an important role in 2011 and 2017 dooms day predictions,
+# as well as in some conspiration theories. It consists of the infrared objects
+# IRAS 13458-0823 and IRAS 13459-0812. Central point measured by DK.
 Infrared Dragon,IDrag, ICRS,13,48,0.0,-9,0,0.0,0,0,0,0,0.0, 19, 477
+```
 
 You may edit the star catalogue and move the stars you prefer to the top
 of the file. With older versions of the Swiss Ephemeris, this will
@@ -1683,7 +1432,7 @@ calculation speed will be the same for all stars.
 **Attention:**
 
 With older versions of the Swiss Ephemeris, **swe_fixstar() does not
-compute** []{#_Hlk477863706 .anchor}**speeds** of the fixed stars. Also,
+compute** **speeds** of the fixed stars. Also,
 distance is always returned as 1 for all stars. Since SE 2.07 distances
 and daily motions are included in the return array.
 
@@ -1691,30 +1440,22 @@ Distances are given in AU. To convert them from AU to lightyears or
 parsec, please use the following defines, which are located in
 swephexp.h:
 
+```c
 #define SE_AUNIT_TO_LIGHTYEAR (1.0/63241.077088071)
 
 #define SE_AUNIT_TO_PARSEC (1.0/206264.8062471)
+```
 
 The daily motions of the fixed stars contain components of precession,
 nutation, aberration, parallax and the proper motions of the stars.
 
-## swe_fixstar2_mag(), swe_fixstar_mag()
+## 5.3. swe_fixstar2_mag(), swe_fixstar_mag()
 
-int32 **swe_fixstar_mag**(
+```c
+int32 swe_fixstar_mag(char *star, double* mag, char* serr);
 
-char \*star,
-
-double\* mag,
-
-char\* serr);
-
-int32 **swe_fixstar2_mag**(
-
-char \*star,
-
-double\* mag,
-
-char\* serr);
+int32 swe_fixstar2_mag(char *star, double* mag, char* serr);
+```
 
 Function calculates the magnitude of a fixed star. The function returns
 OK or ERR. The magnitude value is returned in the parameter mag.
@@ -1733,9 +1474,9 @@ cannot be taken into account. With stars of constant absolute magnitude,
 the change in brightness can be ignored for the historical period. E.g.
 the current magnitude of Sirius is -1.46. In 3000 BCE it was -1.44.
 
-# Apsides and nodes, Kepler elements and orbital periods
+# 6. Apsides and nodes, Kepler elements and orbital periods
 
-## swe_nod_aps_ut() and swe_nod_aps()
+## 6.1. swe_nod_aps_ut() and swe_nod_aps()
 
 The functions **swe_nod_aps_ut()** and **swe_nod_aps()** compute
 planetary nodes and apsides (perihelia, aphelia, second focal points of
@@ -1745,65 +1486,57 @@ they expect a different time parameter (cf. **swe_calc_ut()** and
 
 The definitions are:
 
-int32 []{#_Hlk477325741 .anchor}**swe_nod_aps_ut**(
+```c
+  int32 swe_nod_aps_ut(
+    double tjd_ut, // Julian day number in UT
+    int32 ipl, // planet number
+    int32 iflag, // flag bits
+    int32 method, // method, see explanations below
+    double *xnasc, // array of 6 double for ascending node
+    double *xndsc, // array of 6 double for descending node
+    double *xperi, // array of 6 double for perihelion
+    double *xaphe, // array of 6 double for aphelion
+    char *serr // character string to contain error messages, 256 chars
+  );
 
-double tjd_ut, // Julian day number in UT
-
-int32 ipl, // planet number
-
-int32 iflag, // flag bits
-
-int32 method, // method, see explanations below
-
-double \*xnasc, // array of 6 double for ascending node
-
-double \*xndsc, // array of 6 double for descending node
-
-double \*xperi, // array of 6 double for perihelion
-
-double \*xaphe, // array of 6 double for aphelion
-
-char \*serr); // character string to contain error messages, 256 chars
-
-int32 []{#_Hlk477325759 .anchor}**swe_nod_aps**(
-
-double tjd_et, // Julian day number in TT
-
-int32 ipl,
-
-int32 iflag,
-
-int32 method,
-
-double \*xnasc,
-
-double \*xndsc,
-
-double \*xperi,
-
-double \*xaphe,
-
-char \*serr);
+  int32 **swe_nod_aps**(
+    double tjd_et, // Julian day number in TT
+    int32 ipl,
+    int32 iflag,
+    int32 method,
+    double *xnasc,
+    double *xndsc,
+    double *xperi,
+    double *xaphe,
+    char *serr
+  );
+```
 
 The parameter iflag allows the same specifications as with the function
 **swe_calc_ut()**. I.e., it contains the Ephemeris flag, the
 heliocentric, topocentric, speed, nutation flags etc. etc.
 
-The parameter []{#_Hlk477836150 .anchor}method tells the function what
+The parameter method tells the function what
 kind of nodes or apsides are required:
 
+```c
 #define SE_NODBIT_MEAN 1
+```
 
 *Mean* nodes and apsides are calculated for the bodies that have them,
 i.e. for the Moon and the planets Mercury through Neptune, osculating
 ones for Pluto and the asteroids. This is the default method, also used
 if method=0.
 
+```c
 #define SE_NODBIT_OSCU 2
+```
 
 Osculating nodes and apsides are calculated for all bodies.
 
+```c
 #define SE_NODBIT_OSCU_BAR 4
+```
 
 Osculating nodes and apsides are calculated for all bodies. With planets
 beyond Jupiter, the nodes and apsides are calculated from *barycentric*
@@ -1812,13 +1545,15 @@ positions and speed. Cf. the explanations in swisseph.doc.
 If this bit is combined with SE_NODBIT_MEAN, mean values are given for
 the planets Mercury - Neptune.
 
+```c
 #define SE_NODBIT_FOPOINT 256
+```
 
 The second focal point of the orbital ellipse is computed and returned
 in the array of the aphelion. This bit can be combined with any other
 bit.
 
-## swe_get_orbital_elements() (Kepler elements and orbital data)
+## 6.2. swe_get_orbital_elements() (Kepler elements and orbital data)
 
 This function calculates osculating elements (Kepler elements) and
 orbital periods for a planet, the Earth-Moon barycenter, or an asteroid.
@@ -1840,98 +1575,51 @@ equinox 2000 and never precessed to the ecliptic or equator of date. For
 ecliptic positions of a perihelion or aphelion or a node, you should use
 the function swe_nod_aps() or swe_nod_aps_ut().
 
-int32 **swe_get_orbital_elements**(
+```c
+int32 swe_get_orbital_elements(double tjd_et, int32 ipl, int32 iflag, double *dret, char *serr);
 
-double tjd_et,
+/* Function calculates osculating orbital elements (Kepler elements) of a planet
+ * or asteroid or the EMB. The function returns error,
+ * if called for the Sun, the lunar nodes, or the apsides.
+ * Input parameters:
+ * tjd_et Julian day number, in TT (ET)
+ * ipl object number
+ * iflag can contain
+ * - ephemeris flag: SEFLG_JPLEPH, SEFLG_SWIEPH, SEFLG_MOSEPH
+ * - center:
+ * Sun: SEFLG_HELCTR (assumed as default) or
+ * SS Barycentre: SEFLG_BARYCTR (rel. to solar system barycentre)
+ * (only possible for planets beyond Jupiter)
+ * For elements of the Moon, the calculation is geocentric.
+ * - sum all masses inside the orbit to be computed (method
+ * of Astronomical Almanac):
+ * SEFLG_ORBEL_AA
+ * - reference ecliptic: SEFLG_J2000;
+ * if missing, mean ecliptic of date is chosen (still not implemented)
+ * output parameters:
+ * dret[] array of return values, declare as dret[50]
+ * dret[0] semimajor axis (a)
+ * dret[1] eccentricity (e)
+ * dret[2] inclination (in)
+ * dret[3] longitude of ascending node (upper case omega OM)
+ * dret[4] argument of periapsis (lower case omega om)
+ * dret[5] longitude of periapsis (peri)
+ * dret[6] mean anomaly at epoch (M0)
+ * dret[7] true anomaly at epoch (N0)
+ * dret[8] eccentric anomaly at epoch (E0)
+ * dret[9] mean longitude at epoch (LM)
+ * dret[10] sidereal orbital period in tropical years
+ * dret[11] mean daily motion
+ * dret[12] tropical period in years
+ * dret[13] synodic period in days,
+ * negative, if inner planet (Venus, Mercury, Aten asteroids) or Moon
+ * dret[14] time of perihelion passage
+ * dret[15] perihelion distance
+ * dret[16] aphelion distance
+ */
+```
 
-int32 ipl,
-
-int32 iflag,
-
-double \*dret,
-
-char \*serr);
-
-/\* Function calculates osculating orbital elements (Kepler elements) of
-a planet
-
-\* or asteroid or the EMB. The function returns error,
-
-\* if called for the Sun, the lunar nodes, or the apsides.
-
-\* Input parameters:
-
-\* tjd_et Julian day number, in TT (ET)
-
-\* ipl object number
-
-\* iflag can contain
-
-\* - ephemeris flag: SEFLG_JPLEPH, SEFLG_SWIEPH, SEFLG_MOSEPH
-
-\* - center:
-
-\* Sun: SEFLG_HELCTR (assumed as default) or
-
-\* SS Barycentre: SEFLG_BARYCTR (rel. to solar system barycentre)
-
-\* (only possible for planets beyond Jupiter)
-
-\* For elements of the Moon, the calculation is geocentric.
-
-\* - sum all masses inside the orbit to be computed (method
-
-\* of Astronomical Almanac):
-
-\* SEFLG_ORBEL_AA
-
-\* - reference ecliptic: SEFLG_J2000;
-
-\* if missing, mean ecliptic of date is chosen (still not implemented)
-
-\* output parameters:
-
-\* dret\[\] array of return values, declare as dret\[50\]
-
-\* dret\[0\] semimajor axis (a)
-
-\* dret\[1\] eccentricity (e)
-
-\* dret\[2\] inclination (in)
-
-\* dret\[3\] longitude of ascending node (upper case omega OM)
-
-\* dret\[4\] argument of periapsis (lower case omega om)
-
-\* dret\[5\] longitude of periapsis (peri)
-
-\* dret\[6\] mean anomaly at epoch (M0)
-
-\* dret\[7\] true anomaly at epoch (N0)
-
-\* dret\[8\] eccentric anomaly at epoch (E0)
-
-\* dret\[9\] mean longitude at epoch (LM)
-
-\* dret\[10\] sidereal orbital period in tropical years
-
-\* dret\[11\] mean daily motion
-
-\* dret\[12\] tropical period in years
-
-\* dret\[13\] synodic period in days,
-
-\* negative, if inner planet (Venus, Mercury, Aten asteroids) or Moon
-
-\* dret\[14\] time of perihelion passage
-
-\* dret\[15\] perihelion distance
-
-\* dret\[16\] aphelion distance
-
-\*/
-
-## swe_orbit_max_min_true_distance()
+## 6.3. swe_orbit_max_min_true_distance()
 
 This function calculates the maximum possible distance, the minimum
 possible distance, and the current true distance of planet, the EMB, or
@@ -1941,45 +1629,23 @@ momentary Kepler ellipse of the planet. With geocentric calculations, it
 is based on the Kepler ellipses of the planet and the EMB. The
 geocentric calculation is rather expensive..
 
-int32 **swe_orbit_max_min_true_distance**(
+```c
+int32 **swe_orbit_max_min_true_distance**( double tjd_et, int32 ipl, int32 iflag, double *dmax, double *dmin, double *dtrue, char *serr);
 
-double tjd_et,
+/* Input:
+* tjd_et epoch
+* ipl planet number
+* iflag ephemeris flag and optional heliocentric flag (SEFLG_HELCTR)
+*
+* output:
+* dmax maximum distance (pointer to double)
+* dmin minimum distance (pointer to double)
+* dtrue true distance (pointer to double)
+* serr error string
+*/
+```
 
-int32 ipl,
-
-int32 iflag,
-
-double \*dmax,
-
-double \*dmin,
-
-double \*dtrue,
-
-char \*serr);
-
-/\* Input:
-
-\* tjd_et epoch
-
-\* ipl planet number
-
-\* iflag ephemeris flag and optional heliocentric flag (SEFLG_HELCTR)
-
-\*
-
-\* output:
-
-\* dmax maximum distance (pointer to double)
-
-\* dmin minimum distance (pointer to double)
-
-\* dtrue true distance (pointer to double)
-
-\* serr error string
-
-\*/
-
-# Eclipses, risings, settings, meridian transits, planetary phenomena
+# 7. Eclipses, risings, settings, meridian transits, planetary phenomena
 
 There are the following functions for eclipse and occultation
 calculations.
@@ -2035,177 +1701,58 @@ Planetary phenomena:
     elongation, apparent diameter, and apparent magnitude of the Sun,
     the Moon, all planets and asteroids.
 
-## Example of a typical eclipse calculation
+## 7.1. Example of a typical eclipse calculation
 
 Find the next total eclipse, calculate the geographical position where
 it is maximal and the four contacts for that position (for a detailed
 explanation of all eclipse functions see the next chapters):
 
-double tret\[10\], attr\[20\], geopos\[10\];
+```c
+  double tret[10], attr[20], geopos[10];
+  char serr[255];
+  int32 whicheph = 0; // default ephemeris 
+  double tjd_start = 2451545; // Julian day number for 1 Jan 2000 
+  int32 ifltype = SE_ECL_TOTAL ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
 
-char serr\[255\];
+  // find next eclipse anywhere on Earth */
+  eclflag = swe_sol_eclipse_when_glob(tjd_start, whicheph, ifltype, tret, 0, serr);
+  if (eclflag == ERR)
+    return ERR;
+  // the time of the greatest eclipse has been returned in tret[0];
+  // now we can find geographical position of the eclipse maximum */
+  tjd_start = tret[0];
+  eclflag = swe_sol_eclipse_where(tjd_start, whicheph, geopos, attr, serr);
+  if (eclflag == ERR)
+    return ERR;
+  // the geographical position of the eclipse maximum is in geopos[0] and geopos[1];
+  // now we can calculate the four contacts for this place. The start time is chosen
+  // a day before the maximum eclipse: 
+  tjd_start = tret[0] - 1;
+  eclflag = swe_sol_eclipse_when_loc(tjd_start, whicheph, geopos, tret, attr, 0, serr);
+  if (eclflag == ERR)
+    return ERR;
+  // now tret[] contains the following values:
+  // tret[0] = time of greatest eclipse (Julian day number)
+  // tret[1] = first contact
+  // tret[2] = second contact
+  // tret[3] = third contact
+  // tret[4] = fourth contact 
+```
 
-int32 whicheph = 0; /\* default ephemeris \*/
-
-double tjd_start = 2451545; /\* Julian day number for 1 Jan 2000 \*/
-
-int32 ifltype = SE_ECL_TOTAL ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
-
-/\* find next eclipse anywhere on Earth \*/
-
-eclflag = **swe_sol_eclipse_when_glob**(tjd_start, whicheph, ifltype,
-tret, 0, serr);
-
-if (eclflag == ERR)
-
-return ERR;
-
-/\* the time of the greatest eclipse has been returned in tret\[0\];
-
-\* now we can find geographical position of the eclipse maximum \*/
-
-tjd_start = tret\[0\];
-
-eclflag = **swe_sol_eclipse_where**(tjd_start, whicheph, geopos, attr,
-serr);
-
-if (eclflag == ERR)
-
-return ERR;
-
-/\* the geographical position of the eclipse maximum is in geopos\[0\]
-and geopos\[1\];
-
-\* now we can calculate the four contacts for this place. The start time
-is chosen
-
-\* a day before the maximum eclipse: \*/
-
-tjd_start = tret\[0\] - 1;
-
-eclflag = **swe_sol_eclipse_when_loc**(tjd_start, whicheph, geopos,
-tret, attr, 0, serr);
-
-if (eclflag == ERR)
-
-return ERR;
-
-/\* now tret\[\] contains the following values:
-
-\* tret\[0\] = time of greatest eclipse (Julian day number)
-
-\* tret\[1\] = first contact
-
-\* tret\[2\] = second contact
-
-\* tret\[3\] = third contact
-
-\* tret\[4\] = fourth contact \*/
-
-## swe_sol_eclipse_when_loc()
-
-To find the next eclipse for a given geographic position, use
-**swe_sol_eclipse_when_loc()**.
-
-int32 []{#_Hlk477326105 .anchor}**swe_sol_eclipse_when_loc**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* 3 doubles for geographic lon, lat, height.
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
->
-> The function returns:
-
-/\* retflag -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
-
-SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL
-
-SE_ECL_VISIBLE,
-
-SE_ECL_MAX_VISIBLE,
-
-SE_ECL_1ST_VISIBLE, SE_ECL_2ND_VISIBLE
-
-SE_ECL_3ST_VISIBLE, SE_ECL_4ND_VISIBLE
-
-tret\[0\] time of maximum eclipse
-
-tret\[1\] time of first contact
-
-tret\[2\] time of second contact
-
-tret\[3\] time of third contact
-
-tret\[4\] time of forth contact
-
-tret\[5\] time of sunrise between first and forth contact
-
-tret\[6\] time of sunset between first and forth contact
-
-attr\[0\] fraction of solar diameter covered by moon;
-
-with total/annular eclipses, it results in magnitude acc. to IMCCE.
-
-attr\[1\] ratio of lunar diameter to solar one
-
-attr\[2\] fraction of solar disc covered by moon (obscuration)
-
-attr\[3\] diameter of core shadow in km
-
-attr\[4\] azimuth of sun at tjd
-
-attr\[5\] true altitude of sun above horizon at tjd
-
-attr\[6\] apparent altitude of sun above horizon at tjd
-
-attr\[7\] elongation of moon in degrees
-
-attr\[8\] magnitude acc. to NASA;
-
-= attr\[0\] for partial and attr\[1\] for annular and total eclipses
-
-attr\[9\] saros series number (if available; otherwise -99999999)
-
-attr\[10\] saros series member number (if available; otherwise
--99999999)
-
-\*/
-
-## swe_sol_eclipse_when_glob()
+## 7.2. swe_sol_eclipse_when_glob()
 
 To find the next eclipse globally:
 
-int32 []{#_Hlk477326215 .anchor}**swe_sol_eclipse_when_glob**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> int32 ifltype, /\* eclipse type wanted: SE_ECL_TOTAL etc. or 0, if any
-> eclipse type \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+  int32 swe_sol_eclipse_when_glob(
+      double tjd_start, // start date for search, Jul. day UT
+      int32 ifl,	// ephemeris flag
+      int32 ifltype, 	// eclipse type wanted: SE_ECL_TOTAL etc. or 0, if any > eclipse type
+      double *tret, 	// return array, 10 doubles, see below
+      AS_BOOL backward, // TRUE, if backward search
+      char *serr 	// return error string 
+  );
+```
 
 This function requires the time parameter tjd_start in *Universal Time*
 and also yields the return values (tret\[\]) in UT. For conversions
@@ -2224,313 +1771,306 @@ chosen for the time parameters of all eclipse functions.
 ifltype specifies the eclipse type wanted. It can be a combination of
 the following bits (see swephexp.h):
 
-#define SE_ECL_CENTRAL 1
-
-#define SE_ECL_NONCENTRAL 2
-
-#define SE_ECL_TOTAL 4
-
-#define SE_ECL_ANNULAR 8
-
-#define SE_ECL_PARTIAL 16
-
-#define SE_ECL_ANNULAR_TOTAL 32
+```c
+  #define SE_ECL_CENTRAL 1
+  #define SE_ECL_NONCENTRAL 2
+  #define SE_ECL_TOTAL 4
+  #define SE_ECL_ANNULAR 8
+  #define SE_ECL_PARTIAL 16
+  #define SE_ECL_ANNULAR_TOTAL 32
+```
 
 Recommended values for ifltype:
 
-/\* search for any eclipse, no matter which type \*/
-
-ifltype = 0;
-
-/\* search a total eclipse; note: non-central total eclipses are very
-rare \*/
-
-ifltype = SE_ECL_TOTAL ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
-
-/\* search an annular eclipse \*/
-
-ifltype = SE_ECL_ANNULAR ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
-
-/\* search an annular-total (hybrid) eclipse \*/
-
-ifltype\_ = SE_ECL_ANNULAR_TOTAL ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
-
-/\* search a partial eclipse \*/
-
-ifltype = SE_ECL_PARTIAL;
+```c
+  // search for any eclipse, no matter which type \*/
+    ifltype = 0;
+  // search a total eclipse; note: non-central total eclipses are very rare
+    ifltype = SE_ECL_TOTAL ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
+  // search an annular eclipse
+    ifltype = SE_ECL_ANNULAR ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
+  // search an annular-total (hybrid) eclipse
+    ifltype\_ = SE_ECL_ANNULAR_TOTAL ¦ SE_ECL_CENTRAL ¦ SE_ECL_NONCENTRAL;
+  // search a partial eclipse
+    ifltype = SE_ECL_PARTIAL;
+```
 
 If your code does not work, please study the sample code in swetest.c.
 
 The function returns:
 
-/\* retflag -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+```
+retflag = -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+	= 0  if no eclipse
+	= SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL or SE_ECL_ANNULAR_TOTAL
+	combined with
+	SE_ECL_CENTRAL
+	SE_ECL_NONCENTRAL
 
-SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL or SE_ECL_ANNULAR_TOTAL
-
-SE_ECL_CENTRAL
-
-SE_ECL_NONCENTRAL
-
-tret\[0\] time of maximum eclipse
-
-tret\[1\] time, when eclipse takes place at local apparent noon
-
-tret\[2\] time of eclipse begin
-
-tret\[3\] time of eclipse end
-
-tret\[4\] time of totality begin
-
-tret\[5\] time of totality end
-
-tret\[6\] time of center line begin
-
-tret\[7\] time of center line end
-
-tret\[8\] time when annular-total eclipse becomes total, not implemented
-so far
-
-tret\[9\] time when annular-total eclipse becomes annular again, not
-implemented so far
+  tret[0] time of maximum eclipse
+  tret[1] time, when eclipse takes place at local apparent noon
+  tret[2] time of eclipse begin
+  tret[3] time of eclipse end
+  tret[4] time of totality begin
+  tret[5] time of totality end
+  tret[6] time of center line begin
+  tret[7] time of center line end
+  tret[8] time when annular-total eclipse becomes total, not implemented so far
+  tret[9] time when annular-total eclipse becomes annular again, not implemented so far
+```
 
 **declare as tret\[10\] at least!**
 
-\*/
 
-## swe_sol_eclipse_how ()
+## 7.3. swe_sol_eclipse_when_loc()
 
-To calculate the attributes of an eclipse for a given geographic
-position and time:
+To find the next eclipse for a given geographic position, use
+swe_sol_eclipse_when_loc().
 
-int32 []{#_Hlk477326421 .anchor}**swe_sol_eclipse_how**(
+```c
+  int32 swe_sol_eclipse_when_loc(
+    double tjd_start, 	// start date for search, Jul. day UT */
+    int32 ifl, 		// ephemeris flag */
+    double *geopos,	// 3 doubles for geographic lon, lat, height.
+			// eastern longitude is positive,
+			// western longitude is negative,
+			// northern latitude is positive,
+			// southern latitude is negative */
+    double *tret,	// return array, 10 doubles, see below */
+    double *attr,	// return array, 20 doubles, see below */
+    AS_BOOL backward,	// TRUE, if backward search */
+    char *serr		// return error string */
+  );
+```
 
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos /\* geogr. longitude, latitude, height above sea.
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+ The function returns:
 
-/\* retflag -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+```
+retflag = -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+	=  0 if no eclipse
+	= SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL
+	  combined with bit flags
+	  SE_ECL_VISIBLE,
+	  SE_ECL_MAX_VISIBLE,
+	  SE_ECL_1ST_VISIBLE, SE_ECL_2ND_VISIBLE
+	  SE_ECL_3ST_VISIBLE, SE_ECL_4ND_VISIBLE
 
-SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL
+  tret[0] time of maximum eclipse
+  tret[1] time of first contact
+  tret[2] time of second contact
+  tret[3] time of third contact
+  tret[4] time of forth contact
+  tret[5] time of sunrise between first and forth contact
+  tret[6] time of sunset between first and forth contact
 
-0, if no eclipse is visible at geogr. position.
+  attr[0] fraction of solar diameter covered by moon;
+	  with total/annular eclipses, it results in magnitude acc. to IMCCE.
+  attr[1] ratio of lunar diameter to solar one
+  attr[2] fraction of solar disc covered by moon (obscuration)
+  attr[3] diameter of core shadow in km
+  attr[4] azimuth of sun at tjd
+  attr[5] true altitude of sun above horizon at tjd
+  attr[6] apparent altitude of sun above horizon at tjd
+  attr[7] elongation of moon in degrees
+  attr[8] magnitude acc. to NASA;
+    = attr[0] for partial and attr[1] for annular and total eclipses
+  attr[9] saros series number (if available; otherwise -99999999)
+  attr[10] saros series member number (if available; otherwise -99999999)
+```
 
-attr\[0\] fraction of solar diameter covered by moon;
-
-with total/annular eclipses, it results in magnitude acc. to IMCCE.
-
-attr\[1\] ratio of lunar diameter to solar one
-
-attr\[2\] fraction of solar disc covered by moon (obscuration)
-
-attr\[3\] diameter of core shadow in km
-
-attr\[4\] azimuth of sun at tjd
-
-attr\[5\] true altitude of sun above horizon at tjd
-
-attr\[6\] apparent altitude of sun above horizon at tjd
-
-attr\[7\] elongation of moon in degrees
-
-attr\[8\] magnitude acc. to NASA;
-
-= attr\[0\] for partial and attr\[1\] for annular and total eclipses
-
-attr\[9\] saros series number (if available; otherwise -99999999)
-
-attr\[10\] saros series member number (if available; otherwise
--99999999) \*/
-
-## swe_sol_eclipse_where ()
+## 7.4. swe_sol_eclipse_where()
 
 This function can be used to find out the geographic position, where,
 for a given time, a central eclipse is central or where a non-central
 eclipse is maximal.
 
-If you want to []{#_Hlk477837327 .anchor}draw the eclipse path of a
+If you want to draw the eclipse path of a
 total or annular eclipse on a map, first compute the start and end time
 of the total or annular phase with **swe_sol_eclipse_when_glob()**, then
 call **swe_sol_eclipse_how()** for several time intervals to get
 geographic positions on the central path. The northern and southern
-limits of the []{#_Hlk477837444 .anchor}umbra and penumbra are not
+limits of the umbra and penumbra are not
 implemented yet.
 
-int32 []{#_Hlk477326645 .anchor}**swe_sol_eclipse_where**(
-
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* return array, 2 doubles, geo. long. and lat.
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_sol_eclipse_where(
+    double tjd_ut, 	// time, Jul. day UT 
+    int32 ifl, 		// ephemeris flag 
+    double *geopos, 	// array of 10 (!!) doubles
+    double *attr, 	// return array, 20 doubles, see below 
+    char *serr 		// return error string 
+);
+```
 
 The function returns:
 
-/\* -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+```
+retflag =  -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails) 
+	=  0, if no eclipse is visible at geogr. position.
+	=  SE_ECL_TOTAL, or
+	    SE_ECL_ANNULAR
+	    SE_ECL_TOTAL | SE_ECL_CENTRAL
+	    SE_ECL_TOTAL | SE_ECL_NONCENTRAL
+	    SE_ECL_ANNULAR | SE_ECL_CENTRAL
+	    SE_ECL_ANNULAR | SE_ECL_NONCENTRAL
+	    SE_ECL_PARTIAL
 
-0 if there is no solar eclipse at tjd
+  geopos[0]: geographic longitude of central line
+  geopos[1]: geographic latitude of central line
+  not implemented so far:
+    geopos[2]: geographic longitude of northern limit of umbra
+    geopos[3]: geographic latitude of northern limit of umbra
+    geopos[4]: geographic longitude of southern limit of umbra
+    geopos[5]: geographic latitude of southern limit of umbra
+    geopos[6]: geographic longitude of northern limit of penumbra
+    geopos[7]: geographic latitude of northern limit of penumbra
+    geopos[8]: geographic longitude of southern limit of penumbra
+    geopos[9]: geographic latitude of southern limit of penumbra
+    eastern longitudes are positive,
+    western longitudes are negative,
+    northern latitudes are positive,
+    southern latitudes are negative
 
-SE_ECL_TOTAL
+  attr[0] fraction of solar diameter covered by the moon
+  attr[1] ratio of lunar diameter to solar one
+  attr[2] fraction of solar disc covered by moon (obscuration)
+  attr[3] diameter of core shadow in km
+  attr[4] azimuth of sun at tjd
+  attr[5] true altitude of sun above horizon at tjd
+  attr[6] apparent altitude of sun above horizon at tjd
+  attr[7] angular distance of moon from sun in degrees
+  attr[8] eclipse magnitude
+	  (= attr[0] or attr[1] depending on eclipse type)
+  attr[9] saros series number (if available; otherwise -99999999)
+  attr[10] saros series member number (if available; otherwise -99999999)
+```
 
-SE_ECL_ANNULAR
+**declare as attr\[20\] and geopos\[10\] !**
 
-SE_ECL_TOTAL \| SE_ECL_CENTRAL
 
-SE_ECL_TOTAL \| SE_ECL_NONCENTRAL
+## 7.5. swe_sol_eclipse_how()
 
-SE_ECL_ANNULAR \| SE_ECL_CENTRAL
+To calculate the attributes of an eclipse for a given geographic
+position and time:
 
-SE_ECL_ANNULAR \| SE_ECL_NONCENTRAL
+```c
+  int32 swe_sol_eclipse_how(
+    double tjd_ut, 	// time, Jul. day UT 
+    int32 ifl, 		// ephemeris flag 
+    double *geopos, 	// geogr. longitude, latitude, height above sea, array of 3 doubles
+			// eastern longitude is positive,
+			// western longitude is negative,
+			// northern latitude is positive,
+			// southern latitude is negative 
+    double *attr, 	// return array, 20 doubles, see below 
+    char *serr 		// return error string 
+  );
+```
 
-SE_ECL_PARTIAL
+The function returns:
 
-geopos\[0\]: geographic longitude of central line
+```
+retflag =  -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails) 
+	=  SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL
+	=  0, if no eclipse is visible at geogr. position.
 
-geopos\[1\]: geographic latitude of central line
+  attr[0] fraction of solar diameter covered by moon;
+  with total/annular eclipses, it results in magnitude acc. to IMCCE.
+  attr[1] ratio of lunar diameter to solar one
+  attr[2] fraction of solar disc covered by moon (obscuration)
+  attr[3] diameter of core shadow in km
+  attr[4] azimuth of sun at tjd
+  attr[5] true altitude of sun above horizon at tjd
+  attr[6] apparent altitude of sun above horizon at tjd
+  attr[7] elongation of moon in degrees
+  attr[8] magnitude acc. to NASA;
+	  = attr[0] for partial and attr[1] for annular and total eclipses
+  attr[9] saros series number (if available; otherwise -99999999)
+  attr[10] saros series member number (if available; otherwise -99999999) 
+```
 
-> not implemented so far:
 
-geopos\[2\]: geographic longitude of northern limit of umbra
+## 7.6. swe_lun_occult_when_glob()
 
-geopos\[3\]: geographic latitude of northern limit of umbra
+To find the next occultation of a planet or star by the moon globally
+(not for a particular geographic location):
 
-geopos\[4\]: geographic longitude of southern limit of umbra
+The same function can also be used for global solar eclipses instead of
+**swe_sol_eclipse_when_glob()**, with ipl = SE_SUN,  but is a bit less efficient.
 
-geopos\[5\]: geographic latitude of southern limit of umbra
+```c
+  int32 swe_lun_occult_when_glob(
+      double tjd_start, // start date for search, Jul. day UT
+      int32 ipl,	// planet number of occulted body (ignored if starname given)
+      char  *starname,	// if NULL or empty, occultation of ipl is searched
+      int32 ifl,	// ephemeris flag
+      int32 ifltype, 	// eclipse type wanted: SE_ECL_TOTAL etc. or 0, if any > eclipse type
+      double *tret, 	// return array, 10 doubles, see below
+      AS_BOOL backward, // 0 = forward, 1 = backward search
+		        // can be combined with SE_ECL_ONE_TRY to try only one full Moon orbit
+      char *serr 	// return error string 
+  );
+```
 
-geopos\[6\]: geographic longitude of northern limit of penumbra
+If you want to have only one conjunction of the moon
+ with the body tested, add the following flag:
+backward \|= SE_ECL_ONE_TRY. If this flag is not set,
+the function will search for an occultation until it
+finds one. For bodies with ecliptical latitudes \> 5,
+the function may search successlessly until it reaches
+the end of the ephemeris.
 
-geopos\[7\]: geographic latitude of northern limit of penumbra
 
-geopos\[8\]: geographic longitude of southern limit of penumbra
+The function returns:
 
-geopos\[9\]: geographic latitude of southern limit of penumbra
+```
+  retflag = -1 (ERR) on error (e.g. if **swe_calc()** for sun or moon fails)
+  	  = 0 (if no occultation / eclipse has been found)
+  	  = SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL or SE_ECL_ANNULAR_TOTAL
+	    combined with
+	    SE_ECL_CENTRAL
+	    SE_ECL_NONCENTRAL
 
-> eastern longitudes are positive,
->
-> western longitudes are negative,
->
-> northern latitudes are positive,
->
-> southern latitudes are negative
+  tret[0] time of maximum eclipse
+  tret[1] time, when eclipse takes place at local apparent noon
+  tret[2] time of eclipse begin
+  tret[3] time of eclipse end
+  tret[4] time of totality begin
+  tret[5] time of totality end
+  tret[6] time of center line begin
+  tret[7] time of center line end
+  tret[8] time when annular-total eclipse becomes total, not implemented so far
+  tret[9] time when annular-total eclipse becomes annular, again not implemented so far
+```
 
-attr\[0\] fraction of solar diameter covered by the moon
+**declare as tret\[10\] at least!**
 
-attr\[1\] ratio of lunar diameter to solar one
 
-attr\[2\] fraction of solar disc covered by moon (obscuration)
-
-attr\[3\] diameter of core shadow in km
-
-attr\[4\] azimuth of sun at tjd
-
-attr\[5\] true altitude of sun above horizon at tjd
-
-attr\[6\] apparent altitude of sun above horizon at tjd
-
-attr\[7\] angular distance of moon from sun in degrees
-
-attr\[8\] eclipse magnitude (= attr\[0\] or attr\[1\] depending on
-eclipse type)
-
-attr\[9\] saros series number (if available; otherwise -99999999)
-
-attr\[10\] saros series member number (if available; otherwise
--99999999)
-
-**declare as attr\[20\]!**
-
-\*/
-
-## swe_lun_occult_when_loc()
+## 7.7. swe_lun_occult_when_loc()
 
 To find the next occultation of a planet or star by the moon for a given
-location, use **swe_lun_occult_when_loc()**.
+location.
 
 The same function can also be used for local solar eclipses instead of
-swe_sol_eclipse_when_loc(), but is a bit less efficient.
+swe_sol_eclipse_when_loc(), with ipl = SE_SUN, but is a bit less efficient.
 
-/\* Same declaration as **swe_sol_eclipse_when_loc()**.
-
-\* In addition:
-
-\* int32 ipl planet number of occulted body
-
-\* char\* starname name of occulted star. Must be NULL or \"\", if a
-planetary
-
-\* occultation is to be calculated. For use of this field, see
-**swe_fixstar()**.
-
-\* int32 ifl ephemeris flag. If you want to have only one conjunction
-
-\* of the moon with the body tested, add the following flag:
-
-\* backward \|= SE_ECL_ONE_TRY. If this flag is not set,
-
-\* the function will search for an occultation until it
-
-\* finds one. For bodies with ecliptical latitudes \> 5,
-
-\* the function may search unsuccessfully until it reaches
-
-\* the end of the ephemeris.
-
-\*/
-
-int32 **swe_lun_occult_when_loc**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> char\* starname, /\* star name, must be NULL or "" if not a star \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* 3 doubles for geogr. longitude, latitude, height
-> above sea.
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+  int32 swe_lun_occult_when_loc(
+    double tjd_start, 	// start date for search, Jul. day UT */
+    int32 ipl,		// planet number of occulted body (ignored if starname given)
+    char  *starname,	// if NULL or empty, occultation of ipl is searched
+    int32 ifl, 		// ephemeris flag */
+    double *geopos,	// 3 doubles for geographic lon, lat, height.
+			// eastern longitude is positive,
+			// western longitude is negative,
+			// northern latitude is positive,
+			// southern latitude is negative */
+    double *tret,	// return array, 10 doubles, see below */
+    double *attr,	// return array, 20 doubles, see below */
+    AS_BOOL backward,	// TRUE, if backward search */
+    char *serr		// return error string */
+  );
+```
 
 Occultations of some stars may be very rare or do not occur at all.
 Usually the function searches an event until it finds one or reaches the
@@ -2541,13 +2081,13 @@ conjunction with the object and finds out whether it is an occultation.
 The function does not check any other conjunctions in the future or
 past.
 
--   If the return value is > 0, there is an occultation and tret and
+-  If the return value is > 0, there is an occultation and tret and
     attr contain the information about it;
 
--   If the return value is = 0, there is no occupation; tret\[0\]
-    contains the date of closest conjunction;
+-  If the return value is = 0, there is no occupation; tret\[0\]
+   contains the date of closest conjunction;
 
--   If the return value is = -1, there is an error.
+-  If the return value is = -1, there is an error.
 
 In order to find events in a particular time range (tjd_start \< tjd \<
 tjd_stop), one can write a loop and call the function as often as date
@@ -2560,159 +2100,36 @@ order, one has to sort them before output.
 
 The function returns:
 
-/\* retflag
-
--1 (ERR) on error (e.g. if **swe_calc()** for sun or moon fails)
-
-0 (if no occultation/no eclipse found)
-
-SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL
-
-SE_ECL_VISIBLE,
-
-SE_ECL_MAX_VISIBLE,
-
-SE_ECL_1ST_VISIBLE, SE_ECL_2ND_VISIBLE
-
-SE_ECL_3ST_VISIBLE, SE_ECL_4ND_VISIBLE
-
-These return values (except the SE_ECL_ANNULAR) also appear with
-occultations.
-
-tret\[0\] time of maximum eclipse
-
-tret\[1\] time of first contact
-
-tret\[2\] time of second contact
-
-tret\[3\] time of third contact
-
-tret\[4\] time of forth contact
-
-tret\[5\] time of sunrise between first and forth contact (not
-implemented so far)
-
-tret\[6\] time of sunset between first and forth contact (not
-implemented so far)
-
-attr\[0\] fraction of solar diameter covered by moon (magnitude)
-
-attr\[1\] ratio of lunar diameter to solar one
-
-attr\[2\] fraction of solar disc covered by moon (obscuration)
-
-attr\[3\] diameter of core shadow in km
-
-attr\[4\] azimuth of sun at tjd
-
-attr\[5\] true altitude of sun above horizon at tjd
-
-attr\[6\] apparent altitude of sun above horizon at tjd
-
-attr\[7\] elongation of moon in degrees
-
-\*/
-
-## swe_lun_occult_when_glob()
-
-To find the next occultation of a planet or star by the moon globally
-(not for a particular geographic location), use
-**swe_lun_occult_when_glob()**.
-
-The same function can also be used for global solar eclipses instead of
-**swe_sol_eclipse_when_glob()**, but is a bit less efficient.
-
-/\* Same declaration as **swe_sol_eclipse_when_glob()**.
-
-\* In addition:
-
-\* int32 ipl planet number of occulted body
-
-\* char\* starname name of occulted star. Must be NULL or \"\", if a
-planetary
-
-\* occultation is to be calculated. For use of this field,
-
-\* see swe_fixstar().
-
-\* int32 ifl ephemeris flag. If you want to have only one conjunction
-
-\* of the moon with the body tested, add the following flag:
-
-\* backward \|= SE_ECL_ONE_TRY. If this flag is not set,
-
-\* the function will search for an occultation until it
-
-\* finds one. For bodies with ecliptical latitudes \> 5,
-
-\* the function may search successlessly until it reaches
-
-\* the end of the ephemeris.
-
-\*/
-
-int32 **swe_lun_occult_when_glob**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> char\* starname, /\* star name, must be NULL or "" if not a star \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> int32 ifltype, /\* eclipse type wanted \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
-
-An explanation of the ifl \|= SE_ECL_ONE_TRY is given above in paragraph
-about the function **swe_lun_occult_when_loc()**.
-
-The function returns:
-
-/\* retflag
-
--1 (ERR) on error (e.g. if **swe_calc()** for sun or moon fails)
-
-0 (if no occultation / eclipse has been found)
-
-SE_ECL_TOTAL or SE_ECL_ANNULAR or SE_ECL_PARTIAL or SE_ECL_ANNULAR_TOTAL
-
-SE_ECL_CENTRAL
-
-SE_ECL_NONCENTRAL
-
-tret\[0\] time of maximum eclipse
-
-tret\[1\] time, when eclipse takes place at local apparent noon
-
-tret\[2\] time of eclipse begin
-
-tret\[3\] time of eclipse end
-
-tret\[4\] time of totality begin
-
-tret\[5\] time of totality end
-
-tret\[6\] time of center line begin
-
-tret\[7\] time of center line end
-
-tret\[8\] time when annular-total eclipse becomes total not implemented
-so far
-
-tret\[9\] time when annular-total eclipse becomes annular again not
-implemented so far
-
-**declare as tret\[10\] at least!**
-
-\*/
-
-## swe_lun_occult_where ()
+```
+retflag = -1 (ERR) on error (e.g. if **swe_calc()** for sun or moon fails)
+	= 0 (if no occultation/no eclipse found)
+	= SE_ECL_TOTAL or SE_ECL_PARTIAL or SE:ECL_ANNULAR (only for ipl = SE_SUN)
+	  combined with
+	  SE_ECL_VISIBLE,
+	  SE_ECL_MAX_VISIBLE,
+	  SE_ECL_1ST_VISIBLE, SE_ECL_2ND_VISIBLE
+	  SE_ECL_3ST_VISIBLE, SE_ECL_4ND_VISIBLE
+
+    tret[0] time of maximum eclipse
+    tret[1] time of first contact
+    tret[2] time of second contact
+    tret[3] time of third contact
+    tret[4] time of forth contact
+    tret[5] time of sunrise between first and forth contact (not implemented so far)
+    tret[6] time of sunset between first and forth contact (not implemented so far)
+
+    attr[0] fraction of solar diameter covered by moon (magnitude)
+    attr[1] ratio of lunar diameter to solar one
+    attr[2] fraction of solar disc covered by moon (obscuration)
+    attr[3] diameter of core shadow in km
+    attr[4] azimuth of sun at tjd
+    attr[5] true altitude of sun above horizon at tjd
+    attr[6] apparent altitude of sun above horizon at tjd
+    attr[7] elongation of moon in degrees
+```
+
+
+## 7.8. swe_lun_occult_where ()
 
 Similar to **swe_sol_eclipse_where()**, this function can be used to
 find out the geographic position, where, for a given time, a central
@@ -2723,303 +2140,195 @@ occultations are always visible from a very large area, this is not very
 interesting information. But it may become more interesting as soon as
 the limits of the umbra (and penumbra) will be implemented.
 
-int32 **swe_lun_occult_where**(
 
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> char\* starname, /\* star name, must be NULL or "" if not a star \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* return array, 2 doubles, geo. long. and lat.
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_lun_occult_where(
+    double tjd_ut, 	// time, Jul. day UT 
+    int32 ipl,		// planet number of occulted body (ignored if starname given)
+    char  *starname,	// if NULL or empty, occultation of ipl is searched
+    int32 ifl, 		// ephemeris flag 
+    double *geopos, 	// array of 10 (!!) doubles
+    double *attr, 	// return array, 20 doubles, see below 
+    char *serr 		// return error string 
+);
+```
 
 The function returns:
 
-/\* -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+```
+  retflag = -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+  	  = 0 if there is no solar eclipse (occultation) at tjd
+  	  = SE_ECL_TOTAL or
+	    SE_ECL_ANNULAR
+	    SE_ECL_TOTAL | SE_ECL_CENTRAL
+	    SE_ECL_TOTAL | SE_ECL_NONCENTRAL
+	    SE_ECL_ANNULAR | SE_ECL_CENTRAL
+	    SE_ECL_ANNULAR | SE_ECL_NONCENTRAL
+	    SE_ECL_PARTIAL
 
-0 if there is no solar eclipse (occultation) at tjd
+  geopos[0]: geographic longitude of central line
+  geopos[1]: geographic latitude of central line
+    not implemented so far:
+    geopos[2]: geographic longitude of northern limit of umbra
+    geopos[3]: geographic latitude of northern limit of umbra
+    geopos[4]: geographic longitude of southern limit of umbra
+    geopos[5]: geographic latitude of southern limit of umbra
+    geopos[6]: geographic longitude of northern limit of penumbra
+    geopos[7]: geographic latitude of northern limit of penumbra
+    geopos[8]: geographic longitude of southern limit of penumbra
+    geopos[9]: geographic latitude of southern limit of penumbra
 
-SE_ECL_TOTAL
+  attr[0] fraction of object's diameter covered by moon (magnitude)
+  attr[1] ratio of lunar diameter to object's diameter
+  attr[2] fraction of object's disc covered by moon (obscuration)
+  attr[3] diameter of core shadow in km
+  attr[4] azimuth of object at tjd
+  attr[5] true altitude of object above horizon at tjd
+  attr[6] apparent altitude of object above horizon at tjd
+  attr[7] angular distance of moon from object in degrees
+```
 
-SE_ECL_ANNULAR
+**declare as attr\[20\] and geopos\[10\] !**
 
-SE_ECL_TOTAL \| SE_ECL_CENTRAL
 
-SE_ECL_TOTAL \| SE_ECL_NONCENTRAL
-
-SE_ECL_ANNULAR \| SE_ECL_CENTRAL
-
-SE_ECL_ANNULAR \| SE_ECL_NONCENTRAL
-
-SE_ECL_PARTIAL
-
-geopos\[0\]: geographic longitude of central line
-
-geopos\[1\]: geographic latitude of central line
-
-not implemented so far:
-
-geopos\[2\]: geographic longitude of northern limit of umbra
-
-geopos\[3\]: geographic latitude of northern limit of umbra
-
-geopos\[4\]: geographic longitude of southern limit of umbra
-
-geopos\[5\]: geographic latitude of southern limit of umbra
-
-geopos\[6\]: geographic longitude of northern limit of penumbra
-
-geopos\[7\]: geographic latitude of northern limit of penumbra
-
-geopos\[8\]: geographic longitude of southern limit of penumbra
-
-geopos\[9\]: geographic latitude of southern limit of penumbra
-
-eastern longitudes are positive,
-
-western longitudes are negative,
-
-northern latitudes are positive,
-
-southern latitudes are negative
-
-attr\[0\] fraction of object\'s diameter covered by moon (magnitude)
-
-attr\[1\] ratio of lunar diameter to object\'s diameter
-
-attr\[2\] fraction of object\'s disc covered by moon (obscuration)
-
-attr\[3\] diameter of core shadow in km
-
-attr\[4\] azimuth of object at tjd
-
-attr\[5\] true altitude of object above horizon at tjd
-
-attr\[6\] apparent altitude of object above horizon at tjd
-
-attr\[7\] angular distance of moon from object in degrees
-
-**declare as attr\[20\]!**
-
-\*/
-
-## swe_lun_eclipse_when_loc ()
+## 7.9. swe_lun_eclipse_when_loc()
 
 To find the next lunar eclipse observable from a given geographic
 position:
 
-int32 **swe_lun_eclipse_when_loc**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* 3 doubles for geogr. longitude, latitude, height
-> above sea.
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+  int32 swe_lun_eclipse_when_loc(
+    double tjd_start, 	// start date for search, Jul. day UT */
+    int32 ifl, 		// ephemeris flag */
+    double *geopos,	// 3 doubles for geographic lon, lat, height.
+			// eastern longitude is positive,
+			// western longitude is negative,
+			// northern latitude is positive,
+			// southern latitude is negative */
+    double *tret,	// return array, 10 doubles, see below */
+    double *attr,	// return array, 20 doubles, see below */
+    AS_BOOL backward,	// TRUE, if backward search */
+    char *serr		// return error string */
+  );
+```
 
 If your code does not work, please study the sample code in swetest.c.
 
 The function returns:
 
-/\* retflag SE_ECL_TOTAL or SE_ECL_PENUMBRAL or SE_ECL_PARTIAL
+```
+  retflag = -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+	  = 0 if there is no lunar eclipse at tjd
+	  = SE_ECL_TOTAL or SE_ECL_PENUMBRAL or SE_ECL_PARTIAL
 
-\*
+  tret[0] time of maximum eclipse
+  tret[1]
+  tret[2] time of partial phase begin (indices consistent with solar eclipses)
+  tret[3] time of partial phase end
+  tret[4] time of totality begin
+  tret[5] time of totality end
+  tret[6] time of penumbral phase begin
+  tret[7] time of penumbral phase end
+  tret[8] time of moonrise, if it occurs during the eclipse
+  tret[9] time of moonset, if it occurs during the eclipse
 
-\* tret\[0\] time of maximum eclipse
+  attr[0] umbral magnitude at tjd
+  attr[1] penumbral magnitude
+  attr[4] azimuth of moon at tjd
+  attr[5] true altitude of moon above horizon at tjd
+  attr[6] apparent altitude of moon above horizon at tjd
+  attr[7] distance of moon from opposition in degrees
+  attr[8] umbral magnitude at tjd (= attr[0])
+  attr[9] saros series number (if available; otherwise -99999999)
+  attr[10] saros series member number (if available; otherwise -99999999) */
+```
 
-\* tret\[1\]
-
-\* tret\[2\] time of partial phase begin (indices consistent with solar
-eclipses)
-
-\* tret\[3\] time of partial phase end
-
-\* tret\[4\] time of totality begin
-
-\* tret\[5\] time of totality end
-
-\* tret\[6\] time of penumbral phase begin
-
-\* tret\[7\] time of penumbral phase end
-
-\* tret\[8\] time of moonrise, if it occurs during the eclipse
-
-\* tret\[9\] time of moonset, if it occurs during the eclipse
-
-\*
-
-\* attr\[0\] umbral magnitude at tjd
-
-\* attr\[1\] penumbral magnitude
-
-\* attr\[4\] azimuth of moon at tjd
-
-\* attr\[5\] true altitude of moon above horizon at tjd
-
-\* attr\[6\] apparent altitude of moon above horizon at tjd
-
-\* attr\[7\] distance of moon from opposition in degrees
-
-\* attr\[8\] umbral magnitude at tjd (= attr\[0\])
-
-\* attr\[9\] saros series number (if available; otherwise -99999999)
-
-\* attr\[10\] saros series member number (if available; otherwise
--99999999) \*/
-
-## swe_lun_eclipse_when ()
+## 7.10. swe_lun_eclipse_when()
 
 To find the next lunar eclipse:
 
-int32 []{#_Hlk477326807 .anchor}**swe_lun_eclipse_when**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> int32 ifltype, /\* eclipse type wanted: SE_ECL_TOTAL etc. or 0, if any
-> eclipse type \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+  int32 swe_lun_eclipse_when(
+      double tjd_start, // start date for search, Jul. day UT
+      int32 ifl,	// ephemeris flag
+      int32 ifltype, 	// eclipse type wanted: SE_ECL_TOTAL etc. or 0, if any > eclipse type
+      double *tret, 	// return array, 10 doubles, see below
+      AS_BOOL backward, // TRUE, if backward search
+      char *serr 	// return error string 
+  );
+```
 
 Recommended values for ifltype:
 
-/\* search for any lunar eclipse, no matter which type \*/
+```c
+  // search for any lunar eclipse, no matter which type 
+    ifltype = 0;
+  // search a total lunar eclipse 
+    ifltype = SE_ECL_TOTAL;
+  //  search a partial lunar eclipse
+    ifltype = SE_ECL_PARTIAL;
+  // search a penumbral lunar eclipse
+    ifltype = SE_ECL_PENUMBRAL;
+```
 
-ifltype = 0;
-
-/\* search a total lunar eclipse \*/
-
-ifltype = SE_ECL_TOTAL;
-
-/\* search a partial lunar eclipse \*/
-
-ifltype = SE_ECL_PARTIAL;
-
-/\* search a penumbral lunar eclipse \*/
-
-ifltype = SE_ECL_PENUMBRAL;
-
-If your code does not work, please study the sample code in swetest.c.
 
 The function returns:
 
-/\* retflag -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+```
+  retflag = -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+	  = SE_ECL_TOTAL or SE_ECL_PENUMBRAL or SE_ECL_PARTIAL
 
-SE_ECL_TOTAL or SE_ECL_PENUMBRAL or SE_ECL_PARTIAL
+  tret[0] time of maximum eclipse
+  tret[1]
+  tret[2] time of partial phase begin (indices consistent with solar eclipses)
+  tret[3] time of partial phase end
+  tret[4] time of totality begin
+  tret[5] time of totality end
+  tret[6] time of penumbral phase begin
+  tret[7] time of penumbral phase end
+```
 
-tret\[0\] time of maximum eclipse
-
-tret\[1\]
-
-tret\[2\] time of partial phase begin (indices consistent with solar
-eclipses)
-
-tret\[3\] time of partial phase end
-
-tret\[4\] time of totality begin
-
-tret\[5\] time of totality end
-
-tret\[6\] time of penumbral phase begin
-
-tret\[7\] time of penumbral phase end
-
-\*/
-
-## swe_lun_eclipse_how ()
+## 7.11. swe_lun_eclipse_how()
 
 This function computes the attributes of a lunar eclipse at a given
 time:
 
-int32 []{#_Hlk477326863 .anchor}**swe_lun_eclipse_how**(
-
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* input array, geopos, geolon, geoheight
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+```c
+  int32 swe_lun_eclipse_how(
+    double tjd_ut, 	// time, Jul. day UT 
+    int32 ifl, 		// ephemeris flag 
+    double *geopos, 	// geogr. longitude, latitude, height above sea, array of 3 doubles
+			// eastern longitude is positive,
+			// western longitude is negative,
+			// northern latitude is positive,
+			// southern latitude is negative 
+    double *attr, 	// return array, 20 doubles, see below 
+    char *serr 		// return error string 
+  );
+```
 
 The function returns:
 
-/\* retflag -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+``` 
+  retflag = -1 (ERR) on error (e.g. if swe_calc() for sun or moon fails)
+  	  = 0 if there is no eclipse
+  	  = SE_ECL_TOTAL or SE_ECL_PENUMBRAL or SE_ECL_PARTIAL
 
-SE_ECL_TOTAL or SE_ECL_PENUMBRAL or SE_ECL_PARTIAL
-
-0 if there is no eclipse
-
-attr\[0\] umbral magnitude at tjd
-
-attr\[1\] penumbral magnitude
-
-attr\[4\] azimuth of moon at tjd. Not implemented so far
-
-attr\[5\] true altitude of moon above horizon at tjd. Not implemented so
-far
-
-attr\[6\] apparent altitude of moon above horizon at tjd. Not
-implemented so far
-
-attr\[7\] distance of moon from opposition in degrees
-
-attr\[8\] eclipse magnitude (= attr\[0\])
-
-attr\[9\] saros series number (if available; otherwise -99999999)
-
-attr\[10\] saros series member number (if available; otherwise
--99999999)
+  attr[0] umbral magnitude at tjd
+  attr[1] penumbral magnitude
+  attr[4] azimuth of moon at tjd. Not implemented so far
+  attr[5] true altitude of moon above horizon at tjd. Not implemented so far
+  attr[6] apparent altitude of moon above horizon at tjd. Not implemented so far
+  attr[7] distance of moon from opposition in degrees
+  attr[8] eclipse magnitude (= attr[0])
+  attr[9] saros series number (if available; otherwise -99999999)
+  attr[10] saros series member number (if available; otherwise -99999999)
+```
 
 **declare as attr\[20\] at least!**
 
-\*/
 
-## swe_rise_trans() and swe_rise_trans_true_hor() (risings, settings, meridian transits)
+## 7.12. swe_rise_trans() and swe_rise_trans_true_hor() (risings, settings, meridian transits)
 
 The function **swe_rise_trans()** computes the times of rising, setting
 and meridian transits for all planets, asteroids, the moon, and the
@@ -3053,116 +2362,71 @@ these cases.
 
 Function definitions are as follows:
 
-int32 []{#_Hlk477327296 .anchor}**swe_rise_trans**(
+```c
+int32 swe_rise_trans(
+  double tjd_ut, 	// search after this time (UT) 
+  int32 ipl, 		// planet number, if planet or moon
+  char *starname, 	// star name, if star; must be NULL or empty, if ipl > is used
+  int32 epheflag, 	// ephemeris flag
+  int32 rsmi, 		// integer specifying that rise, set, or one of the two
+  			// meridian transits is wanted. see definition below 
+  double *geopos, 	// array of three doubles containing
+  			// geograph. long., lat., height of observer 
+  double atpress 	// atmospheric pressure in mbar/hPa 
+  double attemp, 	// atmospheric temperature in deg. C 
+  double *tret, 	// return address (double) for rise time etc. 
+  char *serr 		// return address for error message 
+);
 
-> double tjd_ut, /\* search after this time (UT) \*/
->
-> int32 ipl, /\* planet number, if planet or moon \*/
->
-> char \*starname, /\* star name, if star; must be NULL or empty, if ipl
-> is used \*/
->
-> int32 epheflag, /\* ephemeris flag \*/
->
-> int32 rsmi, /\* integer specifying that rise, set, or one of the two
-> meridian transits is wanted. see definition below \*/
->
-> double \*geopos, /\* array of three doubles containing
->
-> \* geograph. long., lat., height of observer \*/
->
-> double atpress /\* atmospheric pressure in mbar/hPa \*/
->
-> double attemp, /\* atmospheric temperature in deg. C \*/
->
-> double \*tret, /\* return address (double) for rise time etc. \*/
->
-> char \*serr); /\* return address for error message \*/
+int32 swe_rise_trans_true_hor(
+  double tjd_ut, 	// search after this time (UT) 
+  int32 ipl, 		// planet number, if planet or moon
+  char *starname, 	// star name, if star; must be NULL or empty, if ipl > is used
+  int32 epheflag, 	// ephemeris flag
+  int32 rsmi, 		// integer specifying that rise, set, or one of the two
+  			// meridian transits is wanted. see definition below 
+  double *geopos, 	// array of three doubles containing
+  			// geograph. long., lat., height of observer 
+  double atpress 	// atmospheric pressure in mbar/hPa 
+  double attemp, 	// atmospheric temperature in deg. C 
+  double horhgt, 	// height of local horizon in deg at the point where
+			// the body rises or sets
+  double *tret, 	// return address (double) for rise time etc. 
+  char *serr 		// return address for error message 
+);
+```
 
-int32 **swe_rise_trans_true_hor**(
 
-> double tjd_ut, /\* search after this time (UT) \*/
->
-> int32 ipl, /\* planet number, if planet or moon \*/
->
-> char \*starname, /\* star name, if star; must be NULL or empty, if ipl
-> is used \*/
->
-> int32 epheflag, /\* ephemeris flag \*/
->
-> int32 rsmi, /\* integer specifying that rise, set, or one of the two
-> meridian transits is wanted. see definition below \*/
->
-> double \*geopos, /\* array of three doubles containing
->
-> \* geograph. long., lat., height of observer \*/
->
-> double atpress, /\* atmospheric pressure in mbar/hPa \*/
->
-> double attemp, /\* atmospheric temperature in deg. C \*/
->
-> double horhgt, /\* height of local horizon in deg at the point where
-> the body rises or sets \*/
->
-> double \*tret, /\* return address (double) for rise time etc. \*/
->
-> char \*serr); /\* return address for error message \*/
 
 The second function has one additional parameter horhgt for the height
 of the local horizon at the point where the body rises or sets.
 
-The variable []{#_Hlk477328165 .anchor}rsmi can have the following
+The variable rsmi can have the following
 values:
 
-/\* for swe_rise_trans() and swe_rise_trans_true_hor() \*/
-
+```c
 #define SE_CALC_RISE 1
-
 #define SE_CALC_SET 2
-
-#define SE_CALC_MTRANSIT 4 /\* upper meridian transit (southern for
-northern geo. latitudes) \*/
-
-#define SE_CALC_ITRANSIT 8 /\* lower meridian transit (northern, below
-the horizon) \*/
-
-/\* the following bits can be added (or'ed) to SE_CALC_RISE or
-SE_CALC_SET \*/
-
-#define SE_BIT_DISC_CENTER 256 /\* for rising or setting of disc center
-\*/
-
-#define SE_BIT_DISC_BOTTOM 8192 /\* for rising or setting of lower limb
-of disc \*/
-
-#define SE_BIT_GEOCTR_NO_ECL_LAT 128 /\* use topocentric position of
-object and ignore its ecliptic latitude \*/
-
-#define SE_BIT_NO_REFRACTION 512 /\* if refraction is not to be
-considered \*/
-
-#define SE_BIT_CIVIL_TWILIGHT 1024 /\* in order to calculate civil
-twilight \*/
-
-#define SE_BIT_NAUTIC_TWILIGHT 2048 /\* in order to calculate nautical
-twilight \*/
-
-#define SE_BIT_ASTRO_TWILIGHT 4096 /\* in order to calculate
-astronomical twilight \*/
-
-#define SE_BIT_FIXED_DISC_SIZE (16\*1024) /\* neglect the effect of
-distance on disc size \*/
-
-#define SE_BIT_HINDU_RISING (SE_BIT_DISC_CENTER \| SE_BIT_NO_REFRACTION
-\| SE_BIT_GEOCTR_NO_ECL_LAT)
-
-/\* risings according to Hindu astrology \*/
+#define SE_CALC_MTRANSIT 4 // upper meridian transit (southern for northern geo. latitudes) 
+#define SE_CALC_ITRANSIT 8 // lower meridian transit (northern, below the horizon) 
+	//  the following bits can be added (or'ed) to SE_CALC_RISE or SE_CALC_SET
+#define SE_BIT_DISC_CENTER 256 // for rising or setting of disc center.
+#define SE_BIT_DISC_BOTTOM 8192 // for rising or setting of lower limb of disc
+#define SE_BIT_GEOCTR_NO_ECL_LAT 128 // use topocentric position of object and ignore its ecliptic latitude
+#define SE_BIT_NO_REFRACTION 512 // if refraction is not to be considered
+#define SE_BIT_CIVIL_TWILIGHT 1024 // in order to calculate civil twilight
+#define SE_BIT_NAUTIC_TWILIGHT 2048 // in order to calculate nautical twilight
+#define SE_BIT_ASTRO_TWILIGHT 4096 // in order to calculate astronomical twilight
+#define SE_BIT_FIXED_DISC_SIZE (16*1024) // neglect the effect of distance on disc size
+#define SE_BIT_HINDU_RISING (SE_BIT_DISC_CENTER | SE_BIT_NO_REFRACTION | SE_BIT_GEOCTR_NO_ECL_LAT)
+	// risings according to Hindu astrology
+```
 
 rsmi = 0 will return risings.
 
 The rising times depend on the atmospheric pressure and temperature.
-[]{#_Hlk477328180 .anchor}atpress expects the atmospheric pressure in
-millibar (hectopascal); []{#_Hlk477328191 .anchor}attemp the temperature
+atpress expects the atmospheric pressure in
+millibar (hectopascal); attemp the temperature
 in degrees Celsius.
 
 If atpress is given the value 0, the function estimates the pressure
@@ -3206,234 +2470,153 @@ SE_BIT_NO_REFRACTION, SE_BIT_DISC_CENTER and SE_BIT_GEOCTR_NO_ECL_LAT.
 In order to calculate the sunrise of a given date and geographic
 location, one can proceed as in the following program (tested code!):
 
+```c
 int main()
-
 {
-
-char serr\[AS_MAXCH\];
-
-double epheflag = SEFLG_SWIEPH;
-
-int gregflag = SE_GREG_CAL;
-
-int year = 2017;
-
-int month = 4;
-
-int day = 12;
-
-int geo_longitude = 76.5; // positive for east, negative for west of
-Greenwich
-
-int geo_latitude = 30.0;
-
-int geo_altitude = 0.0;
-
-double hour;
-
-// array for atmospheric conditions
-
-double datm\[2\];
-
-datm\[0\] = 1013.25; // atmospheric pressure;
-
-// irrelevant with Hindu method, can be set to 0
-
-datm\[1\] = 15; // atmospheric temperature;
-
-// irrelevant with Hindu method, can be set to 0
-
-// array for geographic position
-
-double geopos\[3\];
-
-geopos\[0\] = geo_longitude;
-
-geopos\[1\] = geo_latitude;
-
-geopos\[2\] = geo_altitude; // height above sea level in meters;
-
-// irrelevant with Hindu method, can be set to 0
-
-**swe_set_topo**(geopos\[0\], geopos\[1\], geopos\[2\]);
-
-int ipl = SE_SUN; // object whose rising is wanted
-
-char starname\[255\]; // name of star, if a star\'s rising is wanted
-
-// is \"\" or NULL, if Sun, Moon, or planet is calculated
-
-double trise; // for rising time
-
-double tset; // for setting time
-
-// calculate the Julian day number of the date at 0:00 UT:
-
-double tjd = **swe_julday**(year,month,day,0,gregflag);
-
-// convert geographic longitude to time (day fraction) and subtract it
-from tjd
-
-// this method should be good for all geographic latitudes except near
-in
-
-// polar regions
-
-double dt = geo_longitude / 360.0;
-
-tjd = tjd - dt;
-
-// calculation flag for Hindu risings/settings
-
-int rsmi = SE_CALC_RISE \| SE_BIT_HINDU_RISING;
-
-// or SE_CALC_RISE + SE_BIT_HINDU_RISING;
-
-// or SE_CALC_RISE \| SE_BIT_DISC_CENTER \| SE_BIT_NO_REFRACTION \|
-SE_BIT_GEOCTR_NO_ECL_LAT;
-
-int return_code = **swe_rise_trans**(tjd, ipl, starname, epheflag, rsmi,
-geopos, datm\[0\], datm\[1\], &trise, serr);
-
-if (return_code == ERR) {
-
-// error action
-
-printf(\"%s\\n\", serr);
-
+  char serr[AS_MAXCH];
+  double epheflag = SEFLG_SWIEPH;
+  int gregflag = SE_GREG_CAL;
+  int year = 2017;
+  int month = 4;
+  int day = 12;
+  int geo_longitude = 76.5; // positive for east, negative for west of Greenwich
+  int geo_latitude = 30.0;
+  int geo_altitude = 0.0;
+  double hour;
+  // array for atmospheric conditions
+  double datm[2];
+  datm[0] = 1013.25; // atmospheric pressure;
+  // irrelevant with Hindu method, can be set to 0
+  datm[1] = 15; // atmospheric temperature;
+  // irrelevant with Hindu method, can be set to 0
+  // array for geographic position
+  double geopos[3];
+  geopos[0] = geo_longitude;
+  geopos[1] = geo_latitude;
+  geopos[2] = geo_altitude; // height above sea level in meters;
+  // irrelevant with Hindu method, can be set to 0
+  swe_set_topo(geopos[0], geopos[1], geopos[2]);
+  int ipl = SE_SUN; // object whose rising is wanted
+  char starname[255]; // name of star, if a star's rising is wanted
+  // is "" or NULL, if Sun, Moon, or planet is calculated
+  double trise; // for rising time
+  double tset; // for setting time
+  // calculate the Julian day number of the date at 0:00 UT:
+  double tjd = swe_julday(year,month,day,0,gregflag);
+  // convert geographic longitude to time (day fraction) and subtract it from tjd
+  // this method should be good for all geographic latitudes except near in
+  // polar regions
+  double dt = geo_longitude / 360.0;
+  tjd = tjd - dt;
+  // calculation flag for Hindu risings/settings
+  int rsmi = SE_CALC_RISE | SE_BIT_HINDU_RISING;
+  // or SE_CALC_RISE + SE_BIT_HINDU_RISING;
+  // or SE_CALC_RISE | SE_BIT_DISC_CENTER | SE_BIT_NO_REFRACTION | SE_BIT_GEOCTR_NO_ECL_LAT;
+  int return_code = swe_rise_trans(tjd, ipl, starname, epheflag, rsmi, geopos, datm[0], datm[1], &trise, serr);
+  if (return_code == ERR) { // error action
+    printf("%s\n", serr);
+    returnn ERR;
+  }
+  // conversion to local time zone must be made by the user. The Swiss Ephemeris
+  // does not have a function for that.
+  // After that, the Julian day number of the rising time can be converted into
+  // date and time:
+  swe_revjul(trise, gregflag, &year, &month, &day, &hour);
+  printf("sunrise: date=%d/%d/%d, hour=%.6f UT\n", year, month, day, hour);
+  // To calculate the time of the sunset, you can either use the same
+  // tjd increased or trise as start date for the search.
+  rsmi = SE_CALC_SET | SE_BIT_DISC_CENTER | SE_BIT_NO_REFRACTION;
+  return_code = swe_rise_trans(tjd, ipl, starname, epheflag, rsmi, geopos, datm[0], datm[1], &tset, serr);
+  if (return_code == ERR) { // error action
+    printf("%s\n", serr);
+    return ERR;
+  }
+  printf("sunset : date=%d/%d/%d, hour=%.6f UT\n", year, month, day, hour);
 }
+```
 
-// conversion to local time zone must be made by the user. The Swiss
-Ephemeris
-
-// does not have a function for that.
-
-// After that, the Julian day number of the rising time can be converted
-into
-
-// date and time:
-
-**swe_revjul**(trise, gregflag, &year, &month, &day, &hour);
-
-printf(\"sunrise: date=%d/%d/%d, hour=%.6f UT\\n\", year, month, day,
-hour);
-
-// To calculate the time of the sunset, you can either use the same
-
-// tjd increased or trise as start date for the search.
-
-rsmi = SE_CALC_SET \| SE_BIT_DISC_CENTER \| SE_BIT_NO_REFRACTION;
-
-return_code = **swe_rise_trans**(tjd, ipl, starname, epheflag, rsmi,
-geopos, datm\[0\], datm\[1\], &tset, serr);
-
-if (return_code == ERR) {
-
-// error action
-
-printf(\"%s\\n\", serr);
-
-}
-
-printf(\"sunset : date=%d/%d/%d, hour=%.6f UT\\n\", year, month, day,
-hour);
-
-}
-
-## swe_pheno_ut() and swe_pheno(), planetary phenomena
+## 8.13. swe_pheno_ut() and swe_pheno(), planetary phenomena
 
 These functions compute phase, phase angle, elongation, apparent
 diameter, apparent magnitude for the Sun, the Moon, all planets and
 asteroids. The two functions do exactly the same but expect a different
 time parameter.
 
-int32 []{#_Hlk477328995 .anchor}**swe_pheno_ut**(
+```c
+int32 swe_pheno_ut(
+  double tjd_ut,// time Jul. Day UT 
+  int32 ipl, 	// planet number 
+  int32 iflag, 	// ephemeris flag 
+  double *attr, // return array, 20 doubles, see below 
+  char *serr 	// return error string 
+);
 
-> double tjd_ut, /\* time Jul. Day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> int32 iflag, /\* ephemeris flag \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
-
-int32 []{#_Hlk477329016 .anchor}**swe_pheno**(
-
-> double tjd_et, /\* time Jul. Day ET \*/
->
-> int32 ipl, /\* planet number \*/
->
-> int32 iflag, /\* ephemeris flag \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+int32 swe_pheno(
+  double tjd_et,// time Jul. Day ET 
+  int32 ipl, 	// planet number 
+  int32 iflag, 	// ephemeris flag 
+  double *attr, // return array, 20 doubles, see below 
+  char *serr 	// return error string 
+);
+```
 
 The function returns:
 
-/\*
-
-attr\[0\] = phase angle (Earth-planet-sun)
-
-attr\[1\] = phase (illumined fraction of disc)
-
-attr\[2\] = elongation of planet
-
-attr\[3\] = apparent diameter of disc
-
-attr\[4\] = apparent magnitude
+```
+  attr[0] = phase angle (Earth-planet-sun)
+  attr[1] = phase (illumined fraction of disc)
+  attr[2] = elongation of planet
+  attr[3] = apparent diameter of disc
+  attr[4] = apparent magnitude
+```
 
 **declare as attr\[20\] at least!**
 
-**NOTE**: the lunar magnitude is quite a complicated thing,
-
+**NOTE**: the lunar magnitude is quite a complicated thing, 
 but our algorithm is very simple.
-
 The phase of the moon, its distance from the Earth and
-
 the sun is considered, but no other factors.
 
 iflag also allows SEFLG_TRUEPOS, SEFLG_HELCTR
 
-\*/
 
-## swe_azalt(), horizontal coordinates, azimuth, altitude
+## 7.14. swe_azalt(), horizontal coordinates, azimuth, altitude
 
 **swe_azalt()** computes the horizontal coordinates (azimuth and
 altitude) of a planet or a star from either ecliptical or equatorial
 coordinates.
 
-void []{#_Hlk477329169 .anchor}**swe_azalt**(
+```c
+  #define SE_ECL2HOR 0
+  #define SE_EQU2HOR 1
 
-> double tjd_ut, // UT
->
-> int32 calc_flag, // SE_ECL2HOR or SE_EQU2HOR
->
-> double \*geopos, // array of 3 doubles: geograph. long., lat., height
->
-> double atpress, // atmospheric pressure in mbar (hPa)
->
-> double attemp, // atmospheric temperature in degrees Celsius
->
-> double \*xin, // array of 3 doubles: position of body in either
-> ecliptical or equatorial coordinates, depending on calc_flag
->
-> double \*xaz); // return array of 3 doubles, containing azimuth, true
-> altitude, apparent altitude
+  void swe_azalt*(
+    double tjd_ut,	// UT
+    int32 calc_flag,	// SE_ECL2HOR or SE_EQU2HOR
+    double *geopos,	// array of 3 doubles: geograph. long., lat., height
+    double atpress,	// atmospheric pressure in mbar (hPa)
+    double attemp,	// atmospheric temperature in degrees Celsius
+    double *xin,	// array of 3 doubles: position of body in either ecliptical
+			// or equatorial coordinates, depending on calc_flag
+    double *xaz		// return array of 3 doubles, containing azimuth, true altitude, apparent altitude
+);
+```
 
-If **calc_flag** = SE_ECL2HOR, set xin\[0\] = ecl. long., xin\[1\] =
-ecl. lat., (xin\[2\] = distance (not required));
+If **calc_flag** = SE_ECL2HOR, set
+```
+  xin[0] = ecl. long.,
+  xin[1] = ecl. lat.,
+  (xin[2] = distance (not required));
+```
 
 else
 
-if **calc_flag** = SE_EQU2HOR, set xin\[0\] = right ascension, xin\[1\]
-= declination, (xin\[2\] = distance (not required));
-
-#define SE_ECL2HOR 0
-
-#define SE_EQU2HOR 1
+if **calc_flag** = SE_EQU2HOR, set
+```
+  xin[0] = right ascension,
+  xin[1] = declination,
+  (xin[2] = distance (not required))
+```
 
 The return values are:
 
@@ -3452,7 +2635,7 @@ If atpress is given the value 0, the function estimates the pressure
 from the geographical altitude given in geopos\[2\] and attemp. If
 geopos\[2\] is 0, atpress will be estimated for sea level.
 
-## swe_azalt_rev()
+## 7.15. swe_azalt_rev()
 
 The function **swe_azalt_rev()** is not precisely the reverse of
 **swe_azalt()**. It computes either ecliptical or equatorial coordinates
@@ -3462,36 +2645,25 @@ the true altitude has to be computed first with the function
 
 It is defined as follows:
 
-void []{#_Hlk477329516 .anchor}**swe_azalt_rev**(
+```c
+void swe_azalt_rev(
+  double tjd_ut,
+  int32 calc_flag,	// either SE_HOR2ECL or SE_HOR2EQU 
+  double *geopos, 	// array of 3 doubles for geograph. pos. of observer
+  double *xin,		// array of 2 doubles for azimuth and true altitude of > planet 
+  double *xout		// return array of 2 doubles for either ecliptic or
+		 	// equatorial coordinates, depending on calc_flag
+);
+```
 
-> double tjd_ut,
->
-> int32 calc_flag, /\* either SE_HOR2ECL or SE_HOR2EQU \*/
->
-> double \*geopos, /\* array of 3 doubles for geograph. pos. of observer
-> \*/
->
-> double \*xin, /\* array of 2 doubles for azimuth and true altitude of
-> planet \*/
->
-> double \*xout); // return array of 2 doubles for either ecliptic or
->
-> // equatorial coordinates, depending on calc_flag
 
-For the definition of the azimuth and true altitude, see chapter 4.9 on
-**swe_azalt()**.
-
-#define SE_HOR2ECL 0
-
-#define SE_HOR2EQU 1
-
-## swe_refrac(), swe_refrac_extended(), refraction
+## 7.16. swe_refrac(), swe_refrac_extended(), refraction
 
 The refraction function **swe_refrac()** calculates either the true
 altitude from the apparent altitude or the apparent altitude from the
 apparent altitude. Its definition is:
 
-double []{#_Hlk477329626 .anchor}**swe_refrac**(
+double **swe_refrac**(
 
 > double inalt,
 >
@@ -3931,7 +3103,7 @@ Yallop
 These functions are needed to convert calendar dates to the astronomical
 time scale which measures time in Julian days.
 
-double []{#_Hlk477329697 .anchor}**swe_julday**(
+double **swe_julday**(
 
 > int year,
 >
@@ -3943,7 +3115,7 @@ double []{#_Hlk477329697 .anchor}**swe_julday**(
 >
 > int gregflag);
 
-int []{#_Hlk477331070 .anchor}**swe_date_conversion**(
+int **swe_date_conversion**(
 
 > int y, int m, int d, /\* year, month, day \*/
 >
@@ -3953,7 +3125,7 @@ int []{#_Hlk477331070 .anchor}**swe_date_conversion**(
 >
 > double \*tjd); /\* return value for Julian day \*/
 
-void []{#_Hlk477839146 .anchor}**swe_revjul**(
+void **swe_revjul**(
 
 > double tjd, /\* Julian day number \*/
 >
@@ -3970,13 +3142,13 @@ in addition whether the date is legal. It returns OK or ERR.
 **swe_revjul()** is the reverse function of **swe_julday()**. It
 computes year, month, day and hour from a Julian day number.
 
-The variable []{#_Hlk477329877 .anchor}gregflag tells the function
+The variable gregflag tells the function
 whether the input date is Julian calendar (gregflag = SE_JUL_CAL) or
 Gregorian calendar (gregflag = SE_GREG_CAL).
 
 Usually, you will set gregflag = SE_GREG_CAL.
 
-The []{#_Hlk477330118 .anchor}Julian day number has nothing to do with
+The Julian day number has nothing to do with
 Julius Cesar, who introduced the Julian calendar, but was invented by
 the monk Julianus. The Julian day number tells for a given date the
 number of days that have passed since the creation of the world which
@@ -4220,7 +3392,7 @@ for a long time.
 
 ## Mean solar time versus True solar time: swe_time_equ(), swe_lmt_to_lat(), swe_lat_to_lmt()
 
-[]{#_Hlk477330492 .anchor}Universal Time (UT or UTC) is based on Mean
+Universal Time (UT or UTC) is based on Mean
 Solar Time, AKA Local Mean Time, which is a uniform measure of time. A
 day has always the same length, independent of the time of the year.
 
@@ -4229,13 +3401,13 @@ of time was mostly based on sun dials, the True Solar Time was used,
 also called Local Apparent Time.
 
 The difference between Local Mean Time and Local Apparent Time is called
-the []{#_Hlk477840429 .anchor}*equation of time*. This difference can
+the *equation of time*. This difference can
 become as large as 20 minutes.
 
 If a historical date was noted in Local Apparent Time, it must first be
 converted to Local Mean Time by applying the equation of time, before it
 can be used to compute Universal Time (for the houses) and finally
-[Ephemeris Time](#_Hlk477830987) (for the planets).
+[Ephemeris Time] (for the planets).
 
 This conversion can be done using the function **swe_lat_to_lmt()**. The
 reverse function is **swe_lmt_to_lat()**. If required, the equation of
@@ -4253,7 +3425,7 @@ mean time in days.
 
 \*/
 
-int []{#_Hlk477330339 .anchor}**swe_time_equ**(
+int **swe_time_equ**(
 
 double tjd,
 
@@ -4309,19 +3481,19 @@ char \*serr);
 
 /\* delta t from Julian day number \*/
 
-double []{#_Hlk477840778 .anchor}**swe_deltat**(
+double **swe_deltat**(
 
 double tjd);
 
 /\* get tidal acceleration used in swe_deltat() \*/
 
-double []{#_Hlk477840792 .anchor}**swe_get_tid_acc**(
+double **swe_get_tid_acc**(
 
 void);
 
 /\* set tidal acceleration to be used in swe_deltat() \*/
 
-void []{#_Hlk477840801 .anchor}**swe_set_tid_acc**(
+void **swe_set_tid_acc**(
 
 double t_acc);
 
@@ -4334,7 +3506,7 @@ double t_acc);
 The Julian day number, you compute from a birth date, will be Universal
 Time (UT, former GMT) and can be used to compute the star time and the
 houses. However, for the planets and the other factors, you have to
-convert UT to []{#_Hlk477830987 .anchor}Ephemeris time (ET):
+convert UT to Ephemeris time (ET):
 
 ## swe_deltat_ex()
 
@@ -4496,7 +3668,7 @@ ephemeris path.
 
 # The function swe_set_topo() for topocentric planet positions
 
-void []{#_Hlk477841944 .anchor}**swe_set_topo**( /\* 3 doubles for
+void **swe_set_topo**( /\* 3 doubles for
 geogr. longitude, latitude, height above sea.
 
 double geolon, \* eastern longitude is positive,
@@ -4536,7 +3708,7 @@ The parameters set by **swe_set_topo()** survive **swe_close().**
 
 ## swe_set_sid_mode()
 
-void []{#_Hlk477842044 .anchor}**swe_set_sid_mode**(int32 sid_mode,
+void **swe_set_sid_mode**(int32 sid_mode,
 double t0, double ayan_t0);
 
 This function can be used to specify the mode for sidereal computations.
@@ -4547,207 +3719,120 @@ SEFLG_SIDEREAL.
 If **swe_set_sid_mode()** is not called, the default ayanamsha
 (Fagan/Bradley) is used.
 
-If a predefined mode is wanted, the variable []{#_Hlk477842160
-.anchor}sid_mode has to be set, while t0 and []{#_Hlk477842217
+If a predefined mode is wanted, the variable
+.anchor}sid_mode has to be set, while t0 and
 .anchor}ayan_t0 are not considered, i.e. can be 0. The predefined
-[]{#_Hlk477860745 .anchor}sidereal modes are:
+sidereal modes are:
 
+```c
 #define SE_SIDM_FAGAN_BRADLEY 0
-
 #define SE_SIDM_LAHIRI 1
-
 #define SE_SIDM_DELUCE 2
-
 #define SE_SIDM_RAMAN 3
-
 #define SE_SIDM_USHASHASHI 4
-
 #define SE_SIDM_KRISHNAMURTI 5
-
 #define SE_SIDM_DJWHAL_KHUL 6
-
 #define SE_SIDM_YUKTESHWAR 7
-
 #define SE_SIDM_JN_BHASIN 8
-
 #define SE_SIDM_BABYL_KUGLER1 9
-
 #define SE_SIDM_BABYL_KUGLER2 10
-
 #define SE_SIDM_BABYL_KUGLER3 11
-
 #define SE_SIDM_BABYL_HUBER 12
-
 #define SE_SIDM_BABYL_ETPSC 13
-
 #define SE_SIDM_ALDEBARAN_15TAU 14
-
 #define SE_SIDM_HIPPARCHOS 15
-
 #define SE_SIDM_SASSANIAN 16
-
 #define SE_SIDM_GALCENT_0SAG 17
-
 #define SE_SIDM_J2000 18
-
 #define SE_SIDM_J1900 19
-
 #define SE_SIDM_B1950 20
-
 #define SE_SIDM_SURYASIDDHANTA 21
-
 #define SE_SIDM_SURYASIDDHANTA_MSUN 22
-
 #define SE_SIDM_ARYABHATA 23
-
 #define SE_SIDM_ARYABHATA_MSUN 24
-
 #define SE_SIDM_SS_REVATI 25
-
 #define SE_SIDM_SS_CITRA 26
-
 #define SE_SIDM_TRUE_CITRA 27
-
 #define SE_SIDM_TRUE_REVATI 28
-
 #define SE_SIDM_TRUE_PUSHYA 29
-
 #define SE_SIDM_GALCENT_RGBRAND 30
-
 #define SE_SIDM_GALEQU_IAU1958 31
-
 #define SE_SIDM_GALEQU_TRUE 32
-
 #define SE_SIDM_GALEQU_MULA 33
-
 #define SE_SIDM_GALALIGN_MARDYKS 34
-
 #define SE_SIDM_TRUE_MULA 35
-
 #define SE_SIDM_GALCENT_MULA_WILHELM 36
-
 #define SE_SIDM_ARYABHATA_522 37
-
 #define SE_SIDM_BABYL_BRITTON 38
-
 #define SE_SIDM_TRUE_SHEORAN 39
-
 #define SE_SIDM_GALCENT_COCHRANE 40
-
 #define SE_SIDM_GALEQU_FIORENZA 41
-
 #define SE_SIDM_VALENS_MOON 42
-
 #define SE_SIDM_LAHIRI_1940 43
-
 #define SE_SIDM_LAHIRI_VP285 44
-
 #define SE_SIDM_KRISHNAMURTI_VP291 45
-
 #define SE_SIDM_LAHIRI_ICRC 46
-
 #define SE_SIDM_USER 255
+```
 
 The function **swe_get_ayanamsa_name()** returns the name of the
 ayanamsha.
 
-const char \***swe_get_ayanamsa_name**(int32 isidmode)
+```c
+const char *swe_get_ayanamsa_name(int32 isidmode)
+```
 
 namely:
 
-\"Fagan/Bradley", 0 SE_SIDM_FAGAN_BRADLEY
-
-\"Lahiri", 1 SE_SIDM_LAHIRI
-
-\"De Luce", 2 SE_SIDM_DELUCE
-
-\"Raman", 3 SE_SIDM_RAMAN
-
-\"Usha/Shashi", 4 SE_SIDM_USHASHASHI
-
-\"Krishnamurti", 5 SE_SIDM_KRISHNAMURTI
-
-\"Djwhal Khul", 6 SE_SIDM_DJWHAL_KHUL
-
-\"Yukteshwar", 7 SE_SIDM_YUKTESHWAR
-
-\"J.N. Bhasin", 8 SE_SIDM_JN_BHASIN
-
-\"Babylonian/Kugler 1", 9 SE_SIDM_BABYL_KUGLER1
-
-\"Babylonian/Kugler 2", 10 SE_SIDM_BABYL_KUGLER2
-
-\"Babylonian/Kugler 3", 11 SE_SIDM_BABYL_KUGLER3
-
-\"Babylonian/Huber", 12 SE_SIDM_BABYL_HUBER
-
-\"Babylonian/Eta Piscium", 13 SE_SIDM_BABYL_ETPSC
-
-\"Babylonian/Aldebaran = 15 Tau", 14 SE_SIDM_ALDEBARAN_15TAU
-
-\"Hipparchos", 15 SE_SIDM_HIPPARCHOS
-
-\"Sassanian", 16 SE_SIDM_SASSANIAN
-
-\"Galact. Center = 0 Sag", 17 SE_SIDM_GALCENT_0SAG
-
-\"J2000", 18 SE_SIDM_J2000
-
-\"J1900", 19 SE_SIDM_J1900
-
-\"B1950", 20 SE_SIDM_B1950
-
-\"Suryasiddhanta", 21 SE_SIDM_SURYASIDDHANTA
-
-\"Suryasiddhanta, mean Sun", 22 SE_SIDM_SURYASIDDHANTA_MSUN
-
-\"Aryabhata", 23 SE_SIDM_ARYABHATA
-
-\"Aryabhata, mean Sun", 24 SE_SIDM_ARYABHATA_MSUN
-
-\"SS Revati", 25 SE_SIDM_SS_REVATI
-
-\"SS Citra", 26 SE_SIDM_SS_CITRA
-
-\"True Citra", 27 SE_SIDM_TRUE_CITRA
-
-\"True Revati", 28 SE_SIDM_TRUE_REVATI
-
-\"True Pushya (PVRN Rao) ", 29 SE_SIDM_TRUE_PUSHYA
-
-\"Galactic Center (Gil Brand) ", 30 SE_SIDM_GALCENT_RGBRAND
-
-\"Galactic Equator (IAU1958) ", 31 SE_SIDM_GALEQU_IAU1958
-
-\"Galactic Equator", 32 SE_SIDM_GALEQU_TRUE
-
-\"Galactic Equator mid-Mula", 33 SE_SIDM_GALEQU_MULA
-
-\"Skydram (Mardyks) ", 34 SE_SIDM_GALALIGN_MARDYKS
-
-\"True Mula (Chandra Hari) ", 35 SE_SIDM_TRUE_MULA
-
-\"Dhruva/Gal.Center/Mula (Wilhelm) ", 36 SE_SIDM_GALCENT_MULA_WILHELM
-
-\"Aryabhata 522", 37 SE_SIDM_ARYABHATA_522
-
-\"Babylonian/Britton", 38 SE_SIDM_BABYL_BRITTON
-
-\"\\\"Vedic\\\"/Sheoran 39 SE_SIDM_TRUE_SHEORAN
-
-\"Cochrane (Gal.Center = 0 Cap)\" 40 SE_SIDM_GALCENT_COCHRANE
-
-\"Galactic Equator (Fiorenza)\", 41 SE_SIDM_GALEQU_FIORENZA
-
-\"Vettius Valens\", 42 SE_SIDM_VALENS_MOON
-
-\"Lahiri 1940\", 43 SE_SIDM_LAHIRI_1940
-
-\"Lahiri VP285\", 44 SE_SIDM_LAHIRI_VP285
-
-\"Krishnamurti-Senthilathiban\", 45 SE_SIDM_KRISHNAMURTI_VP291
-
-\"Lahiri ICRC\", 46 SE_SIDM_LAHIRI_ICRC
+name|number|#define
+----| ---- |-------
+"Fagan/Bradley"| 0| SESIDM_FAGAN_BRADLEY
+"Lahiri"| 1| SESIDM_LAHIRI
+"De Luce"| 2| SESIDM_DELUCE
+"Raman"| 3| SESIDM_RAMAN
+"Usha/Shashi"| 4| SESIDM_USHASHASHI
+"Krishnamurti"| 5| SESIDM_KRISHNAMURTI
+"Djwhal Khul"| 6| SESIDM_DJWHAL_KHUL
+"Yukteshwar"| 7| SESIDM_YUKTESHWAR
+"J.N. Bhasin"| 8| SESIDM_JN_BHASIN
+"Babylonian/Kugler 1"| 9| SESIDM_BABYL_KUGLER1
+"Babylonian/Kugler 2"| 10| SESIDM_BABYL_KUGLER2
+"Babylonian/Kugler 3"| 11| SESIDM_BABYL_KUGLER3
+"Babylonian/Huber"| 12| SESIDM_BABYL_HUBER
+"Babylonian/Eta Piscium"| 13| SESIDM_BABYL_ETPSC
+"Babylonian/Aldebaran = 15 Tau"| 14| SESIDM_ALDEBARAN_15TAU
+"Hipparchos"| 15| SESIDM_HIPPARCHOS
+"Sassanian"| 16| SESIDM_SASSANIAN
+"Galact. Center = 0 Sag"| 17| SESIDM_GALCENT_0SAG
+"J2000"| 18| SESIDM_J2000
+"J1900"| 19| SESIDM_J1900
+"B1950"| 20| SESIDM_B1950
+"Suryasiddhanta"| 21| SESIDM_SURYASIDDHANTA
+"Suryasiddhanta, mean Sun"| 22| SESIDM_SURYASIDDHANTA_MSUN
+"Aryabhata"| 23| SESIDM_ARYABHATA
+"Aryabhata, mean Sun"| 24| SESIDM_ARYABHATA_MSUN
+"SS Revati"| 25| SESIDM_SS_REVATI
+"SS Citra"| 26| SESIDM_SS_CITRA
+"True Citra"| 27| SESIDM_TRUE_CITRA
+"True Revati"| 28| SESIDM_TRUE_REVATI
+"True Pushya (PVRN Rao) "| 29| SESIDM_TRUE_PUSHYA
+"Galactic Center (Gil Brand) "| 30| SESIDM_GALCENT_RGBRAND
+"Galactic Equator (IAU1958) "| 31| SESIDM_GALEQU_IAU1958
+"Galactic Equator"| 32| SESIDM_GALEQU_TRUE
+"Galactic Equator mid-Mula"| 33| SESIDM_GALEQU_MULA
+"Skydram (Mardyks) "| 34| SESIDM_GALALIGN_MARDYKS
+"True Mula (Chandra Hari) "| 35| SESIDM_TRUE_MULA
+"Dhruva/Gal.Center/Mula (Wilhelm) "| 36| SESIDM_GALCENT_MULA_WILHELM
+"Aryabhata 522"| 37| SESIDM_ARYABHATA_522
+"Babylonian/Britton"| 38| SESIDM_BABYL_BRITTON
+"Vedic/Sheoran"| 39| SESIDM_TRUE_SHEORAN
+"Cochrane (Gal.Center = 0 Cap)"| 40| SESIDM_GALCENT_COCHRANE
+"Galactic Equator (Fiorenza)"| 41| SESIDM_GALEQU_FIORENZA
+"Vettius Valens"| 42| SESIDM_VALENS_MOON
+"Lahiri 1940"| 43| SESIDM_LAHIRI_1940
+"Lahiri VP285"| 44| SESIDM_LAHIRI_VP285
+"Krishnamurti-Senthilathiban"| 45| SESIDM_KRISHNAMURTI_VP291
+"Lahiri ICRC"| 46| SESIDM_LAHIRI_ICRC
 
 For information about the sidereal modes, please read the chapter on
 sidereal calculations in swisseph.doc.
@@ -4953,7 +4038,7 @@ calculation of the reference star (e.g. Citra/Spica). Slightly different
 ayanamsha values will result depending on these flags.
 
 Before calling one of these functions, you have to set the sidereal mode
-with **[swe_set_sid_mode](#_Hlk477842044)()**, unless you want the
+with **[swe_set_sid_mode]()**, unless you want the
 default sidereal mode, which is the Fagan/Bradley ayanamsha.
 
 /\* input variables:
@@ -4977,7 +4062,7 @@ SEFLG_MOSEPH)
 
 \*/
 
-int32 []{#_Hlk477856452 .anchor}**swe_get_ayanamsa_ex_ut**(
+int32 **swe_get_ayanamsa_ex_ut**(
 
 double tjd_ut,
 
@@ -5096,7 +4181,7 @@ PKORCAEVXHTBG \*/
 
 /\* house cusps, ascendant and MC \*/
 
-int []{#_Hlk477861239 .anchor}**swe_houses**(
+int **swe_houses**(
 
 > double tjd_ut, /\* Julian day number, UT \*/
 >
@@ -5122,7 +4207,7 @@ int []{#_Hlk477861239 .anchor}**swe_houses**(
 
 ## swe_houses_armc() and swe_houses_armc_ex2()
 
-int []{#_Hlk477861854 .anchor}**swe_houses_armc**(
+int **swe_houses_armc**(
 
 > double armc, /\* ARMC \*/
 >
@@ -5165,7 +4250,7 @@ int **swe_houses_armc_ex2**(
 /\* extended function; to compute tropical or sidereal positions of
 house cusps \*/
 
-int []{#_Hlk477861861 .anchor}**swe_houses_ex**(
+int **swe_houses_ex**(
 
 > double tjd_ut, /\* Julian day number, UT \*/
 >
@@ -5266,7 +4351,7 @@ however, one will need to compute houses *from a given ARMC*, e.g. with
 the composite horoscope, which has no date, only a composite ARMC which
 is computed from two natal ARMCs. In this case, the function
 **swe_houses_armc()** or **swe_houses_armc_ex2()** can be used. Since
-these functions require the ecliptic obliquity eps, []{#_Hlk477862144
+these functions require the ecliptic obliquity eps,
 .anchor}one will probably want to calculate a composite value for this
 parameter also. To do this, one has to call **swe_calc()** with ipl =
 SE_ECL_NUT for both birth dates and then calculate the average of both
@@ -5281,7 +4366,7 @@ the composite declination of the Sun (= average of the declinations of
 the natal Suns).
 
 There is no extended function for **swe_houses_armc()**. Therefore, if
-one wants to []{#_Hlk477862421 .anchor}compute such exotic things as the
+one wants to compute such exotic things as the
 house cusps of a sidereal composite chart, the procedure will be more
 complicated:
 
@@ -5339,7 +4424,7 @@ The first array element **cusps\[0\]** is always 0, the twelve houses
 follow **in cusps\[1\] .. \[12\]**, the reason being that arrays in C
 begin with the index 0. The indices are therefore:
 
-> []{#_Hlk477862529 .anchor}cusps\[0\] = 0
+> cusps\[0\] = 0
 >
 > cusps\[1\] = house 1
 >
@@ -5349,7 +4434,7 @@ etc.
 
 In the array **ascmc**, the function returns the following values:
 
-> []{#_Hlk477862569 .anchor}ascmc\[0\] = Ascendant
+> ascmc\[0\] = Ascendant
 >
 > ascmc\[1\] = MC
 >
@@ -5390,7 +4475,7 @@ and may be used for additional points in future releases.
 
 The codes **hsys** of the most important house methods are:
 
-[]{#_Hlk477862719 .anchor}hsys = 'P' Placidus
+hsys = 'P' Placidus
 
 'K' Koch
 
@@ -5470,7 +4555,7 @@ Poli-Equatorial -\> Carter
 
 Zariel -\> Axial rotation system
 
-Placidus and Koch []{#_Hlk477864194 .anchor}house cusps as well as
+Placidus and Koch house cusps as well as
 Gauquelin sectors **cannot be computed beyond the polar circle**. In
 such cases, **swe_houses()** switches to Porphyry houses (each quadrant
 is divided into three equal parts) and returns the error code ERR. In
@@ -5484,7 +4569,7 @@ given to the function, it will be converted to uppercase. However, in
 future releases, lower case codes may be used for new house methods. In
 such cases, lower and uppercase won't be equivalent anymore.
 
-The []{#_Hlk477861184 .anchor}**Vertex** is the point on the ecliptic
+The **Vertex** is the point on the ecliptic
 that is located in precise western direction. The opposition of the
 **Vertex** is the **Antivertex,** the ecliptic east point.
 
@@ -5493,7 +4578,7 @@ that is located in precise western direction. The opposition of the
 To compute the house position of a given body for a given ARMC, you may
 use:
 
-double []{#_Hlk477862955 .anchor}**swe_house_pos**(
+double **swe_house_pos**(
 
 > double armc, /\* ARMC \*/
 >
@@ -5521,7 +4606,7 @@ With house system 'G' (Gauquelin sectors), a value between 1.0 and
 house cusps in counterclockwise direction, Gauquelin sectors are
 numbered in clockwise direction.
 
-With []{#_Hlk477864273 .anchor}Koch houses, the function sometimes
+With Koch houses, the function sometimes
 returns 0, if the computation was not possible. This happens most often
 in polar regions, but it can happen at latitudes **below 66°33'** as
 well, e.g. if a body has a high declination and falls within the
@@ -5572,7 +4657,7 @@ positions are identical to tropical ones in the following cases:
     Campanus, Regiomontanus, Placidus, Azimuth houses, axial rotation
     houses. This is **not** the case with equal houses, Porphyry and
     Koch houses. You have to compute equal and Porphyry house positions
-    on your own. []{#_Hlk477864373 .anchor}**We recommend to avoid
+    on your own. **We recommend to avoid
     Koch** houses here. Sidereal Koch houses make no sense with these
     sidereal algorithms.
 
@@ -5692,7 +4777,7 @@ The rising and setting of the disk edge is used:
 # Sidereal time with swe_sidtime() and swe_sidtime0()
 
 The sidereal time is computed inside the **houses()** function and
-returned via the variable []{#_Hlk477864589 .anchor}armc which measures
+returned via the variable armc which measures
 sidereal time in degrees. To get sidereal time in hours, divide armc by
 15.
 
@@ -5702,11 +4787,11 @@ nutation to be given in the function call, the first function computes
 them internally. Both return sidereal time at the Greenwich Meridian,
 measured in hours.
 
-double []{#_Hlk477864660 .anchor}**swe_sidtime**(
+double **swe_sidtime**(
 
 > double tjd_ut); /\* Julian day number, UT \*/
 
-double []{#_Hlk477864667 .anchor}**swe_sidtime0**(
+double **swe_sidtime0**(
 
 > double tjd_ut, /\* Julian day number, UT \*/
 >
@@ -5720,1382 +4805,971 @@ double []{#_Hlk477864667 .anchor}**swe_sidtime0**(
 
 ### Planets, moon, asteroids, lunar nodes, apogees, fictitious bodies
 
+```c
 // planetary positions from UT
 
-int32 **swe_calc_ut**(
-
-> double tjd_ut, /\* Julian day number, Universal Time \*/
->
-> int32 ipl, /\* planet number \*/
->
-> int32 iflag, /\* flag bits \*/
->
-> double \*xx, /\* target address for 6 position values: longitude,
-> latitude, distance, \* long. speed, lat. speed, dist. speed \*/
->
-> char \*serr); /\* 256 bytes for error string \*/
+int32 swe_calc_ut(
+  double tjd_ut, /* Julian day number, Universal Time */
+  int32 ipl, /* planet number */
+  int32 iflag, /* flag bits */
+  double *xx, /* target address for 6 position values: longitude,
+	      latitude, distance, * long. speed, lat. speed, dist. speed */
+  char *serr /* 256 bytes for error string */
+);
 
 // planetary positions from TT
 
-int32 **swe_calc**(
-
-> double tjd_et, /\* Julian day number, Ephemeris Time \*/
->
-> int32 ipl, /\* planet number \*/
->
-> int32 iflag, /\* flag bits \*/
->
-> double \*xx, /\* target address for 6 position values: longitude,
-> latitude, distance, \*long. speed, lat. speed, dist. speed \*/
->
-> char \*serr); /\* 256 bytes for error string \*/
+int32 swe_calc(
+  double tjd_et, /* Julian day number, Ephemeris Time */
+  int32 ipl, /* planet number */
+  int32 iflag, /* flag bits */
+  double *xx, /* target address for 6 position values: longitude,
+  latitude, distance, *long. speed, lat. speed, dist. speed */
+  char *serr /* 256 bytes for error string */
+);
 
 // planetary positions, planetocentric, from TT
 
-int32 **swe_calc_pctr**(
-
-double tjd, // input julian day number in TT
-
-int32 ipl, // target object
-
-int32 iplctr, // center object
-
-int32 iflag, /\* flag bits, as with swe_calc() \*/
-
-double \*xxret,
-
-char \*serr);
+int32 swe_calc_pctr(
+  double tjd, // input julian day number in TT
+  int32 ipl, // target object
+  int32 iplctr, // center object
+  int32 iflag, /* flag bits, as with swe_calc() */
+  double *xxret,
+  char *serr
+);
 
 // positions of planetary nodes and aspides from UT
 
-int32 **swe_nod_aps_ut**(
-
-double tjd_ut, /\* Julian day number, Universal Time \*/
-
-int32 ipl, /\* planet number \*/
-
-int32 iflag, /\* flag bits \*/
-
-int32 method, /\* method SE_NODBIT\_\... (see docu above) \*/
-
-double \*xnasc, /\* target address for 6 position values for ascending
-node (cf. swe_calc()\*/
-
-double \*xndsc, /\* target address for 6 position values for descending
-node (cf. swe_calc()\*/
-
-double \*xperi, /\* target address for 6 position values for perihelion
-(cf. swe_calc()\*/
-
-double \*xaphe, /\* target address for 6 position values for aphelion
-(cf. swe_calc()\*/
-
-char \*serr);
+int32 swe_nod_aps_ut(
+  double tjd_ut, /* Julian day number, Universal Time */
+  int32 ipl, /* planet number */
+  int32 iflag, /* flag bits */
+  int32 method, /* method SE_NODBIT_... (see docu above) */
+  double *xnasc, /* target address for 6 position values for ascending node (cf. swe_calc()*/
+  double *xndsc, /* target address for 6 position values for descending node (cf. swe_calc()*/
+  double *xperi, /* target address for 6 position values for perihelion (cf. swe_calc()*/
+  double *xaphe, /* target address for 6 position values for aphelion (cf. swe_calc()*/
+  char *serr
+);
 
 // positions of planetary nodes and aspides from TT
 
-int32 **swe_nod_aps**(
-
-double tjd_et, /\* Julian day number, Ephemeris Time \*/
-
-int32 ipl, /\* planet number \*/
-
-int32 iflag, /\* flag bits \*/
-
-int32 method, /\* method SE_NODBIT\_\... (see docu above) \*/
-
-double \*xnasc, /\* target address for 6 position values for ascending
-node (cf. swe_calc()\*/
-
-double \*xndsc, /\* target address for 6 position values for descending
-node (cf. swe_calc()\*/
-
-double \*xperi, /\* target address for 6 position values for perihelion
-(cf. swe_calc()\*/
-
-double \*xaphe, /\* target address for 6 position values for aphelion
-(cf. swe_calc()\*/
-
-char \*serr);
+int32 swe_nod_aps(
+double tjd_et, /* Julian day number, Ephemeris Time */
+int32 ipl, /* planet number */
+int32 iflag, /* flag bits */
+int32 method, /* method SE_NODBIT_... (see docu above) */
+double *xnasc, /* target address for 6 position values for ascending node (cf. swe_calc()*/
+double *xndsc, /* target address for 6 position values for descending node (cf. swe_calc()*/
+double *xperi, /* target address for 6 position values for perihelion (cf. swe_calc()*/
+double *xaphe, /* target address for 6 position values for aphelion (cf. swe_calc()*/
+char *serr
+);
+```
 
 ### Fixed stars
 
-// positions of fixed stars from UT, faster function if many stars are
-calculated
+```c
+// positions of fixed stars from UT, faster function if many stars are calculated
 
-int32 **swe_fixstar2_ut**(
+int32 swe_fixstar2_ut(
+  char *star, /* star name, returned star name 40 bytes */
+  double tjd_ut, /* Julian day number, Universal Time */
+  int32 iflag, /* flag bits */
+  double *xx, /* target address for 6 position values: longitude,
+  latitude, distance, *long. speed, lat. speed, dist. speed */
+  char *serr /* 256 bytes for error string */
+);
 
-> char \*star, /\* star name, returned star name 40 bytes \*/
->
-> double tjd_ut, /\* Julian day number, Universal Time \*/
->
-> int32 iflag, /\* flag bits \*/
->
-> double \*xx, /\* target address for 6 position values: longitude,
-> latitude, distance, \*long. speed, lat. speed, dist. speed \*/
->
-> char \*serr); /\* 256 bytes for error string \*/
+// positions of fixed stars from TT, faster function if many stars are calculated
 
-// positions of fixed stars from TT, faster function if many stars are
-calculated
+int32 swe_fixstar2(
+  char *star, /* star name, returned star name 40 bytes */
+  double tjd_et, /* Julian day number, Ephemeris Time */
+  int32 iflag, /* flag bits */
+  double *xx, /* target address for 6 position values: longitude,
+  latitude, distance, *long. speed, lat. speed, dist. speed */
+  char *serr /* 256 bytes for error string */
+);
 
-int32 **swe_fixstar2**(
+// positions of fixed stars from UT, faster function if single stars are calculated
 
-> char \*star, /\* star name, returned star name 40 bytes \*/
->
-> double tjd_et, /\* Julian day number, Ephemeris Time \*/
->
-> int32 iflag, /\* flag bits \*/
->
-> double \*xx, /\* target address for 6 position values: longitude,
-> latitude, distance, \*long. speed, lat. speed, dist. speed \*/
->
-> char \*serr); /\* 256 bytes for error string \*/
+int32 swe_fixstar_ut(
+  char *star, /* star name, returned star name 40 bytes */
+  double tjd_ut, /* Julian day number, Universal Time */
+  int32 iflag, /* flag bits */
+  double *xx, /* target address for 6 position values: longitude,
+  latitude, distance, *long. speed, lat. speed, dist. speed */
+  char *serr /* 256 bytes for error string */
+);
 
-// positions of fixed stars from UT, faster function if single stars are
-calculated
+// positions of fixed stars from TT, faster function if single stars are calculated
 
-int32 **swe_fixstar_ut**(
-
-> char \*star, /\* star name, returned star name 40 bytes \*/
->
-> double tjd_ut, /\* Julian day number, Universal Time \*/
->
-> int32 iflag, /\* flag bits \*/
->
-> double \*xx, /\* target address for 6 position values: longitude,
-> latitude, distance, \*long. speed, lat. speed, dist. speed \*/
->
-> char \*serr); /\* 256 bytes for error string \*/
-
-// positions of fixed stars from TT, faster function if single stars are
-calculated
-
-int32 **swe_fixstar**(
-
-> char \*star, /\* star name, returned star name 40 bytes \*/
->
-> double tjd_et, /\* Julian day number, Ephemeris Time \*/
->
-> int32 iflag, /\* flag bits \*/
->
-> double \*xx, /\* target address for 6 position values: longitude,
-> latitude, distance, \*long. speed, lat. speed, dist. speed \*/
->
-> char \*serr); /\* 256 bytes for error string \*/
+int32 swe_fixstar(
+  char *star, /* star name, returned star name 40 bytes */
+  double tjd_et, /* Julian day number, Ephemeris Time */
+  int32 iflag, /* flag bits */
+  double *xx, /* target address for 6 position values: longitude,
+  latitude, distance, *long. speed, lat. speed, dist. speed */
+  char *serr /* 256 bytes for error string */
+);
 
 // get the magnitude of a fixed star
 
-int32 **swe_fixstar2_mag**(
-
-char \*star,
-
-double\* mag,
-
-char\* serr);
-
-int32 **swe_fixstar_mag**(
-
-char \*star,
-
-double\* mag,
-
-char\* serr);
+int32 swe_fixstar2_mag(
+  char *star,
+  double* mag,
+  char* serr);
+  int32 swe_fixstar_mag(
+  char *star,
+  double* mag,
+  char* serr
+);
+```
 
 ### Set the geographic location for topocentric planet computation
 
-void **swe_set_topo**(
+```c
+void swe_set_topo(
+  double geolon, /* geographic longitude */
+  double geolat, /* geographic latitude
+		  * eastern longitude is positive,
+		  * western longitude is negative,
+		  * northern latitude is positive,
+		  * southern latitude is negative */
+  double altitude /* altitude above sea */
+);
+```
 
-> double geolon, /\* geographic longitude \*/
->
-> double geolat, /\* geographic latitude
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double altitude); /\* altitude above sea \*/
 
 ### Set the sidereal mode and get ayanamsha values
 
-void **swe_set_sid_mode**(
+```c
+void swe_set_sid_mode(
+  int32 sid_mode,
+  double t0, /* reference epoch */
+  double ayan_t0 /* initial ayanamsha at t0 */
+);
 
-> int32 sid_mode,
->
-> double t0, /\* reference epoch \*/
->
-> double ayan_t0); /\* initial ayanamsha at t0 \*/
+/* The function calculates ayanamsha for a given date in UT.
+* The return value is either the ephemeris flag used or ERR (-1) */
 
-/\* The function calculates ayanamsha for a given date in UT.
+int32 swe_get_ayanamsa_ex_ut(
+  double tjd_ut, /* Julian day number in UT */
+  int32 ephe_flag, /* ephemeris flag, one of SEFLG_SWIEPH, SEFLG_JPLEPH, SEFLG_MOSEPH */
+  double *daya, /* output: ayanamsha value (pointer to double) */
+  char *serr /* output: error message or warning (pointer to string) */
+);
 
-\* The return value is either the ephemeris flag used or ERR (-1) \*/
+/* The function calculates ayanamsha for a given date in ET/TT.  
+* The return value is either the ephemeris flag used or ERR (-1) */
 
-int32 **swe_get_ayanamsa_ex_ut**(
+int32 swe_get_ayanamsa_ex(
+  double tjd_ut, /* Julian day number in ET/TT */
+  int32 ephe_flag, /* ephemeris flag, one of SEFLG_SWIEPH, SEFLG_JPLEPH, SEFLG_MOSEPH */
+  double *daya, /* output: ayanamsha value (pointer to double) */
+  char *serr /* output: error message or warning (pointer to string) */
+);
 
-> double tjd_ut, /\* Julian day number in UT \*/
->
-> int32 ephe_flag, /\* ephemeris flag, one of SEFLG_SWIEPH,
-> SEFLG_JPLEPH, SEFLG_MOSEPH \*/
->
-> double \*daya, /\* output: ayanamsha value (pointer to double) \*/
->
-> char \*serr); /\* output: error message or warning (pointer to string)
-> \*/
+/* to get the ayanamsha for a date in UT, old function, better use
+swe_get_ayanamsa_ex_ut() */
 
-/\* The function calculates ayanamsha for a given date in ET/TT.
+double swe_get_ayanamsa_ut(double tjd_ut);
 
-\* The return value is either the ephemeris flag used or ERR (-1) \*/
+/* to get the ayanamsha for a date in ET/TT, old function, better use
+swe_get_ayanamsa_ex() */
 
-int32 **swe_get_ayanamsa_ex**(
-
-> double tjd_ut, /\* Julian day number in ET/TT \*/
->
-> int32 ephe_flag, /\* ephemeris flag, one of SEFLG_SWIEPH,
-> SEFLG_JPLEPH, SEFLG_MOSEPH \*/
->
-> double \*daya, /\* output: ayanamsha value (pointer to double) \*/
->
-> char \*serr); /\* output: error message or warning (pointer to string)
-> \*/
-
-/\* to get the ayanamsha for a date in UT, old function, better use
-swe_get_ayanamsa_ex_ut() \*/
-
-double **swe_get_ayanamsa_ut**(double tjd_ut);
-
-/\* to get the ayanamsha for a date in ET/TT, old function, better use
-swe_get_ayanamsa_ex() \*/
-
-double **swe_get_ayanamsa**(double tjd_et);
+double swe_get_ayanamsa(double tjd_et);
 
 // find the name of an ayanamsha
 
-const char \***swe_get_ayanamsa_name**(int32 isidmode)
+const char *swe_get_ayanamsa_name(int32 isidmode)
+```
 
 ## Eclipses and planetary phenomena
 
 ### Find the next eclipse for a given geographic position
 
-int32 **swe_sol_eclipse_when_loc**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* 3 doubles for geo. lon, lat, height \*/
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_sol_eclipse_when_loc(
+  double tjd_start, /* start date for search, Jul. day UT */
+  int32 ifl, /* ephemeris flag */
+  double *geopos, /* 3 doubles for geo. lon, lat, height */
+  double *tret, /* return array, 10 doubles, see below */
+  double *attr, /* return array, 20 doubles, see below */
+  AS_BOOL backward, /* TRUE, if backward search */
+  char *serr /* return error string */
+);
+```
 
 ### Find the next eclipse globally
 
-int32 **swe_sol_eclipse_when_glob**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> int32 ifltype, /\* eclipse type wanted: SE_ECL_TOTAL etc. \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_sol_eclipse_when_glob(
+  double tjd_start, /* start date for search, Jul. day UT */
+  int32 ifl, /* ephemeris flag */
+  int32 ifltype, /* eclipse type wanted: SE_ECL_TOTAL etc. */
+  double *tret, /* return array, 10 doubles, see below */
+  AS_BOOL backward, /* TRUE, if backward search */
+  char *serr /* return error string */
+);
+```
 
 ### Compute the attributes of a solar eclipse for a given tjd, geographic long., latit. and height
 
-int32 **swe_sol_eclipse_how**(
-
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* geogr. longitude, latitude, height \*/
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_sol_eclipse_how(
+  double tjd_ut, /* time, Jul. day UT */
+  int32 ifl, /* ephemeris flag */
+  double *geopos, /* geogr. longitude, latitude, height */
+  double *attr, /* return array, 20 doubles, see below */
+  char *serr /* return error string */
+);
+```
 
 ### Find out the geographic position where a central eclipse is central or a non-central one maximal
 
-int32 **swe_sol_eclipse_where**(
-
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* return array, 2 doubles, geo. long. and lat. \*/
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_sol_eclipse_where(
+  double tjd_ut, /* time, Jul. day UT */
+  int32 ifl, /* ephemeris flag */
+  double *geopos, /* return array, 10 doubles, geo. long. and lat. */
+  double *attr, /* return array, 20 doubles, see below */
+  char *serr /* return error string */
+);
+```
 
 or
 
-int32 **swe_lun_occult_where**(
-
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> char\* starname, /\* star name, must be NULL or "" if not a star \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* return array, 2 doubles, geo. long. and lat.
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_lun_occult_where(
+  double tjd_ut, /* time, Jul. day UT */
+  int32 ipl, /* planet number */
+  char* starname, /* star name, must be NULL or "" if not a star */
+  int32 ifl, /* ephemeris flag */
+  double *geopos, /* return array, 10 doubles, geo. long. and lat. */
+  double *attr, /* return array, 20 doubles, see below */
+  char *serr /* return error string */
+);
+```
 
 ### Find the next occultation of a body by the moon for a given geographic position
 
 (can also be used for solar eclipses)
 
-int32 **swe_lun_occult_when_loc**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> char\* starname, /\* star name, must be NULL or "" if not a star \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* 3 doubles for geo. lon, lat, height
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_lun_occult_when_loc(
+  double tjd_start, /* start date for search, Jul. day UT */
+  int32 ipl, /* planet number */
+  char* starname, /* star name, must be NULL or "" if not a star */
+  int32 ifl, /* ephemeris flag */
+  double *geopos, /* 3 doubles for geo. lon, lat, height */
+  double *tret, /* return array, 10 doubles, see below */
+  double *attr, /* return array, 20 doubles, see below */
+  AS_BOOL backward, /* TRUE, if backward search */
+  char *serr /* return error string */
+);
+```
 
 ### Find the next occultation globally
 
 (can also be used for solar eclipses)
 
-int32 **swe_lun_occult_when_glob**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> char\* starname, /\* star name, must be NULL or "" if not a star \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> int32 ifltype, /\* eclipse type wanted \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_lun_occult_when_glob(
+  double tjd_start, /* start date for search, Jul. day UT */
+  int32 ipl, /* planet number */
+  char* starname, /* star name, must be NULL or "" if not a star */
+  int32 ifl, /* ephemeris flag */
+  int32 ifltype, /* eclipse type wanted */
+  double *tret, /* return array, 10 doubles, see below */
+  AS_BOOL backward, /* TRUE, if backward search */
+  char *serr /* return error string */
+);
+```
 
 ### Find the next lunar eclipse observable from a geographic location
 
-int32 **swe_lun_eclipse_when_loc**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* 3 doubles for geo. lon, lat, height
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_lun_eclipse_when_loc(
+  double tjd_start, /* start date for search, Jul. day UT */
+  int32 ifl, /* ephemeris flag */
+  double *geopos, /* 3 doubles for geo. lon, lat, height */
+  double *tret, /* return array, 10 doubles, see below */
+  double *attr, /* return array, 20 doubles, see below */
+  AS_BOOL backward, /* TRUE, if backward search */
+  char *serr /* return error string */
+);
+```
 
 ### Find the next lunar eclipse, global function
 
-int32 **swe_lun_eclipse_when**(
-
-> double tjd_start, /\* start date for search, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> int32 ifltype, /\* eclipse type wanted: SE_ECL_TOTAL etc. \*/
->
-> double \*tret, /\* return array, 10 doubles, see below \*/
->
-> AS_BOOL backward, /\* TRUE, if backward search \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_lun_eclipse_when(
+  double tjd_start, /* start date for search, Jul. day UT */
+  int32 ifl, /* ephemeris flag */
+  int32 ifltype, /* eclipse type wanted: SE_ECL_TOTAL etc. */
+  double *tret, /* return array, 10 doubles, see below */
+  AS_BOOL backward, /* TRUE, if backward search */
+  char *serr /* return error string */
+);
+```
 
 ### Compute the attributes of a lunar eclipse at a given time
 
-int32 **swe_lun_eclipse_how**(
-
-> double tjd_ut, /\* time, Jul. day UT \*/
->
-> int32 ifl, /\* ephemeris flag \*/
->
-> double \*geopos, /\* input array, geopos, geolon, geoheight \*/
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+```c
+int32 swe_lun_eclipse_how(
+  double tjd_ut, /* time, Jul. day UT */
+  int32 ifl, /* ephemeris flag */
+  double *geopos, /* input array, geopos, geolon, geoheight */
+  double *attr, /* return array, 20 doubles, see below */
+  char *serr /* return error string */
+);
+```
 
 ### Compute risings, settings and meridian transits of a body
 
-int32 **swe_rise_trans**(
+```c
+int32 swe_rise_trans(
+  double tjd_ut, /* search after this time (UT) */
+  int32 ipl, /* planet number, if planet or moon */
+  char *starname, /* star name, if star */
+  int32 epheflag, /* ephemeris flag */
+  int32 rsmi, /* integer specifying that rise, set, or one of the two meridian transits is wanted. see definition below */
+  double *geopos, /* array of three doubles containing geograph.  long., lat., height of observer */
+  double atpress, /* atmospheric pressure in mbar/hPa */
+  double attemp, /* atmospheric temperature in deg. C */
+  double *tret, /* return address (double) for rise time etc. */
+  char *serr /* return address for error message */
+);
 
-> double tjd_ut, /\* search after this time (UT) \*/
->
-> int32 ipl, /\* planet number, if planet or moon \*/
->
-> char \*starname, /\* star name, if star \*/
->
-> int32 epheflag, /\* ephemeris flag \*/
->
-> int32 rsmi, /\* integer specifying that rise, set, or one of the two
-> meridian transits is wanted. see definition below \*/
->
-> double \*geopos, /\* array of three doubles containing geograph.
-> long., lat., height of observer \*/
->
-> double atpress, /\* atmospheric pressure in mbar/hPa \*/
->
-> double attemp, /\* atmospheric temperature in deg. C \*/
->
-> double \*tret, /\* return address (double) for rise time etc. \*/
->
-> char \*serr); /\* return address for error message \*/
-
-int32 **swe_rise_trans_true_hor**(
-
-> double tjd_ut, /\* search after this time (UT) \*/
->
-> int32 ipl, /\* planet number, if planet or moon \*/
->
-> char \*starname, /\* star name, if star \*/
->
-> int32 epheflag, /\* ephemeris flag \*/
->
-> int32 rsmi, /\* integer specifying that rise, set, or one of the two
-> meridian transits is wanted. see definition below \*/
->
-> double \*geopos, /\* array of three doubles containing
->
-> \* geograph. long., lat., height of observer \*/
->
-> double atpress, /\* atmospheric pressure in mbar/hPa \*/
->
-> double attemp, /\* atmospheric temperature in deg. C \*/
->
-> double horhgt, /\* height of local horizon in deg at the point where
-> the body rises or sets\*/
->
-> double \*tret, /\* return address (double) for rise time etc. \*/
->
-> char \*serr); /\* return address for error message \*/
+int32 swe_rise_trans_true_hor(
+  double tjd_ut, /* search after this time (UT) */
+  int32 ipl, /* planet number, if planet or moon */
+  char *starname, /* star name, if star */
+  int32 epheflag, /* ephemeris flag */
+  int32 rsmi, /* integer specifying that rise, set, or one of the two meridian transits is wanted. see definition below */
+  double *geopos, /* array of three doubles containing * geograph. long., lat., height of observer */
+  double atpress, /* atmospheric pressure in mbar/hPa */
+  double attemp, /* atmospheric temperature in deg. C */
+  double horhgt, /* height of local horizon in deg at the point where the body rises or sets*/
+  double *tret, /* return address (double) for rise time etc. */
+  char *serr /* return address for error message */
+);
+```
 
 ### Compute heliacal risings and settings and related phenomena
 
-int32 **swe_heliacal_ut**(
-
-> double tjdstart, /\* Julian day number of start date for the search of
-> the heliacal event \*/
->
-> double \*dgeo /\* geographic position (details below) \*/
->
-> double \*datm, /\* atmospheric conditions (details below) \*/
->
-> double \*dobs, /\* observer description (details below) \*/
->
-> char \*objectname, /\* name string of fixed star or planet \*/
->
-> int32 event_type, /\* event type (details below) \*/
->
-> int32 helflag, /\* calculation flag, bitmap (details below) \*/
->
-> double \*dret, /\* result: array of at least 50 doubles, of which 3
-> are used at the moment \*/
->
-> char \* serr); /\* error string \*/
+```c
+int32 swe_heliacal_ut(
+  double tjdstart, /* Julian day number of start date for the search of the heliacal event */
+  double *dgeo /* geographic position (details below) */
+  double *datm, /* atmospheric conditions (details below) */
+  double *dobs, /* observer description (details below) */
+  char *objectname, /* name string of fixed star or planet */
+  int32 event_type, /* event type (details below) */
+  int32 helflag, /* calculation flag, bitmap (details below) */
+  double *dret, /* result: array of at least 50 doubles, of which 3 are used at the moment */
+  char * serr /* error string */
+);
 
 // details of heliacal risings/settings
 
-double **swe_heliacal_pheno_ut**(
-
-> double tjd_ut, /\* Julian day number \*/
->
-> double \*dgeo, /\* geographic position (details under
-> **swe_heliacal_ut()** \*/
->
-> double \*datm, /\* atmospheric conditions (details under
-> **swe_heliacal_ut()**) \*/
->
-> double \*dobs, /\* observer description (details under
-> swe_heliacal_ut()) \*/
->
-> char \*objectname, /\* name string of fixed star or planet \*/
->
-> int32 event_type, /\* event type (details under function
-> swe_heliacal_ut()) \*/
->
-> int32 helflag, /\* calculation flag, bitmap (details under
-> **swe_heliacal_ut()**) \*/
->
-> double \*darr, /\* return array, declare array of 50 doubles \*/
->
-> char \*serr); /\* error string \*/
+double swe_heliacal_pheno_ut(
+  double tjd_ut, /* Julian day number */
+  double *dgeo, /* geographic position (details under swe_heliacal_ut() */
+  double *datm, /* atmospheric conditions (details under swe_heliacal_ut()) */
+  double *dobs, /* observer description (details under swe_heliacal_ut()) */
+  char *objectname, /* name string of fixed star or planet */
+  int32 event_type, /* event type (details under function swe_heliacal_ut()) */
+  int32 helflag, /* calculation flag, bitmap (details under swe_heliacal_ut()) */
+  double *darr, /* return array, declare array of 50 doubles */
+  char *serr /* error string */
+);
 
 // magnitude limit for visibility
 
-double **swe_vis_limit_mag**(
+double swe_vis_limit_mag( 
+  double tjdut, /* Julian day number */
+  double *dgeo /* geographic position (details under swe_heliacal_ut() */
+  double *datm, /* atmospheric conditions (details under swe_heliacal_ut()) */
+  double *dobs, /* observer description (details under swe_heliacal_ut()) */
+  char *objectname, /* name string of fixed star or planet */
+  int32 helflag, /* calculation flag, bitmap (details under swe_heliacal_ut()) */
+  double *dret, /* result: magnitude required of the object to be visible */
+  char * serr /* error string */
+);
 
-> double tjdut, /\* Julian day number \*/
->
-> double \*dgeo /\* geographic position (details under swe_heliacal_ut()
-> \*/
->
-> double \*datm, /\* atmospheric conditions (details under
-> swe_heliacal_ut()) \*/
->
-> double \*dobs, /\* observer description (details under
-> swe_heliacal_ut()) \*/
->
-> char \*objectname, /\* name string of fixed star or planet \*/
->
-> int32 helflag, /\* calculation flag, bitmap (details under
-> swe_heliacal_ut()) \*/
->
-> double \*dret, /\* result: magnitude required of the object to be
-> visible \*/
->
-> char \* serr); /\* error string \*/
-
-double **swe_heliacal_pheno_ut**(
-
-> double tjd_ut, /\* Julian day number \*/
->
-> double \*dgeo, /\* geographic position (details under
-> **swe_heliacal_ut()** \*/
->
-> double \*datm, /\* atmospheric conditions (details under
-> **swe_heliacal_ut()**) \*/
->
-> double \*dobs, /\* observer description (details under
-> swe_heliacal_ut()) \*/
->
-> char \*objectname, /\* name string of fixed star or planet \*/
->
-> int32 event_type, /\* event type (details under function
-> swe_heliacal_ut()) \*/
->
-> int32 helflag, /\* calculation flag, bitmap (details under
-> **swe_heliacal_ut()**) \*/
->
-> double \*darr, /\* return array, declare array of 50 doubles \*/
->
-> char \*serr); /\* error string \*/
+double swe_heliacal_pheno_ut(
+  double tjd_ut, /* Julian day number */
+  double *dgeo, /* geographic position (details under swe_heliacal_ut() */
+  double *datm, /* atmospheric conditions (details under swe_heliacal_ut()) */
+  double *dobs, /* observer description (details under swe_heliacal_ut()) */
+  char *objectname, /* name string of fixed star or planet */
+  int32 event_type, /* event type (details under function swe_heliacal_ut()) */
+  int32 helflag, /* calculation flag, bitmap (details under swe_heliacal_ut()) */
+  double *darr, /* return array, declare array of 50 doubles */
+  char *serr /* error string */
+);
+```
 
 ### Compute planetary phenomena
 
-int32 **swe_pheno_ut**(
+```c
+int32 swe_pheno_ut(
+  double tjd_ut, /* time Jul. Day UT */
+  int32 ipl, /* planet number */
+  int32 iflag, /* ephemeris flag */
+  double *attr, /* return array, 20 doubles, see below */
+  char *serr /* return error string */
+);
 
-> double tjd_ut, /\* time Jul. Day UT \*/
->
-> int32 ipl, /\* planet number \*/
->
-> int32 iflag, /\* ephemeris flag \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
-
-int32 **swe_pheno**(
-
-> double tjd_et, /\* time Jul. Day ET \*/
->
-> int32 ipl, /\* planet number \*/
->
-> int32 iflag, /\* ephemeris flag \*/
->
-> double \*attr, /\* return array, 20 doubles, see below \*/
->
-> char \*serr); /\* return error string \*/
+int32 swe_pheno(
+  double tjd_et, /* time Jul. Day ET */
+  int32 ipl, /* planet number */
+  int32 iflag, /* ephemeris flag */
+  double *attr, /* return array, 20 doubles, see below */
+  char *serr /* return error string */
+);
+```
 
 ### Compute azimuth/altitude from ecliptic or equator
 
-void **swe_azalt**(
-
-> double tjd_ut, /\* UT \*/
->
-> int32 calc_flag, /\* SE_ECL2HOR or SE_EQU2HOR \*/
->
-> double \*geopos, /\* array of 3 doubles: geogr. long., lat., height
-> \*/
->
-> double atpress, /\* atmospheric pressure in mbar (hPa) \*/
->
-> double attemp, /\* atmospheric temperature in degrees Celsius \*/
->
-> double \*xin, /\* array of 3 doubles: position of body in either
-> ecliptical or equatorial coordinates, depending on calc_flag \*/
->
-> double \*xaz); /\* return array of 3 doubles, containing azimuth, true
-> altitude, apparent altitude \*/
+```c
+void swe_azalt(
+  double tjd_ut, /* UT */
+  int32 calc_flag, /* SE_ECL2HOR or SE_EQU2HOR */
+  double *geopos, /* array of 3 doubles: geogr. long., lat., height */
+  double atpress, /* atmospheric pressure in mbar (hPa) */
+  double attemp, /* atmospheric temperature in degrees Celsius */
+  double *xin, /* array of 3 doubles: position of body in either
+	      ecliptical or equatorial coordinates, depending on calc_flag */
+  double *xaz /* return array of 3 doubles, containing azimuth, true altitude, apparent altitude */
+);
+```
 
 ### Compute ecliptic or equatorial positions from azimuth/altitude
 
-void **swe_azalt_rev**(
-
-> double tjd_ut,
->
-> int32 calc_flag, /\* either SE_HOR2ECL or SE_HOR2EQU \*/
->
-> double \*geopos, /\* array of 3 doubles for geograph. pos. of observer
-> \*/
->
-> double \*xin, /\* array of 2 doubles for azimuth and true altitude of
-> planet \*/
->
-> double \*xout); /\* return array of 2 doubles for either ecliptic or
-> equatorial coordinates, depending on calc_flag \*/
+```c
+void swe_azalt_rev(
+  double tjd_ut,
+  int32 calc_flag, /* either SE_HOR2ECL or SE_HOR2EQU */
+  double *geopos, /* array of 3 doubles for geograph. pos. of observer */
+  double *xin, /* array of 2 doubles for azimuth and true altitude of planet */
+  double *xout /* return array of 2 doubles for either ecliptic or
+	  equatorial coordinates, depending on calc_flag */
+);
+```
 
 ### Compute refracted altitude from true altitude or reverse
 
-double **swe_refrac**(
+```c
+double swe_refrac(
+  double inalt,
+  double atpress, /* atmospheric pressure in mbar (hPa) */
+  double attemp, /* atmospheric temperature in degrees Celsius */
+  int32 calc_flag /* either SE_TRUE_TO_APP or SE_APP_TO_TRUE */
+);
 
-> double inalt,
->
-> double atpress, /\* atmospheric pressure in mbar (hPa) \*/
->
-> double attemp, /\* atmospheric temperature in degrees Celsius \*/
->
-> int32 calc_flag); /\* either SE_TRUE_TO_APP or SE_APP_TO_TRUE \*/
+double swe_refrac_extended(
+  double inalt, /* altitude of object above geometric horizon in
+  degrees, where geometric horizon = plane perpendicular to gravity */
+  double geoalt, /* altitude of observer above sea level in meters */
+  double atpress, /* atmospheric pressure in mbar (hPa) */
+  double lapse_rate, /* (dattemp/dgeoalt) = [°K/m] */
+  double attemp, /* atmospheric temperature in degrees Celsius */
+  int32 calc_flag, /* either SE_TRUE_TO_APP or SE_APP_TO_TRUE */
+  double *dret /* array of 4 doubles; declare 20 ! */
+);
+```
 
-double **swe_refrac_extended**(
+* - dret[0] true altitude, if possible; otherwise input value
+* - dret[1] apparent altitude, if possible; otherwise input value
+* - dret[2] refraction
+* - dret[3] dip of the horizon
 
-> double inalt, /\* altitude of object above geometric horizon in
-> degrees, where geometric horizon = plane perpendicular to gravity \*/
->
-> double geoalt, /\* altitude of observer above sea level in meters \*/
->
-> double atpress, /\* atmospheric pressure in mbar (hPa) \*/
->
-> double lapse_rate, /\* (dattemp/dgeoalt) = \[°K/m\] \*/
->
-> double attemp, /\* atmospheric temperature in degrees Celsius \*/
->
-> int32 calc_flag, /\* either SE_TRUE_TO_APP or SE_APP_TO_TRUE \*/
->
-> double \*dret); /\* array of 4 doubles; declare 20 ! \*/
->
-> \* - dret\[0\] true altitude, if possible; otherwise input value
->
-> \* - dret\[1\] apparent altitude, if possible; otherwise input value
->
-> \* - dret\[2\] refraction
->
-> \* - dret\[3\] dip of the horizon
->
-> /\* either SE_TRUE_TO_APP or SE_APP_TO_TRUE \*/
 
 ### Compute Kepler orbital elements of a planet or asteroid
 
-int32 **swe_get_orbital_elements**(
+```c
+int32 swe_get_orbital_elements(
+  double tjd_et, // input date in TT (Julian day number)
+  int32 ipl, // planet number
+  int32 iflag, // flag bits, see detailed docu
+  double *dret, // return values, see detailed docu
+  char *serr
+);
+```
 
-double tjd_et, // input date in TT (Julian day number)
-
-int32 ipl, // planet number
-
-int32 iflag, // flag bits, see detailed docu
-
-double \*dret, // return values, see detailed docu
-
-char \*serr);
 
 ### Compute maximum/minimum/current distance of a planet or asteroid
 
-int32 **swe_orbit_max_min_true_distance**(
-
-double tjd_et, // input date in TT (Julian day number)
-
-int32 ipl, // planet number
-
-int32 iflag, // flag bits, see detailed docu
-
-double \*dmax, // return value: maximum distance based on osculating
-elements
-
-double \*dmin, // return value: minimum distance based on osculating
-elements
-
-double \*dtrue, // return value: current distance
-
-char \*serr);
+```c
+int32 swe_orbit_max_min_true_distance(
+  double tjd_et, // input date in TT (Julian day number)
+  int32 ipl, // planet number
+  int32 iflag, // flag bits, see detailed docu
+  double *dmax, // return value: maximum distance based on osculating elements
+  double *dmin, // return value: minimum distance based on osculating elements
+  double *dtrue, // return value: current distance
+  char *serr
+);
+```
 
 ## Date and time conversion
 
 ### Delta T from Julian day number
 
-/\* Ephemeris time (ET) = Universal time (UT) + swe_deltat_ex(UT) \*/
+```c
+/* Ephemeris time (ET) = Universal time (UT) + swe_deltat_ex(UT) */
 
-double **swe_deltat_ex**(
+double swe_deltat_ex(
+  double tjd, /* Julian day number in ET/TT */
+  int32 ephe_flag, /* ephemeris flag (one of SEFLG_SWIEPH, SEFLG_JPLEPH, SEFLG_MOSEPH) */
+  char *serr /* error message or warning */
+);
+```
 
-> double tjd, /\* Julian day number in ET/TT \*/
->
-> int32 ephe_flag, /\* ephemeris flag (one of SEFLG_SWIEPH,
-> SEFLG_JPLEPH, SEFLG_MOSEPH) \*/
->
-> char \*serr); /\* error message or warning \*/
+older function: 
 
-/\* older function: \*/
-
-/\* Ephemeris time (ET) = Universal time (UT) + swe_deltat(UT) \*/
-
-double **swe_deltat**(
-
-> double tjd);
+```c
+double swe_deltat( double tjd);
+```
 
 ### Julian day number from year, month, day, hour, with check whether date is legal
 
-/\* Return value: OK or ERR \*/
+```c
+/* Return value: OK or ERR */
 
-int **swe_date_conversion**(
-
-> int y, int m, int d, /\* year, month, day \*/
->
-> double hour, /\* hours (decimal, with fraction) \*/
->
-> char c, /\* calendar 'g'\[regorian\] \| 'j'\[ulian\] \*/
->
-> double \*tjd); /\* target address for Julian day \*/
+int swe_date_conversion(
+  int y, int m, int d, /* year, month, day */
+  double hour, /* hours (decimal, with fraction) */
+  char c, /* calendar 'g'[regorian] | 'j'[ulian] */
+  double *tjd /* target address for Julian day */
+);
+```
 
 ### Julian day number from year, month, day, hour
 
-double **swe_julday**(
-
-> int year,
->
-> int month,
->
-> int day,
->
-> double hour,
->
-> int gregflag); /\* Gregorian calendar: 1, Julian calendar: 0 \*/
+```c
+double swe_julday(
+  int year,
+  int month,
+  int day,
+  double hour,
+  int gregflag /* Gregorian calendar: 1, Julian calendar: 0 */
+);
+```
 
 ### Year, month, day, hour from Julian day number
 
-void **swe_revjul**(
+```c
+void swe_revjul(
+  double tjd, /* Julian day number */
+  int gregflag, /* Gregorian calendar: 1, Julian calendar: 0 */
+  int *year, /* target addresses for year, etc. */
+  int *month,
+  int *day,
+  double *hour
+);
+```
 
-> double tjd, /\* Julian day number \*/
->
-> int gregflag, /\* Gregorian calendar: 1, Julian calendar: 0 \*/
->
-> int \*year, /\* target addresses for year, etc. \*/
->
-> int \*month,
->
-> int \*day,
->
-> double \*hour);
 
 ### Local time to UTC and UTC to local time
 
-/\* transform local time to UTC or UTC to local time
+```c
+/* transform local time to UTC or UTC to local time
+* input:
+* iyear ... dsec date and time
+* d_timezone timezone offset
+* output:
+* iyear_out ... dsec_out
+*
+* For time zones east of Greenwich, d_timezone is positive.
+* For time zones west of Greenwich, d_timezone is negative.
+*
+* For conversion from local time to utc, use +d_timezone.
+* For conversion from utc to local time, use -d_timezone.
+*/
 
-\* input:
-
-\* iyear \... dsec date and time
-
-\* d_timezone timezone offset
-
-\* output:
-
-\* iyear_out \... dsec_out
-
-\*
-
-\* For time zones east of Greenwich, d_timezone is positive.
-
-\* For time zones west of Greenwich, d_timezone is negative.
-
-\*
-
-\* For conversion from local time to utc, use +d_timezone.
-
-\* For conversion from utc to local time, use -d_timezone.
-
-\*/
-
-void **swe_utc_timezone**(
-
-> int32 iyear, int32 imonth, int32 iday,
->
-> int32 ihour, int32 imin, double dsec,
->
-> double d_timezone,
->
-> int32 \*iyear_out, int32 \*imonth_out, int32 \*iday_out,
->
-> int32 \*ihour_out, int32 \*imin_out, double \*dsec_out);
+void swe_utc_timezone(
+int32 iyear, int32 imonth, int32 iday,
+int32 ihour, int32 imin, double dsec,
+double d_timezone,
+int32 *iyear_out, int32 *imonth_out, int32 *iday_out,
+int32 *ihour_out, int32 *imin_out, double *dsec_out
+);
+```
 
 ### UTC to jd (TT and UT1)
 
-/\* input: date and time (wall clock time), calendar flag.
+```c
+/* input: date and time (wall clock time), calendar flag.
+* output: an array of doubles with Julian Day number in ET (TT) and UT (UT1)
+* an error message (on error)
+* The function returns OK or ERR.
+*/
 
-\* output: an array of doubles with Julian Day number in ET (TT) and UT
-(UT1)
-
-\* an error message (on error)
-
-\* The function returns OK or ERR.
-
-\*/
-
-void **swe_utc_to_jd**(
-
-> int32 iyear, int32 imonth, int32 iday,
->
-> int32 ihour, int32 imin, double dsec, /\* NOTE: second is a decimal
-> \*/
->
-> gregflag, /\* Gregorian calendar: 1, Julian calendar: 0 \*/
->
-> dret /\* return array, two doubles:
->
-> \* dret\[0\] = Julian day in ET (TT)
->
-> \* dret\[1\] = Julian day in UT (UT1) \*/
->
-> serr); /\* error string \*/
+void swe_utc_to_jd(
+  int32 iyear, int32 imonth, int32 iday,
+  int32 ihour, int32 imin, double dsec, /* NOTE: second is a decimal */
+  gregflag, /* Gregorian calendar: 1, Julian calendar: 0 */
+  dret /* return array, two doubles:
+	* dret[0] = Julian day in ET (TT)
+	* dret[1] = Julian day in UT (UT1) */
+  serr /* error string */
+);
+```
 
 ### TT (ET1) to UTC
 
-/\* input: Julian day number in ET (TT), calendar flag
+```c
+/* input: Julian day number in ET (TT), calendar flag
+* output: year, month, day, hour, min, sec in UTC */
 
-\* output: year, month, day, hour, min, sec in UTC \*/
-
-void **swe_jdet_to_utc**(
-
-> double tjd_et, /\* Julian day number in ET (TT) \*/
->
-> gregflag, /\* Gregorian calendar: 1, Julian calendar: 0 \*/
->
-> int32 \*iyear, int32 \*imonth, int32 \*iday,
->
-> int32 \*ihour, int32 \*imin, double \*dsec); /\* NOTE: second is a
-> decimal \*/
+void swe_jdet_to_utc(
+  double tjd_et, /* Julian day number in ET (TT) */
+  gregflag, /* Gregorian calendar: 1, Julian calendar: 0 */
+  int32 *iyear, int32 *imonth, int32 *iday,
+  int32 *ihour, int32 *imin, double *dsec /* NOTE: second is a decimal */
+);
+```
 
 ### UTC to TT (ET1)
 
-/\* input: Julian day number in UT (UT1), calendar flag
+```c
+/* input: Julian day number in UT (UT1), calendar flag 
+* output: year, month, day, hour, min, sec in UTC */
 
-\* output: year, month, day, hour, min, sec in UTC \*/
-
-void **swe_jdut1_to_utc**(
-
-> double tjd_ut, /\* Julian day number in ET (TT) \*/
->
-> gregflag, /\* Gregorian calendar: 1, Julian calendar: 0 \*/
->
-> int32 \*iyear, int32 \*imonth, int32 \*iday,
->
-> int32 \*ihour, int32 \*imin, double \*dsec); /\* NOTE: second is a
-> decimal \*/
+void swe_jdut1_to_utc(
+  double tjd_ut, /* Julian day number in ET (TT) */
+  gregflag, /* Gregorian calendar: 1, Julian calendar: 0 */
+  int32 *iyear, int32 *imonth, int32 *iday,
+  int32 *ihour, int32 *imin, double *dsec /* NOTE: second is a decimal */
+);
+```
 
 ### Get tidal acceleration used in swe_deltat()
 
-double **swe_get_tid_acc**(void);
+```c
+double swe_get_tid_acc(void);
+```
 
 ### Set tidal acceleration to be used in swe_deltat()
 
-void **swe_set_tid_acc**(double t_acc);
+```c
+void swe_set_tid_acc(double t_acc);
+```
 
 ### Equation of time
 
-/\* function returns the difference between local apparent and local
-mean time.
+```c
+/* function returns the difference between local apparent and local mean time.
+e = LAT -- LMT. tjd_et is ephemeris time */
 
-e = LAT -- LMT. tjd_et is ephemeris time \*/
+int swe_time_equ(
+  double tjd_et,
+  double *e,
+  char *serr
+);
 
-int **swe_time_equ**(
+/* converts Local Mean Time (LMT) to Local Apparent Time (LAT) */
 
-double tjd_et,
+/* tjd_lmt and tjd_lat are a Julian day number
+* geolon is geographic longitude, where eastern
+* longitudes are positive, western ones negative */
 
-double \*e,
+int32 swe_lmt_to_lat(
+  double tjd_lmt,
+  double geolon,
+  double *tjd_lat,
+  char *serr
+);
 
-char \*serr);
+/* converts Local Apparent Time (LAT) to Local Mean Time (LMT) */
 
-/\* converts Local Mean Time (LMT) to Local Apparent Time (LAT) \*/
-
-/\* tjd_lmt and tjd_lat are a Julian day number
-
-\* geolon is geographic longitude, where eastern
-
-\* longitudes are positive, western ones negative \*/
-
-int32 **swe_lmt_to_lat**(
-
-double tjd_lmt,
-
-double geolon,
-
-double \*tjd_lat,
-
-char \*serr);
-
-/\* converts Local Apparent Time (LAT) to Local Mean Time (LMT) \*/
-
-int32 **swe_lat_to_lmt**(
-
-double tjd_lat,
-
-double geolon,
-
-double \*tjd_lmt,
-
-char \*serr);
+int32 swe_lat_to_lmt(
+  double tjd_lat,
+  double geolon,
+  double *tjd_lmt,
+  char *serr
+);
+```
 
 ## Initialization, setup, and closing functions
 
 ### Set directory path of ephemeris files
 
-void **swe_set_ephe_path**(char \*path);
+```c
+void swe_set_ephe_path(char *path);
 
-/\* set name of JPL ephemeris file \*/
+/* set name of JPL ephemeris file */
 
-void **swe_set_jpl_file**(char \*fname);
+void swe_set_jpl_file(char *fname);
 
-/\* close Swiss Ephemeris \*/
+/* close Swiss Ephemeris */
 
-void **swe_close**(void);
+void swe_close(void);
 
-/\* find out version number of your Swiss Ephemeris version \*/
+/* find out version number of your Swiss Ephemeris version */
 
-char \***swe_version**(char \*svers);
+char *swe_version(char *svers);
 
-/\* svers is a string variable with sufficient space to contain the
-version number (255 char) \*/
+/* svers is a string variable with sufficient space to contain the version number (255 char) */
 
-/\* find out the library path of the DLL or executable \*/
+/* find out the library path of the DLL or executable */
 
-char \***swe_get_library_path**(char \*spath);
+char *swe_get_library_path(char *spath);
 
-/\* spath is a string variable with sufficient space to contain the
-library path (255 char) \*/
+/* spath is a string variable with sufficient space to contain the library path (255 char) */
 
-/\* find out start and end date of \*se1 ephemeris file after a call of
-swe_calc() \*/
+/* find out start and end date of *se1 ephemeris file after a call of swe_calc() */
 
-const char \*CALL_CONV swe_get_current_file_data(
-
-int ifno,
-
-double \*tfstart,
-
-double \*tfend,
-
-int \*denum);
+const char *CALL_CONV swe_get_current_file_data(
+  int ifno,
+  double *tfstart,
+  double *tfend,
+  int *denum
+);
+```
 
 ## House calculation
 
 ### Sidereal time
 
-double **swe_sidtime**(double tjd_ut); /\* Julian day number, UT \*/
+```c
+double swe_sidtime(double tjd_ut); /* Julian day number, UT */
+```
 
-double **swe_sidtime0**(
-
-> double tjd_ut, /\* Julian day number, UT \*/
->
-> double eps, /\* obliquity of ecliptic, in degrees \*/
->
-> double nut); /\* nutation, in degrees \*/
+```c
+double swe_sidtime0(
+  mouble tjd_ut, 	// Julian day number, UT
+  double eps, 		// obliquity of ecliptic, in degrees 
+  double nut 		// nutation, in degrees 
+);
+```
 
 ### Name of a house method
 
-char \* **swe_house_name**(
-
-> int hsys); /\* house method, ascii code of one of the letters
-> PKORCAEVXHTBG \*/
+```c
+char *swe_house_name(
+  int hsys // house method, ascii code of one of the letters PKORCAEVXHTBG.. 
+);
+```
 
 ### House cusps, ascendant and MC
 
-int **swe_houses**(
-
-> double tjd_ut, /\* Julian day number, UT \*/
->
-> double geolat, /\* geographic latitude, in degrees \*/
->
-> double geolon, /\* geographic longitude, in degrees,
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> int hsys, /\* house method, one of the letters PKRCAV \*/
->
-> double\* cusps, /\* array for 13 doubles \*/
->
-> double\* ascmc); /\* array for 10 doubles \*/
+```c
+int swe_houses(
+  double tjd_ut, // Julian day number, UT 
+  double geolat, // geographic latitude, in degrees 
+  double geolon, // geographic longitude, in degrees,
+  		// eastern longitude is positive,
+  		// western longitude is negative,
+  		// northern latitude is positive,
+  		// southern latitude is negative 
+  int hsys, // house method, one of the letters PKRCAV 
+  double *cusps, // array for 13 doubles 
+  double *ascmc // array for 10 doubles 
+);
+```
 
 ### Extended house function; to compute tropical or sidereal positions
 
-int **swe_houses_ex**(
+```c
+int swe_houses_ex( 
+  double tjd_ut, 	// Julian day number, UT 
+  int32 iflag, 		// 0 or SEFLG_SIDEREAL or SEFLG_RADIANS 
+  double geolat, 	// geographic latitude, in degrees 
+  double geolon, 	// geographic longitude, in degrees
+  int hsys, 		// house method, one of the hsys letters PKRCAV...
+  double* cusps, 	// array for 13 doubles 
+  double* ascmc 	// array for 10 doubles 
+);
 
-> double tjd_ut, /\* Julian day number, UT \*/
->
-> int32 iflag, /\* 0 or SEFLG_SIDEREAL or SEFLG_RADIANS \*/
->
-> double geolat, /\* geographic latitude, in degrees \*/
->
-> double geolon, /\* geographic longitude, in degrees
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> int hsys, /\* house method, one of the letters PKRCAV \*/
->
-> double\* cusps, /\* array for 13 doubles \*/
->
-> double\* ascmc); /\* array for 10 doubles \*/
+int swe_houses_ex2(
+double tjd_ut, 		// Julian day number, UT 
+int32 iflag, 		// 0 or SEFLG_SIDEREAL or SEFLG_RADIANS or SEFLG_NONUT 
+double geolat, 		// geographic latitude, in degrees 
+double geolon, 		// geographic longitude, in degrees
+int hsys, 		// house method, one-letter case sensitive code
+double *cusps, 		// array for 13 (or 37 for system G) doubles
+double *ascmc, 		// array for 10 doubles
+double *cusp_speed, 	// like cusps 
+double *ascmc_speed, 	// like ascmc 
+char *serr
+);
 
-int **swe_houses_ex2**(
+int swe_houses_armc(
+double armc, 	// ARMC 
+double geolat, 	// geographic latitude, in degrees 
+double eps, 	// ecliptic obliquity, in degrees 
+int hsys, 	// house method, one of the letters PKRCAV 
+double *cusps, 	// array for 13 doubles 
+double *ascmc 	// array for 10 doubles 
+);
 
-> double tjd_ut, /\* Julian day number, UT \*/
->
-> int32 iflag, /\* 0 or SEFLG_SIDEREAL or SEFLG_RADIANS or SEFLG_NONUT
-> \*/
->
-> double geolat, /\* geographic latitude, in degrees \*/
->
-> double geolon, /\* geographic longitude, in degrees
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> int hsys, /\* house method, one-letter case sensitive code (list, see
-> further below) \*/
->
-> double \*cusps, /\* array for 13 (or 37 for system G) doubles,
-> explained further below \*/
->
-> double \*ascmc, /\* array for 10 doubles, explained further below \*/
->
-> double \*cusp_speed, /\* like cusps \*/
->
-> double \*ascmc_speed, /\* like ascmc \*/
->
-> char \*serr);
-
-int **swe_houses_armc**(
-
-> double armc, /\* ARMC \*/
->
-> double geolat, /\* geographic latitude, in degrees \*/
->
-> double eps, /\* ecliptic obliquity, in degrees \*/
->
-> int hsys, /\* house method, one of the letters PKRCAV \*/
->
-> double \*cusps, /\* array for 13 doubles \*/
->
-> double \*ascmc); /\* array for 10 doubles \*/
-
-int **swe_houses_armc_ex2**(
-
-> double armc, /\* ARMC \*/
->
-> double geolat, /\* geographic latitude, in degrees \*/
->
-> double eps, /\* ecliptic obliquity, in degrees \*/
->
-> int hsys, /\* house method, ascii code of one of the letters
-> documented below \*/
->
-> double \*cusps, /\* array for 13 (or 37 for system G) doubles,
-> explained further below \*/
->
-> double \*ascmc, /\* array for 10 doubles, explained further below \*/
->
-> double \*cusp_speed,
->
-> double \*ascmc_speed,
->
-> char \*serr):
+int swe_houses_armc_ex2(
+double armc, 	// ARMC 
+double geolat, 	// geographic latitude, in degrees 
+double eps, 	// ecliptic obliquity, in degrees 
+int hsys, 	// house method, ascii code of one of the hsys letters
+double *cusps, 	// array for 13 (or 37 for system G) doubles., explained further below 
+double *ascmc, 	// array for 10 doubles
+double *cusp_speed,
+double *ascmc_speed,
+char *serr
+):
+```
 
 ### Get the house position of a celestial point
 
-double **swe_house_pos**(
-
-> double armc, /\* ARMC \*/
->
-> double geolat, /\* geographic latitude, in degrees
->
-> \* eastern longitude is positive,
->
-> \* western longitude is negative,
->
-> \* northern latitude is positive,
->
-> \* southern latitude is negative \*/
->
-> double eps, /\* ecliptic obliquity, in degrees \*/
->
-> int hsys, /\* house method, one of the letters PKRCAV \*/
->
-> double \*xpin, /\* array of 2 doubles: ecl. longitude and latitude of
-> the planet \*/
->
-> char \*serr); /\* return area for error or warning message \*/
+```c
+double swe_house_pos(
+  double armc, 		// ARMC 
+  double geolat, 	// geographic latitude, in degrees
+  double eps,		// ecliptic obliquity, in degrees 
+  int hsys, 		// house method, one of the letters PKRCAV 
+  double *xpin, 	// array of 2 doubles: ecl. longitude and latitude of the planet 
+  char *serr 		// return area for error or warning message 
+);
+```
 
 ### Get the Gauquelin sector position for a body
 
-double **swe_gauquelin_sector**(
-
-> double tjd_ut, /\* search after this time (UT) \*/
->
-> int32 ipl, /\* planet number, if planet, or moon \*/
->
-> char \*starname, /\* star name, if star \*/
->
-> int32 iflag, /\* flag for ephemeris and SEFLG_TOPOCTR \*/
->
-> int32 imeth, /\* method: 0 = with lat., 1 = without lat.,
->
-> /\* 2 = from rise/set, 3 = from rise/set with refraction \*/
->
-> double \*geopos, /\* array of three doubles containing
->
-> \* geograph. long., lat., height of observer \*/
->
-> double atpress, /\* atmospheric pressure, only useful with imeth = 3;
->
-> \* if 0, default = 1013.25 mbar is used\*/
->
-> double attemp, /\* atmospheric temperature in degrees Celsius, only
-> useful with imeth = 3 \*/
->
-> double \*dgsect, /\* return address for Gauquelin sector position \*/
->
-> char \*serr); /\* return address for error message \*/
+```c
+double swe_gauquelin_sector(
+  double tjd_ut, 	// search after this time (UT) 
+  int32 ipl, 		// planet number, if planet, or moon 
+  char *starname, 	// star name, if star 
+  int32 iflag, 		// flag for ephemeris and SEFLG_TOPOCTR 
+  int32 imeth, 		// method: 0 = with lat., 1 = without lat.,
+  			// 2 = from rise/set, 3 = from rise/set with refraction 
+  double *geopos, 	// array of three doubles containing
+  			// geograph. long., lat., height of observer 
+  double atpress, 	//  atmospheric pressure, only useful with imeth = 3;
+  			//  if 0, default = 1013.25 mbar is used
+  double attemp, 	// atmospheric temperature in degrees Celsius, only useful with imeth = 3 
+  double *dgsect, 	// return address for Gauquelin sector position 
+  char *serr 		//  return address for error message 
+);
+```
 
 ## Auxiliary functions
 
 ### swe_cotrans(): coordinate transformation, from ecliptic to equator or vice-versa
 
-/\* equator -\> ecliptic : eps must be positive
+```c
+/* equator -> ecliptic : eps must be positive
+* ecliptic -> equator : eps must be negative
+* eps, longitude and latitude are in positive degrees! */
 
-\* ecliptic -\> equator : eps must be negative
-
-\* eps, longitude and latitude are in positive degrees! \*/
-
-void []{#_Hlk478111295 .anchor}**swe_cotrans**(
-
-> double \*xpo, /\* 3 doubles: long., lat., dist. to be converted;
-> distance remains unchanged, can be set to 1.00 \*/
->
-> double \*xpn, /\* 3 doubles: long., lat., dist. Result of the
-> conversion \*/
->
-> double eps); /\* obliquity of ecliptic, in degrees. \*/
+void swe_cotrans(
+double *xpo, 	// 3 doubles: long., lat., dist. to be converted;
+		// distance remains unchanged, can be set to 1.00 
+double *xpn, 	// 3 doubles: long., lat., dist. Result of the conversion 
+double eps 	// obliquity of ecliptic, in degrees. 
+);
+```
 
 ### swe_cotrans_sp(): coordinate transformation of position and speed, from ecliptic to equator or vice-versa
 
-/ \* equator -\> ecliptic : eps must be positive
+* equator -> ecliptic : eps must be positive
 
-\* ecliptic -\> equator : eps must be negative
+* ecliptic -> equator : eps must be negative
 
-\* eps, long., lat., and speeds in long. and lat. are in degrees! \*/
+* eps, long., lat., and speeds in long. and lat. are in degrees! 
 
-void []{#_Hlk478111388 .anchor}**swe_cotrans_sp**(
+```c
+void swe_cotrans_sp(
 
-> double \*xpo, /\* 6 doubles, input: long., lat., dist. and speeds in
-> long., lat and dist. \*/
->
-> double \*xpn, /\* 6 doubles, position and speed in new coordinate
-> system \*/
->
-> double eps); /\* obliquity of ecliptic, in degrees. \*/
+double *xpo, /* 6 doubles, input: long., lat., dist. and speeds in
+long., lat and dist. */
+
+double *xpn, /* 6 doubles, position and speed in new coordinate
+system */
+
+double eps /* obliquity of ecliptic, in degrees. */
+);
+```
 
 ### swe_get_planet_name(): get the name of a planet
 
-char\* **swe_get_planet_name**(
+```c
+char* swe_get_planet_name(
+int ipl, 	// planet number 
+char* plan_name // address for planet name, at least 20 char 
+);
+```
 
-> int ipl, /\* planet number \*/
->
-> char\* plan_name); /\* address for planet name, at least 20 char \*/
+### swe_degnorm(): normalize degrees to the range 0 ... 360
 
-### swe_degnorm(): normalize degrees to the range 0 \... 360
+```c
+double swe_degnorm(double x);
+```
 
-double []{#_Hlk478111399 .anchor}**swe_degnorm**(double x);
+### swe_radnorm(): normalize radians to the range 0 ... 2 PI
 
-### swe_radnorm(): normalize radians to the range 0 \... 2 PI
-
-double **swe_radnorm**(double x);
+```c
+double swe_radnorm(double x);
+```
 
 ### swe_split_deg(): split degrees to sign/nakshatra, degrees, minutes, seconds of arc
 
 This function takes a decimal degree number as input and provides sign
 or nakshatra, degree, minutes, seconds and fraction of second. It can
-also round to seconds, minutes, degrees. For more details see the
-specifications below.
+also round to seconds, minutes, degrees. 
+It can also split the value into zodiacal signs or Nakshatras.
 
-double **swe_split_deg**(
+```c
+void swe_split_deg(
+  double ddeg,
+  int32 roundflag,
+  int32 *ideg,
+  int32 *imin,
+  int32 *isec,
+  double *dsecfr,
+  int32 *isgn
+);
+```
 
-> double ddeg,
->
-> int32 roundflag,
->
-> int32 \*ideg,
->
-> int32 \*imin,
->
-> int32 \*isec,
->
-> double \*dsecfr,
->
-> int32 \*isgn);
+input:
+```
+ddeg		 decimal degrees, ecliptic longitude
+roundflag	 by default there is no rounding. if rounding is required, the following bits can be set:
+  # define SE_SPLIT_DEG_ROUND_SEC 1
+  # define SE_SPLIT_DEG_ROUND_MIN 2
+  # define SE_SPLIT_DEG_ROUND_DEG 4
+  # define SE_SPLIT_DEG_ZODIACAL 8 	// split into zodiac signs
+  # define SE_SPLIT_DEG_NAKSHATRA 1024 	// split into nakshatras 
+  # define SE_SPLIT_DEG_KEEP_SIGN 16 	// don't round to next zodiac sign/nakshatra,
+  # define SE_SPLIT_DEG_KEEP_DEG 32 	// don't round to next degree
+```
 
-/\* splitting decimal degrees into (zod. sign,) deg, min, sec. \*
+e.g. 29.9999998 will be rounded to 29°59'59" (or 29°59' or 29°)
 
-\* input:
+or next nakshatra: e.g. 13.3333332 will be rounded to 13°19'59" (or 13°19' or 13°)
 
-\* ddeg decimal degrees, ecliptic longitude
+e.g. 10.9999999 will be rounded to 10d59'59" (or 10d59' or 10d)
 
-\* roundflag by default there is no rounding. if rounding is
+output:
 
-\* required, the following bits can be set:
-
-\# define SE_SPLIT_DEG_ROUND_SEC 1
-
-\# define SE_SPLIT_DEG_ROUND_MIN 2
-
-\# define SE_SPLIT_DEG_ROUND_DEG 4
-
-\# define SE_SPLIT_DEG_ZODIACAL 8 \* split into zodiac signs
-
-\# define SE_SPLIT_DEG_NAKSHATRA 1024 \* split into nakshatras \*
-
-\# define SE_SPLIT_DEG_KEEP_SIGN 16 \* don\'t round to next zodiac
-sign/nakshatra,
-
-\* e.g. 29.9999998 will be rounded
-
-\* to 29°59\'59\" (or 29°59\' or 29°)
-
-\* or next nakshatra:
-
-\* e.g. 13.3333332 will be rounded
-
-\* to 13°19\'59\" (or 13°19\' or 13°)
-
-\# define SE_SPLIT_DEG_KEEP_DEG 32 \* don\'t round to next degree
-
-\* e.g. 10.9999999 will be rounded
-
-\* to 10d59\'59\" (or 10d59\' or 10d)
-
-\* output:
-
-\* ideg degrees,
-
-\* imin minutes,
-
-\* isec seconds,
-
-\* dsecfr fraction of seconds
-
-\* isgn zodiac sign number;
-
-\* or +/- sign
+```
+ideg degrees,
+imin minutes,
+isec seconds,
+dsecfr fraction of seconds
+isgn	if SE_SPLIT_DEG_ZODIACAL	zodiac sign number 0..11
+	if SE_SPLIT_DEG_NAKSHATRA	nakshatra number 0..26
+	else +1 or -1
+```
 
 ## Other functions that may be useful
 
 PLACALC, the predecessor of SWISSEPH, had included several functions
 that we do not need for SWISSEPH anymore. Nevertheless we include them
-again in our DLL, because some users of our software may have taken them
+again in the library, because some users of our software may have taken them
 over and use them in their applications. However, we gave them new names
 that were more consistent with SWISSEPH.
 
@@ -7110,98 +5784,95 @@ double (64-bit floating point) for all angular measurements.
 
 ### Normalize argument into interval \[0..DEG360\]
 
-/ \* former function name: csnorm() \*/
-
-centisec []{#_Hlk478111710 .anchor}**swe_csnorm**(centisec p);
+```c
+centisec swe_csnorm(centisec p);
+```
 
 ### Distance in centisecs p1 - p2 normalized to \[0..360\]
 
-/ \* former function name: difcsn() \*/
-
-centisec []{#_Hlk478111870 .anchor}**swe_difcsn**(centisec p1, centisec
-p2);
+```c
+centisec swe_difcsn(centisec p1, centisec p2);
+```
 
 ### Distance in degrees
 
-/\* former function name: difdegn() \*/
-
-double []{#_Hlk478111884 .anchor}**swe_difdegn**(double p1, double p2);
+```c
+double swe_difdegn(double p1, double p2);
+```
 
 ### Distance in centisecs p1 - p2 normalized to \[-180..180\]
 
-/\* former function name: difcs2n() \*/
-
-centisec []{#_Hlk478111918 .anchor}**swe_difcs2n**(centisec p1, centisec
-p2);
+```c
+centisec swe_difcs2n(centisec p1, centisec p2);
+```
 
 ### Distance in degrees
 
-/\* former function name: difdeg2n() \*/
-
-double []{#_Hlk478111928 .anchor}**swe_difdeg2n**(double p1, double p2);
+```c
+double swe_difdeg2n(double p1, double p2);
+```
 
 ### Round second, but at 29.5959 always down
 
-/\* former function name: roundsec() \*/
+```c
+centisec swe_csroundsec(centisec x);
+```
 
-centisec []{#_Hlk478111937 .anchor}**swe_csroundsec**(centisec x);
+### Double to int32 with rounding, no overflow check
 
-### Double to long with rounding, no overflow check
-
-/\* former function name: d2l() \*/
-
-long []{#_Hlk478111943 .anchor}**swe_d2l**(double x);
+```c
+int32 swe_d2l(double x);
+```
 
 ### Day of week
 
-/\* Monday = 0, \... Sunday = 6, former function name: day_of_week() \*/
-
-int []{#_Hlk478111951 .anchor}**swe_day_of_week**(double jd);
+```c
+// Monday = 0, \... Sunday = 6, 
+int swe_day_of_week(double jd);
+```
 
 ### Centiseconds -\> time string
 
-/\* former function name: TimeString() \*/
-
-char \* []{#_Hlk478112061 .anchor}**swe_cs2timestr**(CSEC t, int sep,
-AS_BOOL suppressZero, char \*a);
+```c
+char *swe_cs2timestr(CSEC t, int sep, AS_BOOL suppressZero, char *a);
+```
 
 ### Centiseconds -\> longitude or latitude string
 
-/\* former function name: LonLatString() \*/
-
-char \* []{#_Hlk478112074 .anchor}**swe_cs2lonlatstr**(CSEC t, char
-pchar, char mchar, char \*s);
+```c
+char *swe_cs2lonlatstr(CSEC t, char pchar, char mchar, char *s);
+```
 
 ### Centiseconds -\> degrees string
 
-/\* former function name: DegreeString() \*/
+```c
+char *swe_cs2degstr(CSEC t, char *a);
+```
 
-char \* []{#_Hlk478112081 .anchor}**swe_cs2degstr**(CSEC t, char \*a);
 
-# The SWISSEPH DLLs
+# The SWISSEPH DLLs for Windows
 
-There is a 32 bit DLL: swedll32.dll
+There is a 32 bit Windows DLL swedll32.dll, and a 64 bit DLL swedll64.dl.
 
 You can use our programs swetest.c and swewin.c as examples. To compile
 swetest or swewin with a DLL:
 
 1.  The compiler needs the following files:
 
-> swetest.c or swewin.c
->
-> swedll32.dll
->
-> swedll32.lib (if you choose implicit linking)
->
-> swephexp.h
->
-> swedll.h
->
-> sweodef.h
+```
+swetest.c or swewin.c
+swedll32.dll
+swedll32.lib (if you choose implicit linking)
+swephexp.h
+swedll.h
+sweodef.h
+```
 
 2.  Define the following macros (-d):
 
+```
 USE_DLL
+```
 
 3.  Build swetest.exe from swetest.c and swedll32.lib or swedll64.lib
     (depending on the 32-bit or 64-bit architecture of your system).
@@ -7215,7 +5886,9 @@ samples. You will need to adjust the project files to your environment.
 We have worked with Microsoft Visual C++ 5.0 (32-bit). The DLLs where
 built with the Microsoft compilers.
 
-# Using the DLL with Visual Basic 5.0
+## Using the DLL with Visual Basic 5.0
+
+(deprecated and not supported by Astrodienst)
 
 The 32-bit DLL contains the exported function under \'decorated names\'.
 Each function has an underscore before its name, and a suffix of the
@@ -7275,317 +5948,32 @@ plname = **set_strlen**(plname)
 Declare Sub **swe_get_planet_name**(ByVal ipl as Long, ByVal plname as
 String).
 
-# Using the DLL with Borland Delphi and C++ Builder
+# Using the Swiss Ephemeris with different programming languages
 
-## Delphi 2.0 and higher (32-bit)
-
-The information in this section was contributed by Markus Fabian, Bern,
-Switzerland.
-
-In Delphi 2.0 the declaration of the function **swe_calc()** looks like
-this:
-
-xx : Array\[0..5\] of double;
-
-function **swe_calc**(
-
-tjd: double; // Julian day number
-
-ipl: Integer; // planet number
-
-iflag : Longint; // flag bits
-
-var xx\[0\]: double;
-
-sErr : PChar // Error-String;
-
-): Longint; stdcall; far; external \'swedll32.dll\' Name
-\'\_swe_calc\@24\';
-
-A nearly complete set of declarations is in file
-\\sweph\\delphi2\\swe_d32.pas.
-
-A small sample project for Delphi 2.0 is also included in the same
-directory (starting with release **1.25** from June 1998). This sample
-requires the DLL to exist in the same directory as the sample.
-
-## Borland C++ Builder
-
-Borland C++ Builder (BCB) does not understand the Microsoft format in
-the library file SWEDLL32.LIB; it reports an OMF error when this file is
-used in a BCB project. The user must create his/her own LIB file for BCB
-with the utility IMPLIB which is part of BCB.
-
-With the following command you create a special lib file in the current
-directory:
-
-IMPLIB --f --c swe32bor.lib \\sweph\\bin\\swedll32.dll
-
-In the C++ Builder project the following settings must be made:
-
--   Menu Options-\>Projects-\>Directories/Conditionals: add the
-    conditional define USE_DLL;
-
--   Menu Project-\>Add_to_project: add the library file swe32bor.lib to
-    your project;
-
--   In the project source, add the include file \"swephexp.h\".
-
-In the header file swedll.h the declaration for Dllimport must be
-
-#define DllImport extern \"C\" \_\_declspec(dllimport)
-
-This is provided automatically by the \_\_cplusplus switch for release
-**1.24** and higher. For earlier releases the change must be made
-manually.
-
-# Using the Swiss Ephemeris with Perl
+## Perl
 
 The Swiss Ephemeris can be run from Perl using the Perl module
 SwissEph.pm. The module SwissEph.pm uses XSUB ("eXternal SUBroutine"),
 which calls the Swiss Ephemeris functions either from a C library or a
 DLL.
 
-In order to run the Swiss Ephemeris from Perl, you have to:
+See Github repository https://github.com/aloistr/perl-sweph
 
-Install the Swiss Ephemeris. Either you download the Swiss Ephemeris DLL
-from <http://www.astro.com/swisseph> or you download the Swiss Ephemeris
-C source code and compile a static or dynamic shared library. We built
-the package on a Linux system and use a shared library of the Swiss
-Ephemeris functions.
+## PHP
 
-Install the XS library:
+See Github repository https://github.com/cyjoelchen/php-sweph
 
--   Unpack the file PerlSwissEph-1.76.00.tar.gz (or whatever newest
-    version there is);
+## Python 
 
--   Open the file Makefile.PL, and edit it according to your
-    requirements. Then run it;
+See Github repository https://github.com/astrorigin/pyswisseph
 
--   make install
+(not officially supported by Astrodienst)
 
-If you work on a Windows machine and prefer to use the Swiss Ephemeris
-DLL, you may want to study Rüdiger Plantiko\'s Perl module for the Swiss
-Ephemeris at <http://www.astrotexte.ch/sources/SwissEph.zip>. There is
-also a documentation in German language by Rüdiger Plantiko at
-<http://www.astrotexte.ch/sources/swe_perl.html>).
+## Java
 
-# The C sample program
+See http://www.th-mack.de/download/swisseph-doc/swisseph/SwissEph.html
 
-The distribution contains executables and C source code of sample
-programs which demonstrate the use of the Swiss Ephemeris DLL and its
-functions.
-
-Until version 2.04, all sample programs were compiled with the Microsoft
-Visual C++ 5.0 compiler (32-bit). Project and Workspace files for these
-environments are included with the source files.
-
-Since version 2.05, all sample programs and DLLs were compiled on Linux
-with MinGW. 64-bit programs contain a '64' string in their names.
-
-Since version 2.08, all sample programs and DLLs were compiled with
-Microsoft Visual Studio 14.0. Again, 64-bit programs contain a '64' in
-their names.
-
-Directory structure:
-
-> Sweph\\bin DLL, LIB and EXE file
->
-> Sweph\\src source files, resource files
->
-> sweph\\src\\swewin32 32-bit windows sample program, uses swedll32.dll
->
-> sweph\\src\\swetest 32-bit character mode sample program
->
-> sweph\\src\\swetest64 64-bit character mode sample program
->
-> sweph\\src\\swete32 32-bit character mode sample program, uses
-> swedll32.dll
->
-> sweph\\src\\swete64 64-bit character mode sample program, uses
-> swedll64.dll
->
-> sweph\\src\\swedll32.dll 32-bit DLL
->
-> sweph\\src\\swedll64.dll 64-bit DLL
->
-> sweph\\src\\swedll32.lib
->
-> sweph\\src\\swedll64.lib
-
-You can run the samples in the following environments:
-
-> Swetest.exe in Windows command line
->
-> Swetest64.exe in Windows command line
->
-> Swete32.exe in Windows command line
->
-> Swete64.exe in Windows command line
->
-> Swewin32.exe in Windows
-
-Character mode executable that needs a DLL
-
-> Swete32.exe
-
-The project files for Microsoft Visual C++ are in \\sweph\\src\\swete32.
-
-> swetest.c
->
-> swedll32.lib
->
-> swephexp.h
->
-> swedll.h
->
-> sweodef.h
-
-define macros: USE_DLL DOS32 DOS_DEGREE
-
-> swewin32.exe
-
-The project files are in \\sweph\\src\\swewin32.
-
-> swewin.c
->
-> swedll32.lib
->
-> swewin.rc
->
-> swewin.h
->
-> swephexp.h
->
-> swedll.h
->
-> sweodef.h
->
-> resource.h
-
-define macro USE_DLL.
-
-How the sample programs search for the ephemeris files:
-
-1.  Check environment variable SE_EPHE_PATH; if it exists it is used,
-    and if it has invalid content, the program fails.
-
-```{=html}
-<!-- -->
-```
-4.  Try to find the ephemeris files in the current working directory.
-
-5.  Try to find the ephemeris files in the directory where the
-    executable resides.
-
-6.  Try to find a directory named \\SWEPH\\EPHE in one of the following
-    three drives:
-
--   where the executable resides;
-
--   current drive;
-
--   drive C.
-
-As soon as it succeeds in finding the first ephemeris file it looks for,
-it expects all required ephemeris files to reside there. This is a
-feature of the sample programs only, as you can see in our C code.
-
-The DLL itself has a different and simpler mechanism to search for
-ephemeris files, which is described with the function
-**swe_set_ephe_path()** above.
-
-# The source code distribution
-
-Starting with release **1.26**, the full source code for the Swiss
-Ephemeris DLL is made available. Users can choose to link the Swiss
-Ephemeris code directly into their applications. The source code is
-written in Ansi C and consists of these files:
-
------------- ---------------- -------------- ----------------------------
-  **Bytes**    **Date**         **File name**  **Comment**
-
-  1639         Nov 28 17:09     Makefile       unix makefile for library
-
-  **API                                        
-  interface                                    
-  files**                                      
-
-  15050        Nov 27 10:56     swephexp.h     SwissEph API include file
-
-  **Internal                                   
-  files**                                      
-
-  8518         Nov 27 10:06     swedate.c      
-
-  2673         Nov 27 10:03     swedate.h      
-
-  8808         Nov 28 19:24     swedll.h       
-
-  24634        Nov 27 10:07     swehouse.c     
-
-  2659         Nov 27 10:05     swehouse.h     
-
-  31279        Nov 27 10:07     swejpl.c       
-
-  3444         Nov 27 10:05     swejpl.h       
-
-  38238        Nov 27 10:07     swemmoon.c     
-
-  2772         Nov 27 10:05     swemosh.h      
-
-  18687        Nov 27 10:07     swemplan.c     
-
-  311564       Nov 27 10:07     swemptab.c     
-
-  7291         Nov 27 10:06     sweodef.h      
-
-  173758       Nov 27 10:07     sweph.c        
-
-  12136        Nov 27 10:06     sweph.h        
-
-  55063        Nov 27 10:07     swephlib.c     
-
-  4886         Nov 27 10:06     swephlib.h     
-
-  43421        Nov 28 19:33     swetest.c      
------------- ---------------- -------------- ----------------------------
-
-In most cases the user will compile a linkable or shared library from
-the source code, using his favorite C compiler, and then link this
-library with his application.
-
-If the user programs in C, he will only need to include the header file
-swephexp.h with his application; this in turn will include sweodef.h.
-All other source files can be ignored from the perspective of
-application development.
-
-# The PLACALC compatibility API (chapter removed)
-
-(Chapter has been removed.)
-
-# Documentation files
-
-The following files are in the directory \\sweph\\doc:
-
-> sweph.cdr
->
-> sweph.gif
->
-> swephin.cdr
->
-> swephin.gif
->
-> swephprg.doc Documentation for programming, a MS Word-97 file
->
-> swephprg.rtf
->
-> swisseph.doc General information on Swiss Ephemeris
->
-> swisseph.rtf
-
-The files with suffix .CDR are Corel Draw 7.0 documents with the Swiss
-Ephemeris icons.
+(not officially supported by Astrodienst)
 
 # Swisseph with different hardware and compilers
 
@@ -7594,28 +5982,8 @@ differences in your planetary calculations. For positions in longitude,
 they will be never larger than **0.0001\"** in longitude. Speeds show no
 difference larger than **0.0002 arcsec/day.**
 
-The following factors show larger differences between HPUX and Linux on
-a Pentium II processor:
-
-> Mean Node, Mean Apogee:
->
-> HPUX PA-Risc non-optimized versus optimized code:
->
-> differences are smaller than 0.001 arcsec/day
->
-> HPUX PA-Risc versus Intel Pentium gcc non-optimized
->
-> differences are smaller than 0.001 arcsec/day
->
-> Intel Pentium gss non-optimized versus -O9 optimized:
->
-> Mean Node, True node, Mean Apogee: difference smaller than 0.001
-> arcsec/day
->
-> Osculating Apogee: differences smaller than 0.03 arcsec
-
-The differences originate from the fact that the floating point
-arithmetic in the Pentium is executed with 80 bit precision, whereas
+Some differences originate from the fact that the floating point
+arithmetic in Intel processor is executed with 80 bit precision, whereas
 stored program variables have only 64 bit precision. When code is
 optimized, more intermediate results are kept inside the processor
 registers, i.e. they are not shortened from 80bit to 64 bit. When these
@@ -7630,6 +5998,9 @@ effect on any imaginable application software and are mostly within the
 design limit of Swiss Ephemeris, they can be safely ignored.
 
 # Debugging and Tracing Swisseph
+
+This feature is deprecated. Sine release 2.10.02 no trace DLLs are provided.
+Trace code will be removed in one of the next releases.
 
 ## If you are using the DLL
 
@@ -7672,65 +6043,48 @@ a)  save your Swisseph DLL;
 b)  rename the trace DLL as your Swisseph DLL (e.g. as swedll32.dll or
     swedll64.dll).
 
-**IMPORTANT**: The Swisseph DLL will possibly not work properly if
-called from more than one thread. (**NOTE**: This may not be true any
-longer for DLLs compiled with MVS version 14.0... (2015); it should be
-tested again.)
-
+```
 Output samples swetrace.txt:
 
 swe_deltat: 2451337.870000 0.000757
 
 swe_set_ephe_path: path_in = path_set = \\sweph\\ephe\\
 
-swe_calc: 2451337.870757 -1 258 23.437404 23.439365 -0.003530 -0.001961
-0.000000 0.000000
+swe_calc: 2451337.870757 -1 258 23.437404 23.439365 -0.003530 -0.001961 0.000000 0.000000
 
 swe_deltat: 2451337.870000 0.000757
 
-swe_sidtime0: 2451337.870000 sidt = 1.966683 eps = 23.437404 nut =
--0.003530
+swe_sidtime0: 2451337.870000 sidt = 1.966683 eps = 23.437404 nut = -0.003530
 
 swe_sidtime: 2451337.870000 1.966683
 
-swe_calc: 2451337.870757 0 258 77.142261 -0.000071 1.014989 0.956743
--0.000022 0.000132
+swe_calc: 2451337.870757 0 258 77.142261 -0.000071 1.014989 0.956743 -0.000022 0.000132
 
 swe_get_planet_name: 0 Sun
+```
 
+
+```c
 swetrace.c:
-
 #include \"sweodef.h\"
-
 #include \"swephexp.h\"
-
 void main()
-
 {
-
-double tjd, t, nut, eps; int i, ipl, retc; long iflag;
-
-double armc, geolat, cusp\[12\], ascmc\[10\]; int hsys;
-
-double xx\[6\]; long iflgret;
-
-char s\[AS_MAXCH\], star\[AS_MAXCH\], serr\[AS_MAXCH\];
-
-/\*SWE_DELTAT\*/
-
-tjd = 2451337.870000000; t = **swe_deltat**(tjd);
-
-printf(\"swe_deltat: %f\\t%f\\t\\n\", tjd, t);
-
-/\*SWE_CALC\*/
-
-tjd = 2451337.870757482; ipl = 0; iflag = 258;
-
-iflgret = **swe_calc**(tjd, ipl, iflag, xx, serr); /\* xx = 1239992 \*/
-
-/\*SWE_CLOSE\*/
-
-**swe_close()**;
+  double tjd, t, nut, eps; int i, ipl, retc; long iflag;
+  double armc, geolat, cusp[12], ascmc[10]; int hsys;
+  double xx[6]; long iflgret;
+  char s[AS_MAXCH], star[AS_MAXCH], serr[AS_MAXCH];
+  /*SWE_DELTAT*/
+  tjd = 2451337.870000000; 
+  t = swe_deltat(tjd);
+  printf("swe_deltat: %f\t%f\t\n", tjd, t);
+  /*SWE_CALC*/
+  tjd = 2451337.870757482; ipl = 0; iflag = 258;
+  iflgret = **swe_calc**(tjd, ipl, iflag, xx, serr); /* xx = 1239992 */
+  /*SWE_CLOSE*/
+  swe_close();
+}
+```
 
 ## If you are using the source code
 
@@ -7739,419 +6093,90 @@ into your application. Use the preprocessor definitions TRACE = 1 for
 single task debugging, and TRACE = 2 for multitasking. In most compilers
 this flag can be set with -- DTRACE = 1 or / DTRACE = 1.
 
-For further explanations, see 21.1.
 
 # Updates
 
 ## Updates of documention
 
-------------- -------- -------------- --------------- -------------------------------------------- -- ----
-  **Updated**            **By**                                                                         
-
-  30-sep-1997            Alois                          added chapter 10 (sample programs)              
-
-  7-oct-1997             Dieter                         inserted chapter 7 (house calculation)          
-
-  8-oct-1997             Dieter                         appendix "Changes from version 1.00 to 1.01"    
-
-  12-oct-1997            Alois                          added new chapter 10 Using the DLL with         
-                                                        Visual Basic                                    
-
-  26-oct-1997            Alois                          improved implementation and documentation of    
-                                                        swe_fixstar()                                   
-
-  28-oct-1997            Dieter                         changes from Version 1.02 to 1.03               
-
-  29-oct-1997            Alois                          added VB sample extension, fixed VB             
-                                                        declaration errors                              
-
-  9-nov-1997             Alois                          added Delphi declaration sample                 
-
-  8-dec-1997             Dieter                         remarks concerning computation of asteroids,    
-                                                        changes to version 1.04                         
-
-  8-jan-1998             Dieter                         changes from version 1.04 to 1.10.              
-
-  12-jan-1998            Dieter                         changes from version 1.10 to 1.11.              
-
-  21-jan-1998            Dieter                         calculation of topocentric planets and house    
-                                                        positions (1.20)                                
-
-  28-jan-1998            Dieter                         Delphi 1.0 sample and declarations for 16-      
-                                                        and 32-bit Delphi (1.21)                        
-
-  11-feb-1998            Dieter                         version 1.23                                    
-
-  7-mar-1998             Alois                          version 1.24 support for Borland C++ Builder    
-                                                        added                                           
-
-  4-jun-1998             Alois                          version 1.25 sample for Borland Delphi-2        
-                                                        added                                           
-
-  29-nov-1998            Alois                          version 1.26 source code information added      
-                                                        §16, Placalc API added                          
-
-  1-dec-1998             Dieter                         chapter 19 and some additions in beginning      
-                                                        of Appendix.                                    
-
-  2-dec-1998             Alois                          equation of time explained (in §4), changes     
-                                                        version 1.27 explained                          
-
-  3-dec-1998             Dieter                         note on ephemerides of 1992 QB1 and 1996        
-                                                        TL66                                            
-
-  17-dec-1998            Alois                          note on extended time range of 10\'800 years    
-
-  22-dec-1998            Alois                          appendix A                                      
-
-  12-jan-1999            Dieter                         eclipse functions added, version 1.31           
-
-  19-apr-1999            Dieter                         version 1.4                                     
-
-  8-jun-1999             Dieter                         chapter 21 on tracing an debugging Swisseph     
-
-  27-jul-1999            Dieter                         info about sidereal calculations                
-
-  16-aug-1999            Dieter                         version 1.51, minor bug fixes                   
-
-  15-feb-2000            Dieter                         many things for version 1.60                    
-
-  19-mar-2000            Vic Ogi                        swephprg.doc re-edited                          
-
-  17-apr-2002            Dieter                         documentation for version 1.64                  
-
-  26-jun-2002            Dieter                         version 1.64.01                                 
-
-  31-dec-2002            Alois                          edited doc to remove references to 16-bit       
-                                                        version                                         
-
-  12-jun-2003            Alois/Dieter                   documentation for version 1.65                  
-
-  10-jul-2003   Dieter                  documentation                                                   
-                                        for version                                                     
-                                        1.66                                                            
-
-  25-may-2004   Dieter                  documentation                                                   
-                                        of eclipse                                                      
-                                        functions                                                       
-                                        updated                                                         
-
-  31-mar-2005   Dieter                  documentation                                                   
-                                        for version                                                     
-                                        1.67                                                            
-
-  3-may-2005    Dieter                  documentation                                                   
-                                        for version                                                     
-                                        1.67.01                                                         
-
-  22-feb-2006   Dieter                  documentation                                                   
-                                        for version                                                     
-                                        1.70.00                                                         
-
-  2-may-2006    Dieter                  documentation                                                   
-                                        for version                                                     
-                                        1.70.01                                                         
-
-  5-feb-2006    Dieter                  documentation                                                   
-                                        for version                                                     
-                                        1.70.02                                                         
-
-  30-jun-2006   Dieter                  documentation                                                   
-                                        for version                                                     
-                                        1.70.03                                                         
-
-  28-sep-2006            Dieter                         documentation for version 1.71                  
-
-  29-may-2008            Dieter                         documentation for version 1.73                  
-
-  18-jun-2008            Dieter                         documentation for version 1.74                  
-
-  27-aug-2008            Dieter                         documentation for version 1.75                  
-
-  7-apr-2009             Dieter                         documentation of version 1.76                   
-
-  3-sep-2013             Dieter                         documentation of version 1.80                   
-
-  10-sep-2013            Dieter                         documentation of version 1.80 corrected         
-
-  11-feb-2014            Dieter                         documentation of version 2.00                   
-
-  4-mar-2014             Dieter                         documentation of swe_rise_trans() corrected     
-
-  18-mar-2015            Dieter                         documentation of version 2.01                   
-
-  11-aug-2015            Dieter                         documentation of version 2.02                   
-
-  14-aug-2015            Dieter                         documentation of version 2.02.01                
-
-  16-oct-2015            Dieter                         documentation of version 2.03                   
-
-  21-oct-2015            Dieter                         documentation of version 2.04                   
-
-  27-may-2015            Dieter                         documentation of version 2.05                   
-
-  27-may-2015            Dieter                         documentation of version 2.05.01                
-
-  10-jan-2016            Dieter                         documentation of version 2.06                   
-
-  5-jan-2018             Dieter                         documentation of version 2.07                   
-
-  1-feb-2018             Dieter                         documentation of version 2.07.01                
-
-  22-feb-2018            Dieter                         docu of swe_fixstar2() improved                 
-
-  11-sep-2019            Simon Hren                     Reformatting of documentation                   
-
-  22-jul-2020            Dieter                         Documentation of version 2.09                   
-
-  23-jul-2020            Dieter                         Documentation of version 2.09.01                
-
-  27-jul-2020            Dieter                         Small corrections                               
-
-  18-aug-2020            Dieter                         Documentation of version 2.09.02                
-
-  1-sep-2020             Dieter                         Documentation of version 2.09.03s               
-
-  1-dec-2020             Dieter                         Documentation of version 2.10                   
-
-  9-dec-2020             Dieter                         Dieter: "AD" replaced by "CE" and "BC"          
-                                                        replaced by "BCE".                              
-
-  15-dec-2020            Alois                          Minor cosmetics                                 
-
-  27-jan-2021            Dieter                         Small additions and minor cosmetics based on    
-                                                        proposals by Aum Hren                           
-
-  2-may-2021             Dieter                         Release notes for version 2.10.01               
-
-  4-aug-2021             Alois                          Release notes for version 2.10.02               
-------------- -------- -------------- --------------- -------------------------------------------- -- ----
+when  | by| what
+-----------|-----------|------------
+30-sep-1997  |Alois  |added chapter 10 (sample programs)
+7-oct-1997  |Dieter  |inserted chapter 7 (house calculation)
+8-oct-1997  |Dieter  |appendix "Changes from version 1.00 to 1.01"
+12-oct-1997  |Alois  |added new chapter 10 Using the DLL with Visual Basic
+26-oct-1997  |Alois  |improved implementation and documentation of swe_fixstar()
+28-oct-1997  |Dieter  |changes from Version 1.02 to 1.03
+29-oct-1997  |Alois  |added VB sample extension, fixed VB declaration errors
+9-nov-1997  |Alois  |added Delphi declaration sample
+8-dec-1997  |Dieter  |remarks concerning computation of asteroids, changes to version 1.04
+8-jan-1998  |Dieter  |changes from version 1.04 to 1.10.
+12-jan-1998  |Dieter  |changes from version 1.10 to 1.11.
+21-jan-1998  |Dieter  |calculation of topocentric planets and house positions (1.20)
+28-jan-1998  |Dieter  |Delphi 1.0 sample and declarations for 16- and 32-bit Delphi (1.21)
+11-feb-1998  |Dieter  |version 1.23
+7-mar-1998  |Alois  |version 1.24 support for Borland C++ Builder added
+4-jun-1998  |Alois  |version 1.25 sample for Borland Delphi-2 added
+29-nov-1998  |Alois  |version 1.26 source code information added §16, Placalc API added
+1-dec-1998  |Dieter  |chapter 19 and some additions in beginning of Appendix.
+2-dec-1998  |Alois  |equation of time explained (in §4), changes version 1.27 explained
+3-dec-1998  |Dieter  |note on ephemerides of 1992 QB1 and 1996 TL66
+17-dec-1998  |Alois  |note on extended time range of 10\'800 years
+22-dec-1998  |Alois  |appendix A
+12-jan-1999  |Dieter  |eclipse functions added, version 1.31
+19-apr-1999  |Dieter  |version 1.4
+8-jun-1999  |Dieter  |chapter 21 on tracing an debugging Swisseph
+27-jul-1999  |Dieter  |info about sidereal calculations
+16-aug-1999  |Dieter  |version 1.51, minor bug fixes
+15-feb-2000  |Dieter  |many things for version 1.60
+19-mar-2000  |Vic Ogi  |swephprg.doc re-edited
+17-apr-2002  |Dieter  |documentation for version 1.64
+26-jun-2002  |Dieter  |version 1.64.01
+31-dec-2002  |Alois  |edited doc to remove references to 16-bit version
+12-jun-2003  |Alois/Dieter  |documentation for version 1.65
+10-jul-2003  |Dieter  |documentation for version 1.66
+25-may-2004  |Dieter  |documentation of eclipse functions updated
+31-mar-2005  |Dieter  |documentation for version 1.67
+3-may-2005  |Dieter  |documentation for version 1.67.01
+22-feb-2006  |Dieter  |documentation for version 1.70.00
+2-may-2006  |Dieter  |documentation for version 1.70.01
+5-feb-2006  |Dieter  |documentation for version 1.70.02
+30-jun-2006  |Dieter  |documentation for version 1.70.03
+28-sep-2006  |Dieter  |documentation for version 1.71
+29-may-2008  |Dieter  |documentation for version 1.73
+18-jun-2008  |Dieter  |documentation for version 1.74
+27-aug-2008  |Dieter  |documentation for version 1.75
+7-apr-2009  |Dieter  |documentation of version 1.76
+3-sep-2013  |Dieter  |documentation of version 1.80
+10-sep-2013  |Dieter  |documentation of version 1.80 corrected
+11-feb-2014  |Dieter  |documentation of version 2.00
+4-mar-2014  |Dieter  |documentation of swe_rise_trans() corrected
+18-mar-2015  |Dieter  |documentation of version 2.01
+11-aug-2015  |Dieter  |documentation of version 2.02
+14-aug-2015  |Dieter  |documentation of version 2.02.01
+16-oct-2015  |Dieter  |documentation of version 2.03
+21-oct-2015  |Dieter  |documentation of version 2.04
+27-may-2015  |Dieter  |documentation of version 2.05
+27-may-2015  |Dieter  |documentation of version 2.05.01
+10-jan-2016  |Dieter  |documentation of version 2.06
+5-jan-2018  |Dieter  |documentation of version 2.07
+1-feb-2018  |Dieter  |documentation of version 2.07.01
+22-feb-2018  |Dieter  |docu of swe_fixstar2() improved
+11-sep-2019  |Simon Hren  |Reformatting of documentation
+22-jul-2020  |Dieter  |Documentation of version 2.09
+23-jul-2020  |Dieter  |Documentation of version 2.09.01
+27-jul-2020  |Dieter  |Small corrections
+18-aug-2020  |Dieter  |Documentation of version 2.09.02
+1-sep-2020  |Dieter  |Documentation of version 2.09.03s
+1-dec-2020  |Dieter  |Documentation of version 2.10
+9-dec-2020  |Dieter  |Dieter: "AD" replaced by "CE" and "BC" replaced by "BCE".
+15-dec-2020  |Alois  |Minor cosmetics
+27-jan-2021  |Dieter  |Small additions and minor cosmetics based on proposals by Aum Hren
+2-may-2021  |Dieter  |Release notes for version 2.10.01
+4-aug-2021  |Alois  |Release notes for version 2.10.02
 
 ## Release History
 
-+------+---------+-----------------------------------------------------+
-| **R  | *       |                                                     |
-| elea | *Date** |                                                     |
-| se** |         |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.00 | 30-s    |                                                     |
-|      | ep-1997 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.01 | 9-o     | > houses(), sidtime() made more convenient for      |
-|      | ct-1997 | > developer, Vertex added.                          |
-+------+---------+-----------------------------------------------------+
-| 1.02 | 16-o    | > houses() changed again, Visual Basic support, new |
-|      | ct-1997 | > numbers for fictitious planets This release was   |
-|      |         | > pushed to all existing licensees at this date.    |
-+------+---------+-----------------------------------------------------+
-| 1.03 | 28-o    | > minor bug fixes, improved swe_fixstar()           |
-|      | ct-1997 | > functionality. This release was not pushed, as    |
-|      |         | > the changes and bug fixes are minor; no changes   |
-|      |         | > of function definitions occurred.                 |
-+------+---------+-----------------------------------------------------+
-| 1.04 | 8-d     | > minor bug fixes; more asteroids.                  |
-|      | ec-1997 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.10 | 9-j     | > bug fix, s. Appendix. This release was pushed to  |
-|      | an-1998 | > all existing licensees at this date.              |
-+------+---------+-----------------------------------------------------+
-| 1.11 | 12-j    | > small improvements                                |
-|      | an-1998 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.20 | 20-j    | > **new**: topocentric planets and house positions; |
-|      | an-1998 | > a minor bug fix                                   |
-+------+---------+-----------------------------------------------------+
-| 1.21 | 28-j    | > Delphi declarations and sample for Delphi 1.0     |
-|      | an-1998 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.22 | 2-f     | > asteroids moved to subdirectory. Swe_calc() finds |
-|      | eb-1998 | > them there.                                       |
-+------+---------+-----------------------------------------------------+
-| 1.23 | 11-f    | > two minor bug fixes.                              |
-|      | eb-1998 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.24 | 7-m     | > documentation for Borland C++ Builder added, see  |
-|      | ar-1998 | > section 14.3                                      |
-+------+---------+-----------------------------------------------------+
-| 1.25 | 4-j     | > sample for Borland Delphi-2 added                 |
-|      | un-1998 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.26 | 29-n    | > full source code made available, Placalc API      |
-|      | ov-1998 | > documented                                        |
-+------+---------+-----------------------------------------------------+
-| 1.27 | 2-d     | > changes to SE_EPHE_PATH and swe_set_ephe_path()   |
-|      | ec-1998 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.30 | 17-d    | > time range extended to 10\'800 years              |
-|      | ec-1998 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.31 | 12-j    | > **new**: Eclipse functions added                  |
-|      | an-1999 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.40 | 19-a    | > **new**: planetary phenomena added; bug fix in    |
-|      | pr-1999 | > swe_sol_ecl_when_glob();                          |
-+------+---------+-----------------------------------------------------+
-| 1.50 | 27-j    | > **new**: SIDEREAL planetary positions and houses; |
-|      | ul-1999 | > new fixstars.cat                                  |
-+------+---------+-----------------------------------------------------+
-| 1.51 | 16-a    | > minor bug fixes                                   |
-|      | ug-1999 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.60 | 15-f    | > major release with many new features and some     |
-|      | eb-2000 | > minor bug fixes                                   |
-+------+---------+-----------------------------------------------------+
-| 1.61 | 11-s    | > minor release, additions to se_rise_trans(),      |
-|      | ep-2000 | > swe_houses(), fictitious planets                  |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 18-s    | > minor release, added Alcabitus house system       |
-| 1.01 | ep-2000 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 10-j    | > minor release, fixed bug which prevented asteroid |
-| 1.02 | ul-2001 | > files \> 22767 to be accepted                     |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 20-j    | > minor release, fixed bug which was introduced in  |
-| 1.03 | ul-2001 | > 1.61.02: Ecliptic was computed in Radians instead |
-|      |         | > of degrees                                        |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 23-j    | > minor release, several bug fixes, code for        |
-| 2.00 | ul-2001 | > fictitious satellites of the Earth, asteroid      |
-|      |         | > files \> 55535 are accepted                       |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 16-o    | > bug fix, string overflow in                       |
-| 2.01 | ct-2001 | > sweph.c::read_const(),                            |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 5-j     | > added house calculation to swetest.c and          |
-| 3.00 | an-2002 | > swetest.exe                                       |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 6-m     | > house system 'G' for house functions and function |
-| 4.00 | ar-2002 | > swe_gauquelin_sector() for Gauquelin sector       |
-|      |         | > calculations                                      |
-|      |         | >                                                   |
-|      |         | > occultations of planets and fixed stars by the    |
-|      |         | > moon                                              |
-|      |         | >                                                   |
-|      |         | > new Delta T algorithms                            |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 26-j    | > bug fix in swe_fixstar(). Stars with decl.        |
-| 4.01 | un-2002 | > between --1° and 0° were wrong                    |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 12-j    | > long variables replaced by INT32 for 64-bit       |
-| 5.00 | un-2003 | > compilers                                         |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 10-j    | > house system 'M' for Morinus houses               |
-| 6.00 | ul-2003 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 31-m    | > update Delta T                                    |
-| 7.00 | ar-2005 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.6  | 3-m     | > docs for sidereal calculations (Chap. 10) updated |
-| 7.01 | ay-2005 | > (precession-corrected transits)                   |
-+------+---------+-----------------------------------------------------+
-| 1.7  | 22-f    | > all relevant IAU resolutions up to 2005 have been |
-| 0.00 | eb-2006 | > implemented                                       |
-+------+---------+-----------------------------------------------------+
-| 1.7  | 2-m     | > minor bug fix                                     |
-| 0.01 | ay-2006 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.7  | 5-m     | > minor bug fix                                     |
-| 0.02 | ay-2006 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.7  | 30-j    | > bug fix                                           |
-| 0.03 | un-2006 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.71 | 28-s    | > Swiss Ephemeris functions able to calculate minor |
-|      | ep-2006 | > planet no 134340 Pluto                            |
-+------+---------+-----------------------------------------------------+
-| 1.72 | 28-s    | > new function swe_refrac_extended(), Delta T       |
-|      | ep-2007 | > update, minor bug fixes                           |
-+------+---------+-----------------------------------------------------+
-| 1.73 | 29-m    | > new function swe_fixstars_mag(), Whole Sign       |
-|      | ay-2008 | > houses                                            |
-+------+---------+-----------------------------------------------------+
-| 1.74 | 18-j    | > bug fixes                                         |
-|      | un-2008 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 1.75 | 27-a    | > Swiss Ephemeris can read newer JPL ephemeris      |
-|      | ug-2008 | > files; bug fixes                                  |
-+------+---------+-----------------------------------------------------+
-| 1.76 | 7-a     | > heliacal risings, UTC and minor improvements/bug  |
-|      | pr-2009 | > fixes                                             |
-+------+---------+-----------------------------------------------------+
-| 1.77 | 26-j    | > swe_deltat(), swe_fixstar() improved,             |
-|      | an-2010 | > swe_utc_time_zone added                           |
-+------+---------+-----------------------------------------------------+
-| 1.78 | 3-a     | > new precession, improvement of some eclipse       |
-|      | ug-2012 | > functions, some minor bug fixes                   |
-+------+---------+-----------------------------------------------------+
-| 1.79 | 18-a    | > new precession, improvement of some eclipse       |
-|      | pr-2013 | > functions, some minor bug fixes                   |
-+------+---------+-----------------------------------------------------+
-| 1.80 | 3-s     | > security update, APC houses, bug fixes            |
-|      | ep-2013 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 2.00 | 11-f    | > Swiss Ephemeris is now based on JPL Ephemeris     |
-|      | eb-2014 | > DE431                                             |
-+------+---------+-----------------------------------------------------+
-| 2.01 | 18-m    | > udates for tidal acceleration of the Moon with    |
-|      | ar-2015 | > DE431, Delta T, and leap seconds.                 |
-|      |         | >                                                   |
-|      |         | > a number of bug fixes                             |
-+------+---------+-----------------------------------------------------+
-| 2.02 | 11-a    | > new functions swe_deltat_ex() and                 |
-|      | ug-2015 | > swe_get_ayanamsha_ex()/swe_get_ayanamsha_ex_ut()  |
-|      |         | >                                                   |
-|      |         | > a number of bug fixes                             |
-+------+---------+-----------------------------------------------------+
-| 2.0  | 14-a    | > small corrections to new code, for better         |
-| 2.01 | ug-2015 | > backward compatibility                            |
-+------+---------+-----------------------------------------------------+
-| 2.03 | 16-o    | > Swiss Ephemeris thread-safe (except DLL)          |
-|      | ct-2015 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 2.04 | 21-o    | > Swiss Ephemeris DLL based on calling convention   |
-|      | ct-2015 | > \_\_stdcall again, as used to be                  |
-+------+---------+-----------------------------------------------------+
-| 2.05 | 27-m    | > bug fixes, new ayanamshas, new house methods,     |
-|      | ay-2015 | > osculating elements                               |
-+------+---------+-----------------------------------------------------+
-| 2.0  | 27-m    | > bug fix in new function                           |
-| 5.01 | ay-2015 | > swe_orbit_max_min_true_distance()                 |
-+------+---------+-----------------------------------------------------+
-| 2.06 | 10-j    | > new Delta T calculation                           |
-|      | an-2017 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 2.07 | 10-j    | > better performance of swe_fixstar() and           |
-|      | an-2018 | > swe_rise_trans()                                  |
-+------+---------+-----------------------------------------------------+
-| 2.0  | 1-f     | > compatibility with Microsoft Visual Studio, minor |
-| 7.01 | eb-2018 | > bugfixes (fixed star functions, leap seconds).    |
-+------+---------+-----------------------------------------------------+
-| 2.08 | 13-j    | > new Delta T and a number of minor bugfixes.       |
-|      | un-2019 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 2.09 | 23-j    | > improved Placidus houses, sidereal ephemerides,   |
-|      | ul-2020 | > planetary magnitudes; minor bug fixes.            |
-+------+---------+-----------------------------------------------------+
-| 2.0  | 23-j    | > bug fix for improved Placidus houses.             |
-| 9.01 | ul-2020 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 2.0  | 18-a    | > new functions swe_houses_ex2(), swepeeds of house |
-| 9.02 | ug-2020 | > cusps.                                            |
-+------+---------+-----------------------------------------------------+
-| 2.0  | 1-s     | > minor bug fixes.                                  |
-| 9.03 | ep-2020 |                                                     |
-+------+---------+-----------------------------------------------------+
-| 2.10 | 3-d     | > center of body, planetary moons, and              |
-|      | ec-2020 | > planetocentric ephemerides                        |
-+------+---------+-----------------------------------------------------+
-| 2.1  | 5-m     | > Minor bug fixes and DE441 added to the list of    |
-| 0.01 | ay-2021 | > usable JPL ephemerides                            |
-+------+---------+-----------------------------------------------------+
-| 2.1  | 4-a     | > Added new functions swe_solcross etc, see chapter |
-| 0.02 | ug-2021 | > 5                                                 |
-+------+---------+-----------------------------------------------------+
-
-## Changes from version 2.10.01 to 2.10.02
+### Changes from version 2.10.01 to 2.10.02
 
 New functions were added, to find crossings of planets over fixed
 positions:
@@ -8164,42 +6189,42 @@ positions:
 
 -   swe_helio_cross()
 
-## Changes from version 2.10 to 2.10.01
+### Changes from version 2.10 to 2.10.01
 
-1\. An old bug in the lunar ephemeris with (iflag & SEFLG_SWIEPH) was
+1. An old bug in the lunar ephemeris with (iflag & SEFLG_SWIEPH) was
 fixed. It resulted from the fact that a different ecliptic obliquity
 J2000 was used in the packing and unpacking of the ephemeris data
 (function sweph.c:rot_back()). The difference between the two was
 0.042\". Many thanks to Hal Rollins for finding and reporting this
 problem.
 
-2\. Correct handling of new JPL Ephemeris DE441, using the lunar tidal
+2. Correct handling of new JPL Ephemeris DE441, using the lunar tidal
 acceleration (deceleration) -25.936 \"/cent\^2 (according to Jon
 Giorgini/JPL\'s Horizons System).
 
-3\. Deltat T was updated for current years.
+3. Deltat T was updated for current years.
 
-4\. A minor bug in swe_calc_pctr() was fixed: The function did not work
+4. A minor bug in swe_calc_pctr() was fixed: The function did not work
 correctly with asteroids and (iflag & SEFLG_JPLEPH), resulting in the
 error message \"Ephmeris file seas_18.se1 is damaged (2)\".
 
-5\. Bug in swe_rise_set() with fixed stars reported by Ricardo Ric was
+5. Bug in swe_rise_set() with fixed stars reported by Ricardo Ric was
 fixed.
 
-## Changes from version 2.09.03 to 2.10
+### Changes from version 2.09.03 to 2.10
 
 New features:
 
-\- ephemerides of center of body (COB) of planets
+- ephemerides of center of body (COB) of planets
 
-\- ephemerides of some planetary moons
+- ephemerides of some planetary moons
 
-\- planetocentric ephemerides using the function swe_calc_pctr()
+- planetocentric ephemerides using the function swe_calc_pctr()
 
-\- function swe_get_current_file_data() for time range of \*.se1
+- function swe_get_current_file_data() for time range of \*.se1
 ephemeris files.
 
-## Changes from version 2.09.02 to 2.09.03
+### Changes from version 2.09.02 to 2.09.03
 
 Three minor bug fixes:
 
@@ -8214,63 +6239,64 @@ Three minor bug fixes:
 -   Asteroids with ipl > 10000 (SE_AST_OFFSET): calculating with several
     different ayanamshas after each other did not work properly.
 
-## Changes from version 2.09.01 to 2.09.02
+### Changes from version 2.09.01 to 2.09.02
 
 New functions swe_houses_ex2() and swe_houses_armc_ex2() can calculate
 speeds ("daily motions") of house cusps and related points.
 
-## Changes from version 2.09 to 2.09.01
+### Changes from version 2.09 to 2.09.01
 
 Bugfix for improved Placidus house cusps near polar circle.
 
-## Changes from version 2.08 to 2.09
+### Changes from version 2.08 to 2.09
 
 This release provides new values for Delta T in 2020 and 2021, an
 improved calculation of Placidus house cusps near the polar circles, new
 magnitudes for the major planets, improved sidereal ephemerides, and a
 few new ayanamshas.
 
-> 1\. Our calculation of Placidus house positions did not provide
-> greatest possible precision with high geographic latitudes (noticed by
-> D. Senthilathiban). The improvement is documented in the General
-> Documentation under 6.7. \"Improvement of the Placidus house
-> calculation in SE 2.09\".
->
-> 2\. New magnitudes according to Mallama 2018 were implemented. The new
-> values agree with JPL Horizons for all planets except Mars, Saturn,
-> and Uranus. Deviations form Horizons are \< 0.1m for Mars, \< 0.02m
-> for Saturn and \< 0.03m for Uranus.
->
-> 3\. New values for Delta T have been added for 2020 and 2021 (the
-> latter estimated).
+1. Our calculation of Placidus house positions did not provide
+greatest possible precision with high geographic latitudes (noticed by
+D. Senthilathiban). The improvement is documented in the General
+Documentation under 6.7. \"Improvement of the Placidus house
+calculation in SE 2.09\".
+
+2. New magnitudes according to Mallama 2018 were implemented. The new
+values agree with JPL Horizons for all planets except Mars, Saturn,
+and Uranus. Deviations form Horizons are \< 0.1m for Mars, \< 0.02m
+for Saturn and \< 0.03m for Uranus.
+
+3. New values for Delta T have been added for 2020 and 2021 (the
+latter estimated).
 
 Sidereal astrology:
 
 A lot of work has been done for more correct calculation of ayanamshas.
 
-4\. Improved general documentation:
+4. Improved general documentation:
 
-\- theory of ayanamsha in general
+- theory of ayanamsha in general
 
-\- about Lahiri ayanamsha
+- about Lahiri ayanamsha
 
-\- about ayanamsha data in IAE, IENA, RP
+- about ayanamsha data in IAE, IENA, RP
 
-> These parts of the documentation have been improved considerably.
-> Important contributions were made by D. Senthilathiban and A.K. Kaul.
+These parts of the documentation have been improved considerably.
+Important contributions were made by D. Senthilathiban and A.K. Kaul.
 
 (Thank you very much, indeed!)
 
-> *If questions arise concerning the reproducibility of ayanamsha values
-> as given in IAE, IENA, or Rashtriya Panchang, please study Appendix E
-> in the general documentation.*
->
-> 5\. Small corrections were to some ayanamshas whose original
-> definition was based on an old precession model such as Newcomb or IAU
-> 1976:
+*If questions arise concerning the reproducibility of ayanamsha values
+as given in IAE, IENA, or Rashtriya Panchang, please study Appendix E
+in the general documentation.*
+
+5. Small corrections were to some ayanamshas whose original
+definition was based on an old precession model such as Newcomb or IAU
+1976:
 
 ayanamsha correction prec. model
 
+```
 0 Fagan-Bradley 0.41256" Newcomb
 
 1 Lahiri -0.13036" IAU 1976
@@ -8278,85 +6304,88 @@ ayanamsha correction prec. model
 3 Raman 0.82800" Newcomb
 
 5 Krishnamurti 0.82800" Newcomb
+```
 
-> 6\. Additional, very small, corrections were made with the follwoing
-> ayanamshas:
+6. Additional, very small, corrections were made with the follwoing
+ayanamshas:
 
-\- Fagan/Bradley (0): Initial date is Besselian, i.e. 2433282.42346
+- Fagan/Bradley (0): Initial date is Besselian, i.e. 2433282.42346
 instead of 2433282.5.
 
-> \- Lahiri (1): Correction for nutation on initial date was slightly
-> improved in agreement with IAE 1985, namely nutation Wahr (1980)
-> instead of nutation IAU2000B.
->
-> \- DeLuce (2): DeLuce assumed zero ayanamsha at 1 Jan. 1 BCE, but used
-> Newcomb precession to determine the ayanamsha for current epochs. The
-> ayanamsha is now based on modern precession. The correction amounts to
-> about 22\".
+- Lahiri (1): Correction for nutation on initial date was slightly
+improved in agreement with IAE 1985, namely nutation Wahr (1980)
+instead of nutation IAU2000B.
 
-7\. New ayanamshas:
+- DeLuce (2): DeLuce assumed zero ayanamsha at 1 Jan. 1 BCE, but used
+Newcomb precession to determine the ayanamsha for current epochs. The
+ayanamsha is now based on modern precession. The correction amounts to
+about 22\".
 
-\- Krishnamurti/Senthilathiban, SE_SIDM_KRISHNAMURTI_VP291 45
+7. New ayanamshas:
 
-\- Lahiri 1940, SE_SIDM_LAHIRI_1940 43
+- Krishnamurti/Senthilathiban, SE_SIDM_KRISHNAMURTI_VP291 45
 
-\- Lahiri 1980, SE_SIDM_LAHIRI_VP285 44
+- Lahiri 1940, SE_SIDM_LAHIRI_1940 43
 
-\- Lahiri ICRC SE_SIDM_LAHIRI_ICRC 46
+- Lahiri 1980, SE_SIDM_LAHIRI_VP285 44
 
-> The three additional Lahiri ayanamshas are not really important. They
-> were needed for testing and understanding the history of this
-> aynamasha, and for the same reason they should also be kept. Our
-> hitherto Lahiri ayanamsha (SE_SIDM_LAHIRI = 1) is still the official
-> Lahiri ayanamsha as used in Indian Astronomical Ephemeris (IAE) since
-> 1985.
+- Lahiri ICRC SE_SIDM_LAHIRI_ICRC 46
 
-8\. Option for ayanamsha calculation relative to ecliptic of date.
+The three additional Lahiri ayanamshas are not really important. They
+were needed for testing and understanding the history of this
+aynamasha, and for the same reason they should also be kept. Our
+hitherto Lahiri ayanamsha (SE_SIDM_LAHIRI = 1) is still the official
+Lahiri ayanamsha as used in Indian Astronomical Ephemeris (IAE) since
+1985.
 
+8. Option for ayanamsha calculation relative to ecliptic of date.
+
+```c
 #define SE_SIDBIT_ECL_DATE 2048
+```
 
 With swetest, the option -sidbit2048 can be used. (To be used by those
 only who understand it.)
 
 Other issues:
 
-> 9\. When house calculation fails (which can happen with Placidus,
-> Gauquelin, Koch, Sunshine houses), then the house functions return
-> error but nevertheless provide Porphyry house cusps. Until now,
-> swetest did so silently, without any warning. It now writes a warning.
->
-> 10\. Bug fix in function swehouse.c:swe_house_pos(): Corrected double
-> hcusp\[36\] to double hcusp\[37\].
->
-> 11\. Bug fix in function swe_refrac_extended(), calculating true
-> altitude from apparent altitude (SE_APP_TO_TRUE): Function now
-> correctly returns true altitude if apparent altitude is greater or
-> equal to the dip of the horizon.
->
-> 12\. Bug fix in function swe_get_planet_name() when used for
-> asteroids. If the file s\*.se1 was older than 2005, then the function
-> provided a name string beginning with \"? \".
->
-> 13\. Behaviour of occultation functions with fixed stars: attr\[0\]
-> and attr\[2\] (fraction of diameter or disk occulted by the Moon) now
-> have the value 1 (in previous versions they had value 100). The new
-> value is consistent with those given with occultations of planetary
-> disks.
->
-> 14\. The function swe_calc() near its beginning set serr = \'\' in
-> versions up to 2.08. This destroyed possible warnings written into it
-> in the calling function swe_calc().
->
-> 15\. Perl-Swisseph:
->
-> \- Functions swe_sol_eclipse_where(), swe_sol_eclipse_how(),
-> swe_lun_eclipse_how() now provide Saros numbers, in the array attr as
-> well as in the variables saros_series and saros_no.
->
-> \- Functions swe_lun_eclipse_when() now also provide start and end
-> times ecl_begin und ecl_end (as with sol_eclipse_when_glob()).
+9. When house calculation fails (which can happen with Placidus,
+Gauquelin, Koch, Sunshine houses), then the house functions return
+error but nevertheless provide Porphyry house cusps. Until now,
+swetest did so silently, without any warning. It now writes a warning.
 
-## Changes from version 2.07.01 to 2.08
+10. Bug fix in function swehouse.c:swe_house_pos(): Corrected double
+hcusp\[36\] to double hcusp\[37\].
+
+11. Bug fix in function swe_refrac_extended(), calculating true
+altitude from apparent altitude (SE_APP_TO_TRUE): Function now
+correctly returns true altitude if apparent altitude is greater or
+equal to the dip of the horizon.
+
+12. Bug fix in function swe_get_planet_name() when used for
+asteroids. If the file s\*.se1 was older than 2005, then the function
+provided a name string beginning with \"? \".
+
+13. Behaviour of occultation functions with fixed stars: attr\[0\]
+and attr\[2\] (fraction of diameter or disk occulted by the Moon) now
+have the value 1 (in previous versions they had value 100). The new
+value is consistent with those given with occultations of planetary
+disks.
+
+14. The function swe_calc() near its beginning set serr = \'\' in
+versions up to 2.08. This destroyed possible warnings written into it
+in the calling function swe_calc().
+
+15. Perl-Swisseph:
+
+- Functions swe_sol_eclipse_where(), swe_sol_eclipse_how(),
+swe_lun_eclipse_how() now provide Saros numbers, in the array attr as
+well as in the variables saros_series and saros_no.
+
+- Functions swe_lun_eclipse_when() now also provide start and end
+times ecl_begin und ecl_end (as with sol_eclipse_when_glob()).
+
+### Changes from version 2.07.01 to 2.08
 
 This release provides a number minor bug fixes and cleanups, an update
 for current Delta T, a few little improvements of swetest and three new
@@ -8446,7 +6475,7 @@ All new DLLs and executables were created with Microsoft Visual Studio
 since Swiss Ephemeris version 2.05 had caused difficult problems for
 some of our users. We hope that these problems will now disappear.
 
-## Changes from version 2.07 to 2.07.01
+### Changes from version 2.07 to 2.07.01
 
 -   Changes for compatibility with Microsoft Visual C. Affected
     functions are: swe_fixstar2(), swe_fixstar2_ut(),
@@ -8462,7 +6491,7 @@ some of our users. We hope that these problems will now disappear.
     functions were: swe_utc_to_jd(), swe_jdet_to_utc(),
     swe_jdut1_to_utc().
 
-## Changes from version 2.06 to 2.07
+### Changes from version 2.06 to 2.07
 
 -   Greatly enhanced performance of swe_rise_trans() with calculations
     of risings and settings of planets except for high geographic
@@ -8585,22 +6614,16 @@ stars in the file, but the order of the sorted Bayer designations.
 Nevertheless this feature is very practical if one wants to create a
 list of all stars.
 
-for i=1; i\<10000; i++) { // choose any number greater than number of
-lines (stars) in file
-
-sprintf(star, \"%d\", i);
-
-returncode = swe_fixstar2(star, tjd, \...);
-
-... whatever you want to do with the star positions ...
-
-if (returncode == ERR)
-
-break;
-
+```c
+for i=1; i\<10000; i++) { // choose any number greater than number of lines (stars) in file
+  sprintf(star, \"%d\", i);
+  returncode = swe_fixstar2(star, tjd, \...);
+  //... whatever you want to do with the star positions ...
+  if (returncode == ERR) break;
 }
+```
 
-## Changes from version 2.05.01 to 2.06
+### Changes from version 2.05.01 to 2.06
 
 New calculation of Delta T, according to:
 
@@ -8653,12 +6676,12 @@ Output of dates is always in UT1.
 
 About 110 fixed stars were added to file sefstars.txt.
 
-## Changes from version 2.05 to 2.05.01
+### Changes from version 2.05 to 2.05.01
 
 Bug in new function **swe_orbit_max_min_true_distance()** has been
 fixed.
 
-## Changes from version 2.04 to 2.05
+### Changes from version 2.04 to 2.05
 
 Starting with release 2.05, the special unit test system **setest**
 designed and developed by Rüdiger Plantiko is used by the developers.
@@ -8670,19 +6693,19 @@ command-line utility program.
 
 Bug fixes and new features:
 
-**1)** The **Fixed stars file sefstars.txt** was updated with new data
-from the Simbad Database. Some errors in the file were fixed.
+1. The **Fixed stars file sefstars.txt** was updated with new data
+   from the Simbad Database. Some errors in the file were fixed.
 
-**2)** **Topocentric positions** of planets: The value of speed was not
-very good. This problem was found by Igor \"TomCat\" Germanenko in March
-2015. A more accurate calculation of speed from three positions has now
+
+2. **Topocentric positions** of planets: The value of speed was not very good.
+This problem was found by Igor \"TomCat\" Germanenko in March 2015. A more accurate calculation of speed from three positions has now
 been implemented.
 
 In addition, topocentric positions had an error \< 1 arcsec if the
 function swe_calc() was called without SEFLG_SPEED. This problem was
 found by Bernd Müller and has now been fixed.
 
-**3)** **Initial calls of the Swiss Ephemeris**: Some problems were
+3.  **Initial calls of the Swiss Ephemeris**: Some problems were
 fixed which appeared when users did calculations without opening the
 Swiss, i.e. without calling the function **swe_set_ephe_path**().
 
@@ -8690,7 +6713,7 @@ Swiss, i.e. without calling the function **swe_set_ephe_path**().
 beginning of an application in order to make sure that the results are
 always consistent.
 
-**4)** **New function** **swe_get_orbital_elements()** calculates
+4.  **New function** **swe_get_orbital_elements()** calculates
 osculating Kepler elements and some other data for planets, Earth-Moon
 barycentre, Moon, and asteroids. The program swetest has a new option
 -orbel that displays these data.
@@ -8701,21 +6724,21 @@ ellipse. The program swetest, when called with the option -fq, displays
 a relative distance of a planet (0 is maximum distance, 1000 is minimum
 distance).
 
-5\) New house methods were added:
+5. New house methods were added:
 
-F - Carter poli-equatorial house system
+  F - Carter poli-equatorial house system
 
-D - Equal houses, where cusp 10 = MC
+  D - Equal houses, where cusp 10 = MC
 
-I - Sunshine
+  I - Sunshine
 
-N - Equal houses, where cusp 1 = 0 Aries
+  N - Equal houses, where cusp 1 = 0 Aries
 
-L - Pullen SD (sinusoidal delta) = ex Neo-Porphyry
+  L - Pullen SD (sinusoidal delta) = ex Neo-Porphyry
 
-Q - Pullen SR (sinusoidal ratio)
+  Q - Pullen SR (sinusoidal ratio)
 
-S - Sripati
+  S - Sripati
 
 Note:
 
@@ -8731,8 +6754,7 @@ Note:
 
 -   The same simplified algorithm has been implemented for the following
     house methods:
-
-Y APC, I Sunshine, L Pullen SD, Q Pullen SR, S Sripati
+    Y APC, I Sunshine, L Pullen SD, Q Pullen SR, S Sripati
 
 We hope to implement correct geometrical algorithms with time.
 
@@ -8745,7 +6767,7 @@ Minor bugfixes with houses:
 -   Krusinski houses had wrong (opposite) house positions with function
     swe_house_pos() at geographic latitude 0.0.
 
-6\) Sidereal zodiac defined relative to UT or TT:
+6. Sidereal zodiac defined relative to UT or TT:
 
 A problem found by Parashara Kumar with the ayanamsha functions: The
 function swe_get_ayanamsa() requires TT (ET), but some of the ayanamshas
@@ -8760,7 +6782,7 @@ Nothing changes for the user, except with user-defined ayanamshas. The
 t0 used in swe_set_sid_mode() is considered to be TT, except if the new
 bit flag SE_SIDBIT_USER_UT (1024) is or\'ed to the parameter sid_mode.
 
-**7)** **Ayanamshas:** Some ayanamshas were corrected:
+7. **Ayanamshas:** Some ayanamshas were corrected:
 
 -   The \"True Revati Ayanamsha\" (No. 28) (had the star at 0 Aries
     instead of 29°50\' Pisces.
@@ -8797,7 +6819,7 @@ In addition, the following ayanamshas have been added:
 More information about these ayanamshas is given in the General
 Documentation of the Swiss Ephemeris.
 
-**8)** **\_TRUE\_ ayanamshas algorithm** (True Chitra, True Revati, True
+8. **\_TRUE\_ ayanamshas algorithm** (True Chitra, True Revati, True
 Pushya, True Mula, Galactic/Gil Brand, Galactic/Wilhelm) always keep the
 intended longitude, with or without the following iflags: SEFLG_TRUEPOS,
 SEFLG_NOABERR, SEFLG_NOGDEFL.
@@ -8808,7 +6830,7 @@ the *apparent* position of the star was calculated, however not if the
 However, some people may find it more natural if the star's true
 position is exactly at 180°.
 
-9\) Occultation function swe_lun_occult_when_loc():
+9. Occultation function swe_lun_occult_when_loc():
 
 -   Function did not correctly detect daytime occurrence with partial
     occultations (a rare phenomenon).
@@ -8821,27 +6843,27 @@ of the events.
 -   Occultation of fixed stars have provided four contacts instead of
     two. Now there are only two contacts.
 
-**10) Magnitudes for Venus and Mercury** have been improved according to
+10. **Magnitudes for Venus and Mercury** have been improved according to
 Hilten 2005.
 
 The Swiss Ephemeris now provides the same magnitudes as JPL\'s Horizons
 System.
 
-**11) Heliacal functions**: A few bugs discovered by Victor Reijs have
+11. **Heliacal functions**: A few bugs discovered by Victor Reijs have
 been fixed, which however did not become apparent very often.
 
-**12) User-defined Delta T**: For archeoastronomy (as suggested by
+12. **User-defined Delta T**: For archeoastronomy (as suggested by
 Victor Reijs) a new function swe_set_delta_t\_userdef() was created that
 allows the user to set a particular value for delta t.
 
-**13) Function swe_nod_aps**(): a bug was fixed that occurred with
+13. **Function swe_nod_aps**(): a bug was fixed that occurred with
 calculations for the EMB.
 
-**14) New function swe_get_library_path**(): The function returns the
+14. **New function swe_get_library_path**(): The function returns the
 path in which the executable resides. If it is running with a DLL, then
 returns the path of the DLL.
 
-## Changes from version 2.03 to 2.04
+### Changes from version 2.03 to 2.04
 
 **The DLL of version 2.03 is not compatible with existing software.** In
 all past versions, the function names in the DLL were "decorated" (i.e.
@@ -8858,7 +6880,7 @@ decorated function names.
 The macro PASCAL_CONV, which had been misleading, was renamed as
 CALL_CONV.
 
-## Changes from version 2.02.01 to 2.03
+### Changes from version 2.02.01 to 2.03
 
 This is a minor release, mainly for those who wish a thread-safe Swiss
 Ephemeris. It was implemented according to the suggestions made by
@@ -8887,7 +6909,7 @@ Minor bug fixes:
 Note, other issues that have been discussed recently or even longer ago
 had to be postponed.
 
-## Changes from version 2.02 to 2.02.01
+### Changes from version 2.02 to 2.02.01
 
 -   For better backward-compatibility with 2.0x, the behavior of the old
     Delta T function swe_deltat() has been modified as follows:
@@ -8922,7 +6944,7 @@ you want.
 
 Thanks to Thomas Mack for some contributions to this release.
 
-## Changes from version 2.01 to 2.02
+### Changes from version 2.01 to 2.02
 
 Many thanks to all who have contributed bug reports, in particular
 Thomas Mack, Bernd Müller, and Anner van Hardenbroek.
@@ -9064,7 +7086,7 @@ Also, please note that if you calculate planets using swe_calc_ut(), and
 stars using swe_fixstar_ut(), you usually need not worry about Delta T
 and can avoid any such complications.
 
-## Changes from version 2.00 to 2.01
+### Changes from version 2.00 to 2.01
 
 Many thanks to those who reported bugs or made valuable suggestions. And
 I apologize if I forgot to mention some name.
@@ -9183,7 +7205,7 @@ future.
 
 180.0000000000000 could have been printed as \"179°59\'59.1000\".
 
-## Changes from version 1.80 to 2.00
+### Changes from version 1.80 to 2.00
 
 This is a major release which makes the Swiss Ephemeris fully compatible
 with JPL Ephemeris DE430/DE431.
@@ -9261,7 +7283,7 @@ Bug fixes:
 
 -   unused function swi_str_concat() was removed.
 
-## Changes from version 1.79 to 1.80
+### Changes from version 1.79 to 1.80
 
 -   Security update: improved some places in code where buffer overflow
     could occur (thanks to Paul Elliott)
@@ -9279,7 +7301,7 @@ Bug fixes:
 -   Bug fix in swe_lun_occult_when_loc(): correct handling of starting
     date (thanks to Olivier Beltrami)
 
-## Changes from version 1.78 to 1.79
+### Changes from version 1.78 to 1.79
 
 -   Improved precision in eclipse calculations: 2^nd^ and 3^rd^ contact
     with solar eclipses, penumbral and partial phases with lunar
@@ -9307,7 +7329,7 @@ Bug fixes:
     related to Suryasiddhanta and Aryabhata and are of historical
     interest.
 
-## Changes from version 1.77 to 1.78
+### Changes from version 1.77 to 1.78
 
 -   precession is now calculated according to Vondrák, Capitaine, and
     Wallace 2011.
@@ -9340,7 +7362,7 @@ Bug fixes:
     circle, the ascendant was wrong at times. The ascendant always has
     to be on the eastern part of the horizon.
 
-## Changes from version 1.76 to 1.77
+### Changes from version 1.76 to 1.77
 
 -   Delta T:
 
@@ -9393,7 +7415,7 @@ Fixed stars:
     attr\[8\] magnitude, attr\[9\] saros series number, attr\[10\] saros
     series member number
 
-## Changes from version 1.75 to 1.76
+### Changes from version 1.75 to 1.76
 
 New features:
 
@@ -9424,7 +7446,7 @@ Minor bug fixes:
 -   swe_sol_eclipse_when_glob(): totality times for eclipses jd2456776
     and jd2879654 fixed (tret\[4\], tret\[5\])
 
-## Changes from version 1.74 to version 1.75
+### Changes from version 1.74 to version 1.75
 
 -   The Swiss Ephemeris is now able to read ephemeris files of JPL
     ephemerides DE200 DE421. If JPL will not change the file structure
@@ -9438,7 +7460,7 @@ Minor bug fixes:
 
 -   Minor bug fixes.
 
-## Changes from version 1.73 to version 1.74
+### Changes from version 1.73 to version 1.74
 
 The Swiss Ephemeris is made available under a dual licensing system:
 
@@ -9460,7 +7482,7 @@ Minor bug fixes:
 -   The ephemeris of asteroid 65407 2002RP120 was updated. It had been
     wrong before 17 June 2008.
 
-## Changes from version 1.72 to version 1.73
+### Changes from version 1.72 to version 1.73
 
 New features:
 
@@ -9470,7 +7492,7 @@ New features:
 
 -   function swe_fixstars_mag() provides fixed stars magnitudes
 
-## Changes from version 1.71 to version 1.72
+### Changes from version 1.71 to version 1.72
 
 -   Delta T values for recent years were updated
 
@@ -9487,7 +7509,7 @@ have a negative height.
 -   Minor bugs in swe_lun_occult_when_glob() and swe_lun_eclipse_how()
     were fixed.
 
-## Changes from version 1.70.03 to version 1.71
+### Changes from version 1.70.03 to version 1.71
 
 In September 2006, Pluto was introduced to the minor planet catalogue
 and given the catalogue number 134340.
@@ -9504,7 +7526,7 @@ precision for 134340 Pluto.
 Swiss Ephemeris versions prior to 1.71 are not able to do any
 calculations for minor planet number 134340.
 
-## Changes from version 1.70.02 to version 1.70.03
+### Changes from version 1.70.02 to version 1.70.03
 
 Bug fixed (in swecl.c: swi_bias()): This bug sometimes resulted in a
 crash, if the DLL was used and the SEFLG_SPEED was not set. It seems
@@ -9513,7 +7535,7 @@ Swiss Ephemeris C code was directly linked to the application.
 
 Code to do with (#define NO_MOSHIER) was removed.
 
-## Changes from version 1.70.01 to version 1.70.02
+### Changes from version 1.70.01 to version 1.70.02
 
 Bug fixed in speed calculation for interpolated lunar apsides. With
 ephemeris positions close to 0 Aries, speed calculations were completely
@@ -9521,12 +7543,12 @@ wrong. E.g. swetest -pc -bj3670817.276275689 (speed = 1448042° !)
 
 Thanks, once more, to Thomas Mack, for testing the software so well.
 
-## Changes from version 1.70.00 to version 1.70.01
+### Changes from version 1.70.00 to version 1.70.01
 
 Bug fixed in speed calculation for interpolated lunar apsides. Bug could
 result in program crashes if the speed flag was set.
 
-## Changes from version 1.67 to version 1.70
+### Changes from version 1.67 to version 1.70
 
 Update of algorithms to IAU standard recommendations:
 
@@ -9573,472 +7595,14 @@ Bug fixes:
 -   Calculation of magnitude was wrong with asteroid numbers \< 10000
     (10-nov-05)
 
-## Changes from version 1.66 to version 1.67
+### Changes from version 1.66 to version 1.67
 
 Delta-T updated with new measured values for the years 2003 and 2004,
 and better estimates for 2005 and 2006.
 
 Bug fixed #define SE_NFICT_ELEM 15
 
-## Changes from version 1.65 to version 1.66
-
-New features:
-
-House system according to Morinus (system 'M').
-
-## Changes from version 1.64.01 to version 1.65.00
-
--   'long' variables were changed to 'INT32' for 64-bit compilers.
-
-## Changes from version 1.64 to version 1.64.01
-
--   Bug fixed in swe_fixstar(). Declinations between --1° and 0° were
-    wrongly taken as positive.
-
-Thanks to John Smith, Serbia, who found this bug.
-
--   Several minor bug fixes and cosmetic code improvements suggested by
-    Thomas Mack, Germany.
-
-swetest.c: options --po and --pn work now.
-
-Sweph.c: speed of mean node and mean lunar apogee were wrong in rare
-cases, near 0 Aries.
-
-## Changes from version 1.63 to version 1.64
-
-New features:
-
-1.  Gauquelin sectors:
-
--   swe_houses() etc. can be called with house system character 'G' to
-    calculate Gauquelin sector boundaries.
-
--   swe_house_pos() can be called with house system 'G' to calculate
-    sector positions of planets.
-
--   swe_gauquelin_sector() is new and calculates Gauquelin sector
-    positions with three methods: without ecl. latitude, with ecl.
-    latitude, from rising and setting.
-
-2.  Waldemath Black Moon elements have been added in seorbel.txt (with
-    thanks to Graham Dawson).
-
-3.  Occultations of the planets and fixed stars by the moon
-
--   swe_lun_occult_when_loc() calculates occultations for a given
-    geographic location
-
--   swe_lun_occult_when_glob() calculates occultations globally
-
-4.  Minor bug fixes in swe_fixstar() (Cartesian coordinates), solar
-    eclipse functions, swe_rise_trans()
-
-5.  sweclips.c integrated into swetest.c. Swetest now also calculates
-    eclipses, occultations, risings and settings.
-
-6.  new Delta T algorithms
-
-## Changes from version 1.62 to version 1.63
-
-New features:
-
-The option --house was added to swetest.c so that swetest.exe can now be
-used to compute complete horoscopes in textual mode.
-
-Bug fix: a minor bug in function swe_co_trans was fixed. It never had an
-effect.
-
-## Changes from version 1.61.03 to version 1.62
-
-New features:
-
-1.  Elements for hypothetical bodies that move around the Earth (e.g.
-    Selena/White Moon) can be added to the file seorbel.txt.
-
-2.  The software will be able to read asteroid files > 55535.
-
-Bug fixes:
-
-1.  error in geocentric planetary descending nodes fixed
-
-```{=html}
-<!-- -->
-```
-3.  swe_calc() now allows hypothetical planets beyond SE_FICT_OFFSET +
-    15
-
-4.  position of hypothetical planets slightly corrected (\< 0.01 arc
-    second)
-
-## Changes from version 1.61 to 1.61.01
-
-New features:
-
-1.  swe_houses and swe_houses_armc now supports the Alcabitus house
-    system. The function swe_house_pos() does not yet, because we wanted
-    to release quickly on user request.
-
-## Changes from version 1.60 to 1.61
-
-New features:
-
-1.  Function swe_rise_trans(): Risings and settings also for disc center
-    and without refraction
-
-```{=html}
-<!-- -->
-```
-5.  "topocentric" house system added to swe_houses() and other
-    house-related functions
-
-6.  Hypothetical planets (seorbel.txt), orbital elements with t terms
-    are possible now (e.g. for Vulcan according to L.H. Weston)
-
-## Changes from version 1.51 to 1.60
-
-New features:
-
-1.  Universal time functions swe_calc_ut(), swe_fixstar_ut(), etc.
-
-```{=html}
-<!-- -->
-```
-7.  Planetary nodes, perihelia, aphelia, focal points.
-
-8.  Risings, settings, and meridian transits of the Moon, planets,
-    asteroids, and stars.
-
-9.  Horizontal coordinates (azimuth and altitude).
-
-10. Refraction.
-
-11. User-definable orbital elements.
-
-12. Asteroid names can be updated by user.
-
-13. Hitherto missing \"Personal Sensitive Points\" according to M.
-    Munkasey.
-
-Minor bug fixes:
-
--   **Astrometric lunar positions** (not relevant for astrology;
-    swe_calc(tjd, SE_MOON, SEFLG_NOABERR)) had a maximum error of about
-    20 arc sec).
-
--   **Topocentric lunar positions** (not relevant for common astrology):
-    the ellipsoid shape of the Earth was not correctly implemented. This
-    resulted in an error of 2 - 3 arc seconds. The new precision is
-    0.2 - 0.3 arc seconds, corresponding to about 500 m in geographic
-    location. This is also the precision that Nasa\'s Horizon system
-    provides for the topocentric moon. The planets are much better, of
-    course.
-
--   **Solar eclipse functions***:* The correction of the topocentric
-    moon and another small bug fix lead to slightly different results of
-    the solar eclipse functions. The improvement is within a few time
-    seconds.
-
-## Changes from version 1.50 to 1.51
-
-Minor bug fixes:
-
--   J2000 coordinates for the lunar node and osculating apogee
-    corrected. This bug did not affect ordinary computations like
-    ecliptical or equatorial positions.
-
--   minor bugs in swetest.c corrected
-
--   sweclips.exe recompiled
-
--   trace DLLs recompiled
-
--   some VB5 declarations corrected
-
-## Changes from version 1.40 to 1.50
-
-New: SIDEREAL planetary and house position.
-
-The fixed star file fixstars.cat has been improved and enlarged by
-Valentin Abramov, Tartu, Estonia.
-
-Stars have been ordered by constellation. Many names and alternative
-spellings have been added.
-
-Minor bug fix in solar eclipse functions, sometimes relevant in
-border-line cases annular/total, partial/total.
-
-J2000 coordinates for the lunar nodes were redefined: In versions before
-1.50, the J2000 lunar nodes were the intersection points of the lunar
-orbit with the ecliptic of 2000. From 1.50 on, they are defined as the
-intersection points with the ecliptic of date, referred to the
-coordinate system of the ecliptic of J2000.
-
-## Changes from version 1.31 to 1.40
-
-New: Function for several planetary phenomena added
-
-Bug fix in swe_sol_ecl_when_glob(). The time for maximum eclipse at
-local apparent noon (tret\[1\]) was sometimes wrong. When called from
-VB5, the program crashed.
-
-## Changes from version 1.30 to 1.31
-
-New: Eclipse functions added.
-
-Minor bug fix: with previous versions, the function
-swe_get_planet_name() got the name wrong, if it was an asteroid name and
-consisted of two or more words (e.g. Van Gogh)
-
-## Changes from version 1.27 to 1.30
-
-The time range of the Swiss Ephemeris has been extended by numerical
-integration. The Swiss Ephemeris now covers the period **2 Jan 5401
-BCE** to **31 Dec 5399 CE**. To use the extended time range, the
-appropriate ephemeris files must be downloaded.
-
-In the JPL mode and the Moshier mode the time range remains unchanged at
-3000 BCE to 3000 CE.
-
-**IMPORTANT**
-
-Chiron's ephemeris is now restricted to the time range **650 CE -- 4650
-CE**; for explanations, see swisseph.doc.
-
-Outside this time range, Swiss Ephemeris returns an error code and a
-position value 0. You must handle this situation in your application.
-There is a similar restriction with Pholus (as with some other
-asteroids).
-
-## Changes from version 1.26 to 1.27
-
-The environment variable SE_EPHE_PATH is now always overriding the call
-to swe_set_ephe_path() if it is set and contains a value.
-
-Both the environment variable and the function argument can now contain
-a list of directory names where the ephemeris files are looked for.
-Before this release, they could contain only a single directory name.
-
-## Changes from version 1.25 to 1.26
-
--   The asteroid subdirectory ephe/asteroid has been split into
-    directories ast0, ast1,\... with 1000 asteroid files per directory.
-
--   source code is included with the distribution under the new
-    licensing model
-
--   the Placalc compatibility API (swepcalc.h) is now documented
-
--   There is a new function to compute the equation of time
-    swe_time_equ().
-
--   Improvements of ephemerides:
-
--   ATTENTION: Ephemeris of **16 Psyche** has been wrong so far ! By a
-    mysterious mistake it has been identical to 3 Juno.
-
--   Ephemerides of Ceres, Pallas, Vesta, Juno, Chiron and Pholus have
-    been reintegrated, with more recent orbital elements and parameters
-    (e.g. asteroid masses) that are more appropriate to Bowells database
-    of minor planets elements. The differences are small, though.
-
--   Note that the [CHIRON](#_Hlk478116834) ephemeris should not be used
-    before **700 A.D.**
-
--   Minor bug fix in computation of topocentric planet positions.
-    Nutation has not been correctly considered in observer's position.
-    This has led to an error of 1 milliarcsec with the planets and 0.1"
-    with the moon.
-
--   We have inactivated the coordinate transformation from **IERS** to
-    **FK5**, because there is still no generally accepted algorithm.
-    This results in a difference of a few milliarcsec from former
-    releases.
-
-## Changes from version 1.22 to 1.23
-
--   The topocentric flag now also works with the fixed stars. (The
-    effect of diurnal aberration is a few 0.1 arc second.)
-
--   Bug fix: The return position of swe_cotrans_sp() has been 0, when
-    the input distance was 0.
-
--   About 140 asteroids are on the CD.
-
-## Changes from version 1.21 to 1.22
-
--   Asteroid ephemerides have been moved to the ephe\\asteroid.
-
--   The DLL has been modified in such a way that it can find them there.
-
--   All asteroids with catalogue number below 90 are on the CD and a few
-    additional ones.
-
-## Changes from version 1.20 to 1.21
-
-Sample program and function declarations for [Delphi
-1.0](#_Hlk478117215) added.
-
-## Changes from version 1.11 to 1.20
-
-New:
-
--   A flag bit SEFLG_TOPOCTR allows to compute topocentric planet
-    positions. Before calling swe_calc(), call
-    [swe_set_topo](#_Hlk477841944).
-
--   [swe_house_pos](#_Hlk477862955) for computation of the house
-    position of a given planet. See description in SWISSEPH.DOC, Chapter
-    3.1 "Geocentric and topocentric positions". A bug has been fixed
-    that has sometimes turned up, when the JPL ephemeris was closed. (An
-    error in memory allocation and freeing.)
-
--   Bug fix: swe_cotrans() did not work in former versions.
-
-## Changes from version 1.10 to 1.11
-
-No bug fix, but two minor improvements:
-
--   A change of the ephemeris bits in parameter iflag of function
-    swe_calc() usually forces an implicit swe_close() operation. Inside
-    a loop, e.g. for drawing a graphical ephemeris, this can slow down a
-    program. Before this release, two calls with iflag = 0 and iflag =
-    SEFLG_SWIEPH where considered different, though in fact the same
-    ephemeris is used. Now these two calls are considered identical, and
-    swe_close() is not performed implicitly.\
-    For calls with the pseudo-planet-number ipl = SE_ECL_NUT, whose
-    result does not depend on the chosen ephemeris, the ephemeris bits
-    are ignored completely and swe_close() is never performed
-    implicitly.
-
--   In former versions, calls of the Moshier ephemeris with speed and
-    without speed flag have returned a very small difference in position
-    (0.01 arc second). The reason was that, for precise speed,
-    swe_calc() had to do an additional iteration in the light-time
-    calculation. The two calls now return identical position data.
-
-## Changes from version 1.04 to 1.10
-
--   A bug has been fixed that sometimes occurred in swe_calc() when the
-    user changed iflag between calls, e.g. the speed flag. The first
-    call for a planet which had been previously computed for the same
-    time, but a different iflag, could return incorrect results, if Sun,
-    Moon or Earth had been computed for a different time in between
-    these two calls.
-
--   More asteroids have been added in this release.
-
-## Changes from Version 1.03 to 1.04
-
--   A bug has been fixed that has sometimes lead to a floating point
-    exception when the speed flag was not specified and an unusual
-    sequence of planets was called.
-
--   Additional asteroid files have been included.
-
-**Attention**: Use these files only with the new DLL. Previous versions
-cannot deal with more than one additional asteroid besides the main
-asteroids. This error did not appear so far, because only 433 Eros was
-on our CD-ROM.
-
-## Changes from Version 1.02 to 1.03
-
--   swe_fixstar() has a better implementation for the search of a
-    specific star. If a number is given, the non-comment lines in the
-    file fixstars.cat are now counted from 1; they were counted from
-    zero in earlier releases.
-
--   swe_fixstar() now also computes heliocentric and barycentric fixed
-    stars positions. Former versions Swiss Ephemeris always returned
-    geocentric positions, even if the heliocentric or the barycentric
-    flag bit was set.
-
--   The Galactic Center has been included in fixstars.cat.
-
--   Two small bugs were fixed in the implementation of the barycentric
-    Sun and planets. Under unusual conditions, e.g. if the caller
-    switched from JPL to Swiss Ephemeris or vice-versa, an error of an
-    arc second appeared with the barycentric sun and 0.001 arc sec with
-    the barycentric planets. However, this did not touch normal
-    geocentric computations.
-
--   Some VB declarations in swedecl.txt contained errors and have been
-    fixed. The VB sample has been extended to show fixed star and house
-    calculation. This fix is only in 1.03 releases from 29-oct-97 or
-    later, not in the two 1.03 CDROMs we burned on 28-oct-97.
-
-## Changes from Version 1.01 to 1.02
-
--   The function swe_houses() has been changed.
-
--   A new function swe_houses_armc() has been added which can be used
-    when a sidereal time (armc) is given but no actual date is known,
-    e.g. for Composite charts.
-
--   The body numbers of the hypothetical bodies have been changed.
-
--   The development environment for the DLL and the sample programs have
-    been changed from Watcom 10.5 to Microsoft Visual C++ (5.0 and 1.5).
-    This was necessary because the Watcom compiler created LIB files
-    which were not compatible with Microsoft C. The LIB files created by
-    Visual C however are compatible with Watcom.
-
-## Changes from Version 1.00 to 1.01
-
-### Sidereal time
-
-The computation of the sidereal time is now much easier. The obliquity
-and nutation are now computed inside the function. The structure of the
-function swe_sidtime() has been changed as follows:
-
-/\* sidereal time \*/
-
-double swe_sidtime(double tjd_ut); /\* Julian day number, UT \*/
-
-The old functions swe_sidtime0() has been kept for backward
-compatibility.
-
-### Houses
-
-The calculation of houses has been simplified as well. Moreover, the
-Vertex has been added.
-
-The version **1.01** structure of swe_houses() is:
-
-int swe_houses(
-
-> double tjd_ut, /\* Julian day number, UT \*/
->
-> double geolat, /\* geographic latitude, in degrees \*/
->
-> double geolon, /\* geographic longitude, in degrees \*/
->
-> char hsys, /\* house method, one of the letters PKRCAV \*/
->
-> double \*asc, /\* address for ascendant \*/
->
-> double \*mc, /\* address for mc \*/
->
-> double \*armc, /\* address for armc \*/
->
-> double \*vertex, /\* address for vertex \*/
->
-> double \*cusps); /\* address for 13 doubles: 1 empty + 12 houses \*/
-
-**Note** also, that the indices of the cusps have changed:
-
-> cusp\[0\] = 0 (before: cusp\[0\] = house 1)
->
-> cusp\[1\] = house 1 (before: cusp\[1\] = house 2)
->
-> cusp\[2\] = house 2 (etc.)
-
-etc.
-
-### Ecliptic obliquity and nutation
-
-The new pseudo-body SE_ECL_NUT replaces the two separate pseudo-bodies
-SE_ECLIPTIC and SE_NUTATION in the function swe_calc().
+(earlier changes no longer documented)
 
 # What is missing ?
 
@@ -10060,382 +7624,78 @@ ephemeris module. We do not tell you:
 -   what the different calendars (Julian, Gregorian \...) mean and when
     they apply.
 
-# Index
 
------------------------------- ------------------------------------------------
-  **Flag**                       **Body, point**
+# Function overview
 
-  [DEFAULT EPHEMERIS             [ADDITIONAL ASTEROIDS](#additional-asteroids)
-  FLAG](#_Hlk477833574)          
+(incomplete)
 
-  [EPHEMERIS                     [FICTITIOUS PLANETS](#fictitious-planets)
-  FLAGS](#ephemeris-flags)       
+   **Function**   |   **Description**              
+ ---------------- | ------------------- 
+ swe_azalt | computes the horizontal coordinates (azimuth and altitude) computes either ecliptical or equatorial 
+ swe_azalt_rev | coordinates from azimuth and true altitude 
+ swe_calc | computes the positions of planets, asteroids, lunar nodes and apogees 
+ swe_calc_ut | modified version of swe_calc 
+ swe_close | releases most resources used by the Swiss Ephemeris 
+ swe_cotrans | coordinate transformation, from ecliptic to equator or vice-versa 
+ swe_cotrans_sp | coordinate transformation of position and speed, from ecliptic to equator or vice-versa 
+ date_conversion | time and checks whether a date is legal 
+ swe_degnorm | normalization of any degree number to the range 0 \... 360 
+ swe_deltat | computes the difference between Universal Time (UT, GMT) and Ephemeris time 
+ swe_fixstar | computes fixed stars
+ swe_fixstar_ut | modified version of swe_fixstar 
+ swe_get_ayanamsa | computes the [ayanamsha | 
+ swe_get_ayanamsa_ut |  modified version of swe_get_ayanamsa 
+ swe_get_planet_name |  finds a planetary or asteroid name by given number 
+ swe_get_tid_acc | gets the tidal acceleration 
+ swe_heliacal_ut | compute heliacal risings etc. of a planet or star 
+ swe_house_pos | compute the house position of a given body for a given ARMC 
+ swe_houses | calculates houses for a given date and geographic position 
+ swe_houses_armc | computes houses from ARMC (e.g. with the composite horoscope which has no date) 
+ swe_houses_ex | the same as swe_houses(). Has a parameter, which can be used, if sidereal house positions are wanted
+ swe_jdet_to_utc | converts JD (ET/TT) to UTC 
+ swe_jdut1_to_utc |  converts JD (UT1) to UTC 
+ swe_julday | conversion from day, month, year, time to Julian date 
+ swe_lat_to_lmt | converts local apparent time (LAT) to local mean time (LMT) 
+ swe_lmt_to_lat | converts local mean time (LMT) to local apparent time (LAT) 
+ swe_lun_eclipse_how |  computes the attributes of a lunar eclipse at a given time 
+ swe_lun_eclipse_when |  finds the next lunar eclipse 
+ swe_lun_eclipse_when_loc |  finds the next lunar eclipse observable from a geographic location 
+ swe_nod_aps | computes planetary nodes and apsides: perihelia, aphelia, second focal points of the orbital ellipses 
+ swe_nod_aps_ut | modified version of swe_nod_aps 
+ swe_pheno | computes phase, phase angle, elongation, apparent diameter, apparent magnitude 
+ swe_pheno_ut | modified version of swe_pheno 
+ swe_refrac | the true/apparent altitude conversion 
+ swe_refrac_extended |  the true/apparent altitude conversion 
+ swe_revjul | conversion from Julian date to day, month, year, time 
+ swe_rise_trans | computes the times of rising, setting and meridian transits 
+ swe_rise_trans_true_hor |  computes the times of rising, setting and meridian transits relative to true horizon 
+ swe_set_ephe_path |  set application's own ephemeris path 
+ swe_set_jpl_file |  sets JPL ephemeris directory path 
+ swe_set_sid_mode |  specifies the sidereal modes 
+ swe_set_tid_acc | sets tidal acceleration used in swe_deltat() 
+ swe_set_topo | sets what geographic position is to be used before topocentric planet positions for a certain birth place can be computed 
+ swe_sidtime | returns sidereal time on Julian day 
+ swe_sidtime0 | returns sidereal time on Julian day, obliquity and nutation 
+ swe_sol_eclipse_how |  calculates the solar eclipse attributes for a given geographic position and time 
+ swe_sol_eclipse_when_glob |  finds the next solar eclipse globally 
+ swe_sol_eclipse_when_loc |  finds the next solar eclipse for a given geographic position 
+ swe_sol_eclipse_where |  finds out the geographic position where an eclipse is central or maximal 
+ swe_time_equ | returns the difference between local apparent and local mean time 
+ swe_utc_time_zone |  converts UTC int time zone time 
+ swe_version | returns the version of the Swiss Ephemeris 
+ swe_vis_limit_mag |  calculates the magnitude for an object to be visible 
 
-  [FLAG                          [FIND A NAME](#_Hlk477834622)
-  BITS](#the-use-of-flag-bits)   
+**various functions**| **Description**
+--------------------| ---------
+swe_csnorm| normalize argument into interval \0..DEG360\ | 
+swe_cs2degstr| centiseconds -\> degrees string
+swe_cs2lonlatstr| centiseconds -\> longitude or latitude string
+swe_cs2timestr| centiseconds -\> time string
+swe_csroundsec| round second, but at 29.5959 always down
+swe_d2l| double to long with rounding, no overflow check
+swe_day_of_week| day of week Monday = 0, \... Sunday = 6
+swe_difcs2n| distance in centisecs p1 -- p2 normalized to \-180..180\ |
+swe_difcsn| distance in centisecs p1 -- p2 normalized to \0..360\ |
+swe_difdeg2n| distance in degrees
+swe_difdegn| distance in degrees
 
-  [SPEED FLAG](#speed-flag)      [HOW TO COMPUTE](#_Hlk477829414)
-
-                                 [SPECIAL BODY SE_ECL_NUT](#_Hlk477832844)
-    
-                                 [URANIAN PLANETS](#_Hlk477832209)
------------------------------- ------------------------------------------------
-
---------------------------------------------------------------------- ------------------------------------- ---------------------------------------------------
-  **Position**                                                          **What is ...**                       **How to ...**
-
-  [ASTROMETRIC](#astrometric-positions)                                 [AYANAMSHA](#_Hlk477842381)           [CHANGE THE TIDAL ACCELERATION](#_Hlt477860200)
-
-  [BARYCENTRIC](#barycentric-positions)                                 [DYNAMICAL TIME](#_Hlk477831317)      [COMPUTE SIDEREAL COMPOSITE HOUSE
-                                                                                                              CUSPS](#_Hlk477862421)
-
-  [EQUATORIAL](#_Hlk477833734)                                          [EPHEMERIS TIME](#_Hlk477830987)      [COMPUTE THE COMPOSITE ECLIPTIC
-                                                                                                              OBLIQUITY](#_Hlk477862144)
-
-  [HELIOCENTRIC](#heliocentric-positions)                               [EQUATION OF TIME](#_Hlk477840429)    [DRAW THE ECLIPSE PATH](#_Hlk477837327)
-
-  [J2000](#j2000-positions-and-positions-referred-to-other-equinoxes)   [JULIAN DAY](#_Hlk477330118)          [GET OBLIQUITY AND
-                                                                                                              NUTATION](#obliquity-and-nutation)
-
-  [POSITION AND SPEED](#position-and-speed-double-xx6)                  [UNIVERSAL TIME](#_Hlk477330492)      [GET THE UMBRA/PENUMBRA LIMITS](#_Hlk477837444)
-
-  [RADIANS/DEGREES](#_Hlk477833841)                                     [VERTEX/ANTIVERTEX](#_Hlk477861184)   [SEARCH FOR A STAR](#_Hlk477835264)
-
-  [SIDEREAL](#sidereal-positions)                                                                             [SWITCH THE COORDINATE
-                                                                                                              SYSTEMS](#coordinate-systems-degrees-and-radians)
-
-  [TOPOCENTRIC](#topocentric-positions)                                                                       [SWITCH TRUE/MEAN EQUINOX OF
-                                                                                                              DATE](#true-or-mean-equinox-of-date)
-
-  [TRUE GEOMETRICAL POSITION](#_Hlk477834072)                                                                 
-
-  [TRUE/APPARENT](#true-or-apparent-positions)                                                                
-
-  [X, Y, Z](#_Hlk477833826)                                                                                   
---------------------------------------------------------------------- ------------------------------------- ---------------------------------------------------
-
---------------------------------- --------------------------------------------
-  **Variables**                     **Errors**
-
-  [ARMC](#_Hlk477864589)            [ASTEROIDS](#_Hlk477863570)
-
-  [ASCMC\[\...\]](#_Hlk477862569)   [AVOIDING KOCH HOUSES](#_Hlk477864373)
-
-  [ATPRESS](#_Hlk477328180)         [EPHEMERIS PATH LENGTH](#_Hlk477864058)
-
-  [ATTEMP](#_Hlk477328191)          [ERRORS AND RETURN
-                                    VALUES](#error-handling-and-return-values)
-
-  [AYAN_T0](#_Hlk477842217)         [FATAL ERROR](#_Hlk477831866)
-
-  [CUSPS\[\...\]](#_Hlk477862529)   [HOUSE CUSPS BEYOND THE POLAR
-                                    CIRCLE](#_Hlk477864194)
-
-  [EPS](#_Hlk477862235)             [KOCH HOUSES LIMITATIONS](#_Hlk477864273)
-
-  [GREGFLAG](#_Hlk477329877)        [SPEEDS OF THE FIXED STARS](#_Hlk477863706)
-
-  [HSYS](#_Hlk477862719)            
-
-  [IFLAG](#_Hlk477831658)           
-
-  [IPL](#_Hlk477320729)             
-
-  [METHOD](#_Hlk477836150)          
-
-  [RSMI](#_Hlk477328165)            
-
-  [SID_MODE](#_Hlk477842160)        
-
-  [STAR](#_Hlk477835149)            
---------------------------------- --------------------------------------------
-
-+---+------------------+------------------------------------------------+
-|   | > **Function**   | > **Description**                              |
-+===+==================+================================================+
-| > | > [swe_azalt]    | > computes the horizontal coordinates (azimuth |
-|   | (#_Hlk477329169) | > and altitude)                                |
-| 1 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > computes either ecliptical or equatorial     |
-|   |  [swe_azalt_rev] | > coordinates from azimuth and true altitude   |
-| 2 | (#_Hlk477329516) |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_calc]     | > computes the positions of planets,           |
-|   | (#_Hlk477320293) | > asteroids, lunar nodes and apogees           |
-| 3 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_calc_ut]  | > modified version of swe_calc                 |
-|   | (#_Hlk477830210) |                                                |
-| 4 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_close]    | > releases most resources used by the Swiss    |
-|   | (#_Hlk477844023) | > Ephemeris                                    |
-| 5 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_cotrans]  | > coordinate transformation, from ecliptic to  |
-|   | (#_Hlk478111295) | > equator or vice-versa                        |
-| 6 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > coordinate transformation of position and    |
-|   | [swe_cotrans_sp] | > speed, from ecliptic to equator or           |
-| 7 | (#_Hlk478111388) | > vice-versa                                   |
-+---+------------------+------------------------------------------------+
-| > | > [swe_          | > computes a Julian day from year, month, day, |
-|   | date_conversion] | > time and checks whether a date is legal      |
-| 8 | (#_Hlk477331070) |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_degnorm]  | > normalization of any degree number to the    |
-|   | (#_Hlk478111399) | > range 0 \... 360                             |
-| 9 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_deltat]   | > computes the difference between Universal    |
-|   | (#_Hlk477840778) | > Time (UT, GMT) and Ephemeris time            |
-| 1 |                  |                                                |
-| 0 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_fixstar]  | > computes fixed stars                         |
-|   | (#_Hlk477325176) |                                                |
-| 1 |                  |                                                |
-| 1 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > modified version of swe_fixstar              |
-|   | [swe_fixstar_ut] |                                                |
-| 1 | (#_Hlk477325162) |                                                |
-| 2 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [s             | > computes the [ayanamsha](#_Hlk477842381)     |
-|   | we_get_ayanamsa] |                                                |
-| 1 | (#_Hlk477856443) |                                                |
-| 3 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_          | > modified version of swe_get_ayanamsa         |
-|   | get_ayanamsa_ut] |                                                |
-| 1 | (#_Hlk477856452) |                                                |
-| 4 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_          | > finds a planetary or asteroid name by given  |
-|   | get_planet_name] | > number                                       |
-| 1 | (#_Hlk477324852) |                                                |
-| 5 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [              | > gets the tidal acceleration                  |
-|   | swe_get_tid_acc] |                                                |
-| 1 | (#_Hlk477840792) |                                                |
-| 6 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [              | > compute heliacal risings etc. of a planet or |
-|   | swe_heliacal_ut] | > star                                         |
-| 1 | (#_Hlk477862955) |                                                |
-| 7 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > compute the house position of a given body   |
-|   |  [swe_house_pos] | > for a given ARMC                             |
-| 1 | (#_Hlk477862955) |                                                |
-| 8 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_houses]   | > calculates houses for a given date and       |
-|   | (#_Hlk477861239) | > geographic position                          |
-| 1 |                  |                                                |
-| 9 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [              | > computes houses from ARMC (e.g. with the     |
-|   | swe_houses_armc] | > composite horoscope which has no date)       |
-| 2 | (#_Hlk477861854) |                                                |
-| 0 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > the same as swe_houses(). Has a parameter,   |
-|   |  [swe_houses_ex] | > which can be used, if sidereal house         |
-| 2 | (#_Hlk477861861) | > positions are wanted                         |
-| 1 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [              | > converts JD (ET/TT) to UTC                   |
-|   | swe_jdet_to_utc] |                                                |
-| 2 | (#_Hlk477329697) |                                                |
-| 2 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [s             | > converts JD (UT1) to UTC                     |
-|   | we_jdut1_to_utc] |                                                |
-| 2 | (#_Hlk477329697) |                                                |
-| 3 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_julday]   | > conversion from day, month, year, time to    |
-|   | (#_Hlk477329697) | > Julian date                                  |
-| 2 |                  |                                                |
-| 4 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > converts local apparent time (LAT) to local  |
-|   | [swe_lat_to_lmt] | > mean time (LMT)                              |
-| 2 | (#_Hlk477326863) |                                                |
-| 5 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > converts local mean time (LMT) to local      |
-|   | [swe_lmt_to_lat] | > apparent time (LAT)                          |
-| 2 | (#_Hlk477326863) |                                                |
-| 6 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_          | > computes the attributes of a lunar eclipse   |
-|   | lun_eclipse_how] | > at a given time                              |
-| 2 | (#_Hlk477326863) |                                                |
-| 7 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_l         | > finds the next lunar eclipse                 |
-|   | un_eclipse_when] |                                                |
-| 2 | (#_Hlk477326807) |                                                |
-| 8 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_lun_e     | > finds the next lunar eclipse observable from |
-|   | clipse_when_loc] | > a geographic location                        |
-| 2 | (#_Hlk477326807) |                                                |
-| 9 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_nod_aps]  | > computes planetary nodes and apsides:        |
-|   | (#_Hlk477325759) | > perihelia, aphelia, second focal points of   |
-| 3 |                  | > the orbital ellipses                         |
-| 0 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > modified version of swe_nod_aps              |
-|   | [swe_nod_aps_ut] |                                                |
-| 3 | (#_Hlk477325741) |                                                |
-| 1 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_pheno]    | > computes phase, phase angle, elongation,     |
-|   | (#_Hlk477329016) | > apparent diameter, apparent magnitude        |
-| 3 |                  |                                                |
-| 2 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_pheno_ut] | > modified version of swe_pheno                |
-|   | (#_Hlk477328995) |                                                |
-| 3 |                  |                                                |
-| 3 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_refrac]   | > the true/apparent altitude conversion        |
-|   | (#_Hlk477329626) |                                                |
-| 3 |                  |                                                |
-| 4 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_          | > the true/apparent altitude conversion        |
-|   | refrac_extended] |                                                |
-| 3 | (#_Hlk477329626) |                                                |
-| 5 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_revjul]   | > conversion from Julian date to day, month,   |
-|   | (#_Hlk477839146) | > year, time                                   |
-| 3 |                  |                                                |
-| 6 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | >                | > computes the times of rising, setting and    |
-|   | [swe_rise_trans] | > meridian transits                            |
-| 3 | (#_Hlk477327296) |                                                |
-| 7 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_rise      | > computes the times of rising, setting and    |
-|   | _trans_true_hor] | > meridian transits relative to true horizon   |
-| 3 | (#_Hlk477327296) |                                                |
-| 8 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [sw            | > set application's own ephemeris path         |
-|   | e_set_ephe_path] |                                                |
-| 3 | (#_Hlk477843944) |                                                |
-| 9 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [s             | > sets JPL ephemeris directory path            |
-|   | we_set_jpl_file] |                                                |
-| 4 | (#_Hlk477844051) |                                                |
-| 0 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [s             | > specifies the [sidereal                      |
-|   | we_set_sid_mode] | > modes](#_Hlk477860745)                       |
-| 4 | (#_Hlk477842044) |                                                |
-| 1 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [              | > sets tidal acceleration used in swe_deltat() |
-|   | swe_set_tid_acc] |                                                |
-| 4 | (#_Hlk477840801) |                                                |
-| 2 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_set_topo] | > sets what geographic position is to be used  |
-|   | (#_Hlk477841944) | > before topocentric planet positions for a    |
-| 4 |                  | > certain birth place can be computed          |
-| 3 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_sidtime]  | > returns sidereal time on Julian day          |
-|   | (#_Hlk477864660) |                                                |
-| 4 |                  |                                                |
-| 4 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_sidtime0] | > returns sidereal time on Julian day,         |
-|   | (#_Hlk477864667) | > obliquity and nutation                       |
-| 4 |                  |                                                |
-| 5 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_          | > calculates the solar eclipse attributes for  |
-|   | sol_eclipse_how] | > a given geographic position and time         |
-| 4 | (#_Hlk477326421) |                                                |
-| 6 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_sol_ec    | > finds the next solar eclipse globally        |
-|   | lipse_when_glob] |                                                |
-| 4 | (#_Hlk477326215) |                                                |
-| 7 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_sol_e     | > finds the next solar eclipse for a given     |
-|   | clipse_when_loc] | > geographic position                          |
-| 4 | (#_Hlk477326105) |                                                |
-| 8 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_so        | > finds out the geographic position where an   |
-|   | l_eclipse_where] | > eclipse is central or maximal                |
-| 4 | (#_Hlk477326645) |                                                |
-| 9 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_time_equ] | > returns the difference between local         |
-|   | (#_Hlk477330339) | > apparent and local mean time                 |
-| 5 |                  |                                                |
-| 0 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [sw            | > converts UTC int time zone time              |
-|   | e_utc_time_zone] |                                                |
-| 5 | (#_Hlk477330339) |                                                |
-| 1 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [swe_version]  | > returns the version of the Swiss Ephemeris   |
-|   | (#_Hlk477330339) |                                                |
-| 5 |                  |                                                |
-| 2 |                  |                                                |
-+---+------------------+------------------------------------------------+
-| > | > [sw            | > calculates the magnitude for an object to be |
-|   | e_vis_limit_mag] | > visible                                      |
-| 5 | (#_Hlk477330339) |                                                |
-| 3 |                  |                                                |
-+---+------------------+------------------------------------------------+
-
------------------------------------- -----------------------------------------------------
-  **PlaCalc function**                 **Description**
-
-  [swe_csnorm](#_Hlk478111710)         normalize argument into interval \[0..DEG360\]
-
-  [swe_cs2degstr](#_Hlk478112081)      centiseconds -\> degrees string
-
-  [swe_cs2lonlatstr](#_Hlk478112074)   centiseconds -\> longitude or latitude string
-
-  [swe_cs2timestr](#_Hlk478112061)     centiseconds -\> time string
-
-  [swe_csroundsec](#_Hlk478111937)     round second, but at 29.5959 always down
-
-  [swe_d2l](#_Hlk478111943)            double to long with rounding, no overflow check
-
-  [swe_day_of_week](#_Hlk478111951)    day of week Monday = 0, \... Sunday = 6
-
-  [swe_difcs2n](#_Hlk478111918)        distance in centisecs p1 -- p2 normalized to
-                                       \[-180..180\]
-
-  [swe_difcsn](#_Hlk478111870)         distance in centisecs p1 -- p2 normalized to
-                                       \[0..360\]
-
-  [swe_difdeg2n](#_Hlk478111928)       distance in degrees
-
-  [swe_difdegn](#_Hlk478111884)        distance in degrees
------------------------------------- -----------------------------------------------------
-
-**End of SWEPHPRG.DOC**

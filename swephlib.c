@@ -3730,11 +3730,6 @@ char *swi_right_trim(char *s)
   return s;
 }
 
-size_t swi_strnlen(const char *str, size_t n) {
-  const char * stop = (char *)memchr(str, '\0', n);
-  return stop ? stop - str : n;
-}
-
 /*
  * The following C code (by Rob Warnock rpw3@sgi.com) does CRC-32 in
  * BigEndian/BigEndian byte/bit order. That is, the data is sent most

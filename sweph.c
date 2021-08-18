@@ -3009,6 +3009,7 @@ int32 CALL_CONV swe_get_ayanamsa_ex(double tjd_et, int32 iflag, double *daya, ch
       swi_nutation(tjd_et, iflag, nutp->nutlo);
     }
     *daya += nutp->nutlo[0] * RADTODEG;
+    retval &= (~SEFLG_NONUT); // must remove flag which was added internally in swi_get_ayanamsa_ex()
   }
   return retval;
 }

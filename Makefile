@@ -14,6 +14,7 @@
 # 
 
 CFLAGS =  -g -Wall -fPIC # for Linux and other gcc systems
+CFLAGS =  -O2 -Wall -fPIC # for Linux and other gcc systems
 OP=$(CFLAGS)  
 CC=cc	#for Linux
 
@@ -26,8 +27,15 @@ CC=cc	#for Linux
 SWEOBJ = swedate.o swehouse.o swejpl.o swemmoon.o swemplan.o sweph.o\
 	 swephlib.o swecl.o swehel.o
 
+# build swetest with SE linked in, using dynamically linked system libraries libc, libm, libdl.
 swetest: swetest.o libswe.a
 	$(CC) $(OP) -o swetest swetest.o -L. -lswe -lm -ldl
+
+# build a statically linked version of swetest. first find out where libc.a and libm.a reside,
+# and add this path with -L like below
+# a statically linked program will run on any Linux variant, independent of dynamic system libraries.
+swetests: swetest.o $(SWEOBJ)
+	$(CC)  $(OP) -static -L/usr/lib/x86_64-linux-gnu/ -o swetests swetest.o $(SWEOBJ) -lm -ldl
 
 swevents: swevents.o libswe.a
 	$(CC) $(OP) -o swevents swevents.o -L. -lswe -lm -ldl

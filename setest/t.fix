@@ -306,7 +306,7 @@
         ITERATION
           sid_mode:SE_SIDM_ALDEBARAN_15TAU
           jd:2314654
-          iephe:SEFLG_SWIEPH
+          iephe:SEFLG_SWIEPH,eval(SEFLG_SWIEPH+SEFLG_NONUT)
     TESTCASE
       #precision:1e-5
       precision:1e-8
@@ -315,6 +315,7 @@
         ITERATION
           sid_mode:SE_SIDM_ALDEBARAN_15TAU
           jd:2314654   
+          iephe:SEFLG_SWIEPH,eval(SEFLG_SWIEPH+SEFLG_NONUT)
           
     TESTCASE
       section-id:4

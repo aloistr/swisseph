@@ -745,6 +745,7 @@ static int iplctr = SE_SUN;
 static char spnam[AS_MAXCH], spnam2[AS_MAXCH], serr[AS_MAXCH];
 static char serr_save[AS_MAXCH], serr_warn[AS_MAXCH];
 static int gregflag = SE_GREG_CAL;
+static AS_BOOL gregflag_auto = TRUE;
 static int diff_mode = 0;
 static AS_BOOL use_dms = FALSE;
 static AS_BOOL universal_time = FALSE;
@@ -829,6 +830,7 @@ int main(int argc, char *argv[])
   double top_elev = 0;
   AS_BOOL have_geopos = FALSE;
   int ihsy = 'P';
+  int year_start = 0, mon_start = 1, day_start = 1;
   AS_BOOL do_houses = FALSE;
   char ephepath[AS_MAXCH];
   char fname[AS_MAXCH];
@@ -1381,11 +1383,17 @@ int main(int argc, char *argv[])
         gregflag = SE_JUL_CAL;
       else
         gregflag = SE_GREG_CAL;
-      if (strstr(sp, "jul") != NULL)
+      if (strstr(sp, "jul") != NULL) {
         gregflag = SE_JUL_CAL;
-      else if (strstr(sp, "greg") != NULL)
+	gregflag_auto = FALSE;
+      } else if (strstr(sp, "greg") != NULL) {
         gregflag = SE_GREG_CAL;
+	gregflag_auto = FALSE;
+      }
       swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
+      year_start = jyear;
+      mon_start = jmon;
+      day_start = jday;
     } else if (*sp == '+') {
       n = atoi(sp);
       if (n == 0) n = 1;
@@ -1398,14 +1406,20 @@ int main(int argc, char *argv[])
       swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
     } else {
       if (sscanf (sp, "%d%*c%d%*c%d", &jday,&jmon,&jyear) < 1) exit(1);
+      year_start = jyear;
+      mon_start = jmon;
+      day_start = jday;
       if ((int32) jyear * 10000L + (int32) jmon * 100L + (int32) jday < 15821015L) 
         gregflag = SE_JUL_CAL;
       else
         gregflag = SE_GREG_CAL;
-      if (strstr(sp, "jul") != NULL)
+      if (strstr(sp, "jul") != NULL) {
         gregflag = SE_JUL_CAL;
-      else if (strstr(sp, "greg") != NULL)
+	gregflag_auto = FALSE;
+      } else if (strstr(sp, "greg") != NULL) {
         gregflag = SE_GREG_CAL;
+	gregflag_auto = FALSE;
+      }
       jut = 0;
       if (universal_time_utc) {
 	int ih = 0, im = 0;
@@ -1435,24 +1449,30 @@ int main(int argc, char *argv[])
       if (step_in_seconds) 
         t = tjd + (istep -1) * tstep / 86400;
       if (step_in_years) {
-	swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
-	t = swe_julday(jyear + (istep - 1) * (int) tstep, jmon, jday, jut, gregflag);
+	t = swe_julday(year_start + (istep - 1) * (int) tstep, mon_start, day_start, jut, gregflag);
       }
       if (step_in_months) {
-	swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
-	jmon += (istep - 1) * (int) tstep;
-	jyear += (int) ((jmon - 1) / 12);
+	jmon = mon_start + (istep - 1) * (int) tstep;
+	jyear = year_start + (int) ((jmon - 1) / 12);
 	jmon = ((jmon - 1) % 12) + 1;
-	t = swe_julday(jyear, jmon, jday, jut, gregflag);
+	t = swe_julday(jyear, jmon, day_start, jut, gregflag);
       }
-      if (t < 2299160.5)
-        gregflag = SE_JUL_CAL;
-      else
-        gregflag = SE_GREG_CAL;
-      if (strstr(sdate, "jul") != NULL)
-        gregflag = SE_JUL_CAL;
-      else if (strstr(sdate, "greg") != NULL)
-        gregflag = SE_GREG_CAL;
+      if (gregflag_auto) {
+	if (t < 2299160.5)
+	  gregflag = SE_JUL_CAL;
+	else
+	  gregflag = SE_GREG_CAL;
+      }
+      // must repeat because gregflag may have changed
+      if (step_in_years) {
+	t = swe_julday(year_start + (istep - 1) * (int) tstep, mon_start, day_start, jut, gregflag);
+      }
+      if (step_in_months) {
+	jmon = mon_start + (istep - 1) * (int) tstep;
+	jyear = year_start + (int) ((jmon - 1) / 12);
+	jmon = ((jmon - 1) % 12) + 1;
+	t = swe_julday(jyear, jmon, day_start, jut, gregflag);
+      }
       delt = swe_deltat_ex(t, iflag, serr);
       if (!universal_time) {
 	delt = swe_deltat_ex(t - delt, iflag, serr);
@@ -1468,7 +1488,7 @@ int main(int argc, char *argv[])
 	  printf("\npath: %s", sout);
 	}
 #endif
-        printf("\ndate (dmy) %d.%d.%d", jday, jmon, jyear);
+        printf("\ndate (dmy) %d.%d.%04d", jday, jmon, jyear);
         if (gregflag)
           printf(" greg.");
         else
@@ -1839,8 +1859,9 @@ int main(int argc, char *argv[])
 	  for (i = 0; i < 6; i++) {
 	    xsv[i] = x[i];
 	  }
-	  if (hpos_meth == 1)
+	  if (hpos_meth == 1) {
 	    xsv[1] = 0;
+	  }
 	  if (ipl == SE_FIXSTAR) {
 	    strcpy(star2, star);
 	  } else {
@@ -2147,7 +2168,8 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
 	  break;
 	}
         if (is_label) { printf("date    "); break; }
-	printf("%02d.%02d.%d", jday, jmon, jyear);
+	printf("%02d.%02d.%04d", jday, jmon, jyear);
+	if (gregflag == SE_JUL_CAL) printf("j");
 	if (jut != 0 || step_in_minutes || step_in_seconds ) {
 	  int h, m, s;
 	  s = (int) (jut * 3600 + 0.5);

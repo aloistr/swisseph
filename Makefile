@@ -1,4 +1,3 @@
-# $Header$
 # this Makefile creates a SwissEph library and a swetest sample on 64-bit
 # Redhat Enterprise Linux RHEL 7.
 

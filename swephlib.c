@@ -3976,6 +3976,8 @@ static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32
   *isec = (int32) (ddeg * 3600);
   if (!(roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN | SE_SPLIT_DEG_ROUND_SEC))) {
     *dsecfr = ddeg * 3600 - *isec;
+  } else {
+    *dsecfr = *isec;  // is rounded, no fractional seconds
   }
 }  /* end split_deg_nakshtra */
 
@@ -4047,6 +4049,8 @@ void CALL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *i
   *isec = (int32) (ddeg * 3600);
   if (!(roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN | SE_SPLIT_DEG_ROUND_SEC))) {
     *dsecfr = ddeg * 3600 - *isec;
+  } else {
+    *dsecfr = *isec;  // is rounded, no fractional seconds
   }
 }  /* end split_deg */
 

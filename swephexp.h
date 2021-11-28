@@ -743,10 +743,10 @@ ext_def(int32) swe_fixstar2_mag(char *star, double *mag, char *serr);
 ext_def( void ) swe_close(void);
 
 /* set directory path of ephemeris files */
-ext_def( void ) swe_set_ephe_path(char *path);
+ext_def( void ) swe_set_ephe_path(const char *path);
 
 /* set file name of JPL file */
-ext_def( void ) swe_set_jpl_file(char *fname);
+ext_def( void ) swe_set_jpl_file(const char *fname);
 
 /* get planet name */
 ext_def( char *) swe_get_planet_name(int ipl, char *spname);
@@ -837,7 +837,7 @@ ext_def( int ) swe_houses_armc_ex2(
 ext_def(double) swe_house_pos(
 	double armc, double geolat, double eps, int hsys, double *xpin, char *serr);
 
-ext_def(char *) swe_house_name(int hsys);
+ext_def(const char *) swe_house_name(int hsys);
 
 
 

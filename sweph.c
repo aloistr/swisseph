@@ -1355,7 +1355,7 @@ void CALL_CONV swe_close(void)
  * won't return planet positions previously computed from other
  * ephemerides
  */
-void CALL_CONV swe_set_ephe_path(char *path) 
+void CALL_CONV swe_set_ephe_path(const char *path) 
 {
   int i, iflag;
   char s[AS_MAXCH];
@@ -1522,22 +1522,28 @@ void load_dpsi_deps(void)
  * won't return planet positions previously computed from other
  * ephemerides
  */
-void CALL_CONV swe_set_jpl_file(char *fname)
+void CALL_CONV swe_set_jpl_file(const char *fname)
 {
-  char *sp;
+  char *sp, s[AS_MAXCH];
   int retc;
   double ss[3];
   /* close all open files and delete all planetary data */
   swi_close_keep_topo_etc();
   swi_init_swed_if_start();
-  /* if path is contained in fnam, it is filled into the path variable */
-  sp = strrchr(fname, (int) *DIR_GLUE);
+  /* if path is contained in fname, it is filled into the path variable */
+  if (strlen(fname) >= AS_MAXCH) {
+     strncpy(s, fname, AS_MAXCH - 1);
+     s[AS_MAXCH - 1] = '\0';
+  } else {
+    strcpy(s, fname);
+  }
+  sp = strrchr(s, (int) *DIR_GLUE);
   if (sp == NULL)
-    sp = fname;
+    sp = s;
   else 
     sp = sp + 1;
   if (strlen(sp) >= AS_MAXCH)
-    sp[AS_MAXCH] = '\0';
+    sp[AS_MAXCH - 1] = '\0';
   strcpy(swed.jplfnam, sp);
   /* open ephemeris */
   retc = open_jpl_file(ss, swed.jplfnam, swed.ephepath, NULL);

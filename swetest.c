@@ -1563,7 +1563,7 @@ int main(int argc, char *argv[])
 	}
         printf("\n");
 	if (do_houses) {
-	  char *shsy = swe_house_name(ihsy);
+	  const char *shsy = swe_house_name(ihsy);
 	  if (!universal_time) {
 	    do_houses = FALSE;
 	    printf("option -house requires option -ut for Universal Time\n");
@@ -1933,7 +1933,7 @@ int main(int argc, char *argv[])
 	// when swe_houses_ex() fails (e.g. with Placidus, Gauquelin, Makranski),
 	// it always returns Porphyry cusps instead
         if (iflgret < 0) { 
-	  char *shsy = swe_house_name(ihsy);
+	  const char *shsy = swe_house_name(ihsy);
 	  sprintf(serr, "House method %s failed, Porphyry calculated instead", shsy); 
           if (strcmp(serr, serr_save) != 0 ) {
             fputs("error: ", stdout);

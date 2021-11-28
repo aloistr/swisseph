@@ -1532,7 +1532,12 @@ void CALL_CONV swe_set_jpl_file(const char *fname)
   swi_close_keep_topo_etc();
   swi_init_swed_if_start();
   /* if path is contained in fname, it is filled into the path variable */
-  strcpy(s, fname);
+  if (strlen(fname) >= AS_MAXCH) {
+    strncpy(s, fname, AS_MAXCH - 1);
+    s[AS_MAXCH - 1] = '\0';
+  } else {
+    strcpy(s, fname);
+  }
   sp = strrchr(s, (int) *DIR_GLUE);
   if (sp == NULL)
     sp = s;

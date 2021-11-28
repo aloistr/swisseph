@@ -653,6 +653,10 @@ int CALL_CONV swe_houses_armc_ex2(
       h.sundec = ascmc[9];
       saved_sundec = h.sundec;
     }
+    if (h.sundec < -24 || h.sundec > 24) {
+      sprintf(serr, "House system I (Sunshine) needs valid Sun declination in ascmc[9]");
+      return ERR;
+    }
   }
   retc = CalcH(armc, geolat, eps, (char)hsys, &h);
   cusp[0] = 0;

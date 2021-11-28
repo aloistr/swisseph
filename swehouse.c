@@ -820,7 +820,7 @@ static double apc_sector(int n, double ph, double e, double az)
    return dret;
 }
 
-char *CALL_CONV swe_house_name(int hsys)
+const char *CALL_CONV swe_house_name(int hsys)
 {
   int h = hsys;
   if (h != 'i') h = toupper(h);

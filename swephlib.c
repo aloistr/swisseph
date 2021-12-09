@@ -3764,8 +3764,8 @@ uint32 swi_crc32(unsigned char *buf, int len)
 
 static void init_crc32(void)
 {
-  int32 i, j;
-  uint32 c;
+  int32  j;
+  uint32 c, i;
   for (i = 0; i < 256; ++i) {
     for (c = i << 24, j = 8; j > 0; --j)
       c = c & 0x80000000 ? (c << 1) ^ CRC32_POLY : (c << 1);

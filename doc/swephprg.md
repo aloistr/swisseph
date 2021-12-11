@@ -1,7 +1,7 @@
 <<<<<<< HEAD
 ---
 :xtitle: Programming Interface to the Swiss Ephemeris
-date: 14-aug-21
+date: 11-dec-21
 version: 2.10.02
 output:
   html_document:

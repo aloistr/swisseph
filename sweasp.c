@@ -349,9 +349,6 @@ int main(int argc, char *argv[])
   static double xxx[NPLX], xsv[NPLX], xs2[NPLX];
                        /* static to init with 0 */
   double ar, sinp;
-#if 0
-  double eps, nut;
-#endif
   char ephepath[AS_MAXCH];
   char fname[AS_MAXCH];
   char sdate[AS_MAXCH];
@@ -690,14 +687,16 @@ int main(int argc, char *argv[])
       if ((sp2 = strchr(sp, ',')) != NULL) 
         *sp2 = '.';
       sscanf(sp+1,"%lf", &tjd);
-      if (tjd < 2299160.5)
+      if (tjd < 2299160.5) {
         gregflag = SE_JUL_CAL;
-      else
+      } else {
         gregflag = SE_GREG_CAL;
-      if (strstr(sp, "jul") != NULL)
+      }
+      if (strstr(sp, "jul") != NULL) {
         gregflag = SE_JUL_CAL;
-      else if (strstr(sp, "greg") != NULL)
+      } else if (strstr(sp, "greg") != NULL) {
         gregflag = SE_GREG_CAL;
+      }
       swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
     } else if (*sp == '+') {
       n = atoi(sp);
@@ -711,36 +710,41 @@ int main(int argc, char *argv[])
       swe_revjul(tjd, gregflag, &jyear, &jmon, &jday, &jut);
     } else {
       if (sscanf (sp, "%d%*c%d%*c%d", &jday,&jmon,&jyear) < 1) exit(1);
-      if ((long) jyear * 10000L + (long) jmon * 100L + (long) jday < 15821015L) 
+      if ((long) jyear * 10000L + (long) jmon * 100L + (long) jday < 15821015L)  {
         gregflag = SE_JUL_CAL;
-      else
+      } else {
         gregflag = SE_GREG_CAL;
-      if (strstr(sp, "jul") != NULL)
+      }
+      if (strstr(sp, "jul") != NULL) {
         gregflag = SE_JUL_CAL;
-      else if (strstr(sp, "greg") != NULL)
+      } else if (strstr(sp, "greg") != NULL) {
         gregflag = SE_GREG_CAL;
+      }
       jut = 0;
       tjd = swe_julday(jyear,jmon,jday,jut,gregflag);        
       tjd += thour / 24;
     }
     line_count = 0;
     for (t = tjd, istep = 1; istep <= nstep; t += tstep, istep++) {
-      if (t < 2299160.5)
+      if (t < 2299160.5) {
         gregflag = SE_JUL_CAL;
-      else
+      } else {
         gregflag = SE_GREG_CAL;
-      if (strstr(spsave, "jul") != NULL)
+      }
+      if (strstr(spsave, "jul") != NULL) {
         gregflag = SE_JUL_CAL;
-      else if (strstr(spsave, "greg") != NULL)
+      } else if (strstr(spsave, "greg") != NULL) {
         gregflag = SE_GREG_CAL;
+      }
       swe_revjul(t, gregflag, &jyear, &jmon, &jday, &jut);
       if (with_header) {
         sprintf(sout, "\ndate (dmy) %d.%d.%d", jday, jmon, jyear);
         do_printf(sout);
-        if (gregflag)
+        if (gregflag) {
           do_printf(" greg.");
-        else
+	} else {
           do_printf(" jul.");
+	}
         t2 = t + 0.5;
         t2 = (t2 - (long int) t2) * 24;
         sprintf(sout, "  % 2d:", (int) t2); 
@@ -748,10 +752,11 @@ int main(int argc, char *argv[])
         t2 = (t2 - (long int) t2) * 60 + 0.5;
         sprintf(sout, "%02d", (int) t2); 
         do_printf(sout);
-        if (universal_time)
+        if (universal_time) {
           do_printf(" UT");
-        else
+	} else {
           do_printf(" ET");
+	}
       }
       delt = swe_deltat(t);
       if (universal_time) {
@@ -786,11 +791,11 @@ swi_precess(x, te, iflag, 1);
         ipl = letter_to_ipl((int) *psp);
         if (with_header && !with_header_always)
           with_header = FALSE;
-        if (*psp == 'f')
+        if (*psp == 'f') {
           ipl = SE_FIXSTAR;
-        else if (*psp == 's')
+        } else if (*psp == 's') {
           ipl = atoi(sastno) + 10000;
-#if 1
+	}
         if (plan_phenomena) {
           double attr[20];
           if (with_header && psp == plsel)
@@ -807,8 +812,6 @@ swi_precess(x, te, iflag, 1);
           do_printf(sout);
           continue;
         }
-#endif
-#if 1
         if (iflag & SEFLG_HELCTR) {
 			if (ipl == SE_SUN 
                 || ipl == SE_MEAN_NODE || ipl == SE_TRUE_NODE 
@@ -826,7 +829,6 @@ swi_precess(x, te, iflag, 1);
           } else if (ipl == SE_EARTH)
             continue;
 		}
-#endif
         /* ecliptic position */
 	if (iflag_f >=0)
 	  iflag = iflag_f;
@@ -835,10 +837,6 @@ swi_precess(x, te, iflag, 1);
           strcpy(se_pname, star);
         } else {
           iflgret = do_calc(te, ipl, iflag, x, serr);
-#if 0
-  x[0] = 325.3; x[1] = -7.2;
-  swi_cotr_galactic(t_ut, x, x, 2);
-#endif
 	  if (iflgret != ERR)
 	    swe_get_planet_name(ipl, se_pname);
         }
@@ -904,17 +902,6 @@ swi_precess(x, te, iflag, 1);
 	  x[2] = x[3] = 0;
 	  strcpy(se_pname, "Nutation");
         }
-#if 0
-        if (*serr != '\0')
-          if (ipl == SE_SUN || ipl == SE_MOON
-                || ipl == SE_MEAN_NODE || ipl == SE_TRUE_NODE
-                || ipl == SE_CHIRON || ipl == SE_CUPIDO 
-                || ipl >= SE_AST_OFFSET || ipl == SE_FIXSTAR) {
-            sprintf(sout, "%ld: %s", iflgret, serr);
-            do_printf(sout);
-            do_printf("\n");
-          }
-#else   
         if (iflgret < 0) { 
           if (strcmp(serr, serr_save) != 0 
             && (ipl == SE_SUN || ipl == SE_MOON
@@ -928,7 +915,6 @@ swi_precess(x, te, iflag, 1);
         } else if (*serr != '\0' && *serr_warn == '\0') {
           strcpy(serr_warn, serr);
         }
-#endif
         if (diff_mode) {
           double x3[6], x4[6];
           iflgret = do_calc(te, ipldiff, iflag, x2, serr);
@@ -956,10 +942,11 @@ swi_precess(x, te, iflag, 1);
         /* equator position */
         if (strpbrk(fmt, "aADdQ") != NULL) {
           iflag2 = iflag | SEFLG_EQUATORIAL;
-          if (ipl == SE_FIXSTAR)
+          if (ipl == SE_FIXSTAR) {
             iflgret = do_fixstar(star, te, iflag2, xequ, serr);
-          else
+	  } else {
             iflgret = do_calc(te, ipl, iflag2, xequ, serr);
+	  }
           if (diff_mode) {
             iflgret = do_calc(te, ipldiff, iflag2, x2, serr);
             for (i = 0; i < 6; i++) 
@@ -971,10 +958,11 @@ swi_precess(x, te, iflag, 1);
         /* ecliptic cartesian position */
         if (strpbrk(fmt, "XU") != NULL) {
           iflag2 = iflag | SEFLG_XYZ;
-          if (ipl == SE_FIXSTAR)
+          if (ipl == SE_FIXSTAR) {
             iflgret = do_fixstar(star, te, iflag2, xcart, serr);
-          else
+	  } else {
             iflgret = do_calc(te, ipl, iflag2, xcart, serr);
+	  }
           if (diff_mode) {
             iflgret = do_calc(te, ipldiff, iflag2, x2, serr);
             for (i = 0; i < 6; i++) 
@@ -984,10 +972,11 @@ swi_precess(x, te, iflag, 1);
         /* equator cartesian position */
         if (strpbrk(fmt, "xu") != NULL) {
           iflag2 = iflag | SEFLG_XYZ | SEFLG_EQUATORIAL;
-          if (ipl == SE_FIXSTAR)
+          if (ipl == SE_FIXSTAR) {
             iflgret = do_fixstar(star, te, iflag2, xcartq, serr);
-          else
+	  } else {
             iflgret = do_calc(te, ipl, iflag2, xcartq, serr);
+	  }
           if (diff_mode) {
             iflgret = do_calc(te, ipldiff, iflag2, x2, serr);
             for (i = 0; i < 6; i++) 
@@ -1022,17 +1011,19 @@ swi_precess(x, te, iflag, 1);
               do_printf(sout);
               break;
           case 'p':
-              if (diff_mode)
+              if (diff_mode) {
                 sprintf(sout, "%d-%d", ipl, ipldiff);
-              else
+	      } else {
                 sprintf(sout, "%d", ipl);
+	      }
               do_printf(sout);
               break;
           case 'P':
-              if (diff_mode)
+              if (diff_mode) {
                 sprintf(sout, "%.3s-%.3s", spnam, spnam2);
-              else
+	      } else {
                 sprintf(sout, "%-15s", spnam);
+	      }
               do_printf(sout);
               break;
           case 'J':
@@ -1101,10 +1092,11 @@ swi_precess(x, te, iflag, 1);
                       break;
                     case 'U':   /* speed! */
                     case 'X':   /* speed! */
-                      if (*sp =='U') 
+                      if (*sp =='U') {
                         ar = sqrt(square_sum(xcart));
-                      else 
+		      } else {
                         ar = 1;
+		      }
                       sprintf(sout, "%# 14.9f%s", xcart[3]/ar, gap);
                       do_printf(sout);
                       sprintf(sout, "%# 14.9f%s", xcart[4]/ar, gap);
@@ -1114,10 +1106,11 @@ swi_precess(x, te, iflag, 1);
                       break;
                     case 'u':   /* speed! */
                     case 'x':   /* speed! */
-                      if (*sp =='u') 
+                      if (*sp =='u') {
                         ar = sqrt(square_sum(xcartq));
-                      else 
+		      } else {
                         ar = 1;
+		      }
                       sprintf(sout, "%# 14.9f%s", xcartq[3]/ar, gap);
                       do_printf(sout);
                       sprintf(sout, "%# 14.9f%s", xcartq[4]/ar, gap);
@@ -1173,10 +1166,11 @@ swi_precess(x, te, iflag, 1);
               break;
           case 'U':
           case 'X':
-              if (*sp =='U') 
+              if (*sp =='U') {
                 ar = sqrt(square_sum(xcart));
-              else 
+	      } else {
                 ar = 1;
+	      }
               sprintf(sout, "%# 14.9f%s", xcart[0]/ar, gap);
               do_printf(sout);
               sprintf(sout, "%# 14.9f%s", xcart[1]/ar, gap);
@@ -1186,10 +1180,11 @@ swi_precess(x, te, iflag, 1);
               break;
           case 'u':
           case 'x':
-              if (*sp =='u') 
+              if (*sp =='u') {
                 ar = sqrt(square_sum(xcartq));
-              else 
+	      } else {
                 ar = 1;
+	      }
               sprintf(sout, "%# 14.9f%s", xcartq[0]/ar, gap);
               do_printf(sout);
               sprintf(sout, "%# 14.9f%s", xcartq[1]/ar, gap);
@@ -1354,8 +1349,11 @@ swi_precess(x, te, iflag, 1);
               (int (*)(const void *, const void *))(pos_compare));
             dmax = 0;
             for (i = 0; i < n; i++) {
-              if (i == 0) d = swe_degnorm(xxs[i] - xxs[n-1]);
-              else d = swe_degnorm(xxs[i] - xxs[i-1]);
+              if (i == 0) {
+	        d = swe_degnorm(xxs[i] - xxs[n-1]);
+	      } else {
+	        d = swe_degnorm(xxs[i] - xxs[i-1]);
+	      }
               d = fabs(d - ang);
               if (d > maxorb) is_poly = FALSE;
               if (d > dmax)
@@ -1419,16 +1417,17 @@ swi_precess(x, te, iflag, 1);
                 strcpy(aspstr, "c");
               if (strlen(aspstr) > 2) {
                 char c = '\0';
-                if (strchr(aspstr, 'o') != NULL) 
+                if (strchr(aspstr, 'o') != NULL) {
                   c = 'o';
-                else if (strchr(aspstr, 'q') != NULL) 
+                } else if (strchr(aspstr, 'q') != NULL) {
                   c = 'q';
-                else if (strchr(aspstr, 't') != NULL) 
+                } else if (strchr(aspstr, 't') != NULL) {
                   c = 't';
-                else if (strchr(aspstr, 's') != NULL) 
+                } else if (strchr(aspstr, 's') != NULL) {
                   c = 's';
-                else if (strchr(aspstr, 'i') != NULL) 
+                } else if (strchr(aspstr, 'i') != NULL) {
                   c = 'i';
+		}
                 if (c != '\0') {
                   while(*aspstr != c) {
                     sprintf(aspstr + strlen(aspstr), "%c", *aspstr);
@@ -1484,19 +1483,10 @@ swi_precess(x, te, iflag, 1);
               swe_get_planet_name(ipl, s);
               sprintf(splanout + strlen(splanout), "%c%c", *s, *(s+1));
             }
-#if 0
-            *spl = '\0';
-	    for (pl = 0; pl < n; pl++) 
-              for (sp = spl; *sp != '\0'; sp++)
-#endif
             dmax2 = sqrt((xxe[1] - xxe[0]) * (xxe[1] - xxe[0]) + (xxeb[1] - xxeb[0]) * (xxeb[1] - xxeb[0]));
 			printf("%02d.%02d.%d %s %14s %7s %.2f  ", 
                 da, mo, ye, hms(jut,0), splanout, aspstr, dmax);
 			//printf(sretdir); printf(" ");
-#if 0
-	    for (pl = 0; pl < n; pl++) 
-	      printf("%f ", xxe[pl]);
-#endif
             printf(styp);
 	    printf("\n");
 	    fflush(stdout);
@@ -1509,27 +1499,6 @@ swi_precess(x, te, iflag, 1);
             printf("%f %f\n", t, val);
 	}
       }
-#if 0
-		double d = 360.0 / n, a, b, sum = 0, sum2 = 0;
-		double summax = 2 * (n-2) * d + 720;
-        qsort((void *) xxx, (size_t) n, sizeof(double),
-        (int (*)(const void *, const void *))(pos_compare));
-        for (pl = 0; pl < n; pl++) {
-          i = pl - 1;
-          if (i < 0) i = n-1;
-          j = pl + 1;
-          if (j == n) j = 0;
-          a = xxx[pl] - xxx[i];
-          if (a < 0) a = a + 360;
-          a = fabs(a - d);
-          b = xxx[j] - xxx[pl];
-          if (b < 0) b = b + 360;
-          b = fabs(b - d);
-          sum = sum + a + b;
-        }
-        /*printf("%f, %f, %f %f %f %f %f %f\n", t, sum/summax, xxx[0], xxx[1], xxx[2], xxx[3], sum, summax);*/
-        printf("%f %f\n", t, sum/summax);
-#endif
       }
     }           /* for tjd */
     if (*serr_warn != '\0') {
@@ -1572,13 +1541,6 @@ static double find_max(double tjd, double tstep, char *plsel,
     toutsv = tout;
     tout += dt + dtf;
   }
-#if 0
-    if (tout > tjd + fabs(tstep) || tout < tjd - fabs(tstep)) {
-        printf("error tstep too large %s %f %f %d\n", plsel, tjd, harm, recursive);
-        printf("  %.9f %.9f %.9f %d\n", toutsv-dt, tout, toutsv+dt, ii);
-        printf("  %.9f %.9f %.9f\n", y[0], y[1], y[2]);
-    }
-#endif
   for (sp = plsel, j = 0; *sp != '\0'; sp++, j++) {
     ipl = letter_to_ipl((int) *sp);
     if (*sp == 's')
@@ -1591,10 +1553,8 @@ static double find_max(double tjd, double tstep, char *plsel,
 
 static int pos_compare(double *a1, double *a2)
 {
-  if (*a1>= *a2)
-	return 1;
-  else 
-	return -1;
+  if (*a1>= *a2) return 1;
+  return -1;
 }
 
 static char *dms(double x, long iflag)
@@ -1629,20 +1589,22 @@ static char *dms(double x, long iflag)
   x -= kdeg;
   x *= 60;
   kmin = (long) x;
-  if ((iflag & BIT_ZODIAC) && (iflag & BIT_ROUND_MIN))
+  if ((iflag & BIT_ZODIAC) && (iflag & BIT_ROUND_MIN)) {
     sprintf(s1, "%2ld", kmin);
-  else
+  } else {
     sprintf(s1, "%2ld'", kmin);
+  }
   strcat(s, s1);
   if (iflag & BIT_ROUND_MIN)
     goto return_dms;
   x -= kmin;
   x *= 60;
   ksec = (long) x;
-  if (iflag & BIT_ROUND_SEC)
+  if (iflag & BIT_ROUND_SEC) {
     sprintf(s1, "%2ld\"", ksec);
-  else
+  } else {
     sprintf(s1, "%2ld", ksec);
+  }
   strcat(s, s1);
   if (iflag & BIT_ROUND_SEC)
     goto return_dms;
@@ -1666,24 +1628,23 @@ static int do_calc(double tjd, int ipl, long iflag, double *x, char *serr)
 	int32 retc = 0;
 	int32 method = (int32) do_true_node;
 	//retc = swe_node_aps(tjd, ipl, iflag, method, xnasc, xndsc, xperi, xaphe, serr);
-    if (do_nod) { for (i = 0; i <= 5; i++) x[i] = xnasc[i];}
-    else if (do_nos) { for (i = 0; i <= 5; i++) x[i] = xndsc[i];}
-    else if (do_aph) { for (i = 0; i <= 5; i++) x[i] = xaphe[i];}
-    else if (do_per) { for (i = 0; i <= 5; i++) x[i] = xperi[i];}
-	return retc;
+    if (do_nod) { 
+      for (i = 0; i <= 5; i++) x[i] = xnasc[i];
+    } else if (do_nos) {
+      for (i = 0; i <= 5; i++) x[i] = xndsc[i];
+    } else if (do_aph) {
+      for (i = 0; i <= 5; i++) x[i] = xaphe[i];
+    } else if (do_per) {
+      for (i = 0; i <= 5; i++) x[i] = xperi[i];
+    }
+    return retc;
   } else
     return swe_calc(tjd, ipl, iflag, x, serr);
-#if 0
-  return swe_calc(tjd, ipl, iflag, x, x+1, x+2, x+3, x+4, x+5, serr);
-#endif
 }
 
 static long do_fixstar(char *st, double tjd, long iflag, double *x, char *serr)
 {
   return swe_fixstar(st, tjd, iflag, x, serr);
-#if 0
-  return swe_fixstar(st, tjd, iflag, x, x+1, x+2, x+3, x+4, x+5, serr);
-#endif
 }
 
 static void do_printf(char *info)

@@ -2908,7 +2908,7 @@ void CALL_CONV swe_set_sid_mode(int32 sid_mode, double t0, double ayan_t0)
     sip->t0_is_UT = ayanamsa[sid_mode].t0_is_UT;
   }
   // test feature: ayanamsha using its original precession model
-  if ((sip->sid_mode & SE_SIDBIT_PREC_ORIG) && ayanamsa[sid_mode].prec_offset > 0) {
+  if (sid_mode < SE_NSIDM_PREDEF && (sip->sid_mode & SE_SIDBIT_PREC_ORIG) && ayanamsa[sid_mode].prec_offset > 0) {
     swed.astro_models[SE_MODEL_PREC_LONGTERM] = ayanamsa[sid_mode].prec_offset;
     swed.astro_models[SE_MODEL_PREC_SHORTTERM] = ayanamsa[sid_mode].prec_offset;
     // add a corresponding nutation model

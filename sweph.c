@@ -2968,7 +2968,8 @@ static int get_aya_correction(int iflag, double *corr, char *serr) {
     return 0;
   if (sip->sid_mode & SE_SIDBIT_NO_PREC_OFFSET) 
     return 0;
-  prec_offset = ayanamsa[sid_mode].prec_offset;
+  if (sid_mode < SE_NSIDM_PREDEF)
+    prec_offset = ayanamsa[sid_mode].prec_offset;
   if (prec_offset < 0) prec_offset = 0;
   if (prec_model == prec_offset)
     return 0;

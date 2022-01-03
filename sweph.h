@@ -348,7 +348,7 @@ struct aya_init {double t0;
                  double ayan_t0; 
 		 AS_BOOL t0_is_UT;
 		 int prec_offset;};
-static const struct aya_init ayanamsa[] = {
+static const struct aya_init ayanamsa[SE_NSIDM_PREDEF] = {
 /* 0: Fagan/Bradley (Default) 
      "The American Sidereal Ephemeris, 1976-2000" (Astro Computing Services, 1981)
      states on S.V.P. ("Synetic Vernal Point"):
@@ -591,11 +591,8 @@ static const struct aya_init ayanamsa[] = {
       true ayanamshas. A deviation of around 0.1" remains,
       for unknown reasons. The difference between Lahiri (1) and
       Lahiri ICRC (45) amounts to 1.1". */
-{2435553.5, 23.25 - 0.00464207, FALSE, SEMOD_PREC_NEWCOMB}, 
+{2435553.5, 23.25 - 0.00464207, FALSE, SEMOD_PREC_NEWCOMB}, // 46: SE_SIDM_LAHIRI_ICRC
 /*************************/
-/*{2061539.789532065, 6.83333333, TRUE, -1}, *41: Manjula's Laghumanasa, 10 March 932, 12 PM LMT Ujjain (75.7684565 E), ayanamsha = 6°50' */
-/* */
-{J1900, 0, FALSE, -1},	                     /*46: - */
     };
 
 #define PLAN_DATA struct plan_data

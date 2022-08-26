@@ -3484,7 +3484,7 @@ next_try:
    * the function lun_eclipse_how().
    */
   dtstart = 0.1;
-  if (tjd < 2000000 || tjd > 2500000)
+  if (tjd < 2100000 || tjd > 2500000)	// was tjd < 2000000 until 26-aug-22
     dtstart = 5;
   dtdiv = 4;
   for (j = 0, dt = dtstart;

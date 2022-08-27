@@ -8,6 +8,7 @@ output:
    toc_depth: 3
 ---
 
+
 # Programming interface to the Swiss Ephemeris
 
 Copyright **Astrodienst AG** 1997-2022.
@@ -23,9 +24,8 @@ license models, which are:
 To use Swiss Ephemeris, the licensing conditions imposed by Astrodienst for 
 Swiss Ephemeris must be fulfilled. A copy of the license file is found in  file LICENSE. 
 
-**Please note:**
-Since Swiss Ephemeris release 2.10.01 the GPL license has been replaced with the AGPL license,
-as one of the options in Astrodienst's dual licensing model.
+## Please note
+This documentation is in an experimental stage, created out of .md markdown files.
 
 [toc]
 

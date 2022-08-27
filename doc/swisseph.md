@@ -8,6 +8,7 @@ output:
    toc_depth: 3
 ---
 
+
 # **Swiss Ephemeris**
 
 ![](media/image1.png)
@@ -19,6 +20,9 @@ output:
 Email of developers: via mailing list <https://groups.io/g/swisseph/>
 
 Authors: Dieter Koch and Dr. Alois Treindl
+
+## Please note
+This documentation is in an experimental stage, created out of .md markdown files.
 
 #  1. Introduction
 

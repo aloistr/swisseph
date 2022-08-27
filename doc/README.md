@@ -1,5 +1,5 @@
 ## Please note:
-The official Swiss Ephemeris is found at https://www.astro.com/ftp/swisseph/doc/
+The official Swiss Ephemeris documentation is found at https://www.astro.com/ftp/swisseph/doc/
 
 The documentation on Github is in an experimental stage.
 

@@ -3424,46 +3424,40 @@ returns OK or ERR
 
 # 9. Delta T-related functions
 
-/\* delta t from Julian day number \*/
+```c
+// delta t from Julian day number 
 
-double **swe_deltat_ex**(
+double swe_deltat_ex(
+  double tjd,
+  int32 ephe_flag,
+  char *serr
+);
 
-double tjd,
+// delta t from Julian day number 
+double swe_deltat(
+  double tjd
+);
 
-int32 ephe_flag,
+// get tidal acceleration used in swe_deltat()
+double swe_get_tid_acc(void);
 
-char \*serr);
+// set tidal acceleration to be used in swe_deltat() 
+void swe_set_tid_acc(
+  double t_acc
+);
 
-/\* delta t from Julian day number \*/
-
-double **swe_deltat**(
-
-double tjd);
-
-/\* get tidal acceleration used in swe_deltat() \*/
-
-double **swe_get_tid_acc**(
-
-void);
-
-/\* set tidal acceleration to be used in swe_deltat() \*/
-
-void **swe_set_tid_acc**(
-
-double t_acc);
-
-/\* set fixed Delta T value to be returned by swe_deltat() \*/
-
-void **swe_set_delta_t\_userdef**(
-
-double t_acc);
+// set fixed Delta T value to be returned by swe_deltat() 
+void swe_set_delta_t_userdef(
+  double t_acc
+);
+```
 
 The Julian day number, you compute from a birth date, will be Universal
 Time (UT, former GMT) and can be used to compute the star time and the
 houses. However, for the planets and the other factors, you have to
 convert UT to Ephemeris time (ET):
 
-## swe_deltat_ex()
+## 9.1. swe_deltat_ex()
 
 tjde = tjd + **swe_deltat_ex**(tjd, ephe_flag, serr);
 
@@ -3495,7 +3489,7 @@ mixture of old and new ephemeris files may lead to inconsistent
 ephemeris output. Using old asteroid files se99999.se1 together with new
 ones, can be tolerated, though.
 
-## swe_deltat()
+## 9.2. swe_deltat()
 
 tjde = tjd + **swe_deltat**(tjd);
 
@@ -3545,7 +3539,7 @@ In case of troubles related to these two points, it is recommended to:
 -   or control the value of the tidal acceleration using the functions
     **swe_set_tid_acc()** and **swe_get_tid_acc()**.
 
-## swe_set_tid_acc(), swe_get_tid_acc()
+## 9.3. swe_set_tid_acc(), swe_get_tid_acc()
 
 With Swiss Ephemeris versions until 1.80, this function had **always**
 to be used, if a nonstandard ephemeris like DE200 or DE421 was used.
@@ -3574,7 +3568,7 @@ call
 
 **swe_set_tid_acc**(SE_TIDAL_AUTOMATIC);
 
-## swe_set_delta_t\_userdef()
+## 9.4. swe_set_delta_t\_userdef()
 
 This function allows the user to set a fixed Delta T value that will be
 returned by **swe_deltat()** or **swe_deltat_ex()**.
@@ -3588,7 +3582,7 @@ following value:
 
 **swe_set_delta_t\_userdef**(SE_DELTAT_AUTOMATIC);
 
-## Future updates of Delta T and the file swe_deltat.txt
+## 9.5. Future updates of Delta T and the file swe_deltat.txt
 
 Delta T values for future years can only be estimated. Strictly
 speaking, the Swiss Ephemeris has to be updated every year after the new
@@ -3596,43 +3590,35 @@ Delta T value for the past year has been published by the IERS. We will
 do our best and hope to update the Swiss Ephemeris every year. However,
 if the user does not want to wait for our update or does not download a
 new version of the Swiss Ephemeris he can add new Delta T values in the
-file swe_deltat.txt, which has to be located in the Swiss Ephemeris
+file **swe_deltat.txt**, which has to be located in the Swiss Ephemeris
 ephemeris path.
 
-\# This file allows make new Delta T known to the Swiss Ephemeris.
-
-\# Note, these values override the values given in the internal Delta T
-
-\# table of the Swiss Ephemeris.
-
-\# Format: year and seconds (decimal)
+```
+# This file allows make new Delta T known to the Swiss Ephemeris.
+# Note, these values override the values given in the internal Delta T
+# table of the Swiss Ephemeris.
+# Format: year and seconds (decimal)
 
 2003 64.47
-
 2004 65.80
-
 2005 66.00
-
 2006 67.00
-
 2007 68.00
-
 2008 68.00
-
 2009 69.00
+```
 
-# The function swe_set_topo() for topocentric planet positions
+# 10. The function swe_set_topo() for topocentric planet positions
 
-void **swe_set_topo**( /\* 3 doubles for
-geogr. longitude, latitude, height above sea.
+```c
+void swe_set_topo( 
+  // 3 doubles for geogr. longitude, latitude, height above sea.
+  double geolon, // eastern longitude is positive, western longitude is negative
+  double geolat, // northern latitude is positive, southern latitude is negative
+  double altitude
+); 
+```
 
-double geolon, \* eastern longitude is positive,
-
-double geolat, \* western longitude is negative,
-
-double altitude); \* northern latitude is positive,
-
-\* southern latitude is negative \*/
 
 This function must be called before topocentric planet positions for a
 certain birth place can be computed. It tells Swiss Ephemeris, what
@@ -3643,41 +3629,37 @@ seconds with the Moon and at an altitude 3000 m. After calling
 **swe_set_topo()**, add SEFLG_TOPOCTR to iflag and call **swe_calc()**
 as with an ordinary computation. E.g.:
 
-**swe_set_topo**(geo_lon, geo_lat, altitude_above_sea);
-
-iflag \|= SEFLG_TOPOCTR;
-
-for (i = 0; i \< NPLANETS; i++)
-
-{
-
-iflgret = **swe_calc**(tjd, ipl, iflag, xp, serr);
-
-printf("%f\\n", xp\[0\]);
-
+```c
+swe_set_topo(geo_lon, geo_lat, altitude_above_sea);
+iflag |= SEFLG_TOPOCTR;
+for (i = 0; i < NPLANETS; i++) {
+  iflgret = swe_calc(tjd, ipl, iflag, xp, serr);
+  printf("%f\n", xp[0]);
 }
+```
 
 The parameters set by **swe_set_topo()** survive **swe_close().**
 
-# Sidereal mode functions
+# 12. Sidereal mode functions
 
-## swe_set_sid_mode()
+## 12.1. swe_set_sid_mode()
 
-void **swe_set_sid_mode**(int32 sid_mode,
-double t0, double ayan_t0);
+```c
+void swe_set_sid_mode(
+  int32 sid_mode,
+  double t0,
+  double ayan_t0
+);
+```
 
 This function can be used to specify the mode for sidereal computations.
 
-**swe_calc()** or **swe_fixstar()** has then to be called with the bit
-SEFLG_SIDEREAL.
+**swe_calc()** or **swe_fixstar()** has then to be called with the bit SEFLG_SIDEREAL.
 
-If **swe_set_sid_mode()** is not called, the default ayanamsha
-(Fagan/Bradley) is used.
+If **swe_set_sid_mode()** is not called, the default ayanamsha (Fagan/Bradley) is used.
 
-If a predefined mode is wanted, the variable
-.anchor}sid_mode has to be set, while t0 and
-.anchor}ayan_t0 are not considered, i.e. can be 0. The predefined
-sidereal modes are:
+If a predefined mode is wanted, the variable sid_mode has to be set, while t0 and
+ayan_t0 are not considered, i.e. can be 0. The predefined sidereal modes are:
 
 ```c
 #define SE_SIDM_FAGAN_BRADLEY 0
@@ -3734,7 +3716,9 @@ The function **swe_get_ayanamsa_name()** returns the name of the
 ayanamsha.
 
 ```c
-const char *swe_get_ayanamsa_name(int32 isidmode)
+const char *swe_get_ayanamsa_name(
+  int32 isidmode
+)
 ```
 
 namely:
@@ -3796,7 +3780,9 @@ To define your own sidereal mode, use SE_SIDM_USER (=255) and set the
 reference date **(**t0**)** and the initial value of the ayanamsha
 (ayan_t0).
 
-ayan_t0 = tropical_position_t0 -- sidereal_position_t0.
+```c
+ayan_t0 = tropical_position_t0 - sidereal_position_t0;
+```
 
 Without additional specifications, the traditional method is used. The
 ayanamsha measured on the ecliptic of t0 is subtracted from tropical
@@ -3805,11 +3791,11 @@ positions referred to the ecliptic of date.
 **NOTE**: this method will not provide accurate results if you want
 coordinates referred to the ecliptic of one of the following equinoxes:
 
+```c
 #define SE_SIDM_J2000 18
-
 #define SE_SIDM_J1900 19
-
 #define SE_SIDM_B1950 20
+```
 
 Instead, you have to use a correct coordinate transformation as
 described in the following:

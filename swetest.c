@@ -2548,7 +2548,11 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
     case '+':
 	if (is_house) break;
         if (is_label) { printf("phase"); break; }
-	fputs(dms(attr[0], round_flag),stdout);
+	if (strchr(fmt, 'l') != NULL) {	// if decimal longitude is present, do phae angle also decimal
+	  printf("%# 11.7f", attr[0]);
+	} else {
+	  fputs(dms(attr[0], round_flag),stdout);
+	}
 	break;
     case '-':
         if (is_label) { printf("phase"); break; }
@@ -2558,7 +2562,11 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
     case '*':
         if (is_label) { printf("elong"); break; }
 	if (is_house) break;
-	fputs(dms(attr[2], round_flag),stdout);
+	if (strchr(fmt, 'l') != NULL) {	// if decimal longitude is present, do elongation also decimal
+	  printf("%# 11.7f", attr[2]);
+	} else {
+	  fputs(dms(attr[2], round_flag),stdout);
+	}
 	break;
     case '/':
         if (is_label) { printf("diamet"); break; }

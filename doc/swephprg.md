@@ -1,7 +1,7 @@
 ---
 :xtitle: Programming Interface to the Swiss Ephemeris
-date: 11-dec-21
-version: 2.10.02
+date: 27-aug-2022
+version: 2.10.03
 output:
   html_document:
    toc: true
@@ -10,7 +10,7 @@ output:
 
 # Programming interface to the Swiss Ephemeris
 
-Copyright **Astrodienst AG** 1997-2021.
+Copyright **Astrodienst AG** 1997-2022.
 
 This document describes the proprietary programmer\'s interface to the
 Swiss Ephemeris library.
@@ -6047,8 +6047,17 @@ when  | by| what
 27-jan-2021  |Dieter  |Small additions and minor cosmetics based on proposals by Aum Hren
 2-may-2021  |Dieter  |Release notes for version 2.10.01
 4-aug-2021  |Alois  |Release notes for version 2.10.02
+27-aug-2022  |Alois  |Release notes for version 2.10.03
 
 ## Release History
+
+### Changes from version 2.10.02 to 2.10.03
+
+A bug was fixed in function swe_lun_eclipse_when() which had lead to missing
+lunar eclipses between the years 776 and 967 CE.
+
+The calculation of Moon`s magnitude for large phase angles
+(when Moon is close to Sun) has been improved.
 
 ### Changes from version 2.10.01 to 2.10.02
 

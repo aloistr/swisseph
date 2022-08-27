@@ -6,7 +6,7 @@
 <title>Swiss Ephemeris General Documentation</title>
 </head>
 <body>
-<p>Date: 12-aug-21</p>
+<p>Date: 27-aug-2022</p>
 <div id="TOC">
 <ul>
 <li><a href="#swiss-ephemeris"><strong>Swiss Ephemeris</strong></a>
@@ -23,6 +23,9 @@
 <ul>
 <li><a href="#three-ephemerides">2.1.1. Three ephemerides</a></li>
 <li><a href="#the-swiss-ephemeris-compared-with-astronomical-almanac-and-jpl-horizons">2.1.2. The Swiss Ephemeris Compared with Astronomical Almanac and JPL Horizons</a></li>
+</ul></li>
+<li><a href="#httpwww.iers.orgiersendataproductsconventionsconventions.html"><span>http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html</span></a>
+<ul>
 <li><a href="#the-details-of-coordinate-transformation">2.1.3. The details of coordinate transformation</a></li>
 <li><a href="#the-swiss-ephemeris-compression-mechanism">2.1.4. The Swiss Ephemeris compression mechanism</a></li>
 <li><a href="#the-extension-of-de406-based-ephemerides-to-10.800-years">2.1.5. The extension of DE406-based ephemerides to 10.800 years</a></li>
@@ -890,7 +893,7 @@
 <p>It must be noted that correct values for Earth orientation delta_psi and delta_epsilon are only available between 1962 and present. For all calculations before that, Horizons uses the <em>first</em> values of the EOP data, and for all calculations in the future, it uses the <em>last</em> values of the existing data. The resulting positions before 1962 thus do not have the same precision, but the ephemeris is at least continuous.</p>
 <p>More information on this and technical details are found in the programmer’s documentation and in the source code, file swephlib.h.</p>
 <p>IERS Conventions 1996, 2003, and 2010 can be read or downloaded from here:</p>
-<p><a href="http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html">http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html</a></p>
+<h2 id="httpwww.iers.orgiersendataproductsconventionsconventions.html"><a href="http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html">http://www.iers.org/IERS/EN/DataProducts/Conventions/conventions.html</a></h2>
 <p>Detailed instructions how to compare planetary positions as given by the Swiss Ephemeris with those of JPL are given in Appendix C at the end of this documentation.</p>
 <p>Many thanks to Jon Giorgini, developer of the Horizons System, for explaining us the methods used at JPL.</p>
 <h3 id="the-details-of-coordinate-transformation">2.1.3. The details of coordinate transformation</h3>
@@ -3260,10 +3263,6 @@ t= (Je - Js) / 36525 ; T= (Js-2451545) / 36525</p>
 <p>Placalc also made no difference between Placidus/Koch on one hand and Regiomontanus/Campanus on the other as Swiss Ephemeris does. In Swiss Ephemeris, the geometrical definition of Regiomontanus/Campanus is strictly followed, even for the price of getting the houses in “wrong” order. (see above, Chapter 4.1.)</p>
 <h4 id="astrolog-program-as-written-by-walter-pullen">ASTROLOG program as written by Walter Pullen</h4>
 <p>While the freeware program Astrolog contains the planetary routines of Placalc, it uses its own house calculation module by Walter Pullen. Various releases of Astrolog contain different approaches to this problem.</p>
-<h4 id="astrolog-on-www.astro.com">ASTROLOG on www.astro.com</h4>
-<p>ASTROLOG is also used on Astrodienst’s website for displaying free charts. This version of Astrolog used on our website however is different from the Astrolog program as distributed on the Internet. Our webserver version of Astrolog contains calls to Swiss Ephemeris for planetary positions. For Ascendant, MC and houses it still uses Walter Pullen&#39;s code. This will change in due time because we intend to replace ASTROLOG on the website with our own charting software.</p>
-<h4 id="other-astrology-programs">Other astrology programs</h4>
-<p>Because most astrology programs still use the Placalc module, they follow the Placalc method for houses inside the polar circles. They give priority to keep the MC above the horizon and switch the Ascendant by 180 degrees if necessary to keep the quadrants in order.</p>
 <h2 id="house-position-of-a-planet">6.5. House position of a planet</h2>
 <p>The Swiss Ephemeris DLL also provides a function to compute the house position of a given body, i.e. in which house it is. This function can be used either to determine the house number of a planet or to compute its position in a <em>house horoscope</em>. (A house horoscope is a chart in which all houses are stretched or shortened to a size of 30 degrees. For unequal house systems, the zodiac is distorted so that one sign of the zodiac does not measure 30 house degrees)</p>
 <p>Note that the actual house position of a planet is not always the one that it seems to be in an ordinary chart drawing. Because the planets are not always exactly located on the ecliptic but have a latitude, they can seemingly be located in the first house, but are actually visible above the horizon. In such a case, our program function will place the body in the 12th (or 11th or 10th) house, whatever celestial geometry requires. However, it is possible to get a house position in the “traditional” way, if one sets the ecliptic latitude to zero.</p>
@@ -3275,11 +3274,11 @@ t= (Je - Js) / 36525 ; T= (Js-2451545) / 36525</p>
 <h2 id="gauquelin-sector-position-of-a-planet">6.6. Gauquelin sector position of a planet</h2>
 <p>The calculation of the Gauquelin sector position of a planet is based on the same idea as the Placidus house system, i.e. diurnal and nocturnal arcs of ecliptic points or planets are subdivided.</p>
 <p>Three different algorithms have been used by Gauquelin and others to determine the sector position of a planet.</p>
-<ol type="1">
+<ul>
 <li><p>We can take the ecliptic point of the planet (ecliptical latitude ignored) and calculate the fraction of its diurnal or nocturnal arc it has completed</p></li>
 <li><p>We can take the true planetary position (taking into account ecliptical latitude) for the same calculation.</p></li>
 <li><p>We can use the exact times for rise and set of the planet to determine the ratio between the time the planet has already spent above (or below) the horizon and its diurnal (or nocturnal) arc. Times of rise and set are defined by the appearance or disappearance of the center of the planet’s disks.</p></li>
-</ol>
+</ul>
 <p>All three methods are supported by the Swiss Ephemeris.</p>
 <p>Methods 1 and 2 also work for polar regions. The Placidus algorithm is used, and the Otto Ludwig method applied with circumpolar bodies. I.e. if a planet does not have a rise and set, the “midnight” and “midday” culminations are used to define its semidiurnal and seminocturnal arcs.</p>
 <p>With method 3, we don’t try to do similar. Because planets do not culminate exactly in the north or south, a planet can actually rise on the western part of the horizon in high geographic latitudes. Therefore, it does not seem appropriate to use meridian transits as culmination times. On the other hand, true culmination times are not always available. E.g. close to the geographic poles, the Sun culminates only twice a year.</p>
@@ -5826,6 +5825,21 @@ TT: 2447892.500000000 ayanamsa = 23°43&#39;02.6259 (Lahiri) (IAE 1989: 23°43&#
 <td>2.10</td>
 <td>10-dec-2020</td>
 <td>NEW: planetary moons</td>
+</tr>
+<tr class="even">
+<td>2.10.01</td>
+<td>5-may-2021</td>
+<td>DE441 added to the list of usable JPL ephemerides</td>
+</tr>
+<tr class="odd">
+<td>2.10.02</td>
+<td>4-aug-2021</td>
+<td>Added new functions swe_solcross etc.</td>
+</tr>
+<tr class="even">
+<td>2.10.03</td>
+<td>27-aug-2022</td>
+<td>bugfix release</td>
 </tr>
 </tbody>
 </table>

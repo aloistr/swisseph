@@ -1,7 +1,7 @@
 ---
 title: Swiss Ephemeris General Documentation
-date: 14-aug-21
-version: 2.10.02
+date: 27-aug-2022
+version: 2.10.03
 output:
   html_document:
    toc: true
@@ -7014,6 +7014,9 @@ Date         | what
 2.08	|13-jun-2019	|update of Delta T and minor bug fixes
 2.09	|22-jul-2020	|Improved Placidus houses, sidereal ephemerides, planetary magnitudes; minor bug fixes
 2.10	|10-dec-2020	|NEW: planetary moons
+2.10.01 |5-may-2021	|DE441 added to the list of usable JPL ephemerides
+2.10.02 |4-aug-2021	|Added new functions swe_solcross etc.
+2.10.03 |27-aug-2022	|bugfix release
 
 #
 

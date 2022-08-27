@@ -26,6 +26,8 @@ CC=cc	#for Linux
 SWEOBJ = swedate.o swehouse.o swejpl.o swemmoon.o swemplan.o sweph.o\
 	 swephlib.o swecl.o swehel.o
 
+all:	swetest swetests swevents swemini
+
 # build swetest with SE linked in, using dynamically linked system libraries libc, libm, libdl.
 swetest: swetest.o libswe.a
 	$(CC) $(OP) -o swetest swetest.o -L. -lswe -lm -ldl
@@ -34,7 +36,7 @@ swetest: swetest.o libswe.a
 # and add this path with -L like below
 # a statically linked program will run on any Linux variant, independent of dynamic system libraries.
 swetests: swetest.o $(SWEOBJ)
-	$(CC)  $(OP) -static -L/usr/lib/x86_64-linux-gnu/ -o swetests swetest.o $(SWEOBJ) -lm -ldl
+	$(CC)  $(OP) -static -L/usr/lib/x86_64-redhat-linux6E/lib64/ -o swetests swetest.o $(SWEOBJ) -lm -ldl
 
 swevents: swevents.o libswe.a
 	$(CC) $(OP) -o swevents swevents.o -L. -lswe -lm -ldl

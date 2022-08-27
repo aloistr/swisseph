@@ -3072,7 +3072,7 @@ double CALL_CONV swe_refrac_extended(double inalt, double geoalt, double atpress
       y = N;
     }
     refr = D;
-    if( (inalt + refr < dip) ) {
+    if (inalt + refr < dip) {
       if (dret != NULL) {
 	dret[0]=inalt;
 	dret[1]=inalt;
@@ -3161,10 +3161,10 @@ static double calc_dip(double geoalt, double atpress, double attemp, double laps
 {
   /* below formula is based on A. Thom, Megalithic lunar observations, 1973 (page 32).
   * conversion to metric has been done by
-  * V. Reijs, 2000, http://www.iol.ie/~geniet/eng/refract.htm
+  * V. Reijs, 2000, http://www.archaeocosmology.org/eng/refract.htm#Sea
   */
   double krefr = (0.0342 + lapse_rate) / (0.154 * 0.0238);
-  double d = 1-1.8480*krefr*atpress/(273.16+attemp)/(273.16+attemp);
+  double d = 1-1.8480*krefr*atpress/(273.15+attemp)/(273.15+attemp);
   /* return -0.03203*sqrt(geoalt)*sqrt(d); */
   /* double a = acos(1/(1+geoalt/EARTH_RADIUS));*/
   return -180.0/PI * acos(1 / (1 + geoalt / EARTH_RADIUS)) * sqrt(d);
@@ -3748,8 +3748,8 @@ next_lun_ecl:
  */
 #define EULER 2.718281828459
 #define NMAG_ELEM  (SE_VESTA + 1)
-#define MAG_HILTON_2005   0
 #define MAG_MALLAMA_2018  1
+#define MAG_MOON_VREIJS   1
 /* Magnitudes according to:
  * - "Explanatory Supplement to the Astronomical Almanac" 1986.
  * Magnitudes for Mercury and Venus:
@@ -3897,42 +3897,27 @@ int32 CALL_CONV swe_pheno(double tjd, int32 ipl, int32 iflag, double *attr, char
       fac *= fac;
       attr[4] = mag_elem[ipl][0] - 2.5 * log10(fac);
     } else if (ipl == SE_MOON) {
+#if MAG_MOON_VREIJS
+     // double a=fabs(attr[0]);
+     double a = attr[0];
+     if (a<=147.1385465) {
+       /* formula according to Allen, C.W., 1976, Astrophysical Quantities */
+       attr[4] = -21.62 + 0.026 * fabs(a) + 0.000000004 * pow(a, 4);
+       attr[4]+=5 * log10(lbr[2] * lbr2[2] * AUNIT / EARTH_RADIUS);
+     } else {
+       /* using the cube phase angle proposed by Samaha (Samaha, A.E.; Asaad,
+	A. S. and Mikhail, J. S. (1969).
+	Visibility of the New Moon, Bulletin of Observatory Helwan, 84), and VR
+	adjusted the stitch phase (align Allen's and Samaha's magnitude) 
+	of 147.14degrees.
+       */
+       attr[4] = -4.5444 - (2.5 * log10(pow(180 - a, 3)));
+       attr[4]+=5 * log10(lbr[2] * lbr2[2] * AUNIT / EARTH_RADIUS);
+     } 
+#else
       /* formula according to Allen, C.W., 1976, Astrophysical Quantities */
-      /*attr[4] = -21.62 + 5 * log10(384410497.8 / EARTH_RADIUS) / log10(10) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);*/
-      //attr[4] = -21.62 + 5 * log10(lbr[2] * AUNIT / EARTH_RADIUS) / log10(10) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);
-      attr[4] = -21.62 + 5 * log10(lbr[2] * AUNIT / EARTH_RADIUS) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);
-#if 0
-      /* ratio apparent diameter : average diameter */
-      fac = attr[3] / (asin(pla_diam[SE_MOON] / 2.0 / 384400000.0) * 2 * RADTODEG);
-      /* distance sun - moon */
-      for (i = 0; i < 3; i++)
-        xxs[i] -= xx[i];
-      dsm = sqrt(square_sum(xxs));
-      /* account for phase and distance of moon: */
-      fac *= fac * attr[1];
-      /* account for distance of sun from moon: */
-      fac *= dsm * dsm;
-      attr[4] = mag_elem[ipl][0] - 2.5 * log10(fac);
-#endif
-      /*printf("1 = %f, 2 = %f\n", mag, mag2);*/
-#if MAG_HILTON_2005
-    } else if (ipl == SE_MERCURY) {
-      /* valid range is actually 2.1° < i < 169.5° */
-      double i100 = attr[0] / 100.0;
-      attr[4] = -0.60 + 4.98 * i100 - 4.88 * i100 * i100 + 3.02 * i100 * i100 * i100;
-      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
-      if (attr[0] < 2.1 || attr[0] > 169.5) 
-        sprintf(serr2, "magnitude value for Mercury at phase angle i=%.1f is bad; formula is valid only for 2.1 < i < 169.5", attr[0]);
-    } else if (ipl == SE_VENUS) {
-      double i100 = attr[0] / 100.0;
-      if (attr[0] < 163.6) /* actual valid range is 2.2° < i < 163.6° */
-	attr[4] = -4.47 + 1.03 * i100 + 0.57 * i100 * i100 + 0.13 * i100 * i100 * i100;
-      else /* actual valid range is 163.6° < i < 170.2° */
-	attr[4] = 0.98 - 1.02 * i100;
-      attr[4] += 5 * log10(lbr2[2] * lbr[2]);
-      if (attr[0] < 2.2 || attr[0] > 170.2)
-        sprintf(serr2, "magnitude value for Venus at phase angle i=%.1f is bad; formula is valid only for 2.2 < i < 170.2", attr[0]);
-#endif
+      attr[4] = -21.62 + 5 * log10(lbr[2] * lbr2[2] * AUNIT / EARTH_RADIUS) + 0.026 * fabs(attr[0]) + 0.000000004 * pow(attr[0], 4);
+#endif      
 #if MAG_MALLAMA_2018
     // see: A. Mallama, J.Hilton,
     // "ComputingApparentPlanetaryMagnitudesforTheAstronomicalAlmanac" (2018)
@@ -4426,6 +4411,11 @@ int ncalc = 0;
       sprintf(serr, "location for swe_rise_trans() must be between %.0f and %.0f m above sea", SEI_ECL_GEOALT_MIN, SEI_ECL_GEOALT_MAX);
     return ERR;
   }
+  // if horhgt == -100, set horhgt = dip of horizon, i.e. refracted height
+  // of ocean if visible at horizon.
+  if (horhgt == -100) {
+    horhgt = 0.0001 + calc_dip(geopos[2], atpress, attemp, const_lapse_rate);
+  }
   /*swi_set_tid_acc(tjd_ut, epheflag, 0, serr);*/
   /* function calls for Pluto with asteroid number 134340
    * are treated as calls for Pluto as main body SE_PLUTO */
@@ -4669,9 +4659,9 @@ nazalt++;
 	aha = ah[1];
       } else {
 	swe_azalt_rev(t, SE_HOR2EQU, geopos, ah, xc);
-nazalt++;
+	nazalt++;
 	swe_azalt(t, SE_EQU2HOR, geopos, atpress, attemp, xc, ah);
-nazalt++;
+	nazalt++;
 	ah[1] -= horhgt;
 	ah[2] -= horhgt;
 	aha = ah[2];

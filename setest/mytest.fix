@@ -1,0 +1,402 @@
+# Template for this fixture file was generated at: Tue Jul 27 16:22:27 CEST 2021
+
+  TESTSUITE
+    section-id:1
+    section-descr: Various swe_calc calls in different modes
+    iflag:
+    iephe:
+    jd:
+    initialize:
+    TESTCASE
+      section-id:1
+      section-descr: swe_calc( ) - Julian Date with Ephemeris Time
+        ITERATION
+          ipl:
+    TESTCASE
+      section-id:2
+      section-descr: swe_calc_ut( ) - Julian Date with Universal Time
+        ITERATION
+          ipl:
+    TESTCASE
+      section-id:3
+      section-descr: swe_set_topo( ) - Using topographic coordinates
+        ITERATION
+          geolon:
+          geolat:
+          altitude:
+          ipl:
+    TESTCASE
+      section-id:4
+      section-descr: swe_calc( ) - Equatorial followed by Ecliptic
+        ITERATION
+          ipl:
+    TESTCASE
+      section-id:5
+      section-descr: swe_calc_pctr( ) - planetocentic position
+        ITERATION
+          ipl:
+          iplctr:
+
+  TESTSUITE
+    section-id:2
+    section-descr: Fixed stars
+    TESTCASE
+      section-id:1
+      section-descr: Fixed stars with Ephemeris Time
+        ITERATION
+          jd:
+          iflag:
+          star:
+    TESTCASE
+      section-id:2
+      section-descr: Fixed stars with Universal Time
+        ITERATION
+          jd:
+          star:
+    TESTCASE
+      section-id:3
+      section-descr: Magnitude of a fixed star
+        ITERATION
+          star:
+    TESTCASE
+      section-id:4
+      section-descr: Mercury, then Betelgeuze
+        ITERATION
+          jd:
+          star:
+    TESTCASE
+      section-id:5
+      section-descr: Algol, then Betelgeuze
+        ITERATION
+          jd:
+          star:
+    TESTCASE
+      section-id:6
+      section-descr: Fixed stars (swe_fixstar2) with Ephemeris Time
+        ITERATION
+          jd:
+          iflag:
+          star:
+    TESTCASE
+      section-id:7
+      section-descr: Fixed stars (swe_fixstar2) with Universal Time
+        ITERATION
+          jd:
+          star:
+
+  TESTSUITE
+    section-id:3
+    section-descr: Various small functions (names et al.)
+    TESTCASE
+      section-id:1
+      section-descr: swe_get_planet_name( ) - Getting a planet name
+        ITERATION
+          ipl:
+    TESTCASE
+      section-id:2
+      section-descr: swe_get_aya_name( ) - Getting an ayanamsa name
+        ITERATION
+          sid_mode:
+
+  TESTSUITE
+    section-id:4
+    section-descr: Some computations in sidereal mode
+    t0:
+    ayan_t0:
+    sid_mode:
+    TESTCASE
+      section-id:1
+      section-descr: swe_set_aynamsa( ) - Calc planet using a specific Ayanamsa
+        ITERATION
+          jd:
+          iflag:
+          ipl:
+    TESTCASE
+      section-id:2
+      section-descr: swe_get_ayanamsa_ex and swe_get_ayanamsa_ex_ut
+        ITERATION
+          jd:
+          iephe:
+    TESTCASE
+      section-id:3
+      section-descr: swe_get_aynamsa and swe_get_ayanamsa_ut
+        ITERATION
+          jd:
+    TESTCASE
+      section-id:4
+      section-descr: Initialization problem with swe_set_sid_mode
+        ITERATION
+          jd:
+
+  TESTSUITE
+    section-id:5
+    section-descr: Date and time functions
+    TESTCASE
+      section-id:1
+      section-descr: Julian Date from Calendar date
+        ITERATION
+          year:
+          month:
+          day:
+          hour:
+          gregflag:
+    TESTCASE
+      section-id:2
+      section-descr: Calendar date from Julian Date
+        ITERATION
+          jd:
+          gregflag:
+    TESTCASE
+      section-id:3
+      section-descr: Delta T
+        ITERATION
+          iephe:
+          jd:
+    TESTCASE
+      section-id:4
+      section-descr: Equation of time
+        ITERATION
+          jd:
+    TESTCASE
+      section-id:5
+      section-descr: Local Mean Time to Local Apparent Time
+        ITERATION
+          tjd_lmt:
+          geolon:
+    TESTCASE
+      section-id:6
+      section-descr: Local Apparent Time to Local Mean Time
+        ITERATION
+          tjd_lat:
+          geolon:
+
+  TESTSUITE
+    section-id:6
+    section-descr: Houses functions
+    jd:
+    ut:
+    ihsy:
+    geolat:
+    geolon:
+    initialize:
+    TESTCASE
+      section-id:1
+      section-descr: swe_houses( ) 
+        ITERATION
+    TESTCASE
+      section-id:2
+      section-descr: swe_houses_ex( ) - degrees and radians
+        ITERATION
+          iflag:
+    TESTCASE
+      section-id:3
+      section-descr: swe_houses_ex( ) - sidereal 
+        ITERATION
+          isid:
+          iflag:
+    TESTCASE
+      section-id:4
+      section-descr: swe_houses_armc( ) - Koch and Placidus
+        ITERATION
+    TESTCASE
+      section-id:5
+      section-descr: swe_house_name( ) 
+        ITERATION
+    TESTCASE
+      section-id:6
+      section-descr: swe_house_pos( ) 
+        ITERATION
+    TESTCASE
+      section-id:7
+      section-descr: swe_gauquelin_sector( ) 
+        ITERATION
+          imeth:
+    TESTCASE
+      section-id:8
+      section-descr: swe_houses_ex2( ) - with speeds of cusps 
+        ITERATION
+          iflag:
+    TESTCASE
+      section-id:9
+      section-descr: swe_houses_armc_ex2( ) - Koch and Placidus with cusp speeds
+        ITERATION
+
+  TESTSUITE
+    section-id:7
+    section-descr: Apsides and orbital elements functions
+    iflag:
+    iephe:
+    initialize:
+    TESTCASE
+      section-id:1
+      section-descr: swe_nod_aps( ) 
+        ITERATION
+          jd:
+          ipl:
+          method:
+    TESTCASE
+      section-id:2
+      section-descr: swe_nod_aps_ut( ) 
+        ITERATION
+          jd:
+          ipl:
+          method:
+    TESTCASE
+      section-id:3
+      section-descr: swe_get_orbital_elements( ) 
+        ITERATION
+          jd:
+          ipl:
+    TESTCASE
+      section-id:4
+      section-descr: swe_orbit_max_min_true_distance( ) 
+        ITERATION
+          jd:
+          ipl:
+
+  TESTSUITE
+    section-id:8
+    section-descr: Eclipses
+    geolat:
+    geolon:
+    altitude:
+    initialize:
+    TESTCASE
+      section-id:1
+      section-descr: swe_sol_eclipse_when_glob( ) 
+        ITERATION
+          jd:
+          iephe:
+          ifltype:
+          backward:
+    TESTCASE
+      section-id:2
+      section-descr: swe_sol_eclipse_where( ) 
+        ITERATION
+          jd:
+          iephe:
+    TESTCASE
+      section-id:3
+      section-descr: swe_sol_eclipse_when_loc( ) 
+        ITERATION
+          jd:
+          iephe:
+          backward:
+    TESTCASE
+      section-id:4
+      section-descr: swe_sol_eclipse_how( ) 
+        ITERATION
+          jd:
+          iephe:
+    TESTCASE
+      section-id:5
+      section-descr: swe_lun_occult_when_glob( ) 
+        ITERATION
+          jd:
+          ipl:
+          star:
+          iephe:
+          ifltype:
+          backward:
+    TESTCASE
+      section-id:6
+      section-descr: swe_lun_occult_where( ) 
+        ITERATION
+          jd:
+          ipl:
+          star:
+          iephe:
+    TESTCASE
+      section-id:7
+      section-descr: swe_lun_occult_when_loc( ) 
+        ITERATION
+          jd:
+          ipl:
+          star:
+          iephe:
+          backward:
+    TESTCASE
+      section-id:8
+      section-descr: swe_lun_eclipse_when( ) 
+        ITERATION
+          jd:
+          iephe:
+          ifltype:
+          backward:
+    TESTCASE
+      section-id:9
+      section-descr: swe_lun_eclipse_when_loc( ) 
+        ITERATION
+          jd:
+          iephe:
+          backward:
+    TESTCASE
+      section-id:10
+      section-descr: swe_lun_eclipse_how( ) 
+        ITERATION
+          jd:
+          iephe:
+
+  TESTSUITE
+    section-id:9
+    section-descr: risings, heliacal risings
+    geolat:
+    geolon:
+    altitude:
+    atpress:
+    attemp:
+    athumid:
+    atktot:
+    obsage:
+    obsSN:
+    initialize:
+    TESTCASE
+      section-id:1
+      section-descr: swe_rise_trans( ) 
+        ITERATION
+          ifltype:
+          method:
+          jd:
+          ipl:
+          star:
+          ipl:
+          iephe:
+          atpress:
+          attemp:
+    TESTCASE
+      section-id:2
+      section-descr: swe_rise_trans_true_hor( ) 
+        ITERATION
+          ifltype:
+          method:
+          jd:
+          ipl:
+          star:
+          ipl:
+          iephe:
+          atpress:
+          attemp:
+          horhgt:
+    TESTCASE
+      section-id:3
+      section-descr: swe_heliacal_ut( ) 
+        ITERATION
+          jd:
+          object:
+          evtype:
+          helflag:
+    TESTCASE
+      section-id:4
+      section-descr: swe_heliacal_pheno_ut()( ) 
+        ITERATION
+          jd:
+          object:
+          evtype:
+          helflag:
+    TESTCASE
+      section-id:5
+      section-descr: swe_vis_limit_mag()( ) 
+        ITERATION
+          jd:
+          object:
+          helflag:

@@ -4005,7 +4005,7 @@ static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32
  *  ideg 	degrees, 
  *  imin 	minutes, 
  *  isec 	seconds, 
- *  dsecfr	fraction of seconds 
+ *  dsecfr	fraction of seconds (zero if rounding used)
  *  isgn	zodiac sign number; 
  *              or +/- sign
  *  
@@ -4050,7 +4050,7 @@ void CALL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *i
   if (!(roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN | SE_SPLIT_DEG_ROUND_SEC))) {
     *dsecfr = ddeg * 3600 - *isec;
   } else {
-    *dsecfr = *isec;  // is rounded, no fractional seconds
+    *dsecfr = 0;
   }
 }  /* end split_deg */
 

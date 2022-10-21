@@ -1677,7 +1677,7 @@ return_dms:
  * find zero points of parabola.
  * return: 0 if none
  * 	   1 if one zero in [-dx.. 0[
- * 	   1 if both zeros in [-dx.. 0[
+ * 	   2 if both zeros in [-dx.. 0[
  */
 static int find_zero(double y00, double y11, double y2, double dx, 
 			double *dxret, double *dxret2)

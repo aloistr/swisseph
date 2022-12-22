@@ -413,6 +413,7 @@ int main(int argc, char *argv[])
   strcpy(ephepath, SE_EPHE_PATH);
   strcpy(fname, SE_FNAME_DE406);
   for (i = 1; i < argc; i++) {
+    if (strlen(argv[i]) >= AS_MAXCH) argv[i][AS_MAXCH-1] = '\0';
     if (strncmp(argv[i], "-ut", 3) == 0) {
       universal_time = TRUE;
       if (strlen(argv[i]) > 3) {
@@ -461,8 +462,9 @@ int main(int argc, char *argv[])
     } else if (strncmp(argv[i], "-ejpl", 5) == 0) {
       whicheph = SEFLG_JPLEPH;
       strcpy(ephepath, SE_EPHE_PATH);
-      if (*(argv[i]+5) != '\0')
+      if (*(argv[i]+5) != '\0') {
         strcpy(fname, argv[i]+5);
+      }
     } else if (strcmp(argv[i], "-eswe") == 0) {
       whicheph = SEFLG_SWIEPH;
       strcpy(ephepath, SE_EPHE_PATH);
@@ -593,6 +595,7 @@ int main(int argc, char *argv[])
         do_printf(infodate);
       goto end_main;
     } else {
+      if (strlen(argv[i]) >= AS_MAXCH - 30) argv[i][AS_MAXCH -30] = '\0';
       sprintf(sout, "illegal option %s\n", argv[i]);
       do_printf(sout);
       exit(1);

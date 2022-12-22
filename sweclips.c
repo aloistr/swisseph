@@ -182,8 +182,7 @@ int main(int argc, char *argv[])
 {
   char saves[AS_MAXCH]; 
   char s1[AS_MAXCH], s2[AS_MAXCH];
-  char serr[AS_MAXCH], serr_save[AS_MAXCH], serr_warn[AS_MAXCH],
-sout[AS_MAXCH];
+  char serr[AS_MAXCH], serr_save[AS_MAXCH], serr_warn[AS_MAXCH], sout[AS_MAXCH];
   char *sp, *sp2;
   char *fmt = "PLBRS";
   int i, ii;
@@ -224,6 +223,7 @@ sout[AS_MAXCH];
   search_flag = SE_ECL_CENTRAL | SE_ECL_NONCENTRAL;
   smod = SMOD_SOLAR;
   for (i = 1; i < argc; i++) {
+    if (strlen(argv[i]) >= AS_MAXCH) argv[i][AS_MAXCH-1] = '\0';
     if (strncmp(argv[i], "-head", 5) == 0) {
       with_header = FALSE;
     } else if (strcmp(argv[i], "-lunar") == 0) {
@@ -301,6 +301,7 @@ sout[AS_MAXCH];
         do_printf(infodate);
       goto end_main;
     } else {
+      if (strlen(argv[i]) >= AS_MAXCH - 30) argv[i][AS_MAXCH -30] = '\0';
       sprintf(sout, "illegal option %s\n", argv[i]);
       do_printf(sout);
       exit(1);
@@ -336,7 +337,7 @@ sout[AS_MAXCH];
   if (begindate == NULL) {
     do_printf("\nDate ?");
     sdate[0] = '\0';
-    gets(sdate);
+    fgets(sdate, AS_MAXCH, stdin);
   } else {
     strcpy(sdate, begindate);
     begindate = ".";  /* to exit afterwards */

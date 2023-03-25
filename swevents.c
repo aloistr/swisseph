@@ -359,7 +359,7 @@ int main(int argc, char *argv[])
   strcpy(ephepath, EPHEPATH);
   time(&tloc);
   tim = localtime (&tloc);
-  sprintf(sdate, "%d/%02d/%02d", 1900+tim->tm_year, tim->tm_mon, tim->tm_mday);
+  sprintf(sdate, "%d/%02d/%02d", 1900+tim->tm_year, tim->tm_mon + 1, tim->tm_mday);
   for (i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-doall") == 0) {
       do_flag = DO_ALL;
@@ -444,8 +444,8 @@ int main(int argc, char *argv[])
       iflag |= SEFLG_NONUT;
     } else if (strcmp(argv[i], "-noprec") == 0) {
       iflag |= SEFLG_J2000;
-    } else if (strcmp(argv[i], "-noround") == 0) {
-      do_not_round = TRUE;
+    } else if (strcmp(argv[i], "-roundmin") == 0) {
+      do_round_min = TRUE;
     } else if (strcmp(argv[i], "-dgap") == 0) {
       date_gap = TRUE;
     } else if (strcmp(argv[i], "-motab") == 0) {
@@ -511,14 +511,16 @@ int main(int argc, char *argv[])
     if (strlen(cmdline) + strlen(argv[i]) < sizeof(cmdline) - 2)
       sprintf(cmdline + strlen(cmdline), "%s ", argv[i]);
   }
+  swe_version(sout);
 #if PRINTMOD
   if (pmodel != PMODEL_SCREEN) {
     printmod_set_printer(pmodel, 0);
   } else {
     printf("%s\n\n", cmdline);
+    printf("Date: %s\tSwissEph version %s\n%s\n\n", sdate, sout, cmdline);
   }
 #else
-  printf("%s\n\n", cmdline);
+  printf("Date: %s\tSwissEph version %s\n%s\n\n", sdate, sout, cmdline);
 #endif
   swe_set_ephe_path(ephepath);
   swe_set_jpl_file(fname);
@@ -1350,7 +1352,6 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
       strcpy(sign_deg, "15");
     }
   }
-  /* compute UT and add 0.5 minutes for later rounding to minutes */
   if (transits_to_stderr && strstr(s, "transit") != NULL) {
     swe_revjul(teph, gregflag, &yout, &mout, &dout, &hout);
     if (strstr(s, "middle") != NULL) {
@@ -1366,6 +1367,10 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
     teph = teph;
   else
     teph = teph - swe_deltat_ex(teph, whicheph, serr);
+  // compute UT and add 0.5 minutes for later rounding to minutes 
+  if (do_round_min) {
+    teph += 0.5 / 1440.0 ;
+  }
   swe_revjul(teph, gregflag, &yout, &mout, &dout, &hout);
   swe_split_deg(hout, SE_SPLIT_DEG_ROUND_SEC, &hour, &min, &sec, &secfr, &izod);
   if (dmag != HUGE) {
@@ -1384,6 +1389,9 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
     if (yout != prev_yout && prev_yout != -999999)
       print_motab();
     izod = (int) (dpos + 0.1);
+    if (do_round_min)
+      sprintf(sout, "%02d:%02d %s", hour, min,  znam[izod]);
+    else 
     sprintf(sout, "%02d:%02d:%02d %s", hour, min, sec, znam[izod]);
     strcpy(motab[mout-1][dout-1], sout);
     prev_yout = yout;
@@ -1396,11 +1404,20 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
       putchar('\n');
     else if (ipl > SE_VENUS && strncmp(s, "conj", 4) == 0)
       putchar('\n');
+    if (!(is_ingress || is_phase))
     printf("%-20s%s", s, gap);
     if (date_gap) {
+      if (do_round_min)
+	printf("%02d%s%s%s%2d%s%s%02d:%02d",
+	     yout, gap, month_nam[mout], gap, dout, jul, gap, hour, min);
+      else
       printf("%02d%s%s%s%2d%s%s%02d:%02d:%02d",
 	     yout, gap, month_nam[mout], gap, dout, jul, gap, hour, min, sec);
     } else {
+      if (do_round_min)
+	printf("%02d %s %2d %s %02d:%02d ",
+	       yout, month_nam[mout], dout, jul, hour, min);
+      else
       printf("%02d %s %2d %s %02d:%02d:%02d ",
 	     yout, month_nam[mout], dout, jul, hour, min, sec);
     } 

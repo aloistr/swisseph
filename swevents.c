@@ -322,6 +322,7 @@ AS_BOOL sign_change(double x0, double x1)
 int main(int argc, char *argv[])
 {
   AS_BOOL is_opposition;
+  AS_BOOL do_round_min = FALSE;
   char serr[256];
   char spnam[256];
   char sout[AS_MAXCH], s[AS_MAXCH], saves[AS_MAXCH]; 
@@ -1306,6 +1307,7 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
   AS_BOOL is_ingr45;
   AS_BOOL is_phase;
   AS_BOOL is_retro = FALSE;
+  AS_BOOL do_round_min = FALSE;
   char sign_deg[30];
   static AS_BOOL cycle_has_started = FALSE;
   char *jul = "";

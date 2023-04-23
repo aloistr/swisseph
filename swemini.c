@@ -23,7 +23,7 @@
 
 char *smon[] = {NULL, "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
-int main()
+int main(void)
 {
   char sdate[AS_MAXCH], snam[40], serr[AS_MAXCH];  
   int jday = 1, jmon = 1, jyear = 2022;

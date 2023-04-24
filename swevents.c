@@ -234,7 +234,7 @@ static char motab[13][31][10];	/* table for moon ingresses */
 
 char *planet_name;
 AS_BOOL ephemeris_time = FALSE;
-AS_BOOL do_not_round = FALSE;
+AS_BOOL do_round_min = FALSE;
 AS_BOOL do_motab = FALSE;
 AS_BOOL do_mojap = FALSE;
 AS_BOOL date_gap = FALSE;
@@ -1392,7 +1392,7 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
     if (do_round_min)
       sprintf(sout, "%02d:%02d %s", hour, min,  znam[izod]);
     else 
-    sprintf(sout, "%02d:%02d:%02d %s", hour, min, sec, znam[izod]);
+      sprintf(sout, "%02d:%02d:%02d %s", hour, min, sec, znam[izod]);
     strcpy(motab[mout-1][dout-1], sout);
     prev_yout = yout;
     return;
@@ -1405,21 +1405,21 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
     else if (ipl > SE_VENUS && strncmp(s, "conj", 4) == 0)
       putchar('\n');
     if (!(is_ingress || is_phase))
-    printf("%-20s%s", s, gap);
+      printf("%-20s%s", s, gap);
     if (date_gap) {
       if (do_round_min)
 	printf("%02d%s%s%s%2d%s%s%02d:%02d",
 	     yout, gap, month_nam[mout], gap, dout, jul, gap, hour, min);
       else
-      printf("%02d%s%s%s%2d%s%s%02d:%02d:%02d",
+	printf("%02d%s%s%s%2d%s%s%02d:%02d:%02d",
 	     yout, gap, month_nam[mout], gap, dout, jul, gap, hour, min, sec);
     } else {
       if (do_round_min)
 	printf("%02d %s %2d %s %02d:%02d ",
 	       yout, month_nam[mout], dout, jul, hour, min);
       else
-      printf("%02d %s %2d %s %02d:%02d:%02d ",
-	     yout, month_nam[mout], dout, jul, hour, min, sec);
+	printf("%02d %s %2d %s %02d:%02d:%02d ",
+	       yout, month_nam[mout], dout, jul, hour, min, sec);
     } 
     if (show_jd)
       printf("%sjd=%.8lf", gap, teph);

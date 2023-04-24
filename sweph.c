@@ -7266,7 +7266,7 @@ void CALL_CONV swe_set_topo(double geolon, double geolat, double geoalt)
   swi_force_app_pos_etc();
 }
 
-void swi_force_app_pos_etc()
+void swi_force_app_pos_etc(void)
 {
   int i;
   for (i = 0; i < SEI_NPLANETS; i++)

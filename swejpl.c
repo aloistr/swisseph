@@ -945,7 +945,7 @@ int swi_open_jpl_file(double *ss, char *fname, char *fpath, char *serr)
   return retc;
 }
 
-int32 swi_get_jpl_denum()
+int32 swi_get_jpl_denum(void)
 {
   return js->eh_denum;
 }

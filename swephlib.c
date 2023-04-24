@@ -3151,7 +3151,7 @@ static double adjust_for_tidacc(double ans, double Y, double tid_acc, double tid
 }
 
 /* returns tidal acceleration used in swe_deltat() and swe_deltat_ex() */
-double CALL_CONV swe_get_tid_acc()
+double CALL_CONV swe_get_tid_acc(void)
 {
   return swed.tid_acc;
 }
@@ -3183,7 +3183,7 @@ void CALL_CONV swe_set_delta_t_userdef(double dt)
   }
 }
 
-int32 swi_guess_ephe_flag()
+int32 swi_guess_ephe_flag(void)
 {
   int32 iflag = SEFLG_SWIEPH;
   /* if jpl file is open, assume SEFLG_JPLEPH */

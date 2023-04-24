@@ -267,7 +267,7 @@ static int find_zero(double y00, double y11, double y2, double dx,
 static int find_maximum(double y00, double y11, double y2, double dx, 
 			double *dxret, double *yret);
 static void print_item(char *s, double t, double x, double elo, double mag);
-static int print_motab();
+static int print_motab(void);
 
 // from old swevents.c
 static char *hms(double x, int32 iflag);
@@ -1267,7 +1267,7 @@ l_phase:
   return OK;
 }
 
-static int print_motab()
+static int print_motab(void)
 {
   int i, j;
   printf("%d\n", prev_yout);

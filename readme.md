@@ -108,38 +108,41 @@ subdirectory contrib:
 It contains open source code and applications using the Swiss Ephemeris.
 See the readme file in directory contrib for more details.
 
+
+### Legal restrictions
+
 The SWISS EPHEMERIS can be licensed by programmers to include this 
 calculation engine in their software. More information is found at
-httasp://www.astro.com/swisseph/
+https://www.astro.com/swisseph/
 
 Depending on your application the free edition under the Public License
 may apply, or you may have to acquire a professional license for a fee.
 
-
-### Legal restrictions
 Read LICENSE.TXT
 
 ### Mailing list
 We maintain a mailing list which we use to send developers information about
 updates, bugs etc.
+
 If you want to have your name added to this mailing list, please
 visit https://groups.io/g/swisseph
 
 ## Feedback
+
 We welcome any suggestions and comments you may have about the Swiss Ephemeris.
 Please email to swisseph@groups.io
 
 If you want your feedback distributed to all members of the swisseph
 mailing list, please subscribe to https://groups.io/g/swisseph
 
-
-
 ## Java-Version:
 
 Thomas Mack has ported the Swiss Ephemeris library to Java.
+
 His work can be found at:  http://www.th-mack.de/international/download/
+
 If you use it for commercial or for non-open-source purposes, please
-be aware that GNU Public License of Swiss Ephemeris 
+be aware that AGPL Public License of Swiss Ephemeris 
 also applies for the Java version, besides any additional requirements
 which may be defined by Thomas Mack.
 

@@ -31,6 +31,9 @@ In the public Swiss Ephemeris github repository
 sub-directory: ephe
 https://github.com/aloistr/swisseph/tree/master/ephe
 
+or from Astrodienst's public Dropbox folder with this link
+https://www.dropbox.com/sh/uul2jwd54rgaoid/AABtD4AcwxeJdYM9qs30v4xca?dl=0
+
 ## Swiss Ephemeris source code
 
 In the public Swiss Ephemeris Github repository

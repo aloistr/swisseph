@@ -641,6 +641,7 @@ static char *infoexamp = "\n\
 #include "swephexp.h" 	/* this includes  "sweodef.h" */
 #include "swephlib.h"
 #include "sweph.h"
+#include <math.h>
 
 /*
  * programmers warning: It looks much worse than it is!
@@ -738,7 +739,7 @@ static char *our_strcpy(char *to, char *from);
 /* globals shared between main() and print_line() */
 static char *fmt = "PLBRS";
 static char *gap = " ";
-static double t, te, tut, jut = 0;
+static double t, te, tut, jut = 0, tstep = 1;
 static int jmon, jday, jyear;
 static int ipl = SE_SUN, ipldiff = SE_SUN, nhouses = 12;
 static int iplctr = SE_SUN;
@@ -847,7 +848,7 @@ int main(int argc, char *argv[])
   double aya_t0 = 0, aya_val0 = 0;
   AS_BOOL no_speed = FALSE;
   int32 sid_mode = SE_SIDM_FAGAN_BRADLEY;
-  double t2, tstep = 1, thour = 0;
+  double t2, thour = 0;
   double delt;
   double tid_acc = 0;
   datm[0] = 1013.25; datm[1] = 15; datm[2] = 40; datm[3] = 0;
@@ -2171,12 +2172,17 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
 	printf("%02d.%02d.%04d", jday, jmon, jyear);
 	if (gregflag == SE_JUL_CAL) printf("j");
 	if (jut != 0 || step_in_minutes || step_in_seconds ) {
-	  int h, m, s;
-	  s = (int) (jut * 3600 + 0.5);
-	  h = (int) (s / 3600.0);
-	  m = (int) ((s % 3600) / 60.0);
-	  s %= 60;
-	  printf(" %d:%02d:%02d", h, m, s);
+	  int h, m, s, isgn;
+	  double dsecfr;
+	  int roundflag = SE_SPLIT_DEG_ROUND_SEC;
+	  if ((tstep < 1 && tstep > -1) && step_in_seconds) {
+	    roundflag = 0;
+	    swe_split_deg(jut, roundflag, &h, &m, &s, &dsecfr, &isgn);
+	    printf(" %d:%02d:%02.2lf", h, m, s + dsecfr);
+	  } else {
+	    swe_split_deg(jut, roundflag, &h, &m, &s, &dsecfr, &isgn);
+	    printf(" %d:%02d:%02d", h, m, s);
+	  }
 	  if (universal_time)
 	    printf(" UT");
 	  else

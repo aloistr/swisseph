@@ -2,8 +2,7 @@ readme.md  created 5-oct-2017 by Alois Treindl
 
 last update 20 September 2023
 
-About the Swiss Ephemeris:
-=========================
+## About the Swiss Ephemeris:
 
 Swiss Ephemeris is a software toolbox for programmers of astrological
 software. It is of little use for a non-programmer
@@ -24,31 +23,34 @@ astronomical standard books up to the last printed digit.
 Detailed information is available at https://www.astro.com/swisseph
 or in the documentation files included in the distribution.
 
-## Download location of files:
+# Download location of files:
 
 ## Compressed Swiss Ephemeris planet and main asteroid files
-from public Swiss Ephemeris github repository
+
+In the public Swiss Ephemeris github repository
 sub-directory: ephe
 https://github.com/aloistr/swisseph/tree/master/ephe
 
 ## Swiss Ephemeris source code
-===========================
-from public Swiss Ephemeris Github repository
+
+In the public Swiss Ephemeris Github repository
 https://github.com/aloistr/swisseph
 
 ## Swiss Ephemeris Documentation
-=============================
-from public Swiss Ephemeris Github repository
+
+in the public Swiss Ephemeris Github repository
 sub-directory: doc
 https://github.com/aloistr/swisseph/tree/master/doc
 
 ## Swiss Ephemeris for Windows
-===========================
-from public Swiss Ephemeris github repository
+
+in the public Swiss Ephemeris github repository
 sub-directory: windows
 https://github.com/aloistr/swisseph
 containing
+
 sweph.zip
+
 	The complete Swiss Ephemeris package for Windows (32bit),
 	except the ephemeris data files.
 	See online documentation at https://www.astro.com/swisseph
@@ -59,11 +61,17 @@ sweph.zip
 	- Delphi 32-bit
 	Note: Visual Basic files may not have been updated and
 	tested, as we currently do not possess a working copy of VB at Astrodienst.
+
 swephzip.txt
+
 	overview of content of the sweph.zip package
+
 subdirectory vb:
+
 	declarations for 32-bit and 64-bit Visual Basic
+
 subdirectory programs:
+
 	A directory containing sample and utility programs for Windows:
 	swetest.exe:
 	executable Swiss Ephemeris program.
@@ -76,7 +84,7 @@ subdirectory programs:
 
 
 ## JPL files
-=========
+
 now directly from jpl, see
 https://www.astro.com/ftp/swisseph/jplfiles/index.htm
 or from Astrodienst's public Dropbox folder with this link
@@ -88,11 +96,12 @@ https://www.dropbox.com/sh/0ktij3w4cbs9n3a/AADWq0bMqKieTRrdJxlghgMJa?dl=0
   a7b2a5b8b2ebed52ea4da2304958053b  de441.eph
 
 ## Asteroid files for all availble numbered asteroids (more then 620'000)
-======================================================================
-from Astrodienst's public Dropbox folder with this link
+
+in Astrodienst's public Dropbox folder with this link
 https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8ih1tce&dl=0
 
 ## Contributed code
+
 subdirectory contrib:
 It contains open source code and applications using the Swiss Ephemeris.
 See the readme file in directory contrib for more details.
@@ -105,19 +114,16 @@ Depending on your application the free edition under the Public License
 may apply, or you may have to acquire a professional license for a fee.
 
 
-Legal restrictions
-==================
+### Legal restrictions
 Read LICENSE.TXT
 
-Mailing list
-============
+### Mailing list
 We maintain a mailing list which we use to send developers information about
 updates, bugs etc.
 If you want to have your name added to this mailing list, please
 visit https://groups.io/g/swisseph
 
-Feedback
-========
+## Feedback
 We welcome any suggestions and comments you may have about the Swiss Ephemeris.
 Please email to swisseph@groups.io
 
@@ -126,8 +132,8 @@ mailing list, please subscribe to https://groups.io/g/swisseph
 
 
 
-Java-Version:
-=============
+## Java-Version:
+
 Thomas Mack has ported the Swiss Ephemeris library to Java.
 His work can be found at:  http://www.th-mack.de/international/download/
 If you use it for commercial or for non-open-source purposes, please
@@ -135,15 +141,12 @@ be aware that GNU Public License of Swiss Ephemeris
 also applies for the Java version, besides any additional requirements
 which may be defined by Thomas Mack.
 
-PHP-Version
-===========
+## PHP-Version
 found on Github https://github.com/cyjoelchen/php-sweph
 
-Perl-Version
-===========
+## Perl-Version
 found on Github https://github.com/aloistr/perl-sweph
 
-Numerical Integrator
-====================
+## Numerical Integrator
 the numerical integrator to prepare swisss ephemeris files is not in a state
 fit for publication.

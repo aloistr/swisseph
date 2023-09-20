@@ -109,9 +109,10 @@ https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8
 
 ## Asteroid files for all availble named asteroids (more than 24'000)
 
-Each file covers 6000 years, from 3000 BCE to 2999 CE. 
+Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE. 
 available in Astrodienst's public Dropbox folder 'long_ast' with this link
-(not yet available)
+https://www.dropbox.com/scl/fo/3ke7s3ktkisw6kk7oa5a1/h?rlkey=twztgg4z3puwy0ywudiw8eucn&dl=0
+(not yet all uploaded)
 
 ## Contributed code
 

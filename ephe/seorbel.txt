@@ -1,0 +1,97 @@
+    # Orbital elements of ficticious planets
+    # 27 Jan. 2000
+    #
+    # This file is part of the Swiss Ephemeris, from Version 1.52 on.
+    #
+    # Warning! These planets do not exist!
+    #
+    # The user can add his or her own elements.
+    # 960 is the maximum number of ficticious planets.
+    #
+    # The elements order is as follows:
+    # 1. epoch of elements (Julian day)
+    # 2. equinox (Julian day or "J1900" or "B1950" or "J2000")
+    # 3. mean anomaly at epoch
+    # 4. semi-axis
+    # 5. eccentricity
+    # 6. argument of perihelion (ang. distance of perihelion from node)
+    # 7. ascending node
+    # 8. inclination
+    # 9. name of planet
+    #
+    # use '#' for comments
+    # to compute a body with swe_calc(), use planet number 
+    # ipl = SE_FICT_OFFSET_1 + number_of_elements_set,
+    # e.g. number of Kronos is ipl = 39 + 4 = 43
+    #
+    # Witte/Sieggruen planets, refined by James Neely
+J1900, J1900, 163.7409, 40.99837, 0.00460, 171.4333, 129.8325, 1.0833, Cupido   # 1
+J1900, J1900,  27.6496, 50.66744, 0.00245, 148.1796, 161.3339, 1.0500, Hades    # 2
+J1900, J1900, 165.1232, 59.21436, 0.00120, 299.0440,   0.0000, 0.0000, Zeus     # 3
+J1900, J1900, 169.0193, 64.81690, 0.00305, 208.8801,   0.0000, 0.0000, Kronos   # 4
+J1900, J1900, 138.0533, 70.29949, 0.00000,   0.0000,   0.0000, 0.0000, Apollon  # 5
+J1900, J1900, 351.3350, 73.62765, 0.00000,   0.0000,   0.0000, 0.0000, Admetos  # 6
+J1900, J1900,  55.8983, 77.25568, 0.00000,   0.0000,   0.0000, 0.0000, Vulcanus # 7
+J1900, J1900, 165.5163, 83.66907, 0.00000,   0.0000,   0.0000, 0.0000, Poseidon # 8
+    #
+    # Isis-Transpluto; elements from "Die Sterne" 3/1952, p. 70ff. 
+    # Strubell does not give an equinox. 1945 is taken in order to 
+    # reproduce the as best as ASTRON ephemeris. (This is a strange 
+    # choice, though.)
+    # The epoch according to Strubell is 1772.76. 
+    # 1772 is a leap year!
+    # The fraction is counted from 1 Jan. 1772
+2368547.66, 2431456.5, 0.0, 77.775, 0.3, 0.7, 0, 0, Isis-Transpluto             # 9
+    # Nibiru, elements from Christian Woeltge, Hannover
+1856113.380954, 1856113.380954, 0.0, 234.8921, 0.981092, 103.966, -44.567, 158.708, Nibiru # 10
+    # Harrington, elements from Astronomical Journal 96(4), Oct. 1988 
+2374696.5, J2000, 0.0, 101.2, 0.411, 208.5, 275.4, 32.4, Harrington             # 11
+    # according to W.G. Hoyt, "Planets X and Pluto", Tucson 1980, p. 63 
+2395662.5, 2395662.5, 34.05, 36.15, 0.10761, 284.75, 0, 0, Leverrier (Neptune)  # 12
+2395662.5, 2395662.5, 24.28, 37.25, 0.12062, 299.11, 0, 0, Adams (Neptune)      # 13
+2425977.5, 2425977.5, 281, 43.0, 0.202, 204.9, 0, 0, Lowell (Pluto)             # 14
+2425977.5, 2425977.5, 48.95, 55.1, 0.31, 280.1, 100, 15, Pickering (Pluto)      # 15
+# intramercurian hypothetical Vulcan acc. to L.H. Weston
+J1900,JDATE, 252.8987988 + 707550.7341 * T, 0.13744, 0.019, 322.212069+1670.056*T, 47.787931-1670.056*T, 7.5, Vulcan # 16
+# Selena/White Moon
+J2000,JDATE, 242.2205555 + 5143.5418158 * T, 0.05280098949, 0.0, 0.0, 0.0, 0.0, Selena/White Moon, geo # 17
+# Hypothetical planet Proserpina, data from Valentin Abramov
+# see also http://www.geocities.ws/rognavaldre/proserpina.html
+J1900,JDATE, 170.73, 79.225630, 0, 0, 0, 0, Proserpina #18
+# Waldemath's Second Earth Moon 
+# Elements were derived by D.Koch from Waldemaths original elements as given in 
+# David Walters' book on Vulcan. They differ from Solar Fire (Graham Dawsons) 
+# elements, which are based on the assumption that the "mean longitude" given
+# by Waldemath is an observation (a true longitude)
+# Neither Swisseph nor Solar fire elements agree with Delphine Jay's ephemeris,
+# which is obviously wrong.
+2414290.95827875,2414290.95827875, 70.3407215 + 109023.2634989 * T, 0.0068400705250028, 0.1587, 8.14049594 + 2393.47417444 * T, 136.24878256 - 1131.71719709 * T, 2.5, Waldemath, geo # 19
+# Colin R. Nicholl's Comet, according to "The Great Christ Comet", p. 223.
+1719500.7, J2000, 0.0, 1190.0, 0.9999, 9.47, 200.08, 178.3, Christ Comet # 20
+# Planet 9, according to: Fienga & alii, Constraints on the location of a
+# possible 9th planet, Astronomy & Astrophysics no. FiengaLaskar2016R5. The
+# authors provide true anomaly 117.8. Mean anomaly derived by D. Koch
+2457388.5,J2000,45.5272966,700,0.6,150,113,30,Planet_9 # 21
+# Comet Halley 12 BCE, only good near 12 BCE; 
+# Yeomans/Kiang, Mon. Not. R. astr. Soc. (1981), 197, p. 643
+# http://adsabs.harvard.edu/full/1981MNRAS.197..633Y
+1717323.34852, B1950, 0.0, 17.99261849, 0.9673664, 92.54399, 35.19064, 163.58392, Comet Halley 12 BCE # 22
+# 2015 RR245
+2457600.5,J2000,322.50413,81.2891975,0.5852663,261.41753,211.67680,7.57643,2015 RR245 # 23
+# Koré apres Aureas
+#2415021.5,JDATE, 345.632, 52.0, 0,0,0, 0, Korè  #24, adapted to fit 9°19  8.7.1923
+2415021.5,JDATE, 345.67, 52.0014913, 0,0,0, 0, Korè  #24
+# Comet Halley 1198 BCE, only good near 1198 BCE
+# Yeomans/Kiang, Mon. Not. R. astr. Soc. (1981), 197, p. 643
+# http://adsabs.harvard.edu/full/1981MNRAS.197..633Y
+1283983.73252, B1950, 0.0, 16.80480637, 0.9625705, 74.46894, 14.66132, 162.95968, Comet Halley 1198 BCE # 25
+J2000,JDATE, 0.0 + 0.00000 * T, 80000, 0.0, 0.0, 0.0, 0.0, VEA # 26
+#J2000,JDATE, 0.0 , 80000, 0.0, 0.0, 0.0, 0.0, VEA # 26
+#
+# The following elements are for test only
+# (Selena without T)
+J2000,JDATE, 242.2205555, 0.05279142865925, 0.0, 0.0, 0.0, 0.0, Selena/White Moon, geo # 17
+# (Selena with T, gives exactly the same position) 
+J2000,JDATE, 242.2205555 + 5143.5418158 * T, 0.05279142865925, 0.0, 0.0, 0.0, 0.0, Selena/White Moon with T Terms, geo # 17
+J2000, JDATE, 174.794787 + 149472.5157715 * T, 0.38709831, 0.20563175 + 0.000020406 * T, 29.125226 + 0.3702885 * T, 48.330893 + 1.186189 * T, 7.004986 + 0.0018215 * T, Mercury elem. for equ. of date # 18
+J2000, J2000, 174.794787 + 149472.5157715 * T, 0.38709831, 0.20563175 + 0.000020406 * T, 29.125226 + 0.2842872 * T, 48.330893 - 0.1254229 * T, 7.004986 - 0.0059516 * T, Mercury Test J2000 Elements# 18

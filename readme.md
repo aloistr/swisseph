@@ -100,17 +100,19 @@ https://www.dropbox.com/sh/0ktij3w4cbs9n3a/AADWq0bMqKieTRrdJxlghgMJa?dl=0
 	fad0f432ae18c330f9e14915fbf8960a  de431.eph
 	a7b2a5b8b2ebed52ea4da2304958053b  de441.eph
 
-## Asteroid files for all availble numbered asteroids (more than 620'000)
+## Asteroid files for all available numbered asteroids (more than 620'000)
 
 Each file covers 600 years, from 1500 - 2099. They are organized in subdirectories of 1000 files each, 
-available in Astrodienst's public Dropbox folder 'all_ast' with this link
+available in Astrodienst's public Dropbox folder 'all_ast' with this link:
+
 https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8ih1tce&dl=0
 (not yet all uploaded)
 
-## Asteroid files for all availble named asteroids (more than 24'000)
+## Asteroid files for all available named asteroids (more than 24'000)
 
 Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE. 
 available in Astrodienst's public Dropbox folder 'long_ast' with this link
+
 https://www.dropbox.com/scl/fo/3ke7s3ktkisw6kk7oa5a1/h?rlkey=twztgg4z3puwy0ywudiw8eucn&dl=0
 (not yet all uploaded)
 

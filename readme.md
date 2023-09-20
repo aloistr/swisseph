@@ -4,24 +4,21 @@ last update 20 September 2023
 
 ## About the Swiss Ephemeris:
 
-Swiss Ephemeris is a software toolbox for programmers of astrological
+Swiss Ephemeris (SE) is a software toolbox for programmers of astrological
 software. It is of little use for a non-programmer
 
-The test programs SWETEST.EXE and SWEWIN.EXE come
-with it as demonstration programs for programmers to show them how
-they can call the SE functions.
-swetest.exe can be used to compute complete natal horoscopes as textual
-output.
+Swiss Ephemeris was developed by Dieter Koch and Alois Treindl, while both were
+employed by Astrodienst AG in Zollikon/Zürich Switzerland.
 
-Programmers all over the world have started to build SE into their
+Most astrological programmers all over the world use Swiss Ephemeris in their
 software. 
 
 SE ist built according to the highest standards of precision available
-in astronomical data. It is able to reproduce the ephemeris data in
+in astronomical data, with raw data from Nasa's JPL. It is able to reproduce the ephemeris data in
 astronomical standard books up to the last printed digit.
 
 Detailed information is available at https://www.astro.com/swisseph
-or in the documentation files included in the distribution.
+or in the documentation files included here (subdirectory doc).
 
 # Download location of files:
 
@@ -135,8 +132,9 @@ may apply, or you may have to acquire a professional license for a fee.
 Read LICENSE.TXT
 
 ### Mailing list
-We maintain a mailing list which we use to send developers information about
-updates, bugs etc.
+We maintain a mailing list which servers for discussion between developers and 
+as the main support channel. All Swiss Ephemeris support is public. There is
+no private support by email.
 
 If you want to have your name added to this mailing list, please
 visit https://groups.io/g/swisseph

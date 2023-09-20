@@ -89,6 +89,7 @@ now directly from jpl, see
 https://www.astro.com/ftp/swisseph/jplfiles/index.htm
 or from Astrodienst's public Dropbox folder with this link
 https://www.dropbox.com/sh/0ktij3w4cbs9n3a/AADWq0bMqKieTRrdJxlghgMJa?dl=0
+
   md5-keys
   1ef6191b614b2b854adae8675b1b981f  de200.eph
   1ef768440cc1617b6c8ad27a9a788135  de406e.eph

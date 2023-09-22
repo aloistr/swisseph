@@ -99,10 +99,13 @@ https://www.dropbox.com/sh/0ktij3w4cbs9n3a/AADWq0bMqKieTRrdJxlghgMJa?dl=0
 
 ## Asteroid files for all available numbered asteroids (more than 620'000)
 
-Each file covers 600 years, from 1500 - 2099. They are organized in subdirectories of 1000 files each, 
+Each file covers 600 years, from 1500 - 2099. They are organized in folders of 1000 files each, 
 available in Alois' public Dropbox folder 'all_ast' with this link:
 
 https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8ih1tce&dl=0
+
+The ast* folders are organized in subfolders like ast_0_99 in groups of 100 each. Dropbox is a bit 
+slow with large numbers of folders which each contain 1000 files. It handles 100 such folders better then 620.
 
 ## Asteroid files for all available named asteroids (more than 24'000)
 

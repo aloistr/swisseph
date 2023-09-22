@@ -103,7 +103,6 @@ Each file covers 600 years, from 1500 - 2099. They are organized in subdirectori
 available in Alois' public Dropbox folder 'all_ast' with this link:
 
 https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8ih1tce&dl=0
-(not yet all uploaded)
 
 ## Asteroid files for all available named asteroids (more than 24'000)
 
@@ -111,7 +110,6 @@ Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE.
 available in Alois' public Dropbox folder 'long_ast' with this link
 
 https://www.dropbox.com/scl/fo/3ke7s3ktkisw6kk7oa5a1/h?rlkey=twztgg4z3puwy0ywudiw8eucn&dl=0
-(not yet all uploaded)
 
 ## Contributed code
 

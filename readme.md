@@ -18,14 +18,14 @@ in astronomical data, with raw data from Nasa's JPL. It is able to reproduce the
 astronomical standard books up to the last printed digit.
 
 Detailed information is available at https://www.astro.com/swisseph
-or in the documentation files included here (subdirectory doc).
+or in the documentation files included here (folder doc).
 
 # Download location of files:
 
 ## Compressed Swiss Ephemeris planet and main asteroid files
 
 In the public Swiss Ephemeris github repository
-sub-directory: ephe
+folder ephe
 https://github.com/aloistr/swisseph/tree/master/ephe
 
 or from Alois' public Dropbox folder with this link
@@ -39,13 +39,13 @@ https://github.com/aloistr/swisseph
 ## Swiss Ephemeris Documentation
 
 in the public Swiss Ephemeris Github repository
-sub-directory: doc
+folder doc
 https://github.com/aloistr/swisseph/tree/master/doc
 
 ## Swiss Ephemeris for Windows
 
 in the public Swiss Ephemeris github repository
-sub-directory: windows
+folder windows
 https://github.com/aloistr/swisseph
 containing
 
@@ -66,11 +66,11 @@ swephzip.txt
 
 	overview of content of the sweph.zip package
 
-subdirectory vb:
+folder vb:
 
 	declarations for 32-bit and 64-bit Visual Basic
 
-subdirectory programs:
+folder programs:
 
 	A directory containing sample and utility programs for Windows:
 	swetest.exe:
@@ -104,7 +104,7 @@ available in Alois' public Dropbox folder 'all_ast' with this link:
 
 https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8ih1tce&dl=0
 
-The ast* folders are organized in subfolders like ast_0_99 in groups of 100 each. Dropbox is a bit 
+The ast* folders are organized in folders like ast_0_99 in groups of 100 each. Dropbox is a bit 
 slow with large numbers of folders which each contain 1000 files. It handles 100 such folders better then 620.
 
 The total volume was 29 Gb in September 2023.
@@ -120,7 +120,7 @@ The total volume was 11 Gb in September 2023.
 
 ## Contributed code
 
-subdirectory contrib:
+folder contrib:
 It contains open source code and applications using the Swiss Ephemeris.
 See the readme file in directory contrib for more details.
 

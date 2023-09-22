@@ -107,12 +107,16 @@ https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8
 The ast* folders are organized in subfolders like ast_0_99 in groups of 100 each. Dropbox is a bit 
 slow with large numbers of folders which each contain 1000 files. It handles 100 such folders better then 620.
 
+The total volume was 29 Gb in September 2023.
+
 ## Asteroid files for all available named asteroids (more than 24'000)
 
 Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE. 
 available in Alois' public Dropbox folder 'long_ast' with this link
 
 https://www.dropbox.com/scl/fo/3ke7s3ktkisw6kk7oa5a1/h?rlkey=twztgg4z3puwy0ywudiw8eucn&dl=0
+
+The total volume was 11 Gb in September 2023.
 
 ## Contributed code
 

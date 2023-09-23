@@ -28,8 +28,9 @@ In the public Swiss Ephemeris github repository
 folder ephe
 https://github.com/aloistr/swisseph/tree/master/ephe
 
-or from Alois' public Dropbox folder with this link
-https://www.dropbox.com/sh/uul2jwd54rgaoid/AABtD4AcwxeJdYM9qs30v4xca?dl=0
+or from Alois' public Dropbox area in folder 'ephe' with this link
+
+https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
 
 ## Swiss Ephemeris source code
 
@@ -88,8 +89,9 @@ folder programs:
 now directly from jpl, see
 https://www.astro.com/ftp/swisseph/jplfiles/index.htm
 
-or from Alois' public Dropbox folder with this link
-https://www.dropbox.com/sh/0ktij3w4cbs9n3a/AADWq0bMqKieTRrdJxlghgMJa?dl=0
+or from Alois' public Dropbox area in folder 'jpl binary files'  with this link
+
+https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
 
 	md5-keys
 	1ef6191b614b2b854adae8675b1b981f  de200.eph
@@ -100,9 +102,9 @@ https://www.dropbox.com/sh/0ktij3w4cbs9n3a/AADWq0bMqKieTRrdJxlghgMJa?dl=0
 ## Asteroid files for all available numbered asteroids (more than 620'000)
 
 Each file covers 600 years, from 1500 - 2099. They are organized in folders of 1000 files each, 
-available in Alois' public Dropbox folder 'all_ast' with this link:
+available in Alois' public Dropbox area in folder 'all_ast' with this link:
 
-https://www.dropbox.com/scl/fo/55glioodohj6s3nnusc98/h?rlkey=31ukvztsg0g6jhklbr8ih1tce&dl=0
+https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
 
 The ast* folders are organized in folders like ast_0_99 in groups of 100 each. Dropbox is a bit 
 slow with large numbers of folders which each contain 1000 files. It handles 100 such folders better then 620.
@@ -112,9 +114,9 @@ The total volume was 29 Gb in September 2023.
 ## Asteroid files for all available named asteroids (more than 24'000)
 
 Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE. 
-available in Alois' public Dropbox folder 'long_ast' with this link
+available in Alois' public Dropbox area in folder 'long_ast' with this link
 
-https://www.dropbox.com/scl/fo/3ke7s3ktkisw6kk7oa5a1/h?rlkey=twztgg4z3puwy0ywudiw8eucn&dl=0
+https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
 
 The total volume was 11 Gb in September 2023.
 

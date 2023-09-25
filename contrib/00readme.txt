@@ -49,6 +49,9 @@ Swedll32(For_Excel_VBA_and_VB).zip and contains
 5) TestSwedll32.txt    -  Sample output file showing Test results.
 6) Readme_Swedll32.txt 
 
+See also the 'files' are in gthe mailing list archive
+https://groups.io/g/swisseph/files
+
 php:
 the most current release of php-sweph is on github
 https://github.com/cyjoelchen/php-sweph

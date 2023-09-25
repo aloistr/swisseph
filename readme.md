@@ -120,6 +120,35 @@ https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6y
 
 The total volume was 11 Gb in September 2023.
 
+## How to organize Ephemeris files so that SwissEph finds them
+Swissephe code uses an internal swed.ephepath for the directory names where it looks
+for its data files.
+
+It defaults to \sweph\ephe on Windows and to  ".:/users/ephe2/:/users/ephe/" on Linux or other
+Unix-like systems like Android or Mac OS-X.
+
+The characters ; in Windows and ; or : in Linux serve as path separators.
+In the default setting on Linux, the three directories . , /users/ephe and /users/ephe2 are
+searched when Swiss Ephemeris looks for a file.
+
+The programmer can call the function swe_set_ephe_path() to set the ephepath variable,
+and may include path separators.
+
+The user of a program can also set an evironment variable which override the builtin default.
+
+The compressed planetary ephemeris files like sepl*.se1, sem*.se1 and seas*.se1 must be directly in one of
+the path elements.
+
+Asteroid files must be in subdirectories named astN  like ast0, ast1, ... ast623,
+where N is the asteroid number divided by 1000.
+
+The folders all_ast and long_ast are only used inside the Dropbox area to organize the files. Once downloaded,
+the astN directory must be placed directly in one of the elements of ephepath.
+Short asteroid files and long asteroid filese differ by an s in the file name, like se1001.ses and se1001s.se1.
+They can be merged into the same astN directory, in this case ast1.
+Astrodienst keeps them traditionally separate in /ephe and /ephe2, but that distinction is not technically necessary.
+
+
 ## Contributed code
 
 folder contrib:

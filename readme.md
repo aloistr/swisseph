@@ -106,9 +106,6 @@ available in Alois' public Dropbox area in folder 'all_ast' with this link:
 
 https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
 
-The ast* folders are organized in folders like ast_0_99 in groups of 100 each. Dropbox is a bit 
-slow with large numbers of folders which each contain 1000 files. It handles 100 such folders better then 620.
-
 The total volume was 29 Gb in September 2023.
 
 ## Asteroid files for all available named asteroids (more than 24'000)

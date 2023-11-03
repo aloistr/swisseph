@@ -24,7 +24,7 @@ List of numbers of planetary moons and body centers
 9705  Miranda/Uranus  
 9799  Uranus/COB  
 9801  Triton/Neptune  
-9802  Triton/Nereid  
+9802  Nereid/Neptune
 9808  Proteus/Neptune  
 9899  Neptune/COB  
 9901  Charon/Pluto  

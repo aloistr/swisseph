@@ -417,7 +417,7 @@ int main(int argc, char *argv[])
         sprintf(month_nam[n], "%3d", n);
       }
     } else if (strcmp(argv[i], "-?") == 0) {
-      printf(info);
+      printf("%s", info);
 #if PRINTMOD
     } else if (strcmp(argv[i], "-mpdf") == 0) {
       pmodel = PMODEL_PDF;
@@ -1363,10 +1363,9 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
     }
   }
   teph += gmtoff / 24;
-  if (ephemeris_time) 
-    teph = teph;
-  else
+  if (! ephemeris_time)  {
     teph = teph - swe_deltat_ex(teph, whicheph, serr);
+  }
   // compute UT and add 0.5 minutes for later rounding to minutes 
   if (do_round_min) {
     teph += 0.5 / 1440.0 ;
@@ -2033,7 +2032,7 @@ static void test_print_date(double tjd, int ipla, int iplb, char *stara, char *s
   if (strg != NULL && *strg != '\0')
     sprintf(s + strlen(s), " %s", strg);
   strcat(s, "\n");
-  printf(s);
+  printf("%s", s);
 }
 
 static char *forw_splan(char *sp)
@@ -2165,7 +2164,7 @@ if (ipla <= 9 && tjd_pre > 0 && tjd_post > 0 && tjd_post - tjd_pre > dur) {
     swe_revjul(tjd, 1, &jyear, &jmon, &jday, &jut);
     sprintf(s, "%d/%02d/%02d %s: %s - %s ang=%.0f, orb=%.4f, %.5f, %.5f, %.5f", jyear, jmon, jday, hms(jut, BIT_LZEROES), spl1, spl2, dasp, dorb, tjd, tjd_pre, tjd_post);
     strcat(s, "\n");
-    fprintf(stderr, s);
+    fprintf(stderr, "%s", s);
   }
   fclose(fpout);
   return OK;
@@ -2636,8 +2635,9 @@ static int32 extract_data_of_day(int32 doflag, double tjd, double dtol, char *sp
   }
 end_extract:
   fclose(fpout);
-  if (retc == ERR)
-    fprintf(stderr, serr);
+  if (retc == ERR) {
+    fprintf(stderr, "%s", serr);
+  }
   return retc;
 }
 

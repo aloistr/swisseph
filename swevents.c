@@ -1251,7 +1251,7 @@ l_phase:
 	}
       }
     }
-    if ((iflgret & whicheph) == 0) {
+    if (0 && (iflgret & whicheph) == 0) {
       sprintf(sout, "ephemeris %d", iflgret & SEFLG_EPHMASK);
       print_item(sout, HUGE, -1, HUGE, HUGE);
     }

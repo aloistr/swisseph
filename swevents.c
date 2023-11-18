@@ -1450,7 +1450,7 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
       case 4:
 	strcpy(sout, " h/wane"); break;
       }
-      printf("%s%s%d", sout, gap, izod);
+      printf("%s%s%d%s", sout, gap, izod, gap);
       if (delon != HUGE) {
 	printf("%s", dms(delon, BIT_ZODIAC|BIT_ROUND_SEC));
 	delon = HUGE;
@@ -1678,7 +1678,7 @@ static char *dms(double x, int iflag)
     goto return_dms;
   x -= ksec;
   k = (long) x * 10000;
-  sprintf(s, "%s.%04d", s, k);
+  sprintf(s + strlen(s), ".%04d", k);
 return_dms:
   if (sgn < 0) {
     sp = strpbrk(s, "0123456789"); 
@@ -2944,7 +2944,7 @@ static char *hms(double x, int32 iflag)
     *sp = ':';
     if (strlen(ODEGREE_STRING) > 1)
       strcpy(s2, sp + strlen(ODEGREE_STRING));
-      strcpy(sp + 1, s2);
+    strcpy(sp + 1, s2);
     *(sp + 3) = ':';
     *(sp + 8) = '\0';
   }

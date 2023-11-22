@@ -91,16 +91,26 @@ static char *info = "\n\
 	-cl	do not print command line at bottom of 1st page\n\
 	-p    	planet to be computed.\n\
 		See the letter coding below.\n\
-	-nN	output data for N consecutive days; if no -n option\n\
-		is given, the default is 1. If the option -n without a\n\
-		number is given, the default is 20.\n\
+	-nN	search events for N consecutive days; if no -n option\n\
+		is given, the default is 366 (one year).\n\
 	-sN	timestep N days, default 1. This option is only meaningful\n\
 		when combined with option -n.\n\
 	-edirPATH change the directory of the ephemeris files \n\
 	-cycol.. number cycles per column\n\
 	-doall | -doingr etc : do just that\n\
+	-doingr	report sign ingresses\n\
 	-doing45	crossings over 15 tau, Leo, Sco, Aqu\n\
 		(are not included with doall)\n\
+	-doconj	report inferior and superior conjunctions with Sun\n\
+	-dobrill	report moments of greatest brilliance\n\
+	-dorise	report morning set or evening rise\n\
+	-doelong	report maximum elongation from Sun, for planets 1,2,3 only\n\
+	-doretro	report stations\n\
+	-doaps	report minimal and maximal distance from Earth\n\
+	-donode	report when on ascending or descending node\n\
+	-dolphase	report lunar phases (use with -p1)\n\
+	-doasp	report aspects between planets (-p option is ignored)\n\
+	-dovoc	report Moon void of course periods (-p option is ignored)\n\
 	-noingr  no ingresses\n\
 	-motab  special format Moon ingres table\n\
 	-mojap  special format Moon phases\n\
@@ -128,8 +138,9 @@ static char *info = "\n\
 	 -ep		  use extended precision in output\n\
 \n\
 	-?	display this info\n\
+	-h	display this info\n\
 \n\
-  Planet selection letters:\n\
+  Planet selection (only one possible):\n\
 	0 Sun (character zero)\n\
 	1 Moon (character 1)\n\
 	2 Mercury\n\
@@ -232,7 +243,8 @@ static char *month_nam[] = {"", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
 
 static char motab[13][31][10];	/* table for moon ingresses */
 
-char *planet_name;
+char *planet_name = "-";
+char spnam[256];
 AS_BOOL ephemeris_time = FALSE;
 AS_BOOL do_round_min = FALSE;
 AS_BOOL do_motab = FALSE;
@@ -268,6 +280,7 @@ static int find_maximum(double y00, double y11, double y2, double dx,
 			double *dxret, double *yret);
 static void print_item(char *s, double t, double x, double elo, double mag);
 static int print_motab(void);
+static char *set_planet_name(int ipl);
 
 // from old swevents.c
 static char *hms(double x, int32 iflag);
@@ -323,7 +336,6 @@ int main(int argc, char *argv[])
 {
   AS_BOOL is_opposition;
   char serr[256];
-  char spnam[256];
   char sout[AS_MAXCH], s[AS_MAXCH], saves[AS_MAXCH]; 
   char *sp, *spsave;
   char *spno;
@@ -354,7 +366,7 @@ int main(int argc, char *argv[])
   time_t tloc;
   EVENT *pev0;
   tstep = 1;
-  nstep = 300;
+  nstep = 366;
   pmodel = PMODEL_SCREEN;
   strcpy(ephepath, EPHEPATH);
   time(&tloc);
@@ -387,8 +399,10 @@ int main(int argc, char *argv[])
       do_flag |= DO_INGR45;
     } else if (strcmp(argv[i], "-doasp") == 0) {
       do_flag |= DO_ASPECTS;
+      iplfrom = -99;
     } else if (strcmp(argv[i], "-dovoc") == 0) {
       do_flag |= DO_VOC;
+      iplfrom = SE_MOON;
     } else if (strcmp(argv[i], "-getday") == 0) {
       get_data_of_day = TRUE;
     } else if (strcmp(argv[i], "-et") == 0) {
@@ -416,8 +430,12 @@ int main(int argc, char *argv[])
         month_nam[n] = malloc(4);
         sprintf(month_nam[n], "%3d", n);
       }
+    } else if (strcmp(argv[i], "-h") == 0) {
+      printf("%s", info);
+      return OK;
     } else if (strcmp(argv[i], "-?") == 0) {
       printf("%s", info);
+      return OK;
 #if PRINTMOD
     } else if (strcmp(argv[i], "-mpdf") == 0) {
       pmodel = PMODEL_PDF;
@@ -487,7 +505,8 @@ int main(int argc, char *argv[])
 	exit(1);
       }
     } else if (strncmp(argv[i], "-n", 2) == 0) {
-      nstep = atoi(argv[i]+2);
+      n = atoi(argv[i]+2);
+      if (n > 0) nstep = n;
     } else if (strncmp(argv[i], "-s", 2) == 0) {
       tstep = atof(argv[i]+2);
     } else if (strncmp(argv[i], "-b", 2) == 0) {
@@ -506,6 +525,7 @@ int main(int argc, char *argv[])
       exit(1);
     }
   }
+  set_planet_name(iplfrom);
   strcpy(cmdline, "Command: ");
   for (i = 0; i < argc; i++) {
     if (strlen(cmdline) + strlen(argv[i]) < sizeof(cmdline) - 2)
@@ -520,7 +540,7 @@ int main(int argc, char *argv[])
     printf("Date: %s\tSwissEph version %s\n%s\n\n", sdate, sout, cmdline);
   }
 #else
-  printf("Date: %s\tSwissEph version %s\n%s\n\n", sdate, sout, cmdline);
+  printf("Date: %s\tSwissEph version %s\n%s\nplanet %s\n\n", sdate, sout, cmdline, planet_name);
 #endif
   swe_set_ephe_path(ephepath);
   swe_set_jpl_file(fname);
@@ -596,39 +616,6 @@ int main(int argc, char *argv[])
       te = t;
     }
     ipl = iplfrom;
-    switch(ipl) {
-      case SE_SUN:
-	planet_name = "Sun";
-	break;
-      case SE_VENUS:
-	planet_name = "Venus";
-	break;
-      case SE_MERCURY:
-	planet_name = "Mercury";
-	break;
-      case SE_MARS:
-	planet_name = "Mars";
-	break;
-      case SE_JUPITER:
-	planet_name = "Jupiter";
-	break;
-      case SE_SATURN:
-	planet_name = "Saturn";
-	break;
-      case SE_URANUS:
-	planet_name = "Uranus";
-	break;
-      case SE_NEPTUNE:
-	planet_name = "Neptune";
-	break;
-      case SE_PLUTO:
-	planet_name = "Pluto";
-	break;
-      default:
-	swe_get_planet_name(ipl, spnam);
-	planet_name = spnam;
-	break;
-    }
     // handle the three old swevents.c modes and exit
     if (get_data_of_day) {
       if ((pev0 = (EVENT *) calloc((size_t) NEVENTMAX, sizeof(EVENT))) == NULL) {
@@ -1265,6 +1252,47 @@ l_phase:
 #endif
   swe_close();
   return OK;
+}
+
+static char *set_planet_name(int ipl)
+{
+  switch(ipl) {
+    case -99:
+      planet_name = "-";
+      break;
+    case SE_SUN:
+      planet_name = "Sun";
+      break;
+    case SE_VENUS:
+      planet_name = "Venus";
+      break;
+    case SE_MERCURY:
+      planet_name = "Mercury";
+      break;
+    case SE_MARS:
+      planet_name = "Mars";
+      break;
+    case SE_JUPITER:
+      planet_name = "Jupiter";
+      break;
+    case SE_SATURN:
+      planet_name = "Saturn";
+      break;
+    case SE_URANUS:
+      planet_name = "Uranus";
+      break;
+    case SE_NEPTUNE:
+      planet_name = "Neptune";
+      break;
+    case SE_PLUTO:
+      planet_name = "Pluto";
+      break;
+    default:
+      swe_get_planet_name(ipl, spnam);
+      planet_name = spnam;
+      break;
+  }
+  return planet_name;
 }
 
 static int print_motab(void)

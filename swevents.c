@@ -144,7 +144,12 @@ static char *info = "\n\
 	0 Sun (character zero)\n\
 	1 Moon (character 1)\n\
 	2 Mercury\n\
-	....\n\
+	3 Venus\n\
+	4 Mars\n\
+	5 Jupiter\n\
+	6 Saturn\n\
+	7 Uranus\n\
+	8 Neptune\n\
 	9 Pluto\n\
 	10 mean lunar node\n\
 	11 true lunar node\n\

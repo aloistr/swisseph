@@ -150,8 +150,15 @@ static char *info = "\n\
 	11 true lunar node\n\
 	12 mean lunar apogee\n\
 	13 true lunar apogee\n\
-	14 earth\n\
-	15 chiron  etc up to 22, see swephexp.h\n\
+	14 Earth\n\
+	15 Chiron\n\
+	16 Pholus\n\
+	17 Ceres\n\
+	18 Pallas\n\
+	19 Juno\n\
+	20 Vesta\n\
+	21 interpolated lunar apogee\n\
+	22 interpolated lunar perigee\n\
 	h00 .. h18 fictitious factors, see swephexp.h\n\
 \n\
   Date entry:\n\

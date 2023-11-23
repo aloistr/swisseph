@@ -144,14 +144,26 @@ static char *info = "\n\
 	0 Sun (character zero)\n\
 	1 Moon (character 1)\n\
 	2 Mercury\n\
-	....\n\
+	3 Venus\n\
+	4 Mars\n\
+	5 Jupiter\n\
+	6 Saturn\n\
+	7 Uranus\n\
+	8 Neptune\n\
 	9 Pluto\n\
 	10 mean lunar node\n\
 	11 true lunar node\n\
 	12 mean lunar apogee\n\
 	13 true lunar apogee\n\
-	14 earth\n\
-	15 chiron  etc up to 22, see swephexp.h\n\
+	14 Earth\n\
+	15 Chiron\n\
+	16 Pholus\n\
+	17 Ceres\n\
+	18 Pallas\n\
+	19 Juno\n\
+	20 Vesta\n\
+	21 interpolated lunar apogee\n\
+	22 interpolated lunar perigee\n\
 	h00 .. h18 fictitious factors, see swephexp.h\n\
 \n\
   Date entry:\n\
@@ -1337,6 +1349,8 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
   char sign_deg[30];
   static AS_BOOL cycle_has_started = FALSE;
   char *jul = "";
+  // test for nan cases. NaN is not equal to itself.
+  if (teph != teph || delon != delon) return;
   jut = ing_deg * is_retro; // dummy to silence compiler;
 //  static double teph_save = 0;
   teph += tzone/24;

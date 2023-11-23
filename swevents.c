@@ -1349,6 +1349,8 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
   char sign_deg[30];
   static AS_BOOL cycle_has_started = FALSE;
   char *jul = "";
+  // test for nan cases. NaN is not equal to itself.
+  if (teph != teph || delon != delon) return;
   jut = ing_deg * is_retro; // dummy to silence compiler;
 //  static double teph_save = 0;
   teph += tzone/24;

@@ -86,8 +86,6 @@ static char *info = "\n\
 	swevents -p3 -bj2436723.5 -n1000 -s1 -ejpl \n\
 	   for -p2 (mercury), use -s0.3 \n\
 	\n\
-	-mscreen output on screen\n\
-	-mps postscript [default: HP Laserjet]\n\
 	-cl	do not print command line at bottom of 1st page\n\
 	-p    	planet to be computed.\n\
 		See the letter coding below.\n\
@@ -95,19 +93,18 @@ static char *info = "\n\
 		is given, the default is 366 (one year).\n\
 	-sN	timestep N days, default 1. This option is only meaningful\n\
 		when combined with option -n.\n\
-	-edirPATH change the directory of the ephemeris files \n\
-	-cycol.. number cycles per column\n\
-	-doall | -doingr etc : do just that\n\
+	-edirPATH change the directory of the ephemeris files \n\n\
 	-doingr	report sign ingresses\n\
-	-doing45	crossings over 15 tau, Leo, Sco, Aqu\n\
-		(are not included with doall)\n\
 	-doconj	report inferior and superior conjunctions with Sun\n\
 	-dobrill	report moments of greatest brilliance\n\
 	-dorise	report morning set or evening rise\n\
 	-doelong	report maximum elongation from Sun, for planets 1,2,3 only\n\
 	-doretro	report stations\n\
 	-doaps	report minimal and maximal distance from Earth\n\
-	-donode	report when on ascending or descending node\n\
+	-donode	report when on ascending or descending node\n\n\
+	-doall  equivalent to all -do.. options above combined\n\
+	        If used, output starts only at next cycle begin.\n\n\
+	-doing45	crossings over 15 tau, Leo, Sco, Aqu\n\
 	-dolphase	report lunar phases (use with -p1)\n\
 	-doasp	report aspects between planets (-p option is ignored)\n\
 	-dovoc	report Moon void of course periods (-p option is ignored)\n\
@@ -135,7 +132,11 @@ static char *info = "\n\
 	 -tzoneTIMEZONE output date and time in timezone (hours east)\n\
 	 -transitstderr lists transits of Venus or Mercury as c style data to stderr \n\
 	 -jd	show also jd in output \n\
-	 -ep		  use extended precision in output\n\
+	 -ep		  use extended precision in output\n\n\
+	Options only for use by Astrodienst:\n\
+	-mscreen output on screen\n\
+	-mps postscript [default: HP Laserjet]\n\
+	-cycol.. number cycles per column\n\
 \n\
 	-?	display this info\n\
 	-h	display this info\n\
@@ -327,14 +328,14 @@ static int letter_to_ipl(int letter);
 #define DO_BRILL	16
 #define DO_APS		32
 #define DO_NODE		64
-#define DO_LAT		128
+#define DO_LAT		128	// obsolete
 #define DO_INGR		256
 #define DO_LPHASE	512
 #define DO_INGR45	1024	// add ingresses over 45,135,215,305° (mid of fixed signs)
 #define DO_ASPECTS    	2048
 #define DO_VOC    	4096
 
-#define DO_ALL (DO_CONJ|DO_RISE|DO_ELONG|DO_RETRO|DO_BRILL|DO_APS|DO_NODE|DO_LAT|DO_INGR)
+#define DO_ALL (DO_CONJ|DO_RISE|DO_ELONG|DO_RETRO|DO_BRILL|DO_APS|DO_NODE|DO_INGR)
 
 AS_BOOL sign_change(double x0, double x1) 
 {

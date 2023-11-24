@@ -2244,7 +2244,7 @@ int32 calc_mundane_aspects(int32 iflag, double tjd0, double tjde, double tstep,
   UNUSED(xa1);
   UNUSED(xa1d);
   sprintf(foutnam, "%s/%s", PATH_FOUTNAM, FOUTNAM);
-  if ((fpout = fopen(foutnam, "w+")) == NULL) {
+  if ((fpout = fopen(foutnam, BFILE_W_CREATE)) == NULL) {
     sprintf(serr, "could not open file %s", foutnam);
     return ERR;
   }
@@ -2530,7 +2530,7 @@ static int is_node_apsis(int ipl)
   return 0;
 }
 
-#define SWEASP_DAT_RECLEN  52
+#define SWEASP_DAT_RECLEN  (5*sizeof(double) + 3 *sizeof(int32))
 #define PERIOD_PRE_POST  365 /* days */
 /* returns all aspects, that are within orb during the time (tjd +- dtol) */
 static int32 extract_data_of_day(int32 doflag, double tjd, double dtol, char *splan, char *sasp, EVENT *pev, char *serr)

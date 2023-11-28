@@ -560,6 +560,7 @@ int main(int argc, char *argv[])
     printf("Date: %s\tSwissEph version %s\n%s\n\n", sdate, sout, cmdline);
   }
 #else
+  printf("%s\n", "Please note: swevents is not a supported part of Swiss Ephemeris. In case of errors,\nplease debug and submit code fixes to the Swiss Ephemeris mailing list.");
   printf("Date: %s\tSwissEph version %s\n%s\nplanet %s\n\n", sdate, sout, cmdline, planet_name);
 #endif
   swe_set_ephe_path(ephepath);

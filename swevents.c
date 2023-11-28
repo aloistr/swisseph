@@ -1344,7 +1344,7 @@ static int print_motab(void)
  */
 static void print_item(char *s, double teph, double dpos, double delon, double dmag)
 {
-  static char smag[10], sout[AS_MAXCH], serr[AS_MAXCH];
+  static char smag[AS_MAXCH], sout[AS_MAXCH], serr[AS_MAXCH];
   int mout, dout, yout, hour, min, sec, izod;
   int ing_deg = 0;
   double hout;

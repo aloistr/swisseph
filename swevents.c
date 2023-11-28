@@ -59,7 +59,7 @@
   for promoting such software, products or services.
 */
 
-static char *info = "\n\
+static char *info1 = "\n\
   Swevents computes planetary phenomena\n\
   for a given start date and a time range.\n\n\
   IMPORTANT NOTICE: swevents.c is not a supported part of Swiss Ephemeris.\n\
@@ -147,8 +147,8 @@ static char *info = "\n\
 \n\
 	-?	display this info\n\
 	-h	display this info\n\
-\n\
-  Planet selection (only one possible):\n\
+\n";
+static char *info2 = "Planet selection (only one possible):\n\
 	0 Sun (character zero)\n\
 	1 Moon (character 1)\n\
 	2 Mercury\n\
@@ -450,11 +450,8 @@ int main(int argc, char *argv[])
         month_nam[n] = malloc(4);
         sprintf(month_nam[n], "%3d", n);
       }
-    } else if (strcmp(argv[i], "-h") == 0) {
-      printf("%s", info);
-      return OK;
-    } else if (strcmp(argv[i], "-?") == 0) {
-      printf("%s", info);
+    } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-?")) {
+      printf("%s%s", info1, info2);
       return OK;
 #if PRINTMOD
     } else if (strcmp(argv[i], "-mpdf") == 0) {
@@ -1672,7 +1669,7 @@ static char *dms(double x, int iflag)
   int k, kdeg, kmin, ksec;
   char *c = ODEGREE_STRING;
   char *sp;
-  static char s[80], s2[80];
+  static char s[AS_MAXCH], s2[80];
   int sgn;
   *s = *s2 = '\0';
   again_dms:
@@ -1722,6 +1719,7 @@ static char *dms(double x, int iflag)
       x += izod * 30;
     goto again_dms;
   }
+  s[79] = '\0';
   strcpy(s2, s);
   sprintf(s, "%s%2d\"", s2, ksec);
   if (iflag & BIT_ROUND_SEC)

@@ -450,7 +450,7 @@ int main(int argc, char *argv[])
         month_nam[n] = malloc(4);
         sprintf(month_nam[n], "%3d", n);
       }
-    } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-?")) {
+    } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-?") == 0) {
       printf("%s%s", info1, info2);
       return OK;
 #if PRINTMOD
@@ -2193,17 +2193,17 @@ dur = 0;
     fread((void *) &dorb, sizeof(double), 1, fpout);
     fread((void *) &tjd_pre, sizeof(double), 1, fpout);
     fread((void *) &tjd_post, sizeof(double), 1, fpout);
-if ((0)) { /* test output find longest possible aspect duration */
-if (ipla <= 9 && tjd_pre > 0 && tjd_post > 0 && tjd_post - tjd_pre > dur) {
-  dur = tjd_post - tjd_pre;
-  fprintf(stderr, "dur = %f\n", dur);
-} else {
-  continue;
-}
-}
+    if ((0)) { /* test output find longest possible aspect duration */
+      if (ipla <= 9 && tjd_pre > 0 && tjd_post > 0 && tjd_post - tjd_pre > dur) {
+	dur = tjd_post - tjd_pre;
+	fprintf(stderr, "dur = %f\n", dur);
+      } else {
+	continue;
+      }
+    }
     swe_get_planet_name(ipla, spl1);
     swe_get_planet_name(iplb, spl2);
-/*    if (ipla == SE_FIXSTAR) 
+    /*    if (ipla == SE_FIXSTAR) 
       strcpy(spl1, stara);
     if (iplb == SE_FIXSTAR) 
       strcpy(spl2, starb);*/
@@ -2991,8 +2991,9 @@ static char *hms(double x, int32 iflag)
   sp = strstr(s, c);
   if (sp != NULL) {
     *sp = ':';
-    if (strlen(ODEGREE_STRING) > 1)
+    if (strlen(ODEGREE_STRING) > 1) {
       strcpy(s2, sp + strlen(ODEGREE_STRING));
+    }
     strcpy(sp + 1, s2);
     *(sp + 3) = ':';
     *(sp + 8) = '\0';

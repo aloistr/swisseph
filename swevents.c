@@ -1,4 +1,8 @@
 /* SWISSEPH
+ * 
+ * IMPORTANT NOTICE: swevents.c is not a supported part of Swiss Ephemeris.
+ * If you find bugs and short comings, please fix the source code and submit the fixes
+ * on the Swiss Ephemeris mailing list.
 
 **************************************************************/
 /* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
@@ -56,8 +60,11 @@
 */
 
 static char *info = "\n\
-  Computes planetary phenomena\n\
-  for a given start date and a time range.\n\
+  Swevents computes planetary phenomena\n\
+  for a given start date and a time range.\n\n\
+  IMPORTANT NOTICE: swevents.c is not a supported part of Swiss Ephemeris.\n\
+  If you find bugs and short comings, please fix the source code and submit the fixes\n\
+  on the Swiss Ephemeris mailing list.\n\n\
   Input can either be a date or an absolute julian day number.\n\
   0:00 (midnight).\n\
   Precision of this program:\n\

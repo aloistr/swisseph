@@ -450,7 +450,7 @@ int main(int argc, char *argv[])
         month_nam[n] = malloc(4);
         sprintf(month_nam[n], "%3d", n);
       }
-    } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-?")) {
+    } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-?") == 0) {
       printf("%s%s", info1, info2);
       return OK;
 #if PRINTMOD

@@ -13,7 +13,7 @@
 # 
 
 CFLAGS =  -g -Wall -fPIC # for Linux and other gcc systems
-CFLAGS =  -O2 -Wall -fPIC # for Linux and other gcc systems
+#CFLAGS =  -O2 -Wall -fPIC # for Linux and other gcc systems
 OP=$(CFLAGS)  
 CC=cc	#for Linux
 
@@ -38,8 +38,8 @@ swetest: swetest.o libswe.a
 swetests: swetest.o $(SWEOBJ)
 	$(CC)  $(OP) -static -L/usr/lib/x86_64-redhat-linux6E/lib64/ -o swetests swetest.o $(SWEOBJ) -lm -ldl
 
-swevents: swevents.o libswe.a
-	$(CC) $(OP) -o swevents swevents.o -L. -lswe -lm -ldl
+swevents: swevents.o $(SWEOBJ)
+	$(CC) $(OP) -o swevents swevents.o $(SWEOBJ) -lm -ldl
 
 swemini: swemini.o libswe.a
 	$(CC) $(OP) -o swemini swemini.o -L. -lswe -lm -ldl

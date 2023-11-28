@@ -1,4 +1,8 @@
 /* SWISSEPH
+ * 
+ * IMPORTANT NOTICE: swevents.c is not a supported part of Swiss Ephemeris.
+ * If you find bugs and short comings, please fix the source code and submit the fixes
+ * on the Swiss Ephemeris mailing list.
 
 **************************************************************/
 /* Copyright (C) 1997 - 2021 Astrodienst AG, Switzerland.  All rights reserved.
@@ -55,9 +59,12 @@
   for promoting such software, products or services.
 */
 
-static char *info = "\n\
-  Computes planetary phenomena\n\
-  for a given start date and a time range.\n\
+static char *info1 = "\n\
+  Swevents computes planetary phenomena\n\
+  for a given start date and a time range.\n\n\
+  IMPORTANT NOTICE: swevents.c is not a supported part of Swiss Ephemeris.\n\
+  If you find bugs and short comings, please fix the source code and submit the fixes\n\
+  on the Swiss Ephemeris mailing list.\n\n\
   Input can either be a date or an absolute julian day number.\n\
   0:00 (midnight).\n\
   Precision of this program:\n\
@@ -140,8 +147,8 @@ static char *info = "\n\
 \n\
 	-?	display this info\n\
 	-h	display this info\n\
-\n\
-  Planet selection (only one possible):\n\
+\n";
+static char *info2 = "Planet selection (only one possible):\n\
 	0 Sun (character zero)\n\
 	1 Moon (character 1)\n\
 	2 Mercury\n\
@@ -443,11 +450,8 @@ int main(int argc, char *argv[])
         month_nam[n] = malloc(4);
         sprintf(month_nam[n], "%3d", n);
       }
-    } else if (strcmp(argv[i], "-h") == 0) {
-      printf("%s", info);
-      return OK;
-    } else if (strcmp(argv[i], "-?") == 0) {
-      printf("%s", info);
+    } else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-?")) {
+      printf("%s%s", info1, info2);
       return OK;
 #if PRINTMOD
     } else if (strcmp(argv[i], "-mpdf") == 0) {
@@ -553,6 +557,7 @@ int main(int argc, char *argv[])
     printf("Date: %s\tSwissEph version %s\n%s\n\n", sdate, sout, cmdline);
   }
 #else
+  printf("%s\n", "Please note: swevents is not a supported part of Swiss Ephemeris. In case of errors,\nplease debug and submit code fixes to the Swiss Ephemeris mailing list.");
   printf("Date: %s\tSwissEph version %s\n%s\nplanet %s\n\n", sdate, sout, cmdline, planet_name);
 #endif
   swe_set_ephe_path(ephepath);
@@ -1337,7 +1342,7 @@ static int print_motab(void)
  */
 static void print_item(char *s, double teph, double dpos, double delon, double dmag)
 {
-  static char smag[10], sout[AS_MAXCH], serr[AS_MAXCH];
+  static char smag[AS_MAXCH], sout[AS_MAXCH], serr[AS_MAXCH];
   int mout, dout, yout, hour, min, sec, izod;
   int ing_deg = 0;
   double hout;
@@ -1664,7 +1669,7 @@ static char *dms(double x, int iflag)
   int k, kdeg, kmin, ksec;
   char *c = ODEGREE_STRING;
   char *sp;
-  static char s[80], s2[80];
+  static char s[AS_MAXCH], s2[80];
   int sgn;
   *s = *s2 = '\0';
   again_dms:
@@ -1714,6 +1719,7 @@ static char *dms(double x, int iflag)
       x += izod * 30;
     goto again_dms;
   }
+  s[79] = '\0';
   strcpy(s2, s);
   sprintf(s, "%s%2d\"", s2, ksec);
   if (iflag & BIT_ROUND_SEC)
@@ -2187,17 +2193,17 @@ dur = 0;
     fread((void *) &dorb, sizeof(double), 1, fpout);
     fread((void *) &tjd_pre, sizeof(double), 1, fpout);
     fread((void *) &tjd_post, sizeof(double), 1, fpout);
-if ((0)) { /* test output find longest possible aspect duration */
-if (ipla <= 9 && tjd_pre > 0 && tjd_post > 0 && tjd_post - tjd_pre > dur) {
-  dur = tjd_post - tjd_pre;
-  fprintf(stderr, "dur = %f\n", dur);
-} else {
-  continue;
-}
-}
+    if ((0)) { /* test output find longest possible aspect duration */
+      if (ipla <= 9 && tjd_pre > 0 && tjd_post > 0 && tjd_post - tjd_pre > dur) {
+	dur = tjd_post - tjd_pre;
+	fprintf(stderr, "dur = %f\n", dur);
+      } else {
+	continue;
+      }
+    }
     swe_get_planet_name(ipla, spl1);
     swe_get_planet_name(iplb, spl2);
-/*    if (ipla == SE_FIXSTAR) 
+    /*    if (ipla == SE_FIXSTAR) 
       strcpy(spl1, stara);
     if (iplb == SE_FIXSTAR) 
       strcpy(spl2, starb);*/
@@ -2985,8 +2991,9 @@ static char *hms(double x, int32 iflag)
   sp = strstr(s, c);
   if (sp != NULL) {
     *sp = ':';
-    if (strlen(ODEGREE_STRING) > 1)
+    if (strlen(ODEGREE_STRING) > 1) {
       strcpy(s2, sp + strlen(ODEGREE_STRING));
+    }
     strcpy(sp + 1, s2);
     *(sp + 3) = ':';
     *(sp + 8) = '\0';

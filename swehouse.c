@@ -967,7 +967,9 @@ static int CalcH(
   } /*  if */
   hsp->mc = swe_degnorm(hsp->mc);
   if (hsp->do_speed) hsp->mc_speed = AscDash(th, 0, sine, cose); 
-  /* ascendant */
+  // ascendant
+  // In case of ascendant, the great circle is the horizon, which has pole height latitude.
+  // intersection equator horizon is at th + 90, reactasce 90° east of meridian.
   hsp->ac = Asc1(th + 90, fi, sine, cose);
   if (hsp->do_speed) 
     hsp->ac_speed = AscDash(th + 90, fi, sine, cose);
@@ -2049,7 +2051,7 @@ porphyry:
 
 /*****
  * oblique triangle formed by: great circle with pole height f, ecliptic and equator,
- * x = intersection equator - great circle.
+ * x = intersection equator - great circle, measured along equator.
  * return crossing of ecliptic with great circle.
  * Prepare quadrants before doing the work in Asc2.
  */
@@ -2091,7 +2093,8 @@ static double Asc1(double x1, double f, double sine, double cose)
  * f in range -90 .. +90
  * sine, cose around e=23°
  * oblique triangle formed by: great circle with pole height f, ecliptic and equator,
- * x = intersection equator - great circle.
+ * In case of ascendant, the great circle is the horizon, which has pole height latitude.
+ * x = intersection equator - great circle, measured along equator.
  * return crossing of ecliptic with great circle.
  */
 static double Asc2(double x, double f, double sine, double cose) 

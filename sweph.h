@@ -445,14 +445,14 @@ static const struct aya_init ayanamsa[SE_NSIDM_PREDEF] = {
 /*************************/
 /* 8: J.N. Bhasin; (David Cochrane) 
      We don't have any sources or detailed information about this ayanamsha. */
-{J1900, 360 - 338.634444, FALSE, -1}, // Bhasin
+{J1900, 360 - 338.634444, FALSE, -1}, // 8: Bhasin
 /*************************/
 /* 14 Sept. 2018: the following three ayanamshas have been wrong for
    many years */
 /* 9 - 11: Babylonian, Kugler */
-{1684532.5, -5.66667, TRUE, -1},     /*  9: Babylonian, Kugler 1 */
-{1684532.5, -4.26667, TRUE, -1},     /* 10: Babylonian, Kugler 2 */
-{1684532.5, -3.41667, TRUE, -1},     /* 11: Babylonian, Kugler 3 */
+{1684532.5, -5.66667, TRUE, -1},     //  9: Babylonian, Kugler 1
+{1684532.5, -4.26667, TRUE, -1},     // 10: Babylonian, Kugler 2
+{1684532.5, -3.41667, TRUE, -1},     // 11: Babylonian, Kugler 3 
 /*************************/
 /* 12: Babylonian, Huber 
       P. Huber, "Über den Nullpunkt der babylonischen Ekliptik", in: Centaurus
@@ -464,7 +464,7 @@ static const struct aya_init ayanamsa[SE_NSIDM_PREDEF] = {
 {1673941, -5.079167, TRUE, -1},      // 13: Babylonian, Mercier
 /*************************/
 /* 14: t0 is defined by Aldebaran at 15 Taurus in year -100 */
-{1684532.5, -4.44138598, TRUE, 0},  
+{1684532.5, -4.44138598, TRUE, 0},  // 14: Babylonian/Aldebaran = 15 Tau
 /*************************/
 /* 15: Hipparchos */
 {1674484.0, -9.33333, TRUE, -1},       // 15: Hipparchos
@@ -476,34 +476,34 @@ static const struct aya_init ayanamsa[SE_NSIDM_PREDEF] = {
 {0, 0, FALSE, 0},                    // 17: Galactic Center at 0 Sagittarius 
 /*************************/
 /* 18: J2000 */
-{J2000, 0, FALSE, 0},	             /* 18: J2000 */
+{J2000, 0, FALSE, 0},	             // 18: J2000
 /*************************/
 /* 19: J1900 */
-{J1900, 0, FALSE, 0},	             /* 19: J1900 */
+{J1900, 0, FALSE, 0},	             // 19: J1900
 /*************************/
 /* 20: B1950 */
-{B1950, 0, FALSE, 0},	             /* 20: B1950 */
+{B1950, 0, FALSE, 0},	             // 20: B1950
 /*************************/
 /* 21: Suryasiddhanta, assuming ingress of mean Sun into Aries at point of mean
       equinox of date on 21.3.499, near noon, Ujjain (75.7684565 E) 
       = 7:30:31.57 UT = 12:33:36 LMT*/
-{1903396.8128654, 0, TRUE, 0},	     // 21: 
+{1903396.8128654, 0, TRUE, 0},	     // 21: Suryasiddhanta
 /*************************/
 /* 22: Suryasiddhanta, assuming ingress of mean Sun into Aries at true position
       of mean Sun at same epoch */
-{1903396.8128654,-0.21463395, TRUE, 0}, // 22: 
+{1903396.8128654,-0.21463395, TRUE, 0}, // 22: Suryasiddhanta, mean Sun
 /*************************/
 /* 23: Aryabhata, same date, but UT 6:56:55.57 analogous to 21 */
-{1903396.7895321, 0, TRUE, 0},	     // 23: 
+{1903396.7895321, 0, TRUE, 0},	     // 23: Aryabhata
 /*************************/
 /* 24: Aryabhata, analogous 22 */
-{1903396.7895321,-0.23763238, TRUE, 0}, // 24: 
+{1903396.7895321,-0.23763238, TRUE, 0}, // 24: Aryabhata, mean Sun
 /*************************/
 /* 25: Suryasiddhanta, Revati/zePsc at polar long. 359°50'*/
-{1903396.8128654,-0.79167046, TRUE, 0}, // 25: 
+{1903396.8128654,-0.79167046, TRUE, 0}, // 25: SS Revati
 /*************************/
 /* 26: Suryasiddhanta, Citra/Spica at polar long. 180° */
-{1903396.8128654, 2.11070444, TRUE, 0}, // 26: 
+{1903396.8128654, 2.11070444, TRUE, 0}, // 26: SS Citra
 /*************************/
 /* 27: True Citra (Spica exactly at 0 Libra) */
 {0, 0, FALSE, 0},	             // 27: True Citra 

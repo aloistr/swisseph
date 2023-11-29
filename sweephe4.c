@@ -692,3 +692,11 @@ int ephe_plac2swe(int p)
   if (p == PLACALC_EARTHHEL) return SE_EARTH;
   return -1;
 }
+
+int old_d2l (double x)		
+{
+  if (x >=0)
+    return ((int) (x + 0.5));
+  else
+    return (- (int) (0.5 - x));
+}

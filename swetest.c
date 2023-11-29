@@ -855,9 +855,6 @@ int main(int argc, char *argv[])
   dobs[0] = 0; dobs[1] = 0;
   dobs[2] = 0; dobs[3] = 0; dobs[4] = 0; dobs[5] = 0;
   serr[0] = serr_save[0] = serr_warn[0] = sdate_save[0] = '\0';
-# ifdef MACOS
-  argc = ccommand(&argv); /* display the arguments window */    
-# endif
   *stimein = '\0';
   strcpy(ephepath, "");
   strcpy(fname, SE_FNAME_DFT);

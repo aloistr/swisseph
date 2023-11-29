@@ -400,15 +400,10 @@ extern "C" {
 #if MSDOS
 #  define SE_EPHE_PATH    "\\sweph\\ephe\\"
 #else
-# ifdef MACOS
-#  define SE_EPHE_PATH	":ephe:"
-# else
 #  define SE_EPHE_PATH    ".:/users/ephe2/:/users/ephe/"
-			/* At Astrodienst, we maintain two ephemeris areas for
-			   the thousands of asteroid files: 
-			   the short files in /users/ephe/ast*,
-			   the long file in /users/ephe2/ast*. */
-# endif
+    /* At Astrodienst, we maintain two ephemeris areas for the 600'000+  asteroid files: 
+       the short files in /users/ephe/ast*, the long file in /users/ephe2/ast*.
+       /users  is a synonym for /home on many systems */
 #endif
 #endif  /* SE_EPHE_PATH */
 

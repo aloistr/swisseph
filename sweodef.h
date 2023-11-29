@@ -139,12 +139,6 @@
 # define WATCOMC
 #endif
 
-#ifdef __MWERKS__	/* defined on Macintosh CodeWarrior */
-# if macintosh && powerc
-#  define MACOS MY_TRUE		/* let it undefined otherwise */
-#  define MSDOS MY_FALSE	/* in case one above fired falsely */
-# endif
-#endif
 
 #ifdef MSDOS
 #  define HPUNIX MY_FALSE
@@ -154,17 +148,12 @@
 #  endif
 # define UNIX_FS MY_FALSE
 #else
-# ifdef MACOS
-#  define HPUNIX MY_FALSE
-#  define UNIX_FS MY_FALSE
-# else
 #  define MSDOS MY_FALSE
 #  define HPUNIX MY_TRUE
 #  ifndef _HPUX_SOURCE
 #    define _HPUX_SOURCE
 #  endif
 #  define UNIX_FS MY_TRUE
-# endif
 #endif
 
 #include <math.h>
@@ -321,13 +310,6 @@ typedef int32    centisec;       /* centiseconds used for angles and times */
 #  define BFILE_A_ACCESS "a+b"	/* create/open binary file for append*/
 #  define PATH_SEPARATOR ";"	/* semicolon as PATH separator */
 #  define OPEN_MODE 0666	/* default file creation mode */
-# ifdef MACOS
-#  define FILE_R_ACCESS "r"	/* open text file for reading */
-#  define FILE_RW_ACCESS "r+"	/* open text file for writing and reading */
-#  define FILE_W_CREATE "w"	/* create/open text file for write*/
-#  define FILE_A_ACCESS "a+"	/* create/open text file for append*/
-#  define DIR_GLUE ":"		/* glue string for directory/file */
-# else
 #  define FILE_R_ACCESS "rt"	/* open text file for reading */
 #  define FILE_RW_ACCESS "r+t"	/* open text file for writing and reading */
 #  define FILE_W_CREATE "wt"	/* create/open text file for write*/
@@ -335,7 +317,6 @@ typedef int32    centisec;       /* centiseconds used for angles and times */
 /* attention, all backslashes for msdos directry names must be written as \\,
    because it is the C escape character */
 #  define DIR_GLUE "\\"		/* glue string for directory/file */
-# endif
 #endif
 
 #include <string.h>

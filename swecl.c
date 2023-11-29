@@ -1991,7 +1991,7 @@ end_search_global:
  *              SE_ECL_VISIBLE, 
  *              SE_ECL_MAX_VISIBLE, 
  *              SE_ECL_1ST_VISIBLE, SE_ECL_2ND_VISIBLE
- *              SE_ECL_3ST_VISIBLE, SE_ECL_4TH_VISIBLE
+ *              SE_ECL_3RD_VISIBLE, SE_ECL_4TH_VISIBLE
  *
  * tret[0]	time of maximum eclipse
  * tret[1]	time of first contact
@@ -2048,7 +2048,7 @@ int32 CALL_CONV swe_sol_eclipse_when_loc(double tjd_start, int32 ifl,
  *              SE_ECL_VISIBLE, 
  *              SE_ECL_MAX_VISIBLE, 
  *              SE_ECL_1ST_VISIBLE, SE_ECL_2ND_VISIBLE
- *              SE_ECL_3ST_VISIBLE, SE_ECL_4TH_VISIBLE
+ *              SE_ECL_3RD_VISIBLE, SE_ECL_4TH_VISIBLE
  *              SE_ECL_OCC_BEG_DAYLIGHT, SE_ECL_OCC_END_DAYLIGHT
  * The latter two indicate that the beginning or end of the occultation takes
  * place during the day. If Venus is occulted, it may be observable with the

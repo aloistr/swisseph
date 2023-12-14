@@ -1,0 +1,35 @@
+1 Dec 2020, Swiss Ephemeris
+List of numbers of planetary moons and body centers
+===================================================
+9401  Phobos/Mars  
+9402  Deimos/Mars  
+9501  Io/Jupiter  
+9502  Europa/Jupiter  
+9503  Ganymede/Jupiter  
+9504  Callisto/Jupiter  
+9599  Jupiter/COB  
+9601  Mimas/Saturn  
+9602  Enceladus/Saturn  
+9603  Tethys/Saturn  
+9604  Dione/Saturn  
+9605  Rhea/Saturn  
+9606  Titan/Saturn  
+9607  Hyperion/Saturn  
+9608  Iapetus/Saturn  
+9699  Saturn/COB  
+9701  Ariel/Uranus  
+9702  Umbriel/Uranus  
+9703  Titania/Uranus  
+9704  Oberon/Uranus  
+9705  Miranda/Uranus  
+9799  Uranus/COB  
+9801  Triton/Neptune  
+9802  Nereid/Neptune
+9808  Proteus/Neptune  
+9899  Neptune/COB  
+9901  Charon/Pluto  
+9902  Nix/Pluto  
+9903  Hydra/Pluto  
+9904  Kerberos/Pluto  
+9905  Styx/Pluto  
+9999  Pluto/COB  

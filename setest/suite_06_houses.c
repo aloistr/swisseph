@@ -44,7 +44,7 @@ TESTCASE(4,"swe_houses_armc( ) - Koch and Placidus") {
   check_swehouses_armc_results(rc,armc,ihsy,cusps,ascmc,serr,ctx);
   }
 TESTCASE(5,"swe_house_name( ) ") {
-  sp = swe_house_name(ihsy);
+  sp = (char *) swe_house_name(ihsy);
   CHECK_S(sp);
  }
 TESTCASE(6,"swe_house_pos( ) ") {

@@ -40,16 +40,13 @@ https://github.com/aloistr/swisseph
 ## Swiss Ephemeris Documentation
 
 in the public Swiss Ephemeris Github repository
-folder doc
+folder doc/
 https://github.com/aloistr/swisseph/tree/master/doc
 
 ## Swiss Ephemeris for Windows
 
 see folder windows/
-
-https://github.com/aloistr/swisseph/windows
-
-
+https://github.com/aloistr/swisseph/tre/master/windows
 
 ## JPL files
 

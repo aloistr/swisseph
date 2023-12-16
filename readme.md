@@ -45,50 +45,24 @@ https://github.com/aloistr/swisseph/tree/master/doc
 
 ## Swiss Ephemeris for Windows
 
-in the public Swiss Ephemeris github repository
-folder windows
-https://github.com/aloistr/swisseph
-containing
+see folder windows/
 
-sweph.zip
+https://github.com/aloistr/swisseph/windows
 
-	The complete Swiss Ephemeris package for Windows (32bit),
-	except the ephemeris data files.
-	See online documentation at https://www.astro.com/swisseph
-	or in the doc directory for more details.
-	Small sample programs and build-projects are included for
-	- Visual C++ .net 2003
-	- Visual Basic 5.0 
-	- Delphi 32-bit
-	Note: Visual Basic files may not have been updated and
-	tested, as we currently do not possess a working copy of VB at Astrodienst.
-
-swephzip.txt
-
-	overview of content of the sweph.zip package
-
-folder vb:
-
-	declarations for 32-bit and 64-bit Visual Basic
-
-folder programs:
-
-	A directory containing sample and utility programs for Windows:
-	swetest.exe:
-	executable Swiss Ephemeris program.
-	This is a 32-bit Console mode application.
-	To get information about the many features of this program, run
-	swetest -? > out.txt
-	and print the file out.txt, or view it with your text editor.
-	This is just a sample to demonstrate the precision of the
-	ephemeris, and to show the typical use of a few calls.
 
 
 ## JPL files
 
-now directly from jpl, see
-https://www.astro.com/ftp/swisseph/jplfiles/index.htm
+to be downloaded directly from JPL, see
+https://www.astro.com/swisseph-download/jplfiles/
 
+- de200.eph  size 41 Mb  [download de200.eph](https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de200/lnxm1600p2170.200)
+- de406.eph  size 190 Mb [download de406.eph](https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de406/lnxm3000p3000.406)
+- de431.eph  size 2.6 Gb [download de431.eph](https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de431/lnxm13000p17000.431)
+- de441.eph  size 2.6 Gb [download de441.eph](https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/de441/linux_m13000p17000.441)
+
+ 	These download links refer to the JPL area https://ssd.jpl.nasa.gov/ftp/eph/planets/Linux/` 
+ 	After download, files like de441/linux_m13000p17000.441 must be renamed de441.eph to be recognized by Swiss Ephemeris code.`
 or from Alois' public Dropbox area in folder 'jpl binary files'  with this link
 
 https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0

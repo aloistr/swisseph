@@ -46,7 +46,7 @@ https://github.com/aloistr/swisseph/tree/master/doc
 ## Swiss Ephemeris for Windows
 
 see folder windows/
-https://github.com/aloistr/swisseph/tre/master/windows
+https://github.com/aloistr/swisseph/tree/master/windows
 
 ## JPL files
 

@@ -13,7 +13,7 @@ new asteroid and you will receive the right to suggest a name.
 ## Minor Planet Names: Alphabetical List
 
 This is an alphabetical listing of the names of the numbered minor
-planets. It was last updated on 3-dec-2023
+planets. It was last updated on 19-dec-2023
 
 A click on an asteroid name leads to a Nasa-JPL page with orbital
 details about the named asteroid. This JPL page opens in a separate
@@ -264,6 +264,7 @@ Click checkbox to select an asteroid
       (2470) Agematsu                      Agematsu
       (1873) Agenor                        Agenor
       (7137) Ageo                          Ageo
+    (598855) Agerer                        Agerer
      (27072) Aggarwal                      Aggarwal
     (152533) Aggas                         Aggas
      (21009) Agilkia                       Agilkia
@@ -495,6 +496,7 @@ Click checkbox to select an asteroid
      (17921) Aldeobaldia                   Aldeobaldia
      (26533) Aldering                      Aldering
      (17019) Aldo                          Aldo
+    (600539) Aldoatiglio                   Aldoatiglio
      (34559) Aldossary                     Aldossary
      (10758) Aldoushuxley                  Aldoushuxley
       (6470) Aldrin                        Aldrin
@@ -934,6 +936,7 @@ Click checkbox to select an asteroid
      (26429) Andiwagner                    Andiwagner
      (25093) Andmikhaylov                  Andmikhaylov
       (6424) Ando                          Ando
+     (20003) Andorfer                      Andorfer
      (13608) Andosatoru                    Andosatoru
      (21121) Andoshoeki                    Andoshoeki
      (42403) Andraimon                     Andraimon
@@ -3461,6 +3464,7 @@ Click checkbox to select an asteroid
      (78816) Caripito                      Caripito
       (1470) Carla                         Carla
      (65785) Carlafracci                   Carlafracci
+     (16397) Carlahayden                   Carlahayden
      (25403) Carlapiazza                   Carlapiazza
     (132661) Carlbaeker                    Carlbaeker
       (5046) Carletonmoore                 Carletonmoore
@@ -3568,6 +3572,7 @@ Click checkbox to select an asteroid
       (6572) Carson                        Carson
      (21361) Carsonmark                    Carsonmark
      (17917) Cartan                        Cartan
+    (623031) Cartaya                       Cartaya
      (10683) Carter                        Carter
      (30201) Caruana                       Caruana
       (4700) Carusi                        Carusi
@@ -5982,7 +5987,7 @@ Click checkbox to select an asteroid
     (110295) Elcalafate                    Elcalafate
      (26238) Elduval                       Elduval
        (130) Elektra                       Elektra
-    (346318) Elektrenai                    Elektrenai
+    (346318) Elektrenai                    Elektr\.{e}nai
     (268686) Elenaaprile                   Elenaaprile
      (33539) Elenaberman                   Elenaberman
      (58580) Elenacuoghi                   Elenacuoghi
@@ -7367,6 +7372,7 @@ Click checkbox to select an asteroid
      (21359) Geng                          Geng
       (2093) Genichesk                     Genichesk
      (12456) Genichiaraki                  Genichiaraki
+    (624448) Gennadiyborisov               Gennadiyborisov
      (26528) Genniferubin                  Genniferubin
      (13817) Genobechetti                  Genobechetti
      (70444) Genovali                      Genovali
@@ -7598,6 +7604,7 @@ Click checkbox to select an asteroid
      (11117) Giuseppeolongo                Giuseppeolongo
     (199631) Giuseppesprizzi               Giuseppesprizzi
       (6533) Giuseppina                    Giuseppina
+     (10589) Giusimicela                   Giusimicela
      (27958) Giussano                      Giussano
       (5249) Giza                          Giza
       (7638) Gladman                       Gladman
@@ -10776,7 +10783,7 @@ Click checkbox to select an asteroid
       (1694) Kaiser                        Kaiser
       (3880) Kaiserman                     Kaiserman
      (10947) Kaiserstuhl                   Kaiserstuhl
-    (324417) Kaisiadorys                   Kaisiadorys
+    (324417) Kaisiadorys                   Kaišiadorys
      (22920) Kaitduncan                    Kaitduncan
      (25122) Kaitlingus                    Kaitlingus
      (21675) Kaitlinmaria                  Kaitlinmaria
@@ -12564,6 +12571,7 @@ Click checkbox to select an asteroid
     (355276) Leclair                       Leclair
       (3755) Lecointe                      Lecointe
      (52271) Lecorbusier                   Lecorbusier
+    (414283) Lecureuil                     Lécureuil
         (38) Leda                          Leda
     (403563) Ledbetter                     Ledbetter
       (2444) Lederle                       Lederle
@@ -14461,6 +14469,7 @@ Click checkbox to select an asteroid
        (536) Merapi                        Merapi
      (10972) Merbold                       Merbold
      (17089) Mercado                       Mercado
+     (21291) Mercalli                      Mercalli
      (54852) Mercatali                     Mercatali
       (4798) Mercator                      Mercator
       (1136) Mercedes                      Mercedes
@@ -15043,6 +15052,7 @@ Click checkbox to select an asteroid
       (3768) Monroe                        Monroe
      (26090) Monrovia                      Monrovia
      (20964) Mons Naklethi                 Mons Naklethi
+    (586003) Monspartsarolta               Monspartsarolta
      (11595) Monsummano                    Monsummano
      (10958) Mont Blanc                    Mont Blanc
        (535) Montague                      Montague
@@ -15301,6 +15311,7 @@ Click checkbox to select an asteroid
       (6098) Mutojunkyu                    Mutojunkyu
      (12368) Mutsaers                      Mutsaers
       (7837) Mutsumi                       Mutsumi
+    (115210) Mutvicens                     Mutvicens
       (6505) Muzzio                        Muzzio
      (12933) Muzzonigro                    Muzzonigro
       (4413) Mycerinos                     Mycerinos
@@ -15444,6 +15455,7 @@ Click checkbox to select an asteroid
      (34819) Nandininaidu                  Nandininaidu
      (23228) Nandinisarma                  Nandinisarma
       (5852) Nanette                       Nanette
+     (12977) Nanettevigil                  Nanettevigil
       (3607) Naniwa                        Naniwa
       (3901) Nanjingdaxue                  Nanjingdaxue
       (5288) Nankichi                      Nankichi
@@ -15464,6 +15476,7 @@ Click checkbox to select an asteroid
       (7041) Nantucket                     Nantucket
     (406308) Nanwai                        Nanwai
      (24063) Nanwoodward                   Nanwoodward
+    (236788) Nanxinda                      Nanxinda
       (9092) Nanyang                       Nanyang
     (346150) Nanyi                         Nanyi
      (43998) Nanyoshino                    Nanyoshino
@@ -15656,6 +15669,7 @@ Click checkbox to select an asteroid
      (90936) Neronet                       Neronet
        (601) Nerthus                       Nerthus
       (1875) Neruda                        Neruda
+    (241362) Nesiotites                    Nesiotites
      (24535) Neslusan                      Neslušan
      (12405) Nespoli                       Nespoli
       (7066) Nessus                        Nessus
@@ -17478,6 +17492,7 @@ Click checkbox to select an asteroid
       (8444) Popovich                      Popovich
     (365761) Popovici                      Popovici
      (39464) Poppelmann                    Pöppelmann
+    (355657) Poppy                         Poppy
       (8647) Populus                       Populus
       (7231) Porco                         Porco
       (3896) Pordenone                     Pordenone
@@ -17742,6 +17757,7 @@ Click checkbox to select an asteroid
      (24191) Qiaochuyuan                   Qiaochuyuan
      (20278) Qileihang                     Qileihang
     (321197) Qingdao                       Qingdao
+     (11139) Qingdaoligong                 Qingdaoligong
       (2255) Qinghai                       Qinghai
      (25042) Qiujun                        Qiujun
      (17603) Qoyllurwasi                   Qoyllurwasi
@@ -17832,7 +17848,7 @@ Click checkbox to select an asteroid
     (159011) Radomyshl                     Radomyshl
       (4485) Radonezhskij                  Radonezhskij
      (32065) Radulovacki                   Radulovacki
-    (400072) Radviliskis                   Radviliskis
+    (400072) Radviliskis                   Radviliškis
      (25955) Radway                        Radway
      (29776) Radzhabov                     Radzhabov
       (3923) Radzievskij                   Radzievskij
@@ -17849,6 +17865,7 @@ Click checkbox to select an asteroid
      (31596) Ragavender                    Ragavender
       (1839) Ragazza                       Ragazza
      (42523) Ragazzileonardo               Ragazzileonardo
+     (10590) Ragazzoni                     Ragazzoni
      (24149) Raghavan                      Raghavan
      (30169) Raghavganesh                  Raghavganesh
      (28254) Raghrama                      Raghrama
@@ -20142,7 +20159,7 @@ Click checkbox to select an asteroid
       (1446) Sillanpaa                     Sillanpää
      (21627) Sillis                        Sillis
     (129234) Silly                         Silly
-    (319601) Silute                        Silute
+    (319601) Silute                        Šilut\.{e}
      (22618) Silva Nortica                 Silva Nortica
      (15899) Silvain                       Silvain
     (550832) Silvanacopceski               Silvanacopceski
@@ -21134,6 +21151,7 @@ Click checkbox to select an asteroid
     (352333) Sylvievauclair                Sylvievauclair
     (134087) Symeonplatts                  Symeonplatts
       (9669) Symmetria                     Symmetria
+     (18457) Syoheiyamamoto                Syoheiyamamoto
     (250774) Syosset                       Syosset
      (14795) Syoyou                        Syoyou
       (1104) Syringa                       Syringa
@@ -21215,6 +21233,7 @@ Click checkbox to select an asteroid
     (187514) Tainan                        Tainan
     (171381) Taipei                        Taipei
       (6356) Tairov                        Tairov
+     (16704) Taisukekaneko                 Taisukekaneko
     (281561) Taitung                       Taitung
       (2169) Taiwan                        Taiwan
       (9215) Taiyonoto                     Taiyonoto
@@ -21471,7 +21490,7 @@ Click checkbox to select an asteroid
      (12179) Taufiq                        Taufiq
        (581) Tauntonia                     Tauntonia
      (10255) Taunus                        Taunus
-    (386056) Taurage                       Taurage
+    (386056) Taurage                       Taurag\.{e}
        (512) Taurinensis                   Taurinensis
        (814) Tauris                        Tauris
       (2424) Tautenburg                    Tautenburg
@@ -21525,7 +21544,7 @@ Click checkbox to select an asteroid
       (5006) Teller                        Teller
       (2717) Tellervo                      Tellervo
       (9506) Telramund                     Telramund
-    (322539) Telsiai                       Telsiai
+    (322539) Telsiai                       Telšiai
      (27224) Telus                         Telus
       (6432) Temirkanov                    Temirkanov
       (3808) Tempel                        Tempel
@@ -22388,6 +22407,7 @@ Click checkbox to select an asteroid
       (9657) Ucka                          Učka
       (4632) Udagawa                       Udagawa
      (15407) Udakiyoo                      Udakiyoo
+    (423624) Udeantioquia                  Udeantioquia
     (300928) Uderzo                        Uderzo
      (33100) Udine                         Udine
      (29189) Udinsk                        Udinsk
@@ -22815,6 +22835,7 @@ Click checkbox to select an asteroid
       (5659) Vergara                       Vergara
       (2798) Vergilius                     Vergilius
      (12697) Verhaeren                     Verhaeren
+    (618132) Verheyen                      Verheyen
      (84225) Verish                        Verish
        (490) Veritas                       Veritas
     (155116) Verkhivnya                    Verkhivnya

@@ -1,1 +1,1 @@
-../../swehel.c
+../../../swehel.c

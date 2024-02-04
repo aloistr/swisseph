@@ -81,12 +81,12 @@
   typedef off_t off_t64;
   #define FSEEK fseeko
   #define FTELL ftello
-  #ifdef __ANDROID_API__ 
-    #undef FSEEK
-    #undef FTELL
-    #define FSEEK fseek
-    #define FTELL ftell
-  #endif
+//  #ifdef __ANDROID_API__ 
+//    #undef FSEEK
+//    #undef FTELL
+//    #define FSEEK fseek
+//    #define FTELL ftell
+//  #endif
 #endif
 
 #define DEBUG_DO_SHOW	FALSE

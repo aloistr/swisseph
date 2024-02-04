@@ -6322,7 +6322,7 @@ int32 fixstar_cut_string(char *srecord, char *star, struct fixed_star *stardata,
 static int32 load_all_fixed_stars(char *serr) 
 {
   int32 retc = OK;
-  int nstars = 0, line = 0, fline = 0, nrecs = 0, nnamed = 0;
+  int nstars = 0, nrecs = 0, nnamed = 0;
   char s[AS_MAXCH], *sp;
   char srecord[AS_MAXCH];
   struct fixed_star fstdata;
@@ -6344,13 +6344,11 @@ static int32 load_all_fixed_stars(char *serr)
   rewind(swed.fixfp);
   swed.fixed_stars = NULL;
   while (fgets(s, AS_MAXCH, swed.fixfp) != NULL) {
-    fline++;	
     // skip comment lines
     if (*s == '#') continue;
     if (*s == '\n') continue;
     if (*s == '\r') continue;
     if (*s == '\0') continue;
-    line++;
     strcpy(srecord, s);
     retc = fixstar_cut_string(srecord, NULL, &fstdata, serr);
     if (retc == ERR) return ERR;
@@ -6388,7 +6386,7 @@ static int32 load_all_fixed_stars(char *serr)
   swed.n_fixstars_real = nstars;
   swed.n_fixstars_named = nnamed;
   swed.n_fixstars_records = nrecs;
-  //printf("nstars=%d, nrecords=%d\n", nstars, nrecs);
+  // fprintf(stderr, "nstars=%d, nrecords=%d\n", nstars, nrecs);	
   (void) qsort ((void *) swed.fixed_stars, (size_t) nrecs, sizeof (struct fixed_star),
                     (int (CMP_CALL_CONV *)(const void *,const void *))(fixedstar_name_compare));
   return retc;

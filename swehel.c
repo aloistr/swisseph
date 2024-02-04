@@ -3164,8 +3164,8 @@ static int32 heliacal_ut_vis_lim(double tjd_start, double *dgeo, double *datm, d
 {
   int i;
   double d, darr[10], direct = 1, tjd, tday;
-  int32 epheflag, retval = OK, helflag2;
-  int32 iflag, ipl;
+  int32 retval = OK, helflag2;
+  int32 ipl;
   int32 TypeEvent = TypeEventIn;
   char serr[AS_MAXCH];
   for (i = 0; i < 10; i++)
@@ -3173,10 +3173,6 @@ static int32 heliacal_ut_vis_lim(double tjd_start, double *dgeo, double *datm, d
   *dret = tjd_start;
   *serr = '\0';
   ipl = DeterObject(ObjectName);
-  epheflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
-  iflag = SEFLG_TOPOCTR | SEFLG_EQUATORIAL | epheflag;
-  if (!(helflag & SE_HELFLAG_HIGH_PRECISION)) 
-    iflag |= SEFLG_NONUT | SEFLG_TRUEPOS;
   if (ipl == SE_MERCURY)
     tjd = tjd_start - 30;
   else
@@ -3255,8 +3251,7 @@ static int32 moon_event_vis_lim(double tjdstart, double *dgeo, double *datm, dou
   double tjd, trise;
   char serr[AS_MAXCH];
   char ObjectName[30];
-  int32 iflag, ipl, retval, helflag2, direct;
-  int32 epheflag = helflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH);
+  int32 ipl, retval, helflag2, direct;
   dret[0] = tjdstart; /* will be returned in error case */
   if (TypeEvent == 1 || TypeEvent == 2) {
     if (serr_ret != NULL)
@@ -3265,9 +3260,6 @@ static int32 moon_event_vis_lim(double tjdstart, double *dgeo, double *datm, dou
   }
   strcpy(ObjectName, "moon");
   ipl = SE_MOON;
-  iflag = SEFLG_TOPOCTR | SEFLG_EQUATORIAL | epheflag;
-  if (!(helflag & SE_HELFLAG_HIGH_PRECISION))
-    iflag |= SEFLG_NONUT|SEFLG_TRUEPOS;
   helflag2 = helflag;
   helflag2 &= ~SE_HELFLAG_HIGH_PRECISION;
   /* check Synodic/phase Period */
@@ -3392,7 +3384,7 @@ static int32 heliacal_ut(double JDNDaysUTStart, double *dgeo, double *datm, doub
 */
 int32 CALL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, double *datm, double *dobs, char *ObjectNameIn, int32 TypeEvent, int32 helflag, double *dret, char *serr_ret)
 {
-  int32 retval, Planet, itry;
+  int32 retval, Planet;
   char ObjectName[AS_MAXCH], serr[AS_MAXCH], s[AS_MAXCH];
   double tjd0 = JDNDaysUTStart, tjd, dsynperiod, tjdmax, tadd;
   int32 MaxCountSynodicPeriod = MAX_COUNT_SYNPER;
@@ -3490,11 +3482,8 @@ int32 CALL_CONV swe_heliacal_ut(double JDNDaysUTStart, double *dgeo, double *dat
   /* 
    * this is the outer loop over n synodic periods 
    */
-  tjd = tjd0;
   retval = -2;  /* indicates that another synodic period has to be done */
-  for (itry = 0; 
-       tjd < tjdmax && retval == -2; 
-       itry++, tjd += tadd) {
+  for (tjd = tjd0; tjd < tjdmax && retval == -2; tjd += tadd) {
     *serr = '\0';
     retval = heliacal_ut(tjd, dgeo, datm, dobs, ObjectName, TypeEvent, helflag, dret, serr);
     /* if resulting event date < start date for search (tjd0): retry starting

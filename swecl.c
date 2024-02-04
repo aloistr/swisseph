@@ -2103,7 +2103,7 @@ static int32 eclipse_when_loc(double tjd_start, int32 ifl, double *geopos, doubl
   int32 retflag = 0, retc;
   double t, tjd, dt, dtint, K, T, T2, T3, T4, F, M, Mm;
   double tjdr, tjds;
-  double E, Ff, A1, Om;
+  double E, Ff; // A1, Om;
   double xs[6], xm[6], ls[6], lm[6], x1[6], x2[6], dm, ds;
   double rmoon, rsun, rsplusrm, rsminusrm;
   double dc[3], dctr, dctrmin;
@@ -2149,16 +2149,14 @@ next_try:
                       + 0.1017438 * T2
                       + 0.00001239 * T3
                       + 0.000000058 * T4);
-  Om = swe_degnorm(124.7746 - 1.56375580 * K
-                      + 0.0020691 * T2
-                      + 0.00000215 * T3);
+  // Om = swe_degnorm(124.7746 - 1.56375580 * K + 0.0020691 * T2 + 0.00000215 * T3);
   E = 1 - 0.002516 * T - 0.0000074 * T2;
-  A1 = swe_degnorm(299.77 + 0.107408 * K - 0.009173 * T2);
+  // A1 = swe_degnorm(299.77 + 0.107408 * K - 0.009173 * T2);
   M *= DEGTORAD;
   Mm *= DEGTORAD;
   F *= DEGTORAD;
-  Om *= DEGTORAD;
-  A1 *= DEGTORAD;
+  // Om *= DEGTORAD;
+  // A1 *= DEGTORAD;
   tjd = tjd - 0.4075 * sin(Mm)
             + 0.1721 * E * sin(M);
   swe_set_topo(geopos[0], geopos[1], geopos[2]);
@@ -4213,7 +4211,6 @@ static int32 rise_set_fast(
   int i;
   double xx[6], xaz[6], xaz2[6];
   double dd, dt, refr;
-  double dtsum = 0;
   int32 iflag = epheflag & (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH); 
   int32 iflagtopo = iflag | SEFLG_EQUATORIAL;
   double sda, armc, md, dmd, mdrise, rdi, tr, dalt;
@@ -4307,9 +4304,11 @@ run_rise_again:
     dd = (xaz2[1] - xaz[1]);
     dalt = xaz[1] + rdi;
     dt = dalt / dd / 1000.0;
-    if (dt > 0.1) dt = 0.1;
-    else if (dt < -0.1) dt = -0.1;
-    dtsum += dt;
+    if (dt > 0.1) {
+      dt = 0.1;
+    } else if (dt < -0.1) {
+      dt = -0.1;
+    }
     if ((0) && fabs(dt) > 5.0 / 86400.0 && nloop < 20)
       nloop++;
     tr -= dt;
@@ -4403,8 +4402,8 @@ int32 CALL_CONV swe_rise_trans_true_hor(
   double t, te, tt, dt, twohrs = 1.0 / 12.0;
   double curdist;
   int32 tohor_flag = SE_EQU2HOR;
-int nazalt = 0;
-int ncalc = 0;
+  int nazalt = 0;
+  int ncalc = 0;
   AS_BOOL do_fixstar = (starname != NULL && *starname != '\0');
   if (geopos[2] < SEI_ECL_GEOALT_MIN || geopos[2] > SEI_ECL_GEOALT_MAX) {
     if (serr != NULL)
@@ -4676,8 +4675,8 @@ nazalt++;
     }
     if (t > tjd_ut) {
      *tret = t;
-//  fprintf(stderr, "nazalt=%d\n", nazalt);
-//  fprintf(stderr, "ncalc=%d\n", ncalc);
+    if (0)  fprintf(stderr, "nazalt=%d\n", nazalt);
+    if (0)  fprintf(stderr, "ncalc=%d\n", ncalc);
      return OK;
     }
   }
@@ -5782,7 +5781,7 @@ int32 CALL_CONV swe_get_orbital_elements(
   int32 iflJ2000 = (iflag & SEFLG_EPHMASK)|SEFLG_J2000|SEFLG_XYZ|SEFLG_TRUEPOS|SEFLG_NONUT|SEFLG_SPEED;
   int32 iflJ2000p = (iflag & SEFLG_EPHMASK)|SEFLG_J2000|SEFLG_TRUEPOS|SEFLG_NONUT|SEFLG_SPEED;
   double Gmsm;
-  int32 iflg0 = 0;
+  // int32 iflg0 = 0;
   double fac, sgn, rxy, rxyz, c2, cosnode, sinnode;
   double incl, node, parg, peri, mlon;
   double csid, ctro, csyn, dmot, pa;
@@ -5795,8 +5794,7 @@ int32 CALL_CONV swe_get_orbital_elements(
       sprintf(serr, "error in swe_get_orbital_elements(): object %d not valid\n", ipl);
     return ERR;
   }
-  if (ipl != SE_MOON)
-    iflg0 |= SEFLG_HELCTR;
+  // if (ipl != SE_MOON) iflg0 |= SEFLG_HELCTR;
   /* first, we need a heliocentric distance of the planet */
   if (swe_calc(tjd_et, ipl, iflJ2000p, x, serr) == ERR)
     return ERR;

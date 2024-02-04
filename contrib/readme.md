@@ -1,5 +1,5 @@
-00readme.txt	created 19-may-2010 by Alois Treindl
-		last update 23-dec-22
+readme.md	created 19-may-2010 by Alois Treindl
+		last update 4-feb-2024
 
 Directory contrib: free contributions to Swiss Ephemeris
 
@@ -33,6 +33,7 @@ In the directory 'projectPF' you have a global solution 'sweph.sln' with
 the different 'vcxproj' files to build the dlls.
 
 android/jni/ subdirectory  4-feb-2024
+
 Yuriy Krymlov <krymlov@gmail.com> created a JNI (Java) interface to Swisseph
 on Github https://github.com/krymlov/swe-jni-lib
 It has been included here. Compiled libraries for Android are provided.

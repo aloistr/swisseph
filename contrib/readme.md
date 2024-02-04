@@ -32,11 +32,10 @@ Should be unpacked after unpacking sweph.zip within the 'src' directory
 In the directory 'projectPF' you have a global solution 'sweph.sln' with
 the different 'vcxproj' files to build the dlls.
 
-swe-jni-lib	17-feb-2021
-Yuriy Krymlov <krymlov@gmail.com> created a JNI interface to Swisseph
+android/jni/ subdirectory  4-feb-2024
+Yuriy Krymlov <krymlov@gmail.com> created a JNI (Java) interface to Swisseph
 on Github https://github.com/krymlov/swe-jni-lib
-A zip file pulled from Github on 17-feb-21 is here
-swe-jni-lib-main.zip
+It has been included here. Compiled libraries for Android are provided.
 
 Sweph32_For_Excel_VBA_and_VB.zip   16-oct-21
 uploaded by D.Senthilathiban (Email:athi_ram@yahoo.com)  to groupis.io files under the name

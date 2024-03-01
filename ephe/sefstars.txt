@@ -1575,6 +1575,8 @@ Gal.Pole IAU1958,GP1958,ICRS,12,51,26.27469,27,07,41.7087,0.0,0.0,0.0,0.0,0.0,0,
 #
 # Pole of true galactic plane, calculated by DK
 Gal.Plane Pole,GPPlan,ICRS,12,51,5.731104,27,10,39.554849,0.0,0.0,0.0,0.0,0.0,0,0
+# entry proposed by Dieter Koch, 1-mar-2024, to simulate Galactic node
+Gal.Equ,GEqu,ICRS,18,0,0.0,-23,24,0.0,0.0,0.0,0.0,0.0,0.0,0,0
 #
 # The following "object" played an important role in 2011 and 2017 dooms day predictions,
 # as well as in some conspiration theories. It consists of the infrared objects

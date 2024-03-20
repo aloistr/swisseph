@@ -1,54 +1,4 @@
 # sefstars.txt: Swiss Ephemeris fixed stars data file, 
-# last modified on 26-oct-2018 by Dieter Koch.
-Aldebaran  ,alTau,ICRS,04,35,55.23907,+16,30,33.4885,63.45,-188.94,54.26,48.94,0.86, 16,  629
-Rohini  ,alTau,ICRS,04,35,55.23907,+16,30,33.4885,63.45,-188.94,54.26,48.94,0.86, 16,  629
-Algol      ,bePer,ICRS,03,08,10.13245,+40,57,20.3280,2.99,-1.66,4,36.27,2.12, 40,  673
-Antares    ,alSco,ICRS,16,29,24.45970,-26,25,55.2094,-12.11,-23.3,-3.5,5.89,0.91,-26,11359
-Regulus    ,alLeo,ICRS,10,08,22.31099,+11,58,01.9516,-248.73,5.59,5.9,41.13,1.4, 12, 2149
-#Sirius     ,alCMa,ICRS,06,45,08.91728,-16,42,58.0171,0,0,0,379.21,-1.46,-16, 1591
-Sirius     ,alCMa,ICRS,06,45,08.91728,-16,42,58.0171,-546.01,-1223.07,-5.5,379.21,-1.46,-16, 1591
-Spica      ,alVir,ICRS,13,25,11.57937,-11,09,40.7501,-42.35,-30.67,1,13.06,0.97,-10, 3672
-Trappist-1 ,Trappist-1,ICRS,23,06,29.36,-05,02,29.2,922.1,-471.9,-54,82.58,18.798,0,0
-# Gal. Center (SgrA*) according to Simbad database,
-# speed of SgrA* according to Reid (2004), "The Proper Motion of Sagittarius
-# A*", p. 873: -3.151 +- 0.018 mas/yr, -5.547 +- 0.026 mas/yr. Component in 
-# RA must be multiplied with cos(decl).
-Galactic Center,SgrA*,ICRS,17,45,40.03599,-29,00,28.1699,-2.755718425, -5.547,  0.0,0.125,999.99,  0,    0
-Gal. Center,SgrA*,ICRS,17,45,40.03599,-29,00,28.1699,-2.755718425, -5.547,  0.0,0.125,999.99,  0,    0
-#Gal. Center,SgrA*,2000,17,45,40.0409,-29,00,28.118,-2.755718425, -5.547,  0.0,0.0000,999.99,  0,    0
-# Great Attractor, near Galaxy Cluster ACO 3627, at gal. coordinates 
-# 325.3, -7.2, 4844 km s-1 according to Kraan-Korteweg et al. 1996, 
-# Woudt 1998
-Great Attractor,GA,2000,16,15,02.836,-60,53,22.54,0.000,   0.00,  0.0,0.0000159,999.99,  0,    0
-# Virgo Cluster, according to NED (Nasa Extragalactic Database) (old from 2008 or earlier)
-# Virgo Cluster,VC,2000,12,26,32.1,12,43,24,0.000,   0.00,  0.0,0.0000,999.99,  0,    0
-# Virgo Cluster, according to NED (Nasa Extragalactic Database) 17 June 2021
-Virgo Cluster,VC,2000,12,30,47.3,12,20,13,0.000,   0.00,  0.0,0.0000,999.99,  0,    0
-Andromeda Galaxy,M31,ICRS,00,42,44.330,+41,16,07.50,-35.99,-12.92,-301,0.00128205,3.44,  0,    0
-# Prasepe (Beehive Cluster): http://seds.lpl.arizona.edu/messier/m/m044.html (note, the apparent dimension is 95.0 arc min)
-Praesepe Cluster,M44,2000,08,40,6.000,19,59,0.00,0.000,   0.00,  0.0,5.65,3.7,  0,    0
-# moved this to top of file, otherwise Polaris Australis will be found
-Polaris      ,alUMi,ICRS,02,31,49.09456,+89,15,50.7923,44.48,-11.85,-16.42,7.54,2.02, 88,    8
-# Messier 87 galaxis, M87 or M-87, containing supermassive black hole, called
-# Super Galactic Cluster by Philipp Sedwick
-Messier 87 ,M87,ICRS,12,30,49.4233823,12,23,28.0438581,-8.029,10.734,1256,0.000061,8.63,  0,    0
-# Shapley Supercluster, using ACO 3558 cluster of galaxies
-# http://simbad.u-strasbg.fr/simbad/sim-id?Ident=A3558
-Shapley Supercluster,ACO3558,ICRS,13,27,54.8,-31,29,32.0,0.0,0.0,13731,0.0000051,999.99,  0,    0
-#
-# The following stars are given first to prevent swe_fixstar() from
-# returning e.g. Denebola when Deneb is required.
-Deneb        ,alCyg,ICRS,20,41,25.91514,+45,16,49.2197,2.01,1.85,-4.9,2.31,1.25, 44, 3541
-Deneb Adige ,alCyg,ICRS,20,41,25.91514,+45,16,49.2197,2.01,1.85,-4.9,2.31,1.25, 44, 3541
-Rigel        ,beOri,ICRS,05,14,32.27210,-08,12,05.8981,1.31,0.5,17.8,3.78,0.13,-08, 1063
-Mira        ,omiCet,ICRS,02,19,20.79210,-02,58,39.4956,9.33,-237.36,63.5,10.91,6.53,-03,  353
-Ain          ,epTau,ICRS,04,28,36.99882,+19,10,49.5446,106.19,-37.84,38.5,22.24,3.53, 18,  640
-Segin        ,epCas,ICRS,01,54,23.72567,+63,40,12.3628,32.09,-18.94,-8.3,7.92,3.37, 62,  320
-#
-# All of the above data are duplicates for better performance and correct
-# functioning of the function swe_fixstar()/swe_fixstar_ut().
-# They are not required for the newer function swe_fixstar2()/swe_fixstar2_ut().
-#
 # Fixed stars brighter than Magnitude 5 
 # This file is based on data provided by S. Moshier.
 # It was later increased and improved by Valentin Abramov and Dieter Koch
@@ -105,7 +55,59 @@ Segin        ,epCas,ICRS,01,54,23.72567,+63,40,12.3628,32.09,-18.94,-8.3,7.92,3.
 # Names added from https://www.iau.org/public/themes/naming_stars/
 # "List of IAU-approved Star Names as of 19 November 2017"
 # File updated with data from the SIMBAD Astronomical Database.
+#
+# 2-mar-24 AT
+# added Gal.Equ which is only precise in year 2000, 
+# see https://groups.io/g/swisseph/message/12192
 # ---------------------------------------------
+#
+Aldebaran  ,alTau,ICRS,04,35,55.23907,+16,30,33.4885,63.45,-188.94,54.26,48.94,0.86, 16,  629
+Rohini  ,alTau,ICRS,04,35,55.23907,+16,30,33.4885,63.45,-188.94,54.26,48.94,0.86, 16,  629
+Algol      ,bePer,ICRS,03,08,10.13245,+40,57,20.3280,2.99,-1.66,4,36.27,2.12, 40,  673
+Antares    ,alSco,ICRS,16,29,24.45970,-26,25,55.2094,-12.11,-23.3,-3.5,5.89,0.91,-26,11359
+Regulus    ,alLeo,ICRS,10,08,22.31099,+11,58,01.9516,-248.73,5.59,5.9,41.13,1.4, 12, 2149
+Sirius     ,alCMa,ICRS,06,45,08.91728,-16,42,58.0171,-546.01,-1223.07,-5.5,379.21,-1.46,-16, 1591
+Spica      ,alVir,ICRS,13,25,11.57937,-11,09,40.7501,-42.35,-30.67,1,13.06,0.97,-10, 3672
+Trappist-1 ,Trappist-1,ICRS,23,06,29.36,-05,02,29.2,922.1,-471.9,-54,82.58,18.798,0,0
+# Gal. Center (SgrA*) according to Simbad database,
+# speed of SgrA* according to Reid (2004), "The Proper Motion of Sagittarius
+# A*", p. 873: -3.151 +- 0.018 mas/yr, -5.547 +- 0.026 mas/yr. Component in 
+# RA must be multiplied with cos(decl).
+Galactic Center,SgrA*,ICRS,17,45,40.03599,-29,00,28.1699,-2.755718425, -5.547,  0.0,0.125,999.99,  0,    0
+Gal. Center,SgrA*,ICRS,17,45,40.03599,-29,00,28.1699,-2.755718425, -5.547,  0.0,0.125,999.99,  0,    0
+#Gal. Center,SgrA*,2000,17,45,40.0409,-29,00,28.118,-2.755718425, -5.547,  0.0,0.0000,999.99,  0,    0
+# Great Attractor, near Galaxy Cluster ACO 3627, at gal. coordinates 
+# 325.3, -7.2, 4844 km s-1 according to Kraan-Korteweg et al. 1996, 
+# Woudt 1998
+Great Attractor,GA,2000,16,15,02.836,-60,53,22.54,0.000,   0.00,  0.0,0.0000159,999.99,  0,    0
+# Virgo Cluster, according to NED (Nasa Extragalactic Database) (old from 2008 or earlier)
+# Virgo Cluster,VC,2000,12,26,32.1,12,43,24,0.000,   0.00,  0.0,0.0000,999.99,  0,    0
+# Virgo Cluster, according to NED (Nasa Extragalactic Database) 17 June 2021
+Virgo Cluster,VC,2000,12,30,47.3,12,20,13,0.000,   0.00,  0.0,0.0000,999.99,  0,    0
+Andromeda Galaxy,M31,ICRS,00,42,44.330,+41,16,07.50,-35.99,-12.92,-301,0.00128205,3.44,  0,    0
+# Prasepe (Beehive Cluster): http://seds.lpl.arizona.edu/messier/m/m044.html (note, the apparent dimension is 95.0 arc min)
+Praesepe Cluster,M44,2000,08,40,6.000,19,59,0.00,0.000,   0.00,  0.0,5.65,3.7,  0,    0
+# moved this to top of file, otherwise Polaris Australis will be found
+Polaris      ,alUMi,ICRS,02,31,49.09456,+89,15,50.7923,44.48,-11.85,-16.42,7.54,2.02, 88,    8
+# Messier 87 galaxis, M87 or M-87, containing supermassive black hole, called
+# Super Galactic Cluster by Philipp Sedwick
+Messier 87 ,M87,ICRS,12,30,49.4233823,12,23,28.0438581,-8.029,10.734,1256,0.000061,8.63,  0,    0
+# Shapley Supercluster, using ACO 3558 cluster of galaxies
+# http://simbad.u-strasbg.fr/simbad/sim-id?Ident=A3558
+Shapley Supercluster,ACO3558,ICRS,13,27,54.8,-31,29,32.0,0.0,0.0,13731,0.0000051,999.99,  0,    0
+#
+# The following stars are given first to prevent swe_fixstar() from
+# returning e.g. Denebola when Deneb is required.
+Deneb        ,alCyg,ICRS,20,41,25.91514,+45,16,49.2197,2.01,1.85,-4.9,2.31,1.25, 44, 3541
+Deneb Adige ,alCyg,ICRS,20,41,25.91514,+45,16,49.2197,2.01,1.85,-4.9,2.31,1.25, 44, 3541
+Rigel        ,beOri,ICRS,05,14,32.27210,-08,12,05.8981,1.31,0.5,17.8,3.78,0.13,-08, 1063
+Mira        ,omiCet,ICRS,02,19,20.79210,-02,58,39.4956,9.33,-237.36,63.5,10.91,6.53,-03,  353
+Ain          ,epTau,ICRS,04,28,36.99882,+19,10,49.5446,106.19,-37.84,38.5,22.24,3.53, 18,  640
+Segin        ,epCas,ICRS,01,54,23.72567,+63,40,12.3628,32.09,-18.94,-8.3,7.92,3.37, 62,  320
+#
+# All of the above data are duplicates for better performance and correct
+# functioning of the function swe_fixstar()/swe_fixstar_ut().
+# They are not required for the newer function swe_fixstar2()/swe_fixstar2_ut().
 #
 # Andromeda
 Alpheratz    ,alAnd,ICRS,00,08,23.25988,+29,05,25.5520,137.46,-163.44,-10.1,33.62,2.06, 28,    4

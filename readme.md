@@ -168,6 +168,9 @@ found on Github https://github.com/cyjoelchen/php-sweph
 ## Perl-Version
 found on Github https://github.com/aloistr/perl-sweph
 
+## Python-Version
+found on Github https://github.com/astrorigin/pyswisseph
+
 ## Numerical Integrator
 the numerical integrator to prepare swisss ephemeris files is not in a state
 fit for publication.

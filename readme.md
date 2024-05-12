@@ -109,6 +109,7 @@ the path elements.
 
 Asteroid files must be in subdirectories named astN  like ast0, ast1, ... ast623,
 where N is the asteroid number divided by 1000.
+To locate asteroid files, we organize them into subdirectories labeled astN, where N corresponds to the asteroid number divided by 1000 in dropbox. For example, to find information about asteroid 433 (also known as Eros), divide its number by 1000, resulting in 0.433. In the ast0 directory, you'll find the file named 00433s.se1, accessible via Dropbox.
 
 The folders all_ast and long_ast are only used inside the Dropbox area to organize the files. Once downloaded,
 the astN directory must be placed directly in one of the elements of ephepath.

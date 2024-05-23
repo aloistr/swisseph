@@ -1928,22 +1928,11 @@ static int32 call_swe_calc(double tjd, int32 ipl, int32 iflag, char *star, doubl
  */
 static int get_crossing_bin_search(double dt, double tt0, double dang, double xta1,  double xta2,  double xtb1,  double xtb2, double *tret, int32 ipla, int32 iplb, char *stara, char *starb, int32 iflag, AS_BOOL is_transit, char *serr)
 {
-  double d12, d1, d2, tt1, xa[6], xb[6];
+  double d12, d1, tt1, xa[6], xb[6];
   /*swe_revjul(tt0, 1, &jyear, &jmon, &jday, &jut);
   printf("%d%02d%02d %.2f: %c - %c %d\n", jyear, jmon, jday, jut, *spa, *spb, (int) dang);*/
   d1 = swe_degnorm(xta1 - xtb1 - dang);
   if (d1 > 180) d1 -= 360;
-  d2 = swe_degnorm(xta2 - xtb2 - dang);
-  if (d2 > 180) d2 -= 360;
-#if 0
-  /* this is handled by calling function */
-  if (ipla == SE_MOON || iplb == SE_MOON) {
-    if (fabs(d1) >  20)
-      continue;
-  } else if (fabs(d1) > 5) {
-    continue;
-  }
-#endif
   while(dt > HUNDTHOFSEC) {
     dt /= 2.0;
     tt1 = tt0 + dt;
@@ -1966,8 +1955,6 @@ static int get_crossing_bin_search(double dt, double tt0, double dang, double xt
     }
     d1 = swe_degnorm(xta1 - xtb1 - dang);
     if (d1 > 180) d1 -= 360;
-    d2 = swe_degnorm(xta2 - xtb2 - dang);
-    if (d2 > 180) d2 -= 360;
   }
   *tret = tt0;
   return OK;

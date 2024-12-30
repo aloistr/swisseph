@@ -133,7 +133,6 @@ static char *infocmd2 = "\
         -head   don\'t print the header before the planet data. This option\n\
                 is useful when you want to paste the output into a\n\
                 spreadsheet for displaying graphical ephemeris.\n\
-		The option is ignored unless option -n is present.\n\
         +head   header before every step (with -s..) \n\
         -gPPP   use PPP as gap between output columns; default is a single\n\
                 blank.  -g followed by white space sets the\n\
@@ -1276,8 +1275,8 @@ int main(int argc, char *argv[])
     //t += 0.0000000001;
     thour = t;
   }
-  if (! with_header && ! has_n)
-    with_header = TRUE;
+  // if (! with_header && ! has_n)
+  //  with_header = TRUE;
 #if HPUNIX
   gethostname (hostname, 80);
   if (strstr(hostname, "as10") != NULL) 

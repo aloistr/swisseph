@@ -771,7 +771,7 @@ iter_where:
   } else {
     if (serr != NULL)
       sprintf(serr, "no solar eclipse at tjd = %f", tjd);
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 2; i++)
       geopos[i] = 0;
     *dcore = 0;
     retc = 0;

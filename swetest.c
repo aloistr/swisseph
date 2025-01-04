@@ -3253,7 +3253,7 @@ ERR) {
 static int32 call_solar_eclipse(double t_ut, int32 whicheph, int32 special_mode, double *geopos, char *serr)
 {
   int i, ii, retc = OK, eclflag, ecl_type = 0;
-  double dt, tret[30], attr[30], geopos_max[3];
+  double dt, tret[30], attr[30], geopos_max[10];
   char slon[8], slat[8], saros[20];
   char s1[AS_MAXCH], s2[AS_MAXCH], sout_short[AS_MAXCH + LEN_SOUT], *styp = "none", *sgj;
   AS_BOOL has_found = FALSE;

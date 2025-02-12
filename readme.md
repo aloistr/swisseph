@@ -28,12 +28,12 @@ In the public Swiss Ephemeris github repository
 folder ephe
 https://github.com/aloistr/swisseph/tree/master/ephe
 
-This directory contains also in lists.zip lists of all asteroid files and their
+This directory contains also in list.zip the lists of all asteroid files and their
 most recent updates.
 
-	list_short.txt
+	list_short.txt		recent updates short files
 	all_short.txt
-	list_long.txt
+	list_long.txt		recent updates long files
 	all_long.txt
 
 or from Alois' public Dropbox area in folder 'ephe' with this link

@@ -6256,6 +6256,7 @@ int32 fixstar_cut_string(char *srecord, char *star, struct fixed_star *stardata,
   de_pm = atof(cpos[10]);
   radv = atof(cpos[11]);
   parall = atof(cpos[12]);
+  if (parall < 0) parall = -parall;	// to fix bug like old Rasalgheti
   mag = atof(cpos[13]);
   /****************************************
    * position and speed (equinox)

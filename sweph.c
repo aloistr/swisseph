@@ -6210,7 +6210,7 @@ static int CMP_CALL_CONV fstar_node_compare(const void *node1, const void *node2
 int32 fixstar_cut_string(char *srecord, char *star, struct fixed_star *stardata, char *serr)
 {
   int i;
-  char s[AS_MAXCH];
+  char s[AS_MAXCH + 20];
   char *sde_d;
   char *cpos[20];
   double epoch, radv, parall, mag;

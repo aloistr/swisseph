@@ -78,12 +78,17 @@ https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6y
 	fad0f432ae18c330f9e14915fbf8960a  de431.eph
 	a7b2a5b8b2ebed52ea4da2304958053b  de441.eph
 
-## Asteroid files for all available numbered asteroids (more than 620'000)
+or from https://ephe.scryr.io/jpl/  which is a web space provided by  Phillip McCabe
+
+
+## Asteroid files for all available numbered asteroids (more than 760'000)
 
 Each file covers 600 years, from 1500 - 2099. They are organized in folders of 1000 files each, 
 available in Alois' public Dropbox area in folder 'all_ast' with this link:
 
 https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
+
+or from https://ephe.scryr.io/ the web space provided by Phillip McCabe
 
 The total volume was 29 Gb in September 2023.
 
@@ -93,6 +98,8 @@ Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE.
 available in Alois' public Dropbox area in folder 'long_ast' with this link
 
 https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
+
+or from https://ephe.scryr.io/ephe2 the web space provided by Phillip McCabe
 
 The total volume was 11 Gb in September 2023.
 

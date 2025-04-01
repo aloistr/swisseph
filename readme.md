@@ -1,6 +1,6 @@
 readme.md  created 5-oct-2017 by Alois Treindl
 
-last update 20 September 2023
+last update 1-apr-2025
 
 ## About the Swiss Ephemeris:
 
@@ -92,7 +92,7 @@ or from https://ephe.scryr.io/ the web space provided by Phillip McCabe
 
 The total volume was 29 Gb in September 2023.
 
-## Asteroid files for all available named asteroids (more than 24'000)
+## Asteroid files for all available named asteroids (more than 25'000)
 
 Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE. 
 available in Alois' public Dropbox area in folder 'long_ast' with this link

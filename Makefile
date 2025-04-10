@@ -1,69 +1,111 @@
-# this Makefile creates a SwissEph library and a swetest sample on 64-bit
-# Redhat Enterprise Linux RHEL 7.
+################################################################################
+# Swiss Ephemeris Multi-platform Build Makefile
+#
+# This Makefile builds the Swiss Ephemeris project on both Linux and macOS.
+#
+# Features:
+#  - Automatically detects the operating system using `uname`
+#  - Sets appropriate compiler flags, library linking options, and shared
+#    library creation flags for Linux and macOS.
+#  - Builds dynamically linked executables (swetest, swevents, swemini) on both
+#    platforms.
+#  - Builds a fully statically linked executable (swetests) on Linux only.
+#  - Creates both static (libswe.a) and shared libraries (libswe.so on Linux,
+#    libswe.dylib on macOS) from the source object files.
+#
+# Targets:
+#    all         - Build all executables (swetest, swevents, swemini, and swetests on Linux)
+#    swetest     - Build the swetest executable using libswe.a (dynamic linking)
+#    swetests    - Build a fully statically linked swetest (Linux only)
+#    swevents    - Build the swevents executable
+#    swemini     - Build the swemini executable using libswe.a (dynamic linking)
+#    libswe.a    - Create the static library archive from object files
+#    libswe.$(DYLIB_EXT)
+#                - Create the shared library (extension depends on OS)
+#    test        - Run tests from the setest directory (requires a Makefile in setest)
+#    clean       - Remove all generated files and clean the setest directory
+#
+# To customize, modify the CFLAGS, LIBS, or any other variables as needed.
+################################################################################
 
-# The mode marked as 'Linux' should also work with the GNU C compiler
-# gcc on other systems. 
+# Detect OS type via uname
+OS := $(shell uname)
 
-# If you modify this makefile for another compiler, please
-# let us know. We would like to add as many variations as possible.
-# If you get warnings and error messages from your compiler, please
-# let us know. We like to fix the source code so that it compiles
-# free of warnings.
-# send email to the Swiss Ephemeris mailing list.
-# 
+ifeq ($(OS), Darwin)
+  # macOS settings
+  CC               = cc
+  CFLAGS           = -g -Wall -fPIC
+  LIBS             = -lm
+  DYLIB_FLAG       = -dynamiclib
+  DYLIB_EXT        = dylib
+  STATIC_SUPPORTED = false
+else
+  # Assume Linux settings
+  CC               = cc
+  CFLAGS           = -g -Wall -fPIC
+  LIBS             = -lm -ldl
+  DYLIB_FLAG       = -shared
+  DYLIB_EXT        = so
+  STATIC_SUPPORTED = true
+  STATIC_LINK_FLAGS= -static
+endif
 
-CFLAGS =  -g -Wall -fPIC # for Linux and other gcc systems
-#CFLAGS =  -O2 -Wall -fPIC # for Linux and other gcc systems
-OP=$(CFLAGS)  
-CC=cc	#for Linux
+# Object files for the Swiss Ephemeris library
+SWEOBJ = swedate.o swehouse.o swejpl.o swemmoon.o swemplan.o sweph.o \
+         swephlib.o swecl.o swehel.o
 
-# compilation rule for general cases
-.o :
-	$(CC) $(OP) -o $@ $? -lm
-.c.o:
-	$(CC) -c $(OP) $<     
+# Define overall targets. On Linux, include the static swetests target.
+ifeq ($(STATIC_SUPPORTED),true)
+ALL_TARGETS = swetest swetests swevents swemini
+else
+ALL_TARGETS = swetest swevents swemini
+endif
 
-SWEOBJ = swedate.o swehouse.o swejpl.o swemmoon.o swemplan.o sweph.o\
-	 swephlib.o swecl.o swehel.o
+all: $(ALL_TARGETS)
 
-all:	swetest swetests swevents swemini
+# Compile .c files to .o files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# build swetest with SE linked in, using dynamically linked system libraries libc, libm, libdl.
+# Build swetest: link swetest.o with the static library libswe.a
 swetest: swetest.o libswe.a
-	$(CC) $(OP) -o swetest swetest.o -L. -lswe -lm -ldl
+	$(CC) $(CFLAGS) -o swetest swetest.o -L. -lswe $(LIBS)
 
-# build a statically linked version of swetest. first find out where libc.a and libm.a reside,
-# and add this path with -L like below
-# a statically linked program will run on any Linux variant, independent of dynamic system libraries.
+# Build swetests: fully statically linked version (Linux only)
+ifeq ($(STATIC_SUPPORTED),true)
 swetests: swetest.o $(SWEOBJ)
-	$(CC)  $(OP) -static -L/usr/lib/x86_64-redhat-linux6E/lib64/ -o swetests swetest.o $(SWEOBJ) -lm -ldl
+	$(CC) $(CFLAGS) $(STATIC_LINK_FLAGS) -o swetests swetest.o $(SWEOBJ) $(LIBS)
+endif
 
+# Build swevents
 swevents: swevents.o $(SWEOBJ)
-	$(CC) $(OP) -o swevents swevents.o $(SWEOBJ) -lm -ldl
+	$(CC) $(CFLAGS) -o swevents swevents.o $(SWEOBJ) $(LIBS)
 
+# Build swemini
 swemini: swemini.o libswe.a
-	$(CC) $(OP) -o swemini swemini.o -L. -lswe -lm -ldl
+	$(CC) $(CFLAGS) -o swemini swemini.o -L. -lswe $(LIBS)
 
-# create an archive and a dynamic link libary fro SwissEph
-# a user of this library will inlcude swephexp.h  and link with -lswe
-
+# Create a static library from the object files
 libswe.a: $(SWEOBJ)
-	ar r libswe.a	$(SWEOBJ)
+	ar r libswe.a $(SWEOBJ)
 
-libswe.so: $(SWEOBJ)
-	$(CC) -shared -o libswe.so $(SWEOBJ)
+# Create a shared library
+libswe.$(DYLIB_EXT): $(SWEOBJ)
+	$(CC) $(DYLIB_FLAG) -o libswe.$(DYLIB_EXT) $(SWEOBJ)
 
+# Test targets (requires a "setest" subdirectory with its own Makefile)
 test:
 	cd setest && make && ./setest t
 
 test.exp:
 	cd setest && make && ./setest -g t
 
+# Clean up build artifacts
 clean:
-	rm -f *.o swetest libswe*
+	rm -f *.o swetest libswe.* swetests swevents swemini
 	cd setest && make clean
-	
-###
+
+# Dependency rules
 swecl.o: swejpl.h sweodef.h swephexp.h swedll.h sweph.h swephlib.h
 sweclips.o: sweodef.h swephexp.h swedll.h
 swedate.o: swephexp.h sweodef.h swedll.h

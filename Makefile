@@ -47,7 +47,8 @@ else
   DYLIB_FLAG       = -shared
   DYLIB_EXT        = so
   STATIC_SUPPORTED = true
-  STATIC_LINK_FLAGS= -static
+  STATIC_LINK_FLAGS= -Wl,-Bstatic
+  DYNAMIC_LINK_FLAGS= -Wl,-Bdynamic
 endif
 
 # Object files for the Swiss Ephemeris library
@@ -74,7 +75,7 @@ swetest: swetest.o libswe.a
 # Build swetests: fully statically linked version (Linux only)
 ifeq ($(STATIC_SUPPORTED),true)
 swetests: swetest.o $(SWEOBJ)
-	$(CC) $(CFLAGS) $(STATIC_LINK_FLAGS) -o swetests swetest.o $(SWEOBJ) $(LIBS)
+	$(CC) $(CFLAGS) $(STATIC_LINK_FLAGS) -o swetests swetest.o $(SWEOBJ) $(DYNAMIC_LINK_FLAGS) $(LIBS)
 endif
 
 # Build swevents

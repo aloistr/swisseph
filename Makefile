@@ -76,11 +76,17 @@ swetest: swetest.o libswe.a
 ifeq ($(STATIC_SUPPORTED),true)
 swetests: swetest.o $(SWEOBJ)
 	$(CC) $(CFLAGS) $(STATIC_LINK_FLAGS) -o swetests swetest.o $(SWEOBJ) $(DYNAMIC_LINK_FLAGS) $(LIBS)
+	cp swetests bin/swetest
 endif
 
 # Build swevents
 swevents: swevents.o $(SWEOBJ)
 	$(CC) $(CFLAGS) -o swevents swevents.o $(SWEOBJ) $(LIBS)
+
+# Build sweventss, statically compiled
+sweventss: swevents.o $(SWEOBJ)
+	$(CC) $(CFLAGS) $(STATIC_LINK_FLAGS) -o sweventss swevents.o $(SWEOBJ) $(DYNAMIC_LINK_FLAGS) $(LIBS)
+	cp sweventss  bin/swevents
 
 # Build swemini
 swemini: swemini.o libswe.a

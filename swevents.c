@@ -287,7 +287,7 @@ char sdatefrom[AS_MAXCH], sdateto[AS_MAXCH], syear0[80];
 char sdate[AS_MAXCH];
 AS_BOOL gregflag = TRUE;
 int ipl;
-double tzone = 0;
+double tzone = 0, epstrue, epsmean;
 int azn = 0;
 int global_ttb_mode = 1;	// TTB_MODE_HYBRIDX
 int whicheph = SEFLG_JPLEPH; 
@@ -723,6 +723,13 @@ int main(int argc, char *argv[])
     if (iflgret < 0) {
       fprintf(stderr, "return code %d, mesg: %s\n", iflgret, serr);
     }
+    /* ecliptic obliquity and nutation */
+    iflgret = swe_calc(te, SE_ECL_NUT, 0, x, serr);
+    if (iflgret < 0) {
+      fprintf(stderr, "return code %d, mesg: %s\n", iflgret, serr);
+    }
+    epstrue = x[0];
+    epsmean = x[1];
     /* true heliocentric distance */
     /* elongation of planet measured on ecliptic */
     for (i = 0; i <= 5; i++)
@@ -1754,7 +1761,13 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
       Print("    ");
       printmod_pds(delon * DEG2CSEC, FT_SYMBS, PDS_NO_ZOD_SIGN);
     }
+    if (is_decl && fabs(dmag) > epstrue + 1 / 3600.0) {
+      printmod_set_rgb_color(70, 0, 0);
+    }
     Print(smag);
+    if (is_decl && fabs(dmag) > epstrue + 1 / 3600.0) {
+      printmod_set_black();
+    }
     PrintLn();
     line_count++;
   }

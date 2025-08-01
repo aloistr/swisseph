@@ -6,7 +6,7 @@ periodically.
 ## Minor Planet Names: Alphabetical List
 
 This is an alphabetical listing of the names of the numbered minor
-planets. It was last updated on 02-Jul-2025
+planets. It was last updated on 23-Jul-2025
 
 
 ------------------------------------------------------------------------
@@ -455,6 +455,7 @@ planets. It was last updated on 02-Jul-2025
 (111468) Alba Regia                    Alba Regia
   (5576) Albanese                      Albanese
  (31468) Albastaki                     Albastaki
+(333551) Albaugh                       Albaugh
  (10051) Albee                         Albee
   (8439) Albellus                      Albellus
  (10186) Albeniz                       Albéniz
@@ -600,6 +601,7 @@ planets. It was last updated on 02-Jul-2025
  (23307) Alexramek                     Alexramek
  (11781) Alexroberts                   Alexroberts
  (30190) Alexshelby                    Alexshelby
+(712499) Alexstefanescu                Alexstefanescu
  (24608) Alexveselkov                  Alexveselkov
  (22517) Alexzanardi                   Alexzanardi
  (17130) Alexzhang                     Alexzhang
@@ -662,6 +664,7 @@ planets. It was last updated on 02-Jul-2025
 (121542) Alindamashiku                 Alindamashiku
    (266) Aline                         Aline
  (21657) Alinecarter                   Alinecarter
+ (55913) Alinedupin                    Alinedupin
   (8651) Alineraynal                   Alineraynal
 (214136) Alinghi                       Alinghi
  (79382) Aliprandi                     Aliprandi
@@ -1253,6 +1256,7 @@ planets. It was last updated on 02-Jul-2025
  (13463) Antiphos                      Antiphos
   (6614) Antisthenes                   Antisthenes
  (53843) Antjiekrog                    Antjiekrog
+ (55897) Antoinecailleau               Antoinecailleau
   (3686) Antoku                        Antoku
  (84120) Antonacci                     Antonacci
 (300334) Antonalexander                Antonalexander
@@ -1340,12 +1344,14 @@ planets. It was last updated on 02-Jul-2025
   (9393) Apta                          Apta
  (12606) Apuleius                      Apuleius
  (11322) Aquamarine                    Aquamarine
+(631202) Aquarellia                    Aquarellia
   (8836) Aquifolium                    Aquifolium
   (1063) Aquilegia                     Aquilegia
 (107052) Aquincum                      Aquincum
    (387) Aquitania                     Aquitania
    (849) Ara                           Ara
 (100731) Ara Pacis                     Ara Pacis
+ (35169) Araake                        Araake
  (15144) Araas                         Araas
    (841) Arabella                      Arabella
   (1157) Arabia                        Arabia
@@ -1409,6 +1415,7 @@ planets. It was last updated on 02-Jul-2025
   (4759) Aretta                        Åretta
   (1551) Argelander                    Argelander
    (469) Argentina                     Argentina
+ (56067) Argerich                      Argerich
 (152227) Argoli                        Argoli
  (13410) Arhale                        Arhale
     (43) Ariadne                       Ariadne
@@ -1515,6 +1522,7 @@ planets. It was last updated on 02-Jul-2025
   (5506) Artiglio                      Artiglio
  (15378) Artin                         Artin
 (598895) Artjuhs                       Artjuhs
+(112660) Artlucas                      Artlucas
   (4136) Artmane                       Artmane
 (374848) Arturomalignani               Arturomalignani
  (61384) Arturoromer                   Arturoromer
@@ -1975,6 +1983,7 @@ planets. It was last updated on 02-Jul-2025
  (15056) Barbaradixon                  Barbaradixon
  (19982) Barbaradoore                  Barbaradoore
 (319090) Barbarahillary                Barbarahillary
+(358167) Barbaralong                   Barbaralong
  (24069) Barbarapener                  Barbarapener
  (27584) Barbaravelez                  Barbaravelez
  (63307) Barbarawilson                 Barbarawilson
@@ -2578,6 +2587,7 @@ planets. It was last updated on 02-Jul-2025
  (63032) Billschmitt                   Billschmitt
  (91275) Billsmith                     Billsmith
   (7812) Billward                      Billward
+ (34816) Billybarr                     Billybarr
  (85217) Bilzingsleben                 Bilzingsleben
  (92279) Bindiluca                     Bindiluca
 (213629) Binford                       Binford
@@ -2712,6 +2722,7 @@ planets. It was last updated on 02-Jul-2025
   (6641) Bobross                       Bobross
  (18321) Bobrov                        Bobrov
   (2637) Bobrovnikoff                  Bobrovnikoff
+(128027) Bobsandy                      Bobsandy
  (27571) Bobscott                      Bobscott
 (159778) Bobshelton                    Bobshelton
   (5549) Bobstefanik                   Bobstefanik
@@ -3076,6 +3087,7 @@ planets. It was last updated on 02-Jul-2025
  (27426) Brettlawrie                   Brettlawrie
  (71485) Brettman                      Brettman
 (134088) Brettperkins                  Brettperkins
+ (26613) Brettwhite                    Brettwhite
 (177771) Bretz                         Bretz
  (11583) Breuer                        Breuer
  (38642) Breukers                      Breukers
@@ -3105,6 +3117,7 @@ planets. It was last updated on 02-Jul-2025
  (11723) Briankennedy                  Briankennedy
  (22057) Brianking                     Brianking
 (176867) Brianlee                      Brianlee
+ (22650) Brianloader                   Brianloader
  (12926) Brianmason                    Brianmason
  (52665) Brianmay                      Brianmay
  (24139) Brianmcarthy                  Brianmcarthy
@@ -3314,6 +3327,7 @@ planets. It was last updated on 02-Jul-2025
  (16062) Buncher                       Buncher
  (20058) Bundalian                     Bundalian
  (31095) Buneiou                       Buneiou
+ (56095) Buniatishvili                 Buniatishvili
   (6722) Bunichi                       Bunichi
   (3890) Bunin                         Bunin
  (11292) Bunjisuzuki                   Bunjisuzuki
@@ -3464,6 +3478,7 @@ planets. It was last updated on 02-Jul-2025
  (12154) Callimachus                   Callimachus
 (333001) Calloway                      Calloway
 (470600) Calogero                      Calogero
+(165694) Calosisbaragli                Calosisbaragli
   (2542) Calpurnia                     Calpurnia
   (2906) Caltech                       Caltech
  (12183) Caltonen                      Caltonen
@@ -3514,6 +3529,7 @@ planets. It was last updated on 02-Jul-2025
 (175625) Canaryastroinst               Canaryastroinst
   (5842) Cancelli                      Cancelli
   (4899) Candace                       Candace
+(333502) Candelaria                    Candelaria
   (9010) Candelo                       Candelo
 (332530) Canders                       Canders
   (3015) Candy                         Candy
@@ -3941,6 +3957,7 @@ planets. It was last updated on 02-Jul-2025
  (16238) Chappe                        Chappe
   (3938) Chapront                      Chapront
  (21128) Chapuis                       Chapuis
+(714378) Char                          Char
 (269243) Charbonnel                    Charbonnel
  (24268) Charconley                    Charconley
  (11314) Charcot                       Charcot
@@ -3961,6 +3978,7 @@ planets. It was last updated on 02-Jul-2025
  (32058) Charlesnoyes                  Charlesnoyes
  (29613) Charlespicard                 Charlespicard
  (25944) Charlesross                   Charlesross
+ (58606) Charlestrenet                 Charlestrenet
  (32222) Charlesvest                   Charlesvest
  (26412) Charlesyu                     Charlesyu
  (13933) Charleville                   Charleville
@@ -4464,6 +4482,7 @@ planets. It was last updated on 02-Jul-2025
 (227147) Coggiajerome                  Coggiajerome
   (6713) Coggie                        Coggie
   (1764) Cogshall                      Cogshall
+ (32202) Cogswell                      Cogswell
  (23735) Cohen                         Cohen
    (972) Cohnia                        Cohnia
 (247821) Coignet                       Coignet
@@ -4624,6 +4643,7 @@ planets. It was last updated on 02-Jul-2025
 (353171) Cosmebauca                    Cosmebauçà
  (45027) Cosquer                       Cosquer
   (4993) Cossard                       Cossard
+(730495) Costafrancini                 Costafrancini
 (397800) Costaillobera                 Costaillobera
  (17024) Costello                      Costello
  (10445) Coster                        Coster
@@ -4706,6 +4726,7 @@ planets. It was last updated on 02-Jul-2025
   (8775) Cristata                      Cristata
 (456627) Cristianmartins               Cristianmartins
  (26478) Cristianrosu                  Cristianrosu
+(659267) Cristianstancu                Cristianstancu
   (8063) Cristinathomas                Cristinathomas
  (29348) Criswick                      Criswick
  (20690) Crivello                      Crivello
@@ -4742,6 +4763,7 @@ planets. It was last updated on 02-Jul-2025
 (175567) Csadaimre                     Csadaimre
 (450297) Csakanybela                   Csakanybela
  (95785) Csanyivilmos                  Csányivilmos
+(338578) Csapodyvera                   Csapodyvera
 (209089) Csepevaleria                  Csepevaleria
  (25778) Csere                         Csere
 (136273) Csermely                      Csermely
@@ -5030,6 +5052,7 @@ planets. It was last updated on 02-Jul-2025
  (33488) Darrelrobertson               Darrelrobertson
  (13903) Darrylwatanabe                Darrylwatanabe
  (31854) Darshanashah                  Darshanashah
+ (58700) Darson                        Darson
   (1991) Darwin                        Darwin
  (18019) Dascoli                       Dascoli
   (3321) Dasha                         Dasha
@@ -5219,6 +5242,7 @@ planets. It was last updated on 02-Jul-2025
   (5589) De Meis                       De Meis
  (26849) De Paepe                      De Paepe
   (5522) De Rop                        De Rop
+(333487) De Rose                       De Rose
  (12150) De Ruyter                     De Ruyter
   (3268) De Sanctis                    De Sanctis
   (1686) De Sitter                     De Sitter
@@ -5504,6 +5528,7 @@ planets. It was last updated on 02-Jul-2025
  (14129) DiBucci                       DiBucci
   (3767) DiMaggio                      DiMaggio
  (22632) DiNovis                       DiNovis
+ (19774) Diamondback                   Diamondback
     (78) Diana                         Diana
 (743062) Dianabesliu                   Dianabe\c{s}liu
  (33034) Dianadamrau                   Dianadamrau
@@ -5839,6 +5864,7 @@ planets. It was last updated on 02-Jul-2025
    (620) Drakonia                      Drakonia
 (572217) Dramba                        Dramba
  (13122) Drava                         Drava
+(634559) Drayer                        Drayer
   (6488) Drebach                       Drebach
  (27974) Drejsl                        Drejsl
    (263) Dresda                        Dresda
@@ -5878,6 +5904,7 @@ planets. It was last updated on 02-Jul-2025
   (1167) Dubiago                       Dubiago
 (391042) Dubietis                      Dubietis
   (6359) Dubinin                       Dubinin
+(333544) Dubisher                      Dubisher
   (9515) Dubner                        Dubner
 (206241) Dubois                        Dubois
   (2312) Duboshin                      Duboshin
@@ -6462,6 +6489,7 @@ planets. It was last updated on 02-Jul-2025
  (25678) Ericfoss                      Ericfoss
 (319227) Erichbar                      Erichbär
  (30073) Erichen                       Erichen
+(542568) Erichess                      Erichess
   (7940) Erichmeyer                    Erichmeyer
   (9430) Erichthonios                  Erichthonios
   (9620) Ericidle                      Ericidle
@@ -6490,6 +6518,7 @@ planets. It was last updated on 02-Jul-2025
  (20491) Ericstrege                    Ericstrege
   (9988) Erictemplebell                Erictemplebell
  (28398) Ericthomas                    Ericthomas
+(333242) Ericthomasparker              Ericthomasparker
    (718) Erida                         Erida
   (3512) Eriepa                        Eriepa
    (163) Erigone                       Erigone
@@ -6730,11 +6759,13 @@ planets. It was last updated on 02-Jul-2025
   (1649) Fabre                         Fabre
  (18649) Fabrega                       Fabrega
   (5221) Fabribudweis                  Fabribudweis
+(589253) Fabrika                       Fabrika
  (16690) Fabritius                     Fabritius
 (212176) Fabriziospaziani              Fabriziospaziani
 (410619) Fabry                         Fabry
  (11142) Facchini                      Facchini
 (541741) Fado                          Fado
+(333536) Faelan                        Faelan
  (27959) Fagioli                       Fagioli
   (1593) Fagnes                        Fagnes
   (9021) Fagus                         Fagus
@@ -6747,11 +6778,13 @@ planets. It was last updated on 02-Jul-2025
 (353429) Fairlamb                      Fairlamb
  (21424) Faithchang                    Faithchang
  (22898) Falce                         Falce
+(656196) Falchi                        Falchi
   (7963) Falcinelli                    Falcinelli
  (60183) Falcone                       Falcone
  (37646) Falconscott                   Falconscott
 (233943) Falera                        Falera
  (48480) Falk                          Falk
+(333506) Falkenstern                   Falkenstern
  (14025) Fallada                       Fallada
  (10740) Fallersleben                  Fallersleben
  (15617) Fallowfield                   Fallowfield
@@ -6821,6 +6854,7 @@ planets. It was last updated on 02-Jul-2025
   (4726) Federer                       Federer
  (12817) Federica                      Federica
 (118235) Federico                      Federico
+(702688) Federicocolombo               Federicocolombo
 (133296) Federicotosi                  Federicotosi
  (25639) Fedina                        Fedina
  (29628) Fedorets                      Fedorets
@@ -7176,6 +7210,7 @@ planets. It was last updated on 02-Jul-2025
  (12638) Fransbruggen                  Fransbruggen
  (66939) Franscini                     Franscini
  (11242) Franspost                     Franspost
+ (12941) Franssnik                     Franssnik
  (13101) Fransson                      Fransson
   (3917) Franz Schubert                Franz Schubert
    (862) Franzia                       Franzia
@@ -7785,6 +7820,7 @@ planets. It was last updated on 02-Jul-2025
  (10371) Gigli                         Gigli
 (321024) Gijon                         Gijon
  (22189) Gijskatgert                   Gijskatgert
+ (12940) Gijsnelemans                  Gijsnelemans
  (33476) Gilanareiss                   Gilanareiss
 (429733) Gilbertbaker                  Gilbertbaker
   (7459) Gilbertofranco                Gilbertofranco
@@ -8631,6 +8667,7 @@ planets. It was last updated on 02-Jul-2025
  (11777) Hargrave                      Hargrave
  (10955) Harig                         Harig
   (2582) Harimaya-Bashi                Harimaya-Bashi
+ (35143) Harimoto                      Harimoto
  (24944) Harish-Chandra                Harish-Chandra
  (33609) Harishpalani                  Harishpalani
 (333183) Harishswabhash                Harishswabhash
@@ -8784,6 +8821,7 @@ planets. It was last updated on 02-Jul-2025
  (47219) Heatherkoehler                Heatherkoehler
  (25765) Heatherlynne                  Heatherlynne
  (21856) Heathermaria                  Heathermaria
+ (32201) Heathermckay                  Heathermckay
 (133850) Heatherroper                  Heatherroper
 (198110) Heathrhoades                  Heathrhoades
      (6) Hebe                          Hebe
@@ -8911,6 +8949,8 @@ planets. It was last updated on 02-Jul-2025
  (20317) Hendrickson                   Hendrickson
   (4506) Hendrie                       Hendrie
   (7840) Hendrika                      Hendrika
+ (12954) Hendrikcasimir                Hendrikcasimir
+(724875) Hengchun                      Hengchun
  (10021) Henja                         Henja
  (12643) Henkolthof                    Henkolthof
 (154378) Hennessy                      Hennessy
@@ -9166,6 +9206,7 @@ planets. It was last updated on 02-Jul-2025
 (124844) Hirotamasao                   Hirotamasao
  (14214) Hirsch                        Hirsch
   (3172) Hirst                         Hirst
+ (30944) Hiruma                        Hiruma
    (706) Hirundo                       Hirundo
   (7493) Hirzo                         Hirzo
  (28173) Hisakichi                     Hisakichi
@@ -9408,6 +9449,7 @@ planets. It was last updated on 02-Jul-2025
  (74024) Hrabe                         Hrabě
  (13804) Hrazany                       Hrazany
 (225238) Hristobotev                   Hristobotev
+ (90368) Hristopavlov                  Hristopavlov
  (25688) Hritzo                        Hritzo
  (24862) Hromec                        Hromec
   (5946) Hrozny                        Hrozný
@@ -9477,6 +9519,7 @@ planets. It was last updated on 02-Jul-2025
   (9488) Huia                          Huia
   (5390) Huichiming                    Huichiming
  (23669) Huihuifan                     Huihuifan
+(333384) Huikang                       Huikang
  (88297) Huikilolani                   Huikilolani
  (51166) Huimanto                      Huimanto
  (17022) Huisjen                       Huisjen
@@ -9649,6 +9692,7 @@ planets. It was last updated on 02-Jul-2025
 (243591) Ignacostantino                Ignacostantino
 (335668) Ignalina                      Ignalina
 (667531) Ignasiribas                   Ignasiribas
+ (12939) Ignassnellen                  Ignassnellen
   (8787) Ignatenko                     Ignatenko
 (296968) Ignatianum                    Ignatianum
   (3562) Ignatius                      Ignatius
@@ -9755,10 +9799,12 @@ planets. It was last updated on 02-Jul-2025
  (18781) Indaram                       Indaram
   (1602) Indiana                       Indiana
   (7299) Indiawadkins                  Indiawadkins
+(117783) Indik                         Indik
  (33382) Indranidas                    Indranidas
  (90703) Indulgentia                   Indulgentia
    (389) Industria                     Industria
 (711824) Infante                       Infante
+ (12938) Ingakamp                      Ingakamp
   (4875) Ingalls                       Ingalls
   (2494) Inge                          Inge
    (391) Ingeborg                      Ingeborg
@@ -10028,6 +10074,7 @@ planets. It was last updated on 02-Jul-2025
 (196000) Izzard                        Izzard
 
  (78577) JPL                           JPL
+ (12953) Jaapvreeling                  Jaapvreeling
   (7470) Jabberwock                    Jabberwock
   (1942) Jablunka                      Jablunka
   (2079) Jacchia                       Jacchia
@@ -10144,6 +10191,7 @@ planets. It was last updated on 02-Jul-2025
  (30558) Jamesoconnor                  Jamesoconnor
  (10773) Jamespaton                    Jamespaton
  (26467) Jamespopper                   Jamespopper
+(333251) Jamesroberts                  Jamesroberts
 (121656) Jamesrogers                   Jamesrogers
  (30187) Jamesroney                    Jamesroney
  (12679) Jamessimpson                  Jamessimpson
@@ -10269,6 +10317,7 @@ planets. It was last updated on 02-Jul-2025
  (17199) Jasonliu                      Jasonliu
  (23728) Jasonmorrow                   Jasonmorrow
  (17009) Jasonping                     Jasonping
+(571398) Jasonrowe                     Jasonrowe
  (18155) Jasonschuler                  Jasonschuler
  (33626) Jasonsmith                    Jasonsmith
  (55399) Jasonsoderblom                Jasonsoderblom
@@ -10338,6 +10387,7 @@ planets. It was last updated on 02-Jul-2025
  (33487) Jeanpierrerivet               Jeanpierrerivet
   (2763) Jeans                         Jeans
  (18574) Jeansimon                     Jeansimon
+ (58734) Jeantarde                     Jeantarde
 (129325) Jedhancock                    Jedhancock
   (5899) Jedicke                       Jedicke
 (322912) Jedlik                        Jedlik
@@ -10535,6 +10585,7 @@ planets. It was last updated on 02-Jul-2025
  (26233) Jimbraun                      Jimbraun
  (14148) Jimchamberlin                 Jimchamberlin
  (27431) Jimcole                       Jimcole
+  (7703) Jimcooney                     Jimcooney
  (12224) Jimcornell                    Jimcornell
   (9809) Jimdarwin                     Jimdarwin
  (28661) Jimdickens                    Jimdickens
@@ -10644,6 +10695,7 @@ planets. It was last updated on 02-Jul-2025
  (47620) Joeplassmann                  Joeplassmann
  (58595) Joepollock                    Joepollock
  (20009) Joerao                        Joerao
+ (12952) Joerivanleeuwen               Joerivanleeuwen
  (27342) Joescanio                     Joescanio
 (276568) Joestubler                    Joestübler
  (81859) Joetaylor                     Joetaylor
@@ -10807,6 +10859,7 @@ planets. It was last updated on 02-Jul-2025
 (603260) Jonaskaroly                   Jónáskároly
  (27949) Jonasz                        Jonasz
   (2392) Jonathan Murray               Jonathan Murray
+ (54402) Jonathanbradshaw              Jonathanbradshaw
  (33372) Jonathanchung                 Jonathanchung
  (41907) Jonathanford                  Jonathanford
  (27194) Jonathanli                    Jonathanli
@@ -11055,6 +11108,7 @@ planets. It was last updated on 02-Jul-2025
   (5394) Jurgens                       Jurgens
   (4388) Jurgenstock                   Jürgenstock
  (14966) Jurijvega                     Jurijvega
+(678800) Juska                         Juška
   (9470) Jussieu                       Jussieu
  (27382) Justinbarber                  Justinbarber
  (21394) Justinbecker                  Justinbecker
@@ -11193,6 +11247,7 @@ planets. It was last updated on 02-Jul-2025
 (197708) Kalipona                      Kalipona
   (2840) Kallavesi                     Kallavesi
   (2805) Kalle                         Kalle
+(333514) Kallemeyn                     Kallemeyn
  (28569) Kallenbach                    Kallenbach
  (10908) Kallestroetzel                Kallestroetzel
     (22) Kalliope                      Kalliope
@@ -11359,6 +11414,7 @@ planets. It was last updated on 02-Jul-2025
  (30786) Karkoschka                    Karkoschka
   (2807) Karl Marx                     Karl Marx
   (2125) Karl-Ontjes                   Karl-Ontjes
+ (58736) Karlantier                    Karlantier
 (129061) Karlfortney                   Karlfortney
 (129330) Karlharshman                  Karlharshman
 (332706) Karlheidlas                   Karlheidlas
@@ -11666,6 +11722,7 @@ planets. It was last updated on 02-Jul-2025
  (34152) Kendrazhang                   Kendrazhang
  (25704) Kendrick                      Kendrick
  (12537) Kendriddle                    Kendriddle
+(541801) Kendurkar                     Kendurkar
   (8743) Keneke                        Kèneke
 (121133) Kenflurchick                  Kenflurchick
  (18237) Kenfreeman                    Kenfreeman
@@ -11996,6 +12053,7 @@ planets. It was last updated on 02-Jul-2025
   (1825) Klare                         Klare
   (7277) Klass                         Klass
  (35459) Klaurieger                    Klaurieger
+(333490) Klaus                         Klaus
 (217576) Klausbirkner                  Klausbirkner
   (6506) Klausheide                    Klausheide
  (13028) Klaustschira                  Klaustschira
@@ -12027,6 +12085,7 @@ planets. It was last updated on 02-Jul-2025
  (19763) Klimesh                       Klimesh
   (3653) Klimishin                     Klimishin
 (361524) Klimka                        Klimka
+(535769) Klimkovsky                    Klimkovsky
  (30725) Klimov                        Klimov
  (16445) Klimt                         Klimt
  (22369) Klinger                       Klinger
@@ -12061,6 +12120,7 @@ planets. It was last updated on 02-Jul-2025
  (20065) Kminek                        Kminek
   (4312) Knacke                        Knacke
 (159826) Knapp                         Knapp
+ (23186) Knauss                        Knauss
  (18286) Kneipp                        Kneipp
   (3900) Knezevic                      Knežević
   (1384) Kniertje                      Kniertje
@@ -12110,6 +12170,7 @@ planets. It was last updated on 02-Jul-2025
  (15963) Koeberl                       Koeberl
  (26426) Koechl                        Koechl
   (6330) Koen                          Koen
+ (12951) Koenkuijken                   Koenkuijken
  (75063) Koestler                      Koestler
  (17516) Kogayukihito                  Kogayukihito
   (5684) Kogo                          Kogo
@@ -13249,6 +13310,7 @@ planets. It was last updated on 02-Jul-2025
   (5923) Liedeke                       Liedeke
 (543060) Liefke                        Liefke
  (34863) Lientang                      Lientang
+(678676) Liepaja                       Liepāja
   (3454) Lieske                        Lieske
  (13557) Lievetruwant                  Lievetruwant
  (19155) Lifeson                       Lifeson
@@ -13270,7 +13332,6 @@ planets. It was last updated on 02-Jul-2025
 (132741) Liliacapocaccia               Liliacapocaccia
  (27775) Lilialmanzor                  Lilialmanzor
 (216780) Lilianne                      Lilianne
-(333207) Liliannguyen                  Liliannguyen
  (28611) Liliapopova                   Liliapopova
  (13610) Lilienthal                    Lilienthal
  (59238) Lilin                         Lilin
@@ -13280,6 +13341,7 @@ planets. It was last updated on 02-Jul-2025
   (3222) Liller                        Liller
    (756) Lilliana                      Lilliana
  (28557) Lillianchin                   Lillianchin
+(333207) Lilliannguyen                 Lilliannguyen
  (23234) Lilliantsai                   Lilliantsai
  (34823) Lillipetersen                 Lillipetersen
   (2952) Lilliputia                    Lilliputia
@@ -13995,6 +14057,7 @@ planets. It was last updated on 02-Jul-2025
  (30222) Malecki                       Malecki
   (9897) Malerba                       Malerba
  (10541) Malesherbes                   Malesherbes
+ (58756) Malgoyre                      Malgoyre
 (260724) Malherbe                      Malherbe
   (6698) Malhotra                      Malhotra
  (10415) Mali Losinj                   Mali Lošinj
@@ -14122,6 +14185,7 @@ planets. It was last updated on 02-Jul-2025
  (21306) Marani                        Marani
  (20420) Marashwhitman                 Marashwhitman
   (4356) Marathon                      Marathon
+(666479) Maratmingaliev                Maratmingaliev
    (565) Marbachia                     Marbachia
 (256813) Marburg                       Marburg
  (71445) Marc                          Marc
@@ -14135,6 +14199,7 @@ planets. It was last updated on 02-Jul-2025
   (1300) Marcelle                      Marcelle
  (23946) Marcelleroux                  Marcelleroux
  (95783) Marceloemilio                 Marceloemilio
+(718490) Marcelosouza                  Marcelosouza
  (26883) Marcelproust                  Marcelproust
  (30307) Marcelriesz                   Marcelriesz
 (201497) Marcelroche                   Marcelroche
@@ -14317,6 +14382,7 @@ planets. It was last updated on 02-Jul-2025
  (34322) Marknandor                    Marknandor
 (121615) Marknoteware                  Marknoteware
  (27514) Markov                        Markov
+(333288) Markperry                     Markperry
  (27330) Markporter                    Markporter
  (10598) Markrees                      Markrees
   (7778) Markrobinson                  Markrobinson
@@ -14578,6 +14644,7 @@ planets. It was last updated on 02-Jul-2025
   (9105) Matsumura                     Matsumura
   (9104) Matsuo                        Matsuo
  (10829) Matsuobasho                   Matsuobasho
+ (33059) Matsuoka                      Matsuoka
   (6607) Matsushima                    Matsushima
  (18903) Matsuura                      Matsuura
   (4844) Matsuyama                     Matsuyama
@@ -15142,6 +15209,7 @@ planets. It was last updated on 02-Jul-2025
  (44033) Michez                        Michez
  (32389) Michflannory                  Michflannory
  (53316) Michielford                   Michielford
+ (12950) Michielrodenhuis              Michielrodenhuis
  (23169) Michikami                     Michikami
  (38669) Michikawa                     Michikawa
   (6499) Michiko                       Michiko
@@ -15205,6 +15273,7 @@ planets. It was last updated on 02-Jul-2025
  (23216) Mikehagler                    Mikehagler
  (22426) Mikehanes                     Mikehanes
 (444414) Mikehankey                    Mikehankey
+(571117) Mikehudson                    Mikehudson
 (128408) Mikehughes                    Mikehughes
  (28272) Mikejanner                    Mikejanner
 (120354) Mikejones                     Mikejones
@@ -15288,6 +15357,7 @@ planets. It was last updated on 02-Jul-2025
 (117640) Millsellie                    Millsellie
  (54967) Millucci                      Millucci
  (11767) Milne                         Milne
+ (12949) Milogrootjen                  Milogrootjen
   (4725) Milone                        Milone
   (3337) Milos                         Miloš
 (590739) Miloslavov                    Miloslavov
@@ -15999,6 +16069,7 @@ planets. It was last updated on 02-Jul-2025
  (23228) Nandinisarma                  Nandinisarma
   (5852) Nanette                       Nanette
  (12977) Nanettevigil                  Nanettevigil
+ (96296) Nanhangda                     Nanhangda
   (3607) Naniwa                        Naniwa
   (3901) Nanjingdaxue                  Nanjingdaxue
   (5288) Nankichi                      Nankichi
@@ -16089,6 +16160,7 @@ planets. It was last updated on 02-Jul-2025
  (13234) Natashaowen                   Natashaowen
  (24934) Natecovert                    Natecovert
 (330934) Natevanwey                    Natevanwey
+ (12948) Nathaliedegenaar              Nathaliedegenaar
  (32594) Nathandeng                    Nathandeng
  (27421) Nathanhan                     Nathanhan
  (25258) Nathaniel                     Nathaniel
@@ -16544,6 +16616,7 @@ planets. It was last updated on 02-Jul-2025
  (25766) Nosarzewski                   Nosarzewski
  (63389) Noshiro                       Noshiro
   (3162) Nostalgia                     Nostalgia
+ (99825) Nosworthy                     Nosworthy
    (626) Notburga                      Notburga
 (227641) Nothomb                       Nothomb
 (132904) Notkin                        Notkin
@@ -16728,6 +16801,7 @@ planets. It was last updated on 02-Jul-2025
  (31105) Oguniyamagata                 Oguniyamagata
  (11817) Oguri                         Oguri
   (1259) Ogyalla                       Ógyalla
+ (32919) Ohashi                        Ohashi
   (4675) Ohboke                        Ohboke
   (5970) Ohdohrikouen                  Ohdohrikouen
    (439) Ohio                          Ohio
@@ -17231,6 +17305,7 @@ planets. It was last updated on 02-Jul-2025
 (185150) Panevezys                     Panevezys
  (21717) Pang                          Pang
   (7306) Panizon                       Panizon
+(470341) Panjianwei                    Panjianwei
 (216331) Panjunhua                     Panjunhua
  (17075) Pankonin                      Pankonin
 (597967) Pannai                        Pannai
@@ -17411,16 +17486,19 @@ planets. It was last updated on 02-Jul-2025
 (700818) Pauldelaney                   Pauldelaney
  (10934) Pauldelvaux                   Pauldelvaux
   (4443) Paulet                        Paulet
+(333511) Paulfleming                   Paulfleming
  (85411) Paulflora                     Paulflora
  (33517) Paulfoltin                    Paulfoltin
  (14372) Paulgerhardt                  Paulgerhardt
  (27288) Paulgilmore                   Paulgilmore
  (23699) Paulgordan                    Paulgordan
  (20018) Paulgray                      Paulgray
+ (12947) Paulgroot                     Paulgroot
  (44192) Paulguttman                   Paulguttman
   (5349) Paulharris                    Paulharris
    (278) Paulina                       Paulina
  (24239) Paulinehiga                   Paulinehiga
+ (22649) Paulineloader                 Paulineloader
   (4674) Pauling                       Pauling
  (37592) Pauljackson                   Pauljackson
   (3743) Pauljaniczek                  Pauljaniczek
@@ -17592,6 +17670,7 @@ planets. It was last updated on 02-Jul-2025
   (7556) Perinaldo                     Perinaldo
  (15663) Periphas                      Periphas
   (2482) Perkin                        Perkin
+(333546) Perkins                       Perkins
  (17222) Perlmutter                    Perlmutter
  (43767) Permeke                       Permeke
   (7989) Pernadavide                   Pernadavide
@@ -17708,6 +17787,7 @@ planets. It was last updated on 02-Jul-2025
  (11463) Petrpokorny                   Petrpokorny
   (4790) Petrpravec                    Petrpravec
 (274981) Petrsu                        Petrsu
+(566939) Petrucraciun                  Petrucr\u{a}ciun
   (9707) Petruskoning                  Petruskoning
  (36035) Petrvok                       Petrvok
  (21087) Petsimpallas                  Petsimpallas
@@ -17840,6 +17920,7 @@ planets. It was last updated on 02-Jul-2025
  (65696) Pierrehenry                   Pierrehenry
 (218268) Pierremariepele               Pierremariepele
  (59964) Pierremartin                  Pierremartin
+(727524) Pierrepaquette                Pierrepaquette
  (19353) Pierrethierry                 Pierrethierry
    (312) Pierretta                     Pierretta
   (6018) Pierssac                      Pierssac
@@ -18107,6 +18188,7 @@ planets. It was last updated on 02-Jul-2025
  (84902) Porrentruy                    Porrentruy
   (3276) Porta Coeli                   Porta Coeli
  (21580) Portalatin                    Portalatin
+ (12946) Portegieszwart                Portegieszwart
  (32607) Portell                       Portell
   (1636) Porter                        Porter
  (33473) Porterfield                   Porterfield
@@ -18162,6 +18244,7 @@ planets. It was last updated on 02-Jul-2025
   (7979) Pozharskij                    Pozharskij
 (584311) Pozhlakov                     Pozhlakov
  (96765) Poznanuni                     Poznanuni
+(667514) Pozonunez                     Pozonuñez
 (420356) Praamzius                     Praamzius
  (21928) Prabakaran                    Prabakaran
  (13232) Prabhakar                     Prabhakar
@@ -18205,6 +18288,7 @@ planets. It was last updated on 02-Jul-2025
  (20433) Prestinenza                   Prestinenza
   (3792) Preston                       Preston
 (126445) Prestonreeves                 Prestonreeves
+(333531) Prestonsherman                Prestonsherman
    (790) Pretoria                      Pretoria
 (162937) Pretre                        Prêtre
  (24994) Prettyman                     Prettyman
@@ -18587,6 +18671,7 @@ planets. It was last updated on 02-Jul-2025
  (11605) Ranfagni                      Ranfagni
  (32067) Ranganathan                   Ranganathan
  (27071) Rangwala                      Rangwala
+(333565) Rani                          Rani
  (22543) Ranjan                        Ranjan
  (20012) Ranke                         Ranke
 (541691) Ranschburg                    Ranschburg
@@ -18649,6 +18734,7 @@ planets. It was last updated on 02-Jul-2025
   (3985) Raybatson                     Raybatson
   (5840) Raybrown                      Raybrown
 (732821) Raycarlberg                   Raycarlberg
+(333539) Rayfranco                     Rayfranco
  (31962) Rayharvey                     Rayharvey
  (18191) Rayhe                         Rayhe
   (4668) Rayjay                        Rayjay
@@ -18815,6 +18901,7 @@ planets. It was last updated on 02-Jul-2025
  (14684) Reyes                         Reyes
 (594032) Reyhersamuel                  Reyhersamuel
  (59830) Reynek                        Reynek
+ (12945) Reynierpeletier               Reynierpeletier
  (12776) Reynolds                      Reynolds
  (21605) Reynoso                       Reynoso
    (528) Rezia                         Rezia
@@ -18998,6 +19085,7 @@ planets. It was last updated on 02-Jul-2025
   (8640) Ritaschulz                    Ritaschulz
  (25717) Ritikmal                      Ritikmal
   (3466) Ritina                        Ritina
+(145452) Ritona                        Ritona
  (10781) Ritter                        Ritter
  (33189) Ritzdorf                      Ritzdorf
 (378669) Rivas                         Rivas
@@ -19129,6 +19217,7 @@ planets. It was last updated on 02-Jul-2025
 (115449) Robson                        Robson
   (4153) Roburnham                     Roburnham
  (17879) Robutel                       Robutel
+ (12944) Robwalrecht                   Robwalrecht
  (20460) Robwhiteley                   Robwhiteley
  (41800) Robwilliams                   Robwilliams
   (5183) Robyn                         Robyn
@@ -19208,6 +19297,7 @@ planets. It was last updated on 02-Jul-2025
  (13435) Rohret                        Rohret
  (17860) Roig                          Roig
  (25522) Roisen                        Roisen
+(333541) Roissier                      Roissier
  (26736) Rojeski                       Rojeski
  (35053) Rojyurij                      Rojyurij
   (2058) Roka                          Róka
@@ -19219,6 +19309,7 @@ planets. It was last updated on 02-Jul-2025
  (15903) Rolandflorrie                 Rolandflorrie
 (362420) Rolandgarros                  Rolandgarros
  (12870) Rolandmeier                   Rolandmeier
+ (56170) Rolandovillazon               Rolandovillazón
 (428102) Rolandwagner                  Rolandwagner
   (6508) Rolcik                        Rolčík
  (30094) Rolfebode                     Rolfebode
@@ -19291,6 +19382,7 @@ planets. It was last updated on 02-Jul-2025
  (79240) Rosanna                       Rosanna
 (284996) Rosaparks                     Rosaparks
  (14812) Rosario                       Rosario
+(142558) Rosarno                       Rosarno
  (34366) Rosavestal                    Rosavestal
  (22961) Rosegarcia                    Rosegarcia
   (7583) Rosegger                      Rosegger
@@ -19509,6 +19601,7 @@ planets. It was last updated on 02-Jul-2025
 (133161) Ruttkai                       Ruttkai
  (33856) Rutuparekh                    Rutuparekh
   (1427) Ruvuma                        Ruvuma
+(585635) Ruxandratoma                  Ruxandratoma
   (1856) Ruzena                        Růžena
   (5344) Ryabov                        Ryabov
  (21936) Ryan                          Ryan
@@ -19712,6 +19805,7 @@ planets. It was last updated on 02-Jul-2025
  (36614) Saltis                        Saltis
   (3044) Saltykov                      Saltykov
  (33406) Saltzman                      Saltzman
+(333553) Salvador                      Salvador
  (12789) Salvadoraguirre               Salvadoraguirre
 (689210) Salvadorjribas                Salvadorjribas
  (23318) Salvadorsanchez               Salvadorsanchez
@@ -19864,6 +19958,7 @@ planets. It was last updated on 02-Jul-2025
  (29895) Sarafaggi                     Sarafaggi
   (6800) Saragamine                    Saragamine
  (34589) Sarahadamo                    Sarahadamo
+ (56011) Sarahantier                   Sarahantier
 (121469) Sarahaugh                     Sarahaugh
  (18768) Sarahbates                    Sarahbates
  (18954) Sarahbounds                   Sarahbounds
@@ -20329,6 +20424,7 @@ planets. It was last updated on 02-Jul-2025
 (315174) Sellek                        Sellek
  (17078) Sellers                       Sellers
   (5789) Sellin                        Sellin
+ (12943) Selmademink                   Selmademink
  (20437) Selohusa                      Selohusa
 (136818) Selqet                        Selqet
  (28625) Selvakumar                    Selvakumar
@@ -20903,6 +20999,7 @@ planets. It was last updated on 02-Jul-2025
   (8625) Simonhelberg                  Simonhelberg
 (142401) Simonhook                     Simonhook
   (1675) Simonida                      Simonida
+ (58750) Simonjeanne                   Simonjeanne
 (216164) Simonkrughoff                 Simonkrughoff
   (2426) Simonov                       Simonov
  (11467) Simonporter                   Simonporter
@@ -21902,6 +21999,7 @@ planets. It was last updated on 02-Jul-2025
 (344641) Szeleczky                     Szeleczky
   (3427) Szentmartoni                  Szentmártoni
 (554704) Szeppataki                    Szeppataki
+(728826) Szerbantal                    Szerbantal
 (171118) Szigetkoz                     Szigetköz
  (38442) Szilard                       Szilárd
 (563716) Szinyeimersepal               Szinyeimersepal
@@ -21964,6 +22062,7 @@ planets. It was last updated on 02-Jul-2025
  (10364) Tainai                        Tainai
 (187514) Tainan                        Tainan
 (171381) Taipei                        Taipei
+(713133) Taiping                       Taiping
   (6356) Tairov                        Tairov
  (16704) Taisukekaneko                 Taisukekaneko
  (29144) Taitokufuji                   Taitokufuji
@@ -22208,6 +22307,7 @@ planets. It was last updated on 02-Jul-2025
  (17169) Tatarinov                     Tatarinov
 (286162) Tatarka                       Tatarka
   (6663) Tatebayashi                   Tatebayashi
+ (33008) Tatematsu                     Tatematsu
  (17047) Tateschrock                   Tateschrock
  (11149) Tateshina                     Tateshina
  (14621) Tati                          Tati
@@ -22739,6 +22839,7 @@ planets. It was last updated on 02-Jul-2025
   (7021) Tomiokamachi                  Tomiokamachi
   (2391) Tomita                        Tomita
  (23676) Tomitayoshihiro               Tomitayoshihiro
+ (35141) Tomitayoshikuni               Tomitayoshikuni
   (8400) Tomizo                        Tomizo
  (12919) Tomjohnson                    Tomjohnson
  (10828) Tomjones                      Tomjones
@@ -22900,6 +23001,7 @@ planets. It was last updated on 02-Jul-2025
   (3533) Toyota                        Toyota
  (21348) Toyoteru                      Toyoteru
   (6011) Tozzi                         Tozzi
+(788153) Trabia                        Trabia
   (7013) Trachet                       Trachet
  (20536) Tracicarter                   Tracicarter
  (12981) Tracicase                     Tracicase
@@ -23079,6 +23181,7 @@ planets. It was last updated on 02-Jul-2025
  (10914) Tucker                        Tucker
   (1038) Tuckia                        Tuckia
   (2224) Tucson                        Tucson
+(711527) Tudor                         Tudor
 (564280) Tudorica                      Tudorica
   (1323) Tugela                        Tugela
   (8343) Tugendhat                     Tugendhat
@@ -23647,6 +23750,7 @@ planets. It was last updated on 02-Jul-2025
 (204570) Veronicabray                  Veronicabray
  (24028) Veronicaduys                  Veronicaduys
    (612) Veronika                      Veronika
+ (56172) Veroniquesanson               Véroniquesanson
   (6105) Verrocchio                    Verrocchio
   (6268) Versailles                    Versailles
  (12630) Verstappen                    Verstappen
@@ -24051,6 +24155,7 @@ planets. It was last updated on 02-Jul-2025
   (8811) Waltherschmadel               Waltherschmadel
  (22998) Waltimyer                     Waltimyer
    (890) Waltraut                      Waltraut
+ (42837) Waltrobinson                  Waltrobinson
  (19162) Wambsganss                    Wambsganss
  (33681) Wamsley                       Wamsley
  (10657) Wanach                        Wanach
@@ -24381,6 +24486,7 @@ planets. It was last updated on 02-Jul-2025
 (211378) Williamwarneke                Williamwarneke
  (22872) Williamweber                  Williamweber
  (27458) Williamwhite                  Williamwhite
+(227427) Williamwren                   Williamwren
  (13113) Williamyeats                  Williamyeats
  (32101) Williamyin                    Williamyin
  (12137) Williefowler                  Williefowler
@@ -24917,6 +25023,7 @@ planets. It was last updated on 02-Jul-2025
   (1554) Yugoslavia                    Yugoslavia
   (9848) Yugra                         Yugra
  (23524) Yuichitsuda                   Yuichitsuda
+ (56018) Yujawang                      Yujawang
  (47077) Yuji                          Yuji
   (9415) Yujiokimura                   Yujiokimura
   (8089) Yukar                         Yukar
@@ -24991,6 +25098,7 @@ planets. It was last updated on 02-Jul-2025
  (25120) Yvetteleung                   Yvetteleung
   (1301) Yvonne                        Yvonne
  (28049) Yvonnealex                    Yvonnealex
+(185312) Yvonnemarschall               Yvonnemarschall
  (15115) Yvonneroe                     Yvonneroe
   (9501) Ywain                         Ywain
 
@@ -25387,6 +25495,7 @@ planets. It was last updated on 02-Jul-2025
  (12653) van der Klis                  van der Klis
  (10437) van der Kruit                 van der Kruit
   (2823) van der Laan                  van der Laan
+ (12942) van der Marel                 van der Marel
   (9678) van der Meer                  van der Meer
  (10443) van der Pol                   van der Pol
  (32893) van der Waals                 van der Waals
@@ -25413,6 +25522,118 @@ planets. It was last updated on 02-Jul-2025
  (23265) von Wurden                    von Wurden
   (8870) von Zeipel                    von Zeipel
 (469705) |=Kagara                      |=Kagara
+
+Added 22-jul-25
+333551) Albaugh                       Albaugh
+(712499) Alexstefanescu                Alexstefanescu
+ (55913) Alinedupin                    Alinedupin
+ (55897) Antoinecailleau               Antoinecailleau
+(631202) Aquarellia                    Aquarellia
+ (35169) Araake                        Araake
+ (56067) Argerich                      Argerich
+(112660) Artlucas                      Artlucas
+(358167) Barbaralong                   Barbaralong
+ (34816) Billybarr                     Billybarr
+(128027) Bobsandy                      Bobsandy
+ (26613) Brettwhite                    Brettwhite
+ (22650) Brianloader                   Brianloader
+ (56095) Buniatishvili                 Buniatishvili
+(165694) Calosisbaragli                Calosisbaragli
+(333502) Candelaria                    Candelaria
+(714378) Char                          Char
+ (58606) Charlestrenet                 Charlestrenet
+ (32202) Cogswell                      Cogswell
+(730495) Costafrancini                 Costafrancini
+(659267) Cristianstancu                Cristianstancu
+(338578) Csapodyvera                   Csapodyvera
+ (58700) Darson                        Darson
+(333487) De Rose                       De Rose
+ (19774) Diamondback                   Diamondback
+(634559) Drayer                        Drayer
+(333544) Dubisher                      Dubisher
+(542568) Erichess                      Erichess
+(333242) Ericthomasparker              Ericthomasparker
+(589253) Fabrika                       Fabrika
+(333536) Faelan                        Faelan
+(656196) Falchi                        Falchi
+(333506) Falkenstern                   Falkenstern
+(702688) Federicocolombo               Federicocolombo
+ (12941) Franssnik                     Franssnik
+ (12940) Gijsnelemans                  Gijsnelemans
+ (35143) Harimoto                      Harimoto
+ (32201) Heathermckay                  Heathermckay
+ (12954) Hendrikcasimir                Hendrikcasimir
+(724875) Hengchun                      Hengchun
+ (30944) Hiruma                        Hiruma
+ (90368) Hristopavlov                  Hristopavlov
+(333384) Huikang                       Huikang
+ (12939) Ignassnellen                  Ignassnellen
+(117783) Indik                         Indik
+ (12938) Ingakamp                      Ingakamp
+ (12953) Jaapvreeling                  Jaapvreeling
+(333251) Jamesroberts                  Jamesroberts
+(571398) Jasonrowe                     Jasonrowe
+ (58734) Jeantarde                     Jeantarde
+  (7703) Jimcooney                     Jimcooney
+ (12952) Joerivanleeuwen               Joerivanleeuwen
+ (54402) Jonathanbradshaw              Jonathanbradshaw
+(678800) Juska                         Juška
+(333514) Kallemeyn                     Kallemeyn
+ (58736) Karlantier                    Karlantier
+(541801) Kendurkar                     Kendurkar
+(333490) Klaus                         Klaus
+(535769) Klimkovsky                    Klimkovsky
+ (23186) Knauss                        Knauss
+ (12951) Koenkuijken                   Koenkuijken
+(678676) Liepaja                       Liepāja
+(333207) Lilliannguyen                 Lilliannguyen
+ (58756) Malgoyre                      Malgoyre
+(666479) Maratmingaliev                Maratmingaliev
+(718490) Marcelosouza                  Marcelosouza
+(333288) Markperry                     Markperry
+ (33059) Matsuoka                      Matsuoka
+ (12950) Michielrodenhuis              Michielrodenhuis
+(571117) Mikehudson                    Mikehudson
+ (12949) Milogrootjen                  Milogrootjen
+ (96296) Nanhangda                     Nanhangda
+ (12948) Nathaliedegenaar              Nathaliedegenaar
+ (99825) Nosworthy                     Nosworthy
+ (32919) Ohashi                        Ohashi
+(470341) Panjianwei                    Panjianwei
+(333511) Paulfleming                   Paulfleming
+ (12947) Paulgroot                     Paulgroot
+ (22649) Paulineloader                 Paulineloader
+(333546) Perkins                       Perkins
+(566939) Petrucraciun                  Petrucr\u{a}ciun
+(727524) Pierrepaquette                Pierrepaquette
+ (12946) Portegieszwart                Portegieszwart
+(667514) Pozonunez                     Pozonuñez
+(333531) Prestonsherman                Prestonsherman
+(333565) Rani                          Rani
+(333539) Rayfranco                     Rayfranco
+ (12945) Reynierpeletier               Reynierpeletier
+(145452) Ritona                        Ritona
+ (12944) Robwalrecht                   Robwalrecht
+(333541) Roissier                      Roissier
+ (56170) Rolandovillazon               Rolandovillazón
+(142558) Rosarno                       Rosarno
+(585635) Ruxandratoma                  Ruxandratoma
+(333553) Salvador                      Salvador
+ (56011) Sarahantier                   Sarahantier
+ (12943) Selmademink                   Selmademink
+ (58750) Simonjeanne                   Simonjeanne
+(728826) Szerbantal                    Szerbantal
+(713133) Taiping                       Taiping
+ (33008) Tatematsu                     Tatematsu
+ (35141) Tomitayoshikuni               Tomitayoshikuni
+(788153) Trabia                        Trabia
+(711527) Tudor                         Tudor
+ (56172) Veroniquesanson               Véroniquesanson
+ (42837) Waltrobinson                  Waltrobinson
+(227427) Williamwren                   Williamwren
+ (56018) Yujawang                      Yujawang
+(185312) Yvonnemarschall               Yvonnemarschall
+ (12942) van der Marel                 van der Marel
 
 Added 2-jul-25
 (208996) Achlys                        Achlys

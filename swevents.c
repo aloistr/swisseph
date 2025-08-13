@@ -205,7 +205,7 @@ static char *info2 = "Planet selection (only one possible):\n\
 	-10		go back in time 10 days\n";
 /**************************************************************/
 
-#define PRINTMOD 1
+#define PRINTMOD 0
 
 #if PRINTMOD
 #  include "ourdef.h"
@@ -1557,9 +1557,11 @@ static void print_item(char *s, double teph, double dpos, double delon, double d
 
     if (show_jd)
       printf("%sjd=%.8lf", gap, teph);
+#if PRINTMOD
     if (azn > 0) {
       printf(" %s", trp->tzabbr_eff);
     }
+#endif
     printf("%s", gap);
     if (is_ingr45) {
       printf("%s", sign_deg);

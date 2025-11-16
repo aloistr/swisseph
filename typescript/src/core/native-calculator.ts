@@ -71,6 +71,12 @@ import {
   equatorialToHorizontal,
 } from './coordinate-transformations';
 
+import {
+  AsteroidID,
+  calculateAsteroidPosition,
+  calculateAsteroidPositionWithSpeed,
+} from './asteroid-calculator';
+
 import { normalizeDegrees, julianCenturiesFromJ2000 } from './astronomical-constants';
 import { getPlanetName } from '../utils';
 
@@ -94,16 +100,26 @@ const PLANET_ID_MAP: Record<Planet, PlanetID | null> = {
   [Planet.MEAN_APOG]: null, // Calculated from Moon
   [Planet.OSCU_APOG]: null, // Not implemented
   [Planet.EARTH]: PlanetID.EARTH,
-  [Planet.CHIRON]: null, // Not implemented
-  [Planet.PHOLUS]: null, // Not implemented
-  [Planet.CERES]: null, // Not implemented
-  [Planet.PALLAS]: null, // Not implemented
-  [Planet.JUNO]: null, // Not implemented
-  [Planet.VESTA]: null, // Not implemented
+  [Planet.CHIRON]: null, // Asteroid - handled separately
+  [Planet.PHOLUS]: null, // Asteroid - handled separately
+  [Planet.CERES]: null, // Asteroid - handled separately
+  [Planet.PALLAS]: null, // Asteroid - handled separately
+  [Planet.JUNO]: null, // Asteroid - handled separately
+  [Planet.VESTA]: null, // Asteroid - handled separately
   [Planet.INTP_APOG]: null, // Not implemented
   [Planet.INTP_PERG]: null, // Not implemented
   [Planet.ECL_NUT]: null, // Special case
 };
+
+// Asteroid mapping
+const ASTEROID_ID_MAP: Record<Planet, AsteroidID | null> = {
+  [Planet.CHIRON]: AsteroidID.CHIRON,
+  [Planet.PHOLUS]: AsteroidID.PHOLUS,
+  [Planet.CERES]: AsteroidID.CERES,
+  [Planet.PALLAS]: AsteroidID.PALLAS,
+  [Planet.JUNO]: AsteroidID.JUNO,
+  [Planet.VESTA]: AsteroidID.VESTA,
+} as any;
 
 // ============================================================================
 // Native Calculator Class
@@ -177,29 +193,47 @@ export class NativeCalculator {
         };
         name = 'Mean Apogee';
       } else {
-        const planetID = PLANET_ID_MAP[planet];
-        if (planetID === null) {
-          return {
-            success: false,
-            error: {
-              code: 'NOT_IMPLEMENTED',
-              message: `Planet ${planet} (${getPlanetName(planet)}) not yet implemented in native calculator`,
-            },
+        // Check if it's an asteroid
+        const asteroidID = ASTEROID_ID_MAP[planet as keyof typeof ASTEROID_ID_MAP];
+        if (asteroidID !== undefined && asteroidID !== null) {
+          const pos = options.includeSpeed
+            ? calculateAsteroidPositionWithSpeed(asteroidID, jdTT)
+            : calculateAsteroidPosition(asteroidID, jdTT);
+
+          ecliptic = {
+            longitude: pos.longitude,
+            latitude: pos.latitude,
+            distance: pos.distance,
+            longitudeSpeed: pos.longitudeSpeed,
+            latitudeSpeed: pos.latitudeSpeed,
+            distanceSpeed: pos.distanceSpeed,
+          };
+        } else {
+          // Try as regular planet
+          const planetID = PLANET_ID_MAP[planet];
+          if (planetID === null) {
+            return {
+              success: false,
+              error: {
+                code: 'NOT_IMPLEMENTED',
+                message: `Planet ${planet} (${getPlanetName(planet)}) not yet implemented in native calculator`,
+              },
+            };
+          }
+
+          const pos = options.includeSpeed
+            ? calculatePlanetPositionWithSpeed(planetID, jdTT)
+            : calculatePlanetPosition(planetID, jdTT);
+
+          ecliptic = {
+            longitude: pos.longitude,
+            latitude: pos.latitude,
+            distance: pos.distance,
+            longitudeSpeed: pos.longitudeSpeed,
+            latitudeSpeed: pos.latitudeSpeed,
+            distanceSpeed: pos.distanceSpeed,
           };
         }
-
-        const pos = options.includeSpeed
-          ? calculatePlanetPositionWithSpeed(planetID, jdTT)
-          : calculatePlanetPosition(planetID, jdTT);
-
-        ecliptic = {
-          longitude: pos.longitude,
-          latitude: pos.latitude,
-          distance: pos.distance,
-          longitudeSpeed: pos.longitudeSpeed,
-          latitudeSpeed: pos.latitudeSpeed,
-          distanceSpeed: pos.distanceSpeed,
-        };
       }
 
       // Calculate equatorial coordinates if needed

@@ -5,14 +5,37 @@
  * NO C library files required!
  *
  * This implementation provides:
- * - Planetary positions (simplified VSOP87 theory)
- * - Moon positions (simplified ELP2000)
- * - 12+ house systems
- * - Precession and nutation (IAU 2006/2000B)
- * - Coordinate transformations
- * - All calculations in native TypeScript
  *
- * Accuracy: ~1-10 arcminutes for modern era (1900-2100)
+ * **Core Calculations:**
+ * - Planetary positions (Sun through Pluto) - VSOP87 simplified theory
+ * - Moon positions - ELP2000 simplified (~60 periodic terms)
+ * - Asteroids & minor planets (22+) - Chiron, Ceres, Pallas, Juno, Vesta, etc.
+ * - 12+ house systems (Placidus, Koch, Whole Sign, Equal, etc.)
+ * - Precession and nutation (IAU 2006/2000B)
+ * - Coordinate transformations (Ecliptic, Equatorial, Horizontal)
+ *
+ * **Fixed Stars:**
+ * - 30+ bright and astrologically significant stars
+ * - Proper motion corrections
+ * - Search by name, constellation, or magnitude
+ *
+ * **Eclipses:**
+ * - Solar eclipses (Total, Partial, Annular, Hybrid)
+ * - Lunar eclipses (Total, Partial, Penumbral)
+ * - Eclipse magnitude, gamma, duration calculations
+ *
+ * **Rise/Set/Transit:**
+ * - Sun/Moon rise, set, and meridian transit times
+ * - Twilight calculations (Civil, Nautical, Astronomical)
+ * - Circumpolar and never-rising detection
+ * - Azimuth at rise/set
+ *
+ * **Sidereal Zodiac:**
+ * - 47 complete ayanamsa systems
+ * - Lahiri, Fagan-Bradley, Krishnamurti, and more
+ * - Tropical ↔ Sidereal conversions
+ *
+ * **Accuracy:** ~1-10 arcminutes for modern era (1900-2100)
  * For higher precision, use the full Swiss Ephemeris C library via WebAssembly
  *
  * @license AGPL-3.0
@@ -43,6 +66,41 @@ import {
 
 import { nativeCalculator } from './core/native-calculator';
 
+import {
+  calculateFixedStarPosition,
+  getFixedStarByName,
+  listFixedStars,
+  getBrightestStars,
+  getStarsInConstellation,
+  FixedStarData,
+} from './core/fixed-stars';
+
+import {
+  findNextSolarEclipse,
+  findNextLunarEclipse,
+  findEclipsesInYear,
+  SolarEclipse,
+  LunarEclipse,
+  EclipseType as CoreEclipseType,
+} from './core/eclipse-calculator';
+
+import {
+  calculateSunRiseSetTransit,
+  calculateMoonRiseSetTransit,
+  calculateTwilight,
+  RiseSetTransitData,
+  STANDARD_ALTITUDES,
+} from './core/rise-set-transit';
+
+import {
+  AyanamsaSystem,
+  calculateAyanamsa,
+  tropicalToSidereal,
+  siderealToTropical,
+  getAyanamsaName,
+  listAyanamsaSystems,
+} from './core/sidereal-calculator';
+
 /**
  * Swiss Ephemeris - Native TypeScript Implementation
  *
@@ -50,11 +108,12 @@ import { nativeCalculator } from './core/native-calculator';
  * ```typescript
  * const swisseph = new SwissEphemerisNative();
  *
- * // Calculate Sun position
- * const result = await swisseph.calculatePosition(Planet.SUN, julianDay);
+ * // Calculate planetary positions (including asteroids)
+ * const sun = await swisseph.calculatePosition(Planet.SUN, julianDay);
+ * const chiron = await swisseph.calculatePosition(Planet.CHIRON, julianDay);
  *
  * // Calculate with date
- * const result2 = await swisseph.calculatePositionForDate(
+ * const moon = await swisseph.calculatePositionForDate(
  *   Planet.MOON,
  *   { year: 2024, month: 1, day: 1, hour: 12 }
  * );
@@ -65,6 +124,23 @@ import { nativeCalculator } from './core/native-calculator';
  *   { longitude: -74.0060, latitude: 40.7128, elevation: 10 },
  *   HouseSystem.PLACIDUS
  * );
+ *
+ * // Fixed stars
+ * const sirius = await swisseph.calculateFixedStar('Sirius', julianDay);
+ *
+ * // Eclipses
+ * const nextSolarEclipse = await swisseph.findNextSolarEclipse(julianDay);
+ * const allEclipses2024 = await swisseph.findEclipsesInYear(2024);
+ *
+ * // Rise/Set/Transit
+ * const sunrise = await swisseph.calculateSunRiseSetTransit(
+ *   { year: 2024, month: 6, day: 21 },
+ *   { latitude: 51.5, longitude: 0 }
+ * );
+ *
+ * // Sidereal zodiac
+ * const ayanamsa = swisseph.calculateAyanamsa(julianDay, AyanamsaSystem.LAHIRI);
+ * const sidereal = swisseph.tropicalToSidereal(120.5, julianDay);
  * ```
  */
 export class SwissEphemerisNative {
@@ -75,6 +151,20 @@ export class SwissEphemerisNative {
    * Create a new SwissEphemerisNative instance
    *
    * @param options - Configuration options
+   * @param options.sidereal - Use sidereal zodiac (default: false, tropical)
+   * @param options.siderealMode - Ayanamsa system to use (default: Fagan-Bradley)
+   *
+   * @example
+   * ```typescript
+   * // Tropical zodiac (default)
+   * const tropical = new SwissEphemerisNative();
+   *
+   * // Sidereal zodiac with Lahiri ayanamsa
+   * const sidereal = new SwissEphemerisNative({
+   *   sidereal: true,
+   *   siderealMode: SiderealMode.LAHIRI
+   * });
+   * ```
    */
   constructor(options: {
     sidereal?: boolean;
@@ -82,10 +172,6 @@ export class SwissEphemerisNative {
   } = {}) {
     this.sidereal = options.sidereal || false;
     this.siderealMode = options.siderealMode || SiderealMode.FAGAN_BRADLEY;
-
-    if (this.sidereal) {
-      console.warn('Sidereal mode requested but not yet fully implemented in native calculator');
-    }
   }
 
   // ==========================================================================
@@ -244,6 +330,343 @@ export class SwissEphemerisNative {
       },
     });
   }
+
+  // ==========================================================================
+  // Fixed Stars
+  // ==========================================================================
+
+  /**
+   * Calculate fixed star position
+   *
+   * @param starName - Star name (e.g., 'Sirius', 'Regulus')
+   * @param julianDay - Julian Day (TT)
+   * @param applyPrecession - Apply precession to date (default: true)
+   * @returns Star position with ecliptic and equatorial coordinates
+   */
+  async calculateFixedStar(
+    starName: string,
+    julianDay: number,
+    applyPrecession: boolean = true
+  ): Promise<Result<{
+    star: FixedStarData;
+    position: {
+      longitude: number;
+      latitude: number;
+      rightAscension: number;
+      declination: number;
+      distance: number;
+    };
+  }>> {
+    try {
+      const star = getFixedStarByName(starName);
+      if (!star) {
+        return {
+          success: false,
+          error: {
+            code: 'NOT_FOUND',
+            message: `Star '${starName}' not found in catalog`,
+          },
+        };
+      }
+
+      const position = calculateFixedStarPosition(star, julianDay, applyPrecession);
+
+      return {
+        success: true,
+        data: { star, position },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'CALCULATION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * List all fixed stars in catalog
+   */
+  listFixedStars(): string[] {
+    return listFixedStars();
+  }
+
+  /**
+   * Get brightest stars
+   */
+  getBrightestStars(limit: number = 20): FixedStarData[] {
+    return getBrightestStars(limit);
+  }
+
+  /**
+   * Get stars in a constellation
+   */
+  getStarsInConstellation(constellation: string): FixedStarData[] {
+    return getStarsInConstellation(constellation);
+  }
+
+  // ==========================================================================
+  // Eclipses
+  // ==========================================================================
+
+  /**
+   * Find next solar eclipse
+   *
+   * @param julianDayStart - Starting Julian Day to search from
+   * @returns Next solar eclipse data
+   */
+  async findNextSolarEclipse(
+    julianDayStart: number
+  ): Promise<Result<SolarEclipse | null>> {
+    try {
+      const eclipse = findNextSolarEclipse(julianDayStart);
+      return {
+        success: true,
+        data: eclipse,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'CALCULATION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Find next lunar eclipse
+   *
+   * @param julianDayStart - Starting Julian Day to search from
+   * @returns Next lunar eclipse data
+   */
+  async findNextLunarEclipse(
+    julianDayStart: number
+  ): Promise<Result<LunarEclipse | null>> {
+    try {
+      const eclipse = findNextLunarEclipse(julianDayStart);
+      return {
+        success: true,
+        data: eclipse,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'CALCULATION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Find all eclipses in a year
+   *
+   * @param year - Year to search
+   * @returns Array of all eclipses (solar and lunar) in the year
+   */
+  async findEclipsesInYear(
+    year: number
+  ): Promise<Result<Array<SolarEclipse | LunarEclipse>>> {
+    try {
+      const eclipses = findEclipsesInYear(year);
+      return {
+        success: true,
+        data: eclipses,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'CALCULATION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  // ==========================================================================
+  // Rise/Set/Transit
+  // ==========================================================================
+
+  /**
+   * Calculate Sun rise, set, and transit times
+   *
+   * @param dateTime - Date to calculate for
+   * @param geoPosition - Observer location
+   * @returns Rise/set/transit data
+   */
+  async calculateSunRiseSetTransit(
+    dateTime: DateTime,
+    geoPosition: GeographicPosition
+  ): Promise<Result<RiseSetTransitData>> {
+    try {
+      const data = calculateSunRiseSetTransit(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        geoPosition.latitude,
+        geoPosition.longitude
+      );
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'CALCULATION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Calculate Moon rise, set, and transit times
+   *
+   * @param dateTime - Date to calculate for
+   * @param geoPosition - Observer location
+   * @returns Rise/set/transit data
+   */
+  async calculateMoonRiseSetTransit(
+    dateTime: DateTime,
+    geoPosition: GeographicPosition
+  ): Promise<Result<RiseSetTransitData>> {
+    try {
+      const data = calculateMoonRiseSetTransit(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        geoPosition.latitude,
+        geoPosition.longitude
+      );
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'CALCULATION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  /**
+   * Calculate twilight times
+   *
+   * @param dateTime - Date to calculate for
+   * @param geoPosition - Observer location
+   * @param twilightType - Type of twilight ('civil', 'nautical', 'astronomical')
+   * @returns Twilight times
+   */
+  async calculateTwilight(
+    dateTime: DateTime,
+    geoPosition: GeographicPosition,
+    twilightType: 'civil' | 'nautical' | 'astronomical' = 'civil'
+  ): Promise<Result<RiseSetTransitData>> {
+    try {
+      const data = calculateTwilight(
+        dateTime.year,
+        dateTime.month,
+        dateTime.day,
+        geoPosition.latitude,
+        geoPosition.longitude,
+        twilightType
+      );
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: {
+          code: 'CALCULATION_ERROR',
+          message: error instanceof Error ? error.message : 'Unknown error',
+        },
+      };
+    }
+  }
+
+  // ==========================================================================
+  // Sidereal/Ayanamsa
+  // ==========================================================================
+
+  /**
+   * Calculate ayanamsa value for a given date
+   *
+   * @param julianDay - Julian Day (TT)
+   * @param system - Ayanamsa system (default: uses instance's siderealMode)
+   * @returns Ayanamsa value in degrees
+   */
+  calculateAyanamsa(
+    julianDay: number,
+    system?: AyanamsaSystem
+  ): number {
+    const ayanamsaSystem = system !== undefined ? system : (this.siderealMode as unknown as AyanamsaSystem);
+    return calculateAyanamsa(julianDay, ayanamsaSystem);
+  }
+
+  /**
+   * Convert tropical longitude to sidereal
+   *
+   * @param tropicalLongitude - Tropical longitude in degrees
+   * @param julianDay - Julian Day (TT)
+   * @param system - Ayanamsa system (default: uses instance's siderealMode)
+   * @returns Sidereal longitude in degrees
+   */
+  tropicalToSidereal(
+    tropicalLongitude: number,
+    julianDay: number,
+    system?: AyanamsaSystem
+  ): number {
+    const ayanamsaSystem = system !== undefined ? system : (this.siderealMode as unknown as AyanamsaSystem);
+    return tropicalToSidereal(tropicalLongitude, julianDay, ayanamsaSystem);
+  }
+
+  /**
+   * Convert sidereal longitude to tropical
+   *
+   * @param siderealLongitude - Sidereal longitude in degrees
+   * @param julianDay - Julian Day (TT)
+   * @param system - Ayanamsa system (default: uses instance's siderealMode)
+   * @returns Tropical longitude in degrees
+   */
+  siderealToTropical(
+    siderealLongitude: number,
+    julianDay: number,
+    system?: AyanamsaSystem
+  ): number {
+    const ayanamsaSystem = system !== undefined ? system : (this.siderealMode as unknown as AyanamsaSystem);
+    return siderealToTropical(siderealLongitude, julianDay, ayanamsaSystem);
+  }
+
+  /**
+   * Get name of an ayanamsa system
+   */
+  getAyanamsaName(system: AyanamsaSystem): string {
+    return getAyanamsaName(system);
+  }
+
+  /**
+   * List all available ayanamsa systems
+   */
+  listAyanamsaSystems(): Array<{ id: AyanamsaSystem; name: string }> {
+    return listAyanamsaSystems();
+  }
 }
 
 /**
@@ -255,3 +678,13 @@ export function createNativeSwissEphemeris(options?: {
 }): SwissEphemerisNative {
   return new SwissEphemerisNative(options);
 }
+
+// Export additional types for convenience
+export type {
+  FixedStarData,
+  SolarEclipse,
+  LunarEclipse,
+  RiseSetTransitData,
+};
+
+export { AyanamsaSystem, CoreEclipseType as EclipseType, STANDARD_ALTITUDES };

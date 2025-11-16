@@ -36,6 +36,19 @@
 
 export { SwissEphemeris, createSwissEphemeris } from './swiss-ephemeris';
 
+// Native TypeScript implementation (NO C library required)
+export {
+  SwissEphemerisNative,
+  createNativeSwissEphemeris,
+  type FixedStarData,
+  type SolarEclipse,
+  type LunarEclipse,
+  type RiseSetTransitData,
+  AyanamsaSystem,
+  EclipseType,
+  STANDARD_ALTITUDES,
+} from './swiss-ephemeris-native';
+
 // ============================================================================
 // Types and Interfaces
 // ============================================================================

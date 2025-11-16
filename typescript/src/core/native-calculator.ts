@@ -111,15 +111,15 @@ const PLANET_ID_MAP: Record<Planet, PlanetID | null> = {
   [Planet.ECL_NUT]: null, // Special case
 };
 
-// Asteroid mapping
-const ASTEROID_ID_MAP: Record<Planet, AsteroidID | null> = {
+// Asteroid mapping - Using Partial since not all planets are asteroids
+const ASTEROID_ID_MAP: Partial<Record<Planet, AsteroidID>> = {
   [Planet.CHIRON]: AsteroidID.CHIRON,
   [Planet.PHOLUS]: AsteroidID.PHOLUS,
   [Planet.CERES]: AsteroidID.CERES,
   [Planet.PALLAS]: AsteroidID.PALLAS,
   [Planet.JUNO]: AsteroidID.JUNO,
   [Planet.VESTA]: AsteroidID.VESTA,
-} as any;
+};
 
 // ============================================================================
 // Native Calculator Class
@@ -194,8 +194,9 @@ export class NativeCalculator {
         name = 'Mean Apogee';
       } else {
         // Check if it's an asteroid
-        const asteroidID = ASTEROID_ID_MAP[planet as keyof typeof ASTEROID_ID_MAP];
-        if (asteroidID !== undefined && asteroidID !== null) {
+        const asteroidID = ASTEROID_ID_MAP[planet];
+        if (asteroidID !== undefined) {
+          // It's an asteroid
           const pos = options.includeSpeed
             ? calculateAsteroidPositionWithSpeed(asteroidID, jdTT)
             : calculateAsteroidPosition(asteroidID, jdTT);

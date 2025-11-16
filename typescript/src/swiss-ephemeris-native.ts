@@ -101,6 +101,24 @@ import {
   listAyanamsaSystems,
 } from './core/sidereal-calculator';
 
+import { normalizeDegrees } from './core/astronomical-constants';
+
+/**
+ * Convert SiderealMode enum to AyanamsaSystem enum
+ * These enums have the same numeric values, but we validate for safety
+ */
+function siderealModeToAyanamsaSystem(mode: SiderealMode): AyanamsaSystem {
+  // Direct numeric cast is safe as the enums have matching values
+  const ayanamsa = mode as number as AyanamsaSystem;
+
+  // Validate it's within range
+  if (ayanamsa < 0 || ayanamsa > 46) {
+    throw new Error(`Invalid sidereal mode: ${mode}`);
+  }
+
+  return ayanamsa;
+}
+
 /**
  * Swiss Ephemeris - Native TypeScript Implementation
  *
@@ -191,7 +209,22 @@ export class SwissEphemerisNative {
     julianDay: number,
     options: CalculationOptions = {}
   ): Promise<Result<PlanetaryPosition>> {
-    return nativeCalculator.calculatePosition(planet as Planet, julianDay, options);
+    const result = nativeCalculator.calculatePosition(planet as Planet, julianDay, options);
+
+    // Apply sidereal conversion if enabled
+    if (result.success && this.sidereal && result.data.ecliptic) {
+      const ayanamsa = calculateAyanamsa(
+        julianDay,
+        siderealModeToAyanamsaSystem(this.siderealMode)
+      );
+
+      // Convert tropical longitude to sidereal
+      result.data.ecliptic.longitude = normalizeDegrees(
+        result.data.ecliptic.longitude - ayanamsa
+      );
+    }
+
+    return result;
   }
 
   /**
@@ -616,7 +649,7 @@ export class SwissEphemerisNative {
     julianDay: number,
     system?: AyanamsaSystem
   ): number {
-    const ayanamsaSystem = system !== undefined ? system : (this.siderealMode as unknown as AyanamsaSystem);
+    const ayanamsaSystem = system !== undefined ? system : siderealModeToAyanamsaSystem(this.siderealMode);
     return calculateAyanamsa(julianDay, ayanamsaSystem);
   }
 
@@ -633,7 +666,7 @@ export class SwissEphemerisNative {
     julianDay: number,
     system?: AyanamsaSystem
   ): number {
-    const ayanamsaSystem = system !== undefined ? system : (this.siderealMode as unknown as AyanamsaSystem);
+    const ayanamsaSystem = system !== undefined ? system : siderealModeToAyanamsaSystem(this.siderealMode);
     return tropicalToSidereal(tropicalLongitude, julianDay, ayanamsaSystem);
   }
 
@@ -650,7 +683,7 @@ export class SwissEphemerisNative {
     julianDay: number,
     system?: AyanamsaSystem
   ): number {
-    const ayanamsaSystem = system !== undefined ? system : (this.siderealMode as unknown as AyanamsaSystem);
+    const ayanamsaSystem = system !== undefined ? system : siderealModeToAyanamsaSystem(this.siderealMode);
     return siderealToTropical(siderealLongitude, julianDay, ayanamsaSystem);
   }
 

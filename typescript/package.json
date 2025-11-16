@@ -1,0 +1,58 @@
+{
+  "name": "@swiss-ephemeris/core",
+  "version": "1.0.0",
+  "description": "Modern TypeScript wrapper for Swiss Ephemeris astronomical calculations",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "swiss-ephemeris",
+    "astronomy",
+    "astrology",
+    "planetary-positions",
+    "ephemeris",
+    "julian-day",
+    "house-systems",
+    "sidereal",
+    "eclipses",
+    "celestial-mechanics"
+  ],
+  "author": {
+    "name": "Based on Swiss Ephemeris by Dieter Koch and Alois Treindl",
+    "email": "swisseph@groups.io"
+  },
+  "license": "AGPL-3.0 OR SEE https://www.astro.com/swisseph/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aloistr/swisseph.git",
+    "directory": "typescript"
+  },
+  "bugs": {
+    "url": "https://groups.io/g/swisseph"
+  },
+  "homepage": "https://www.astro.com/swisseph/",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

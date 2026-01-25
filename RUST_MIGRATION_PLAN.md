@@ -1,1060 +1,657 @@
 # Swiss Ephemeris Rust Migration Plan
+## Minimal Horoscope WASM Library
 
 ## Executive Summary
 
-This document outlines a comprehensive plan to migrate the Swiss Ephemeris library from C to Rust. The migration aims to leverage Rust's memory safety, modern tooling, and excellent performance while maintaining full compatibility with existing ephemeris data files and API semantics.
+This document outlines a focused migration plan to create a **minimal Rust/WASM library** for horoscope generation. The scope is intentionally limited to reduce complexity and bundle size.
 
-**Current State:**
-- ~56,000 lines of C code
-- 100+ public API functions
-- 25+ years of development maturity
-- Used worldwide by astrological software developers
+**Scope:**
+- Planets: Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
+- Zodiac sign positions (tropical zodiac)
+- House calculations (Ascendant, MC, house cusps)
+- Aspects between planets
+- WASM-first, no C FFI or backwards compatibility
 
-**Target State:**
-- Pure Rust implementation with idiomatic APIs
-- C FFI compatibility layer for existing integrations
-- WebAssembly support for browser-based applications
-- Improved error handling and thread safety
-
----
-
-## Table of Contents
-
-1. [Project Analysis](#1-project-analysis)
-2. [Migration Strategy](#2-migration-strategy)
-3. [Module Breakdown](#3-module-breakdown)
-4. [Implementation Phases](#4-implementation-phases)
-5. [Technical Decisions](#5-technical-decisions)
-6. [API Design](#6-api-design)
-7. [Testing Strategy](#7-testing-strategy)
-8. [Risk Assessment](#8-risk-assessment)
-9. [Deliverables](#9-deliverables)
+**Out of Scope:**
+- Asteroids, fixed stars, lunar nodes
+- Eclipses, heliacal phenomena
+- Sidereal zodiac modes
+- JPL/Swiss Ephemeris binary file support
+- C FFI compatibility layer
 
 ---
 
-## 1. Project Analysis
+## 1. What We Need for Horoscopes
 
-### 1.1 Current Architecture
+A typical horoscope requires:
 
-The Swiss Ephemeris is organized into the following functional modules:
-
-| Module | File(s) | Size | Purpose |
-|--------|---------|------|---------|
-| Core Engine | sweph.c/h | 284 KB | Main planetary calculation engine |
-| Library Utils | swephlib.c/h | 161 KB | Coordinate transforms, time, delta-t |
-| Eclipses | swecl.c | 221 KB | Eclipse, occultation, phenomena |
-| Houses | swehouse.c/h | 110 KB | Astrological house systems |
-| Lunar | swemmoon.c | 60 KB | Analytical lunar ephemeris |
-| Planetary | swemplan.c | 28 KB | Moshier planetary routines |
-| JPL Reader | swejpl.c/h | 33 KB | JPL binary file interface |
-| Date/Time | swedate.c/h | 20 KB | Julian day conversions |
-| Heliacal | swehel.c | 120 KB | Heliacal rising/setting |
-| Data Tables | swemptab.h, swenut2000a.h | 372 KB | Embedded astronomical tables |
-
-### 1.2 Dependencies
-
-The C codebase has minimal external dependencies:
-- **libc**: Standard C library functions
-- **libm**: Mathematical functions (sin, cos, atan2, sqrt, etc.)
-
-This is excellent for Rust migration as Rust's standard library covers all these needs.
-
-### 1.3 Global State
-
-The C library uses significant global state for:
-- Ephemeris file paths and handles
-- Configuration settings (sidereal mode, topocentric position)
-- Cached calculation results
-- Delta-T tables
-
-**Rust Approach:** Encapsulate state in a `SwissEph` struct with clear ownership semantics.
-
-### 1.4 Data Files
-
-Binary ephemeris file formats that must be supported:
-- `.se1` files (Swiss Ephemeris format)
-- `.eph` files (JPL ephemeris format)
-- Text files (leap seconds, star catalogs)
+| Feature | Description | Priority |
+|---------|-------------|----------|
+| **Planet Positions** | Longitude of Sun, Moon, and planets in zodiac | Essential |
+| **Zodiac Signs** | Which sign (Aries-Pisces) each planet occupies | Essential |
+| **Houses** | 12-house division based on birth time/place | Essential |
+| **Ascendant/MC** | Rising sign and Midheaven | Essential |
+| **Aspects** | Angular relationships between planets | Essential |
+| **Retrograde** | Whether planets appear to move backward | Nice-to-have |
 
 ---
 
-## 2. Migration Strategy
+## 2. Simplified Architecture
 
-### 2.1 Approach: Incremental Rewrite with Parallel Testing
+### 2.1 What to Port
 
-We recommend an **incremental rewrite** strategy rather than a big-bang rewrite:
+We only need a subset of the Swiss Ephemeris:
 
-1. **Create Rust module structure** mirroring C organization
-2. **Port one module at a time**, starting with lowest-dependency modules
-3. **Maintain C FFI bridge** for each ported module
-4. **Run parallel tests** comparing C and Rust outputs
-5. **Validate numerical precision** at each step
+| Original Module | What We Need | Estimated Size |
+|-----------------|--------------|----------------|
+| `swedate.c` | Julian day conversion | ~200 lines |
+| `swephlib.c` | Coordinate transforms, obliquity | ~500 lines |
+| `swemmoon.c` | Moon position (Moshier) | ~1,500 lines |
+| `swemplan.c` | Planet positions (Moshier) | ~800 lines |
+| `swehouse.c` | House calculations (subset) | ~400 lines |
+| `swemptab.h` | Planetary tables (embedded) | Data only |
 
-### 2.2 Why Not Bindgen/FFI Wrapper?
+**Total: ~3,500 lines of Rust** (vs 56,000 lines for full library)
 
-While `bindgen` could create Rust bindings quickly, a full rewrite is preferred because:
+### 2.2 What We Skip
 
-1. **Memory Safety**: The C code uses raw pointers extensively
-2. **Thread Safety**: Global state prevents safe concurrent use
-3. **Error Handling**: C uses return codes; Rust can use `Result<T, E>`
-4. **API Modernization**: Opportunity to create idiomatic Rust APIs
-5. **WebAssembly**: Pure Rust enables easy WASM compilation
-6. **Long-term Maintainability**: Rust code with proper types is easier to maintain
+- `sweph.c` - Binary ephemeris file reading (use Moshier analytical instead)
+- `swejpl.c` - JPL file support
+- `swecl.c` - Eclipses
+- `swehel.c` - Heliacal phenomena
+- `swevents.c` - Event finding
 
-### 2.3 Dependency Graph
+### 2.3 Moshier vs Swiss Ephemeris Files
+
+The Swiss Ephemeris has two calculation modes:
+1. **Swiss Ephemeris files** (.se1) - High precision, requires data files
+2. **Moshier analytical** - Self-contained, slightly lower precision
+
+For horoscopes, **Moshier is sufficient** (accuracy ~1 arc-second for modern dates). This eliminates all file I/O and makes WASM deployment trivial.
+
+---
+
+## 3. Project Structure
 
 ```
-                    ┌──────────────┐
-                    │   swedate    │ (no deps)
-                    └──────┬───────┘
-                           │
-              ┌────────────┼────────────┐
-              │            │            │
-              ▼            ▼            ▼
-        ┌──────────┐ ┌──────────┐ ┌──────────┐
-        │ swephlib │ │  swejpl  │ │ data     │
-        └────┬─────┘ └────┬─────┘ │ tables   │
-             │            │       └────┬─────┘
-             └─────┬──────┴────────────┘
-                   │
-                   ▼
-            ┌──────────────┐
-            │    sweph     │ (core engine)
-            └──────┬───────┘
-                   │
-     ┌─────────────┼─────────────┐
-     │             │             │
-     ▼             ▼             ▼
-┌─────────┐  ┌──────────┐  ┌──────────┐
-│ swecl   │  │ swehouse │  │ swehel   │
-└─────────┘  └──────────┘  └──────────┘
-```
-
----
-
-## 3. Module Breakdown
-
-### 3.1 Module: `swedate` (Date/Time)
-
-**C Files:** `swedate.c`, `swedate.h` (~20 KB)
-
-**Functions to Port:**
-```rust
-// Julian Day conversions
-fn julday(year: i32, month: i32, day: i32, hour: f64, gregflag: CalendarType) -> f64;
-fn revjul(jd: f64, gregflag: CalendarType) -> (i32, i32, i32, f64);
-
-// Date validation
-fn date_conversion(year: i32, month: i32, day: i32, ...) -> Result<JulianDay, DateError>;
-
-// Day of week
-fn day_of_week(jd: f64) -> Weekday;
-```
-
-**Rust Approach:**
-- Create `JulianDay` newtype wrapper
-- Use `chrono` crate for modern date/time interop (optional dependency)
-- Strong typing for calendar types (Gregorian/Julian)
-
-**Complexity:** Low
-**Priority:** Phase 1 (no dependencies)
-
----
-
-### 3.2 Module: `swephlib` (Library Utilities)
-
-**C Files:** `swephlib.c`, `swephlib.h` (~161 KB)
-
-**Functions to Port:**
-```rust
-// Coordinate transformations
-fn cotrans(xpo: [f64; 6], eps: f64) -> [f64; 6];
-fn cotrans_sp(xpo: [f64; 6], eps: f64) -> [f64; 6];
-
-// Obliquity of ecliptic
-fn epsiln(jd: f64, iflag: i32) -> f64;
-
-// Nutation
-fn nutation(jd: f64, iflag: i32) -> (f64, f64); // (nutlo, nuto)
-
-// Sidereal time
-fn sidtime(jd_ut: f64) -> f64;
-fn sidtime0(jd_ut: f64, eps: f64, nut: f64) -> f64;
-
-// Delta T
-fn deltat(jd: f64) -> f64;
-fn deltat_ex(jd: f64, iflag: i32) -> Result<f64, DeltaTError>;
-
-// Precession
-fn precess(r: [f64; 3], jd: f64, iflag: i32, direction: i32) -> [f64; 3];
-
-// Utility functions
-fn radnorm(x: f64) -> f64;
-fn degnorm(x: f64) -> f64;
-fn difdeg2n(p1: f64, p2: f64) -> f64;
-```
-
-**Rust Approach:**
-- Create `Coordinates` struct with longitude/latitude/distance
-- Use `nalgebra` for matrix operations (optional)
-- Implement `From`/`Into` traits for coordinate system conversions
-
-**Complexity:** Medium
-**Priority:** Phase 1
-
----
-
-### 3.3 Module: `swejpl` (JPL Ephemeris Reader)
-
-**C Files:** `swejpl.c`, `swejpl.h` (~33 KB)
-
-**Functions to Port:**
-```rust
-// File operations
-fn jpl_open(path: &Path, denum: i32) -> Result<JplFile, JplError>;
-fn jpl_close(file: &mut JplFile);
-
-// Ephemeris computation
-fn jpl_plaus(et: f64, list: &[i32], pv: &mut [[f64; 6]], nut: &mut [f64]) -> Result<(), JplError>;
-```
-
-**Rust Approach:**
-- Use `std::io` for file operations
-- Implement proper RAII with `Drop` trait
-- Use `byteorder` crate for cross-platform binary reading
-- Memory-map large files with `memmap2` crate
-
-**Complexity:** Medium
-**Priority:** Phase 1
-
----
-
-### 3.4 Module: `sweph` (Core Engine)
-
-**C Files:** `sweph.c`, `sweph.h`, `swemptab.h` (~589 KB combined)
-
-**Core Functions to Port:**
-```rust
-// Main calculation
-fn calc(jd_et: f64, ipl: Planet, iflag: CalcFlags) -> Result<PlanetPosition, CalcError>;
-fn calc_ut(jd_ut: f64, ipl: Planet, iflag: CalcFlags) -> Result<PlanetPosition, CalcError>;
-
-// Planetocentric
-fn calc_pctr(jd_et: f64, ipl: Planet, iplctr: Planet, iflag: CalcFlags)
-    -> Result<PlanetPosition, CalcError>;
-
-// Fixed stars
-fn fixstar(star: &str, jd_et: f64, iflag: CalcFlags) -> Result<StarPosition, CalcError>;
-fn fixstar2(star: &str, jd_et: f64, iflag: CalcFlags) -> Result<(StarPosition, String), CalcError>;
-
-// Configuration
-fn set_ephe_path(path: &Path);
-fn set_jpl_file(name: &str);
-fn set_topo(lng: f64, lat: f64, alt: f64);
-fn set_sid_mode(sid_mode: SiderealMode, t0: f64, ayan_t0: f64);
-fn close();
-
-// Ayanamsa
-fn get_ayanamsa(jd_et: f64) -> f64;
-fn get_ayanamsa_ex(jd_et: f64, iflag: CalcFlags) -> Result<f64, CalcError>;
-```
-
-**Rust Approach:**
-- Create `SwissEph` context struct holding all state
-- Use builder pattern for configuration
-- Implement `Default` trait for common configurations
-- Strong typing for planets, flags, and return values
-
-```rust
-pub struct SwissEph {
-    ephe_path: PathBuf,
-    jpl_file: Option<JplFile>,
-    sidereal_mode: Option<SiderealMode>,
-    topocentric: Option<TopocentricPosition>,
-    // ... cached state
-}
-
-impl SwissEph {
-    pub fn new() -> SwissEphBuilder { ... }
-    pub fn calc(&self, jd: JulianDay, planet: Planet, flags: CalcFlags)
-        -> Result<Position, Error> { ... }
-}
-```
-
-**Complexity:** High (largest module)
-**Priority:** Phase 2
-
----
-
-### 3.5 Module: `swemmoon` / `swemplan` (Analytical Ephemerides)
-
-**C Files:** `swemmoon.c` (~60 KB), `swemplan.c` (~28 KB)
-
-**Functions to Port:**
-```rust
-// Moshier lunar ephemeris
-fn moon(jd: f64) -> [f64; 6];  // position and velocity
-
-// Moshier planetary ephemeris
-fn planet(jd: f64, planet: Planet) -> [f64; 6];
-```
-
-**Rust Approach:**
-- These are pure computational functions with no I/O
-- Port directly with careful attention to numerical precision
-- Use `#[inline]` for hot paths
-- Consider SIMD optimization with `packed_simd` crate
-
-**Complexity:** Medium (computationally intensive)
-**Priority:** Phase 2
-
----
-
-### 3.6 Module: `swehouse` (House Systems)
-
-**C Files:** `swehouse.c`, `swehouse.h` (~110 KB)
-
-**Functions to Port:**
-```rust
-// House calculation
-fn houses(jd_ut: f64, lat: f64, lng: f64, hsys: HouseSystem)
-    -> Result<HousePositions, HouseError>;
-fn houses_ex(jd_ut: f64, iflag: CalcFlags, lat: f64, lng: f64, hsys: HouseSystem)
-    -> Result<HousePositions, HouseError>;
-fn houses_ex2(jd_ut: f64, iflag: CalcFlags, lat: f64, lng: f64, hsys: HouseSystem)
-    -> Result<(HousePositions, Ascmc), HouseError>;
-
-// House position for a planet
-fn house_pos(armc: f64, geolat: f64, eps: f64, hsys: HouseSystem,
-             xpin: [f64; 2]) -> f64;
-
-// Gauquelin sectors
-fn gauquelin_sector(jd_ut: f64, ipl: Planet, starname: Option<&str>,
-                    iflag: CalcFlags, imeth: i32, geopos: [f64; 3])
-    -> Result<f64, GauquelinError>;
-```
-
-**Rust Approach:**
-- Create `HouseSystem` enum with all 40+ supported systems
-- Return structured data instead of arrays
-- Strong typing for ascendant, MC, vertex, etc.
-
-```rust
-pub enum HouseSystem {
-    Placidus,
-    Koch,
-    Porphyry,
-    Regiomontanus,
-    Campanus,
-    Equal,
-    WholeSign,
-    // ... 40+ systems
-}
-
-pub struct HousePositions {
-    pub cusps: [f64; 13],  // houses 1-12 (index 0 unused)
-    pub ascendant: f64,
-    pub mc: f64,
-    pub armc: f64,
-    pub vertex: f64,
-    pub equatorial_ascendant: f64,
-    // ...
-}
-```
-
-**Complexity:** Medium
-**Priority:** Phase 3
-
----
-
-### 3.7 Module: `swecl` (Eclipses & Phenomena)
-
-**C Files:** `swecl.c` (~221 KB)
-
-**Functions to Port:**
-```rust
-// Solar eclipses
-fn sol_eclipse_when_glob(jd_start: f64, iflag: CalcFlags, ifltype: EclipseType, backward: bool)
-    -> Result<SolarEclipse, EclipseError>;
-fn sol_eclipse_when_loc(jd_start: f64, iflag: CalcFlags, geopos: [f64; 3], backward: bool)
-    -> Result<LocalSolarEclipse, EclipseError>;
-fn sol_eclipse_how(jd_ut: f64, iflag: CalcFlags, geopos: [f64; 3])
-    -> Result<EclipseAttributes, EclipseError>;
-fn sol_eclipse_where(jd_ut: f64, iflag: CalcFlags)
-    -> Result<EclipseLocation, EclipseError>;
-
-// Lunar eclipses
-fn lun_eclipse_when(jd_start: f64, iflag: CalcFlags, ifltype: EclipseType, backward: bool)
-    -> Result<LunarEclipse, EclipseError>;
-fn lun_eclipse_how(jd_ut: f64, iflag: CalcFlags, geopos: [f64; 3])
-    -> Result<EclipseAttributes, EclipseError>;
-
-// Occultations
-fn lun_occult_when_glob(jd_start: f64, ipl: Planet, starname: Option<&str>,
-                        iflag: CalcFlags, ifltype: i32, backward: bool)
-    -> Result<Occultation, OccultError>;
-
-// Rise, set, transit
-fn rise_trans(jd_ut: f64, ipl: Planet, starname: Option<&str>,
-              iflag: CalcFlags, rsmi: RiseSetType, geopos: [f64; 3],
-              atpress: f64, attemp: f64)
-    -> Result<f64, RiseSetError>;
-
-// Planetary phenomena
-fn pheno(jd_et: f64, ipl: Planet, iflag: CalcFlags) -> Result<Phenomena, PhenoError>;
-fn pheno_ut(jd_ut: f64, ipl: Planet, iflag: CalcFlags) -> Result<Phenomena, PhenoError>;
-
-// Refraction
-fn refrac(inalt: f64, atpress: f64, attemp: f64, calc_flag: RefractionType) -> f64;
-fn refrac_extended(inalt: f64, geoalt: f64, atpress: f64, attemp: f64,
-                   lapse_rate: f64, calc_flag: RefractionType) -> (f64, [f64; 4]);
-
-// Azimuth/Altitude
-fn azalt(jd_ut: f64, calc_flag: AzAltType, geopos: [f64; 3],
-         atpress: f64, attemp: f64, xin: [f64; 3]) -> [f64; 3];
-fn azalt_rev(jd_ut: f64, calc_flag: AzAltType, geopos: [f64; 3], xin: [f64; 2]) -> [f64; 3];
-```
-
-**Rust Approach:**
-- Rich result types with full eclipse data
-- Iterator patterns for finding multiple events
-- Strong typing for eclipse types and phases
-
-**Complexity:** High
-**Priority:** Phase 3
-
----
-
-### 3.8 Module: `swehel` (Heliacal Phenomena)
-
-**C Files:** `swehel.c` (~120 KB)
-
-**Functions to Port:**
-```rust
-fn heliacal_ut(jd_utstart: f64, geopos: [f64; 3], datm: [f64; 4],
-               dobs: [f64; 6], object_name: &str, event_type: HeliacalEventType,
-               helflag: HeliacalFlags) -> Result<HeliacalEvent, HeliacalError>;
-
-fn heliacal_pheno_ut(jd_ut: f64, geopos: [f64; 3], datm: [f64; 4],
-                     dobs: [f64; 6], object_name: &str, event_type: HeliacalEventType,
-                     helflag: HeliacalFlags) -> Result<HeliacalPheno, HeliacalError>;
-
-fn vis_limit_mag(jd_ut: f64, geopos: [f64; 3], datm: [f64; 4],
-                 dobs: [f64; 6], object_name: &str, helflag: HeliacalFlags)
-    -> Result<VisibilityLimit, VisLimitError>;
-```
-
-**Complexity:** Medium-High
-**Priority:** Phase 4
-
----
-
-### 3.9 Data Tables Module
-
-**C Files:** `swemptab.h` (305 KB), `swenut2000a.h` (67 KB)
-
-**Approach:**
-- Convert to `const` arrays in Rust
-- Use `include!` macro or build script to generate
-- Consider `lazy_static` or `once_cell` for computed tables
-
-```rust
-// Example: Planetary mean motion tables
-pub static MEAN_MOTION_TABLES: &[PlanetaryTable] = &[
-    PlanetaryTable { /* ... */ },
-    // ...
-];
-
-// Nutation coefficients (IAU 2000A)
-pub static NUT_2000A: &[NutationCoeff] = &[
-    NutationCoeff { /* ... */ },
-    // ...
-];
-```
-
-**Complexity:** Low (mechanical translation)
-**Priority:** Phase 1
-
----
-
-## 4. Implementation Phases
-
-### Phase 1: Foundation (Modules with No Dependencies)
-
-**Modules:**
-1. `swedate` - Date/time conversions
-2. Data tables - Constants and lookup tables
-3. `swephlib` - Utility functions (partial: math functions only)
-4. `swejpl` - JPL file reader
-
-**Deliverables:**
-- Basic project structure with Cargo workspace
-- Core type definitions
-- Julian day calculations
-- Coordinate transformation functions
-- JPL ephemeris file reader
-
-**Validation:**
-- Unit tests comparing output to C implementation
-- Property-based tests for mathematical functions
-
----
-
-### Phase 2: Core Calculation Engine
-
-**Modules:**
-1. `swephlib` - Complete utility functions
-2. `swemmoon` - Lunar ephemeris
-3. `swemplan` - Planetary ephemeris
-4. `sweph` - Core calculation engine
-
-**Deliverables:**
-- Full planetary position calculations
-- Swiss Ephemeris file reader
-- Fixed star calculations
-- Main `SwissEph` context struct
-
-**Validation:**
-- Integration tests with known ephemeris positions
-- Comparison against JPL Horizons data
-- Performance benchmarks
-
----
-
-### Phase 3: Derived Calculations
-
-**Modules:**
-1. `swehouse` - House systems
-2. `swecl` - Eclipses and phenomena
-
-**Deliverables:**
-- All house system calculations
-- Eclipse prediction
-- Rise/set/transit calculations
-- Occultation calculations
-
-**Validation:**
-- Compare against published eclipse data
-- Verify house cusps against reference implementations
-
----
-
-### Phase 4: Advanced Features
-
-**Modules:**
-1. `swehel` - Heliacal phenomena
-2. C FFI layer
-3. WebAssembly bindings
-
-**Deliverables:**
-- Heliacal rising/setting calculations
-- C-compatible API for existing integrations
-- WASM build with JavaScript bindings
-
-**Validation:**
-- Full test suite passes
-- API compatibility verification
-- Browser-based demo application
-
----
-
-### Phase 5: Polish and Release
-
-**Activities:**
-1. Performance optimization
-2. Documentation
-3. Example programs
-4. CI/CD setup
-5. Publishing to crates.io
-
-**Deliverables:**
-- Published crate with full documentation
-- Benchmark comparisons with C version
-- Migration guide for existing users
-
----
-
-## 5. Technical Decisions
-
-### 5.1 Crate Structure
-
-```
-swisseph-rs/
-├── Cargo.toml              # Workspace root
-├── crates/
-│   ├── swisseph/           # Main library crate
-│   │   ├── src/
-│   │   │   ├── lib.rs
-│   │   │   ├── date.rs     # swedate
-│   │   │   ├── lib_utils.rs # swephlib
-│   │   │   ├── jpl.rs      # swejpl
-│   │   │   ├── core.rs     # sweph
-│   │   │   ├── moon.rs     # swemmoon
-│   │   │   ├── planet.rs   # swemplan
-│   │   │   ├── house.rs    # swehouse
-│   │   │   ├── eclipse.rs  # swecl
-│   │   │   ├── heliacal.rs # swehel
-│   │   │   ├── data/       # Embedded tables
-│   │   │   └── error.rs    # Error types
-│   │   └── Cargo.toml
-│   ├── swisseph-sys/       # C FFI bindings (optional)
-│   │   └── ...
-│   └── swisseph-wasm/      # WebAssembly bindings
-│       └── ...
-├── examples/
-│   ├── basic_calc.rs
-│   ├── eclipse_finder.rs
-│   └── birth_chart.rs
+horoscope-rs/
+├── Cargo.toml
+├── src/
+│   ├── lib.rs              # Public API
+│   ├── date.rs             # Julian day conversions
+│   ├── math.rs             # Coordinate transforms, angle math
+│   ├── planets.rs          # Planet position calculations
+│   ├── moon.rs             # Lunar calculations
+│   ├── houses.rs           # House system calculations
+│   ├── aspects.rs          # Aspect calculations
+│   ├── zodiac.rs           # Zodiac signs and degrees
+│   └── tables.rs           # Embedded astronomical tables
+├── wasm/
+│   ├── Cargo.toml          # WASM-specific build
+│   ├── src/
+│   │   └── lib.rs          # wasm-bindgen exports
+│   └── pkg/                # Generated WASM package
 ├── tests/
-│   ├── integration/
-│   └── comparison/         # Tests comparing to C output
-└── benches/
-    └── calculations.rs
-```
-
-### 5.2 Error Handling
-
-```rust
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-pub enum SwissEphError {
-    #[error("Invalid date: {0}")]
-    InvalidDate(String),
-
-    #[error("Ephemeris file not found: {path}")]
-    EphemerisNotFound { path: PathBuf },
-
-    #[error("Invalid planet number: {0}")]
-    InvalidPlanet(i32),
-
-    #[error("Calculation failed: {0}")]
-    CalculationError(String),
-
-    #[error("JPL ephemeris error: {0}")]
-    JplError(#[from] JplError),
-
-    #[error("IO error: {0}")]
-    IoError(#[from] std::io::Error),
-}
-
-pub type Result<T> = std::result::Result<T, SwissEphError>;
-```
-
-### 5.3 Numeric Precision
-
-- Use `f64` throughout (matches C `double`)
-- Consider `rug` crate for arbitrary precision where needed
-- Document precision guarantees
-- Use `approx` crate for floating-point comparisons in tests
-
-### 5.4 Thread Safety
-
-```rust
-// The main SwissEph struct should be Send + Sync
-pub struct SwissEph {
-    // Use Arc<RwLock<...>> for shared mutable state
-    cache: Arc<RwLock<CalculationCache>>,
-    // Use atomics for simple flags
-    delta_t_mode: AtomicI32,
-    // Immutable config can be plain Arc
-    config: Arc<Config>,
-}
-
-// Alternatively, make it fully immutable with interior mutability patterns
-```
-
-### 5.5 Dependencies
-
-**Required:**
-```toml
-[dependencies]
-thiserror = "1.0"      # Error handling
-byteorder = "1.4"      # Binary file reading
-```
-
-**Optional:**
-```toml
-[dependencies]
-chrono = { version = "0.4", optional = true }       # DateTime interop
-memmap2 = { version = "0.7", optional = true }      # Memory-mapped files
-rayon = { version = "1.8", optional = true }        # Parallel iterators
-serde = { version = "1.0", optional = true }        # Serialization
-```
-
-**Dev Dependencies:**
-```toml
-[dev-dependencies]
-criterion = "0.5"       # Benchmarking
-proptest = "1.4"        # Property-based testing
-approx = "0.5"          # Float comparisons
-```
-
-### 5.6 Feature Flags
-
-```toml
-[features]
-default = ["std"]
-std = []                        # Standard library (disable for no_std)
-jpl = []                        # JPL ephemeris support
-chrono = ["dep:chrono"]         # chrono integration
-serde = ["dep:serde"]           # Serialization
-parallel = ["dep:rayon"]        # Parallel calculations
-wasm = []                       # WebAssembly optimizations
-ffi = []                        # C FFI exports
+│   └── accuracy.rs         # Compare against known ephemeris data
+└── examples/
+    └── birth_chart.rs
 ```
 
 ---
 
-## 6. API Design
+## 4. Core Types
 
-### 6.1 Builder Pattern for Configuration
-
-```rust
-let swe = SwissEph::builder()
-    .ephemeris_path("/path/to/ephe")
-    .jpl_file("de441.eph")
-    .sidereal_mode(SiderealMode::Lahiri)
-    .topocentric(47.38, 8.54, 400.0)  // Zurich
-    .build()?;
-```
-
-### 6.2 Ergonomic Calculation API
+### 4.1 Planets
 
 ```rust
-// Simple case
-let sun = swe.calc(jd, Planet::Sun, CalcFlags::default())?;
-println!("Sun longitude: {:.6}°", sun.longitude);
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub enum Planet {
+    Sun,
+    Moon,
+    Mercury,
+    Venus,
+    Mars,
+    Jupiter,
+    Saturn,
+    Uranus,
+    Neptune,
+    Pluto,
+}
 
-// With all options
-let moon = swe.calc_ut(jd_ut, Planet::Moon,
-    CalcFlags::SPEED | CalcFlags::EQUATORIAL)?;
-println!("Moon RA: {:.6}°, Dec: {:.6}°", moon.right_ascension, moon.declination);
-
-// Fixed stars
-let regulus = swe.fixstar("Regulus", jd, CalcFlags::default())?;
+impl Planet {
+    pub fn all() -> &'static [Planet] {
+        &[
+            Planet::Sun, Planet::Moon, Planet::Mercury, Planet::Venus,
+            Planet::Mars, Planet::Jupiter, Planet::Saturn,
+            Planet::Uranus, Planet::Neptune, Planet::Pluto,
+        ]
+    }
+}
 ```
 
-### 6.3 Type-Safe Enums
+### 4.2 Zodiac Signs
 
 ```rust
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Planet {
-    Sun = 0,
-    Moon = 1,
-    Mercury = 2,
-    Venus = 3,
-    Mars = 4,
-    Jupiter = 5,
-    Saturn = 6,
-    Uranus = 7,
-    Neptune = 8,
-    Pluto = 9,
-    MeanNode = 10,
-    TrueNode = 11,
-    MeanApogee = 12,    // Mean Lilith
-    OscuApogee = 13,    // Osculating Lilith
-    Earth = 14,
-    Chiron = 15,
-    // ...
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub enum ZodiacSign {
+    Aries = 0,
+    Taurus = 1,
+    Gemini = 2,
+    Cancer = 3,
+    Leo = 4,
+    Virgo = 5,
+    Libra = 6,
+    Scorpio = 7,
+    Sagittarius = 8,
+    Capricorn = 9,
+    Aquarius = 10,
+    Pisces = 11,
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum HouseSystem {
-    Placidus = b'P' as isize,
-    Koch = b'K' as isize,
-    Porphyry = b'O' as isize,
-    Regiomontanus = b'R' as isize,
-    Campanus = b'C' as isize,
-    Equal = b'E' as isize,
-    WholeSign = b'W' as isize,
-    // ... 40+ more
+impl ZodiacSign {
+    pub fn from_longitude(lon: f64) -> Self {
+        let normalized = lon.rem_euclid(360.0);
+        let index = (normalized / 30.0) as usize;
+        // Convert index to enum variant
+        unsafe { std::mem::transmute(index as u8) }
+    }
+
+    pub fn symbol(&self) -> &'static str {
+        match self {
+            Self::Aries => "♈", Self::Taurus => "♉", Self::Gemini => "♊",
+            Self::Cancer => "♋", Self::Leo => "♌", Self::Virgo => "♍",
+            Self::Libra => "♎", Self::Scorpio => "♏", Self::Sagittarius => "♐",
+            Self::Capricorn => "♑", Self::Aquarius => "♒", Self::Pisces => "♓",
+        }
+    }
 }
 ```
 
-### 6.4 Rich Return Types
+### 4.3 Planet Position
 
 ```rust
-#[derive(Debug, Clone)]
-pub struct Position {
-    /// Longitude in degrees (0-360)
+#[derive(Debug, Clone, Copy)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub struct PlanetPosition {
+    /// Ecliptic longitude in degrees (0-360)
     pub longitude: f64,
-    /// Latitude in degrees (-90 to 90)
+    /// Ecliptic latitude in degrees
     pub latitude: f64,
-    /// Distance (AU for planets, AU for stars)
-    pub distance: f64,
-    /// Speed in longitude (degrees/day)
-    pub speed_longitude: f64,
-    /// Speed in latitude (degrees/day)
-    pub speed_latitude: f64,
-    /// Speed in distance (AU/day)
-    pub speed_distance: f64,
+    /// Daily motion in longitude (degrees/day)
+    pub speed: f64,
 }
 
-impl Position {
-    /// Get zodiac sign (0 = Aries, 11 = Pisces)
+impl PlanetPosition {
     pub fn sign(&self) -> ZodiacSign {
         ZodiacSign::from_longitude(self.longitude)
     }
 
-    /// Get degree within sign (0-30)
+    /// Degrees within the sign (0-30)
     pub fn sign_degree(&self) -> f64 {
-        self.longitude % 30.0
+        self.longitude.rem_euclid(30.0)
     }
 
-    /// Check if planet is retrograde
+    /// Is the planet retrograde?
     pub fn is_retrograde(&self) -> bool {
-        self.speed_longitude < 0.0
+        self.speed < 0.0
     }
 }
 ```
 
-### 6.5 Iterator Patterns for Events
+### 4.4 Houses
 
 ```rust
-// Find next 10 solar eclipses
-let eclipses = swe.solar_eclipses(jd_start)
-    .filter(|e| e.eclipse_type == EclipseType::Total)
-    .take(10)
-    .collect::<Vec<_>>();
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub enum HouseSystem {
+    Placidus,
+    Koch,
+    WholeSign,
+    Equal,
+    Campanus,
+    Regiomontanus,
+    Porphyry,
+}
 
-// Find Mercury retrograde periods
-let retrogrades = swe.retrograde_periods(Planet::Mercury, jd_start, jd_end)
-    .collect::<Vec<_>>();
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub struct Houses {
+    /// House cusps (index 1-12, index 0 unused)
+    pub cusps: [f64; 13],
+    /// Ascendant (same as cusp 1)
+    pub ascendant: f64,
+    /// Midheaven (MC)
+    pub mc: f64,
+}
+```
+
+### 4.5 Aspects
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub enum AspectType {
+    Conjunction,  // 0°
+    Sextile,      // 60°
+    Square,       // 90°
+    Trine,        // 120°
+    Opposition,   // 180°
+}
+
+impl AspectType {
+    pub fn angle(&self) -> f64 {
+        match self {
+            Self::Conjunction => 0.0,
+            Self::Sextile => 60.0,
+            Self::Square => 90.0,
+            Self::Trine => 120.0,
+            Self::Opposition => 180.0,
+        }
+    }
+
+    pub fn default_orb(&self) -> f64 {
+        match self {
+            Self::Conjunction | Self::Opposition => 8.0,
+            Self::Trine | Self::Square => 6.0,
+            Self::Sextile => 4.0,
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub struct Aspect {
+    pub planet1: Planet,
+    pub planet2: Planet,
+    pub aspect_type: AspectType,
+    /// Actual angle between planets
+    pub angle: f64,
+    /// Difference from exact aspect (orb)
+    pub orb: f64,
+    /// Is the aspect applying (getting closer) or separating?
+    pub applying: bool,
+}
 ```
 
 ---
 
-## 7. Testing Strategy
+## 5. Public API
 
-### 7.1 Unit Tests
-
-Each module should have comprehensive unit tests:
+### 5.1 Main Interface
 
 ```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use approx::assert_relative_eq;
+/// Calculate a complete horoscope/birth chart
+#[cfg_attr(feature = "wasm", wasm_bindgen)]
+pub struct Horoscope {
+    planets: HashMap<Planet, PlanetPosition>,
+    houses: Houses,
+    aspects: Vec<Aspect>,
+    julian_day: f64,
+}
 
-    #[test]
-    fn test_julday() {
-        // J2000.0 epoch
-        let jd = julday(2000, 1, 1, 12.0, CalendarType::Gregorian);
-        assert_relative_eq!(jd, 2451545.0, epsilon = 1e-10);
-    }
+impl Horoscope {
+    /// Create a new horoscope for the given date, time, and location
+    pub fn new(
+        year: i32,
+        month: u32,
+        day: u32,
+        hour: f64,        // 0-24, decimal hours UTC
+        latitude: f64,    // Geographic latitude
+        longitude: f64,   // Geographic longitude
+        house_system: HouseSystem,
+    ) -> Self { ... }
 
-    #[test]
-    fn test_revjul() {
-        let (y, m, d, h) = revjul(2451545.0, CalendarType::Gregorian);
-        assert_eq!((y, m, d), (2000, 1, 1));
-        assert_relative_eq!(h, 12.0, epsilon = 1e-10);
-    }
+    /// Get position of a specific planet
+    pub fn planet(&self, planet: Planet) -> PlanetPosition { ... }
+
+    /// Get all planet positions
+    pub fn planets(&self) -> &HashMap<Planet, PlanetPosition> { ... }
+
+    /// Get house cusps and angles
+    pub fn houses(&self) -> &Houses { ... }
+
+    /// Get all aspects between planets
+    pub fn aspects(&self) -> &[Aspect] { ... }
+
+    /// Get aspects for a specific planet
+    pub fn aspects_for(&self, planet: Planet) -> Vec<&Aspect> { ... }
 }
 ```
 
-### 7.2 Comparison Tests
+### 5.2 Low-Level Functions
 
-Create a test harness that compares Rust output to C output:
+```rust
+/// Convert calendar date to Julian Day
+pub fn julian_day(year: i32, month: u32, day: u32, hour: f64) -> f64;
+
+/// Calculate position of a single planet
+pub fn calc_planet(jd: f64, planet: Planet) -> PlanetPosition;
+
+/// Calculate house cusps
+pub fn calc_houses(jd: f64, lat: f64, lon: f64, system: HouseSystem) -> Houses;
+
+/// Find aspects between two sets of positions
+pub fn find_aspects(
+    positions: &HashMap<Planet, PlanetPosition>,
+    orbs: Option<&HashMap<AspectType, f64>>,
+) -> Vec<Aspect>;
+```
+
+---
+
+## 6. WASM Bindings
+
+### 6.1 JavaScript API
+
+```typescript
+// TypeScript definitions (generated)
+export interface PlanetPosition {
+    longitude: number;
+    latitude: number;
+    speed: number;
+    sign: string;
+    signDegree: number;
+    isRetrograde: boolean;
+}
+
+export interface Houses {
+    cusps: number[];  // [_, cusp1, cusp2, ..., cusp12]
+    ascendant: number;
+    mc: number;
+}
+
+export interface Aspect {
+    planet1: string;
+    planet2: string;
+    type: string;
+    angle: number;
+    orb: number;
+    applying: boolean;
+}
+
+export interface Horoscope {
+    planets: Record<string, PlanetPosition>;
+    houses: Houses;
+    aspects: Aspect[];
+}
+
+// Main function
+export function calculateHoroscope(
+    year: number,
+    month: number,
+    day: number,
+    hour: number,      // UTC
+    latitude: number,
+    longitude: number,
+    houseSystem?: string,
+): Horoscope;
+```
+
+### 6.2 WASM Build Configuration
+
+```toml
+# wasm/Cargo.toml
+[package]
+name = "horoscope-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+horoscope = { path = ".." }
+wasm-bindgen = "0.2"
+serde = { version = "1.0", features = ["derive"] }
+serde-wasm-bindgen = "0.6"
+
+[profile.release]
+opt-level = "s"      # Optimize for size
+lto = true           # Link-time optimization
+```
+
+### 6.3 Build Commands
+
+```bash
+# Install wasm-pack
+cargo install wasm-pack
+
+# Build for web
+wasm-pack build wasm --target web --release
+
+# Build for Node.js
+wasm-pack build wasm --target nodejs --release
+
+# Build for bundlers (webpack, etc.)
+wasm-pack build wasm --target bundler --release
+```
+
+### 6.4 Expected Bundle Size
+
+With optimization for size (`opt-level = "s"`, LTO enabled):
+- **Estimated WASM size:** ~100-150 KB (gzipped: ~40-60 KB)
+- No external data files required
+
+---
+
+## 7. Implementation Phases
+
+### Phase 1: Core Math & Date
+- Julian day conversions
+- Angle normalization utilities
+- Coordinate transformations
+- Obliquity of ecliptic
+
+**Files:** `date.rs`, `math.rs`
+
+### Phase 2: Planet Calculations
+- Port Moshier planetary theory from `swemplan.c`
+- Port Moshier lunar theory from `swemmoon.c`
+- Embed required tables from `swemptab.h`
+
+**Files:** `planets.rs`, `moon.rs`, `tables.rs`
+
+### Phase 3: Houses & Zodiac
+- House cusp calculations (subset of systems)
+- Ascendant/MC calculation
+- Zodiac sign utilities
+
+**Files:** `houses.rs`, `zodiac.rs`
+
+### Phase 4: Aspects & Horoscope
+- Aspect detection algorithm
+- Orb calculations
+- High-level `Horoscope` struct
+
+**Files:** `aspects.rs`, `lib.rs`
+
+### Phase 5: WASM & Release
+- wasm-bindgen integration
+- TypeScript types generation
+- NPM package setup
+- Documentation
+
+**Files:** `wasm/src/lib.rs`, package configuration
+
+---
+
+## 8. Testing Strategy
+
+### 8.1 Accuracy Tests
+
+Compare against known ephemeris data:
 
 ```rust
 #[test]
-fn compare_planet_positions() {
-    let test_cases = load_c_reference_data("test_data/planet_positions.json");
-    let swe = SwissEph::new();
+fn test_sun_position_j2000() {
+    // J2000.0 = 2000-01-01 12:00 UTC
+    let jd = julian_day(2000, 1, 1, 12.0);
+    let sun = calc_planet(jd, Planet::Sun);
 
-    for case in test_cases {
-        let result = swe.calc(case.jd, case.planet, case.flags).unwrap();
-        assert_relative_eq!(result.longitude, case.expected_lon, epsilon = 1e-8);
-        assert_relative_eq!(result.latitude, case.expected_lat, epsilon = 1e-8);
-        assert_relative_eq!(result.distance, case.expected_dist, epsilon = 1e-10);
-    }
+    // Expected: ~280.5° (Capricorn)
+    assert!((sun.longitude - 280.5).abs() < 0.01);
+}
+
+#[test]
+fn test_moon_position() {
+    let jd = julian_day(2024, 1, 1, 0.0);
+    let moon = calc_planet(jd, Planet::Moon);
+
+    // Compare against NASA Horizons or Swiss Ephemeris output
+    assert!((moon.longitude - expected).abs() < 0.1);  // 0.1° tolerance
 }
 ```
 
-### 7.3 Property-Based Tests
-
-```rust
-use proptest::prelude::*;
-
-proptest! {
-    #[test]
-    fn julday_revjul_roundtrip(
-        year in 1..3000i32,
-        month in 1..=12i32,
-        day in 1..=28i32,  // Safe range
-        hour in 0.0..24.0f64
-    ) {
-        let jd = julday(year, month, day, hour, CalendarType::Gregorian);
-        let (y, m, d, h) = revjul(jd, CalendarType::Gregorian);
-        prop_assert_eq!((y, m, d), (year, month, day));
-        prop_assert!((h - hour).abs() < 1e-10);
-    }
-
-    #[test]
-    fn longitude_always_normalized(jd in 2000000.0..2500000.0f64) {
-        let swe = SwissEph::new();
-        let pos = swe.calc(jd, Planet::Sun, CalcFlags::default()).unwrap();
-        prop_assert!(pos.longitude >= 0.0 && pos.longitude < 360.0);
-    }
-}
-```
-
-### 7.4 Integration Tests
+### 8.2 House Tests
 
 ```rust
 #[test]
-fn test_eclipse_2024() {
-    let swe = SwissEph::builder()
-        .ephemeris_path("ephe")
-        .build()
-        .unwrap();
+fn test_houses_zurich() {
+    // Zurich: 47.38°N, 8.54°E
+    let jd = julian_day(2000, 1, 1, 12.0);
+    let houses = calc_houses(jd, 47.38, 8.54, HouseSystem::Placidus);
 
-    // Total solar eclipse of April 8, 2024
-    let jd = julday(2024, 4, 8, 18.0, CalendarType::Gregorian);
-    let eclipse = swe.sol_eclipse_when_glob(jd - 1.0, CalcFlags::default(),
-                                             EclipseType::Total, false)?;
-
-    // Verify it finds the correct eclipse
-    assert_relative_eq!(eclipse.maximum_jd, 2460409.286, epsilon = 0.01);
+    // Verify Ascendant is reasonable for this time/place
+    assert!(houses.ascendant > 0.0 && houses.ascendant < 360.0);
 }
 ```
 
-### 7.5 Benchmarks
+### 8.3 Aspect Tests
 
 ```rust
-use criterion::{criterion_group, criterion_main, Criterion};
+#[test]
+fn test_conjunction_detection() {
+    let mut positions = HashMap::new();
+    positions.insert(Planet::Sun, PlanetPosition { longitude: 100.0, .. });
+    positions.insert(Planet::Moon, PlanetPosition { longitude: 103.0, .. });
 
-fn benchmark_calc(c: &mut Criterion) {
-    let swe = SwissEph::new();
-    let jd = 2451545.0;  // J2000
+    let aspects = find_aspects(&positions, None);
 
-    c.bench_function("calc_sun", |b| {
-        b.iter(|| swe.calc(jd, Planet::Sun, CalcFlags::default()))
-    });
-
-    c.bench_function("calc_all_planets", |b| {
-        b.iter(|| {
-            for planet in Planet::iter() {
-                swe.calc(jd, planet, CalcFlags::default()).unwrap();
-            }
-        })
-    });
+    assert!(aspects.iter().any(|a|
+        a.planet1 == Planet::Sun &&
+        a.planet2 == Planet::Moon &&
+        a.aspect_type == AspectType::Conjunction
+    ));
 }
-
-criterion_group!(benches, benchmark_calc);
-criterion_main!(benches);
 ```
 
 ---
 
-## 8. Risk Assessment
+## 9. Usage Examples
 
-### 8.1 High Risk
+### 9.1 Rust
 
-| Risk | Mitigation |
-|------|------------|
-| Numerical precision differences | Extensive comparison testing; document precision guarantees |
-| Complex algorithms hard to port | Port incrementally with thorough testing at each step |
-| Edge cases in date/time handling | Property-based testing; extensive test coverage |
+```rust
+use horoscope::{Horoscope, HouseSystem, Planet};
 
-### 8.2 Medium Risk
+fn main() {
+    // Birth chart: Jan 1, 2000, 12:00 UTC, Zurich
+    let chart = Horoscope::new(
+        2000, 1, 1, 12.0,
+        47.38, 8.54,
+        HouseSystem::Placidus,
+    );
 
-| Risk | Mitigation |
-|------|------------|
-| Performance regression | Benchmark continuously; optimize hot paths |
-| Binary file format compatibility | Fuzz testing with various file versions |
-| Missing functionality | Maintain feature parity checklist |
+    // Print planet positions
+    for planet in Planet::all() {
+        let pos = chart.planet(*planet);
+        println!("{:?}: {} {:.1}° ({})",
+            planet,
+            pos.sign().symbol(),
+            pos.sign_degree(),
+            if pos.is_retrograde() { "R" } else { "D" }
+        );
+    }
 
-### 8.3 Low Risk
+    // Print Ascendant
+    let asc_sign = ZodiacSign::from_longitude(chart.houses().ascendant);
+    println!("Ascendant: {} {:.1}°", asc_sign.symbol(), chart.houses().ascendant % 30.0);
 
-| Risk | Mitigation |
-|------|------------|
-| API design issues | Follow Rust API guidelines; get community feedback early |
-| Dependency issues | Minimize dependencies; pin versions |
+    // Print aspects
+    for aspect in chart.aspects() {
+        println!("{:?} {:?} {:?} (orb: {:.1}°)",
+            aspect.planet1,
+            aspect.aspect_type,
+            aspect.planet2,
+            aspect.orb
+        );
+    }
+}
+```
+
+### 9.2 JavaScript/TypeScript
+
+```typescript
+import { calculateHoroscope } from 'horoscope-wasm';
+
+// Birth chart: Jan 1, 2000, 12:00 UTC, Zurich
+const chart = calculateHoroscope(2000, 1, 1, 12.0, 47.38, 8.54, 'placidus');
+
+// Planet positions
+for (const [planet, pos] of Object.entries(chart.planets)) {
+    console.log(`${planet}: ${pos.sign} ${pos.signDegree.toFixed(1)}°`);
+}
+
+// Ascendant
+console.log(`Ascendant: ${chart.houses.ascendant.toFixed(2)}°`);
+
+// Aspects
+for (const aspect of chart.aspects) {
+    console.log(`${aspect.planet1} ${aspect.type} ${aspect.planet2}`);
+}
+```
 
 ---
 
-## 9. Deliverables
+## 10. Deliverables
 
-### 9.1 Phase 1 Deliverables
-- [ ] Cargo workspace setup
-- [ ] `date` module with Julian day functions
-- [ ] Data tables module with embedded constants
-- [ ] `lib_utils` module (coordinate transforms, time functions)
-- [ ] `jpl` module for JPL ephemeris reading
-- [ ] Unit tests for all functions
-- [ ] Comparison tests against C implementation
+### Phase 1-2 Deliverables
+- [ ] Core math utilities
+- [ ] Julian day conversions
+- [ ] Planet position calculations (Moshier)
+- [ ] Moon position calculations
+- [ ] Unit tests with accuracy verification
 
-### 9.2 Phase 2 Deliverables
-- [ ] `moon` module (Moshier lunar ephemeris)
-- [ ] `planet` module (Moshier planetary ephemeris)
-- [ ] `core` module (main calculation engine)
-- [ ] Swiss Ephemeris file reader
-- [ ] Fixed star calculations
-- [ ] `SwissEph` context struct with builder
+### Phase 3-4 Deliverables
+- [ ] House calculations (Placidus, Koch, Whole Sign, Equal)
+- [ ] Aspect detection
+- [ ] High-level `Horoscope` API
 - [ ] Integration tests
 
-### 9.3 Phase 3 Deliverables
-- [ ] `house` module (all house systems)
-- [ ] `eclipse` module (eclipse/occultation/phenomena)
-- [ ] Rise/set/transit calculations
-- [ ] Full test suite
-
-### 9.4 Phase 4 Deliverables
-- [ ] `heliacal` module
-- [ ] C FFI compatibility layer (`swisseph-sys`)
-- [ ] WebAssembly bindings (`swisseph-wasm`)
-- [ ] JavaScript/TypeScript type definitions
-
-### 9.5 Phase 5 Deliverables
-- [ ] Performance optimization
-- [ ] API documentation (rustdoc)
-- [ ] User guide
-- [ ] Example programs
-- [ ] CI/CD pipeline
-- [ ] Published to crates.io
+### Phase 5 Deliverables
+- [ ] WASM build with wasm-bindgen
+- [ ] TypeScript type definitions
+- [ ] NPM package configuration
+- [ ] Usage documentation
+- [ ] Example web application
 
 ---
 
-## Appendix A: Function Mapping
+## Appendix: Source File Mapping
 
-| C Function | Rust Function | Module |
-|------------|---------------|--------|
-| `swe_julday` | `julday` | date |
-| `swe_revjul` | `revjul` | date |
-| `swe_deltat` | `delta_t` | lib_utils |
-| `swe_sidtime` | `sidereal_time` | lib_utils |
-| `swe_cotrans` | `cotrans` | lib_utils |
-| `swe_calc` | `SwissEph::calc` | core |
-| `swe_calc_ut` | `SwissEph::calc_ut` | core |
-| `swe_fixstar` | `SwissEph::fixstar` | core |
-| `swe_houses` | `SwissEph::houses` | house |
-| `swe_sol_eclipse_when_glob` | `SwissEph::solar_eclipse_when_global` | eclipse |
-| `swe_rise_trans` | `SwissEph::rise_trans` | eclipse |
-| `swe_heliacal_ut` | `SwissEph::heliacal` | heliacal |
+| This Project | Swiss Ephemeris Source | Lines to Port |
+|--------------|----------------------|---------------|
+| `date.rs` | `swedate.c` | ~200 |
+| `math.rs` | `swephlib.c` (subset) | ~300 |
+| `planets.rs` | `swemplan.c` | ~800 |
+| `moon.rs` | `swemmoon.c` | ~1,500 |
+| `houses.rs` | `swehouse.c` (subset) | ~400 |
+| `tables.rs` | `swemptab.h` (subset) | Data |
+| **Total** | | **~3,200 lines** |
 
 ---
 
-## Appendix B: Type Mapping
+## Appendix: Precision Notes
 
-| C Type | Rust Type |
-|--------|-----------|
-| `double` | `f64` |
-| `int` | `i32` |
-| `int32` | `i32` |
-| `char *` (path) | `&Path` / `PathBuf` |
-| `char *` (string) | `&str` / `String` |
-| `char[N]` (output) | Return value or `&mut String` |
-| `double[6]` | `[f64; 6]` or `Position` struct |
-| `double[N]` (output) | Return struct |
-| Return code `int` | `Result<T, Error>` |
+Using Moshier analytical ephemeris instead of Swiss Ephemeris files:
 
----
+| Body | Moshier Accuracy | Sufficient for Horoscopes? |
+|------|------------------|---------------------------|
+| Sun | ~1 arc-second | Yes |
+| Moon | ~3 arc-seconds | Yes |
+| Mercury-Neptune | ~1 arc-second | Yes |
+| Pluto | ~5 arc-seconds | Yes |
 
-## Appendix C: References
-
-1. Swiss Ephemeris Documentation: https://www.astro.com/swisseph/
-2. Rust API Guidelines: https://rust-lang.github.io/api-guidelines/
-3. JPL Ephemeris: https://ssd.jpl.nasa.gov/planets/eph_export.html
-4. Moshier's Analytical Ephemeris: https://www.moshier.net/
+For comparison, most astrologers work with 1° orbs, so sub-arc-minute precision is more than adequate.

@@ -1,0 +1,27 @@
+[package]
+name = "horoscope"
+version = "0.1.0"
+edition = "2021"
+description = "Minimal astronomical calculations for horoscope generation"
+license = "GPL-3.0"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = ["std"]
+std = []
+wasm = ["wasm-bindgen", "serde", "serde_json", "serde-wasm-bindgen"]
+
+[dependencies]
+wasm-bindgen = { version = "0.2", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
+
+[dev-dependencies]
+approx = "0.5"
+
+[profile.release]
+opt-level = "s"
+lto = true

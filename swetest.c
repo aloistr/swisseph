@@ -282,6 +282,8 @@ static char *infocmd4 = "\
                           and nutation 1980 (s. swephlib.h)\n\
         -testaa95\n\
         -testaa97\n\
+\n\
+     special purpose options:\n\
         -roundsec         round to seconds\n\
         -roundmin         round to minutes\n\
 	-ep		  use extra precision in output for some data\n\
@@ -1277,11 +1279,9 @@ int main(int argc, char *argv[])
   }
   // if (! with_header && ! has_n)
   //  with_header = TRUE;
-#if HPUNIX
   gethostname (hostname, 80);
-  if (strstr(hostname, "as10") != NULL) 
-    line_limit = 1000;
-#endif
+  if (strstr(hostname, "as80") != NULL) 
+    line_limit = 2 * 36525;
 #if MSDOS
   SetConsoleOutputCP(65001);	// set console to utf-8,
   				// works only from Windows Vista upwards, not on XP.
@@ -2209,10 +2209,14 @@ static int print_line(int mode, AS_BOOL is_first, int sid_mode)
 	break;
     case 'l':
         if (is_label) { printf("%s", slon); break; }
+        if (round_flag & BIT_ROUND_MIN) {
+	  printf("%# 6.2f", x[0]);
+	} else {
 	if (output_extra_prec)
 	  printf("%# 11.11f", x[0]);
 	else
 	  printf("%# 11.7f", x[0]);
+	}
 	break;
     case 'G':
         if (is_label) { printf("housPos"); break; }

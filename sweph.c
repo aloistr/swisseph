@@ -1316,6 +1316,7 @@ void CALL_CONV swe_set_ephe_path(const char *path)
 {
   int i, iflag;
   char s[AS_MAXCH];
+  char serr[AS_MAXCH];
   char *sp;
   double xx[6];
   /* close all open files and delete all planetary data */
@@ -1343,7 +1344,7 @@ void CALL_CONV swe_set_ephe_path(const char *path)
    * tidal acceleration of the Moon */
   iflag = SEFLG_SWIEPH|SEFLG_J2000|SEFLG_TRUEPOS|SEFLG_ICRS;
   swed.last_epheflag = 2;
-  swe_calc(J2000, SE_MOON, iflag, xx, NULL);
+  swe_calc(J2000, SE_MOON, iflag, xx, serr);
   if (swed.fidat[SEI_FILE_MOON].fptr != NULL) {
     swi_set_tid_acc(0, 0, swed.fidat[SEI_FILE_MOON].sweph_denum, NULL);
   } 

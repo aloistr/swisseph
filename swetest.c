@@ -1136,8 +1136,8 @@ int main(int argc, char *argv[])
       sastno[AS_MAXCH-1] = '\0';
     } else if (strncmp(argv[i], "-xv", 3) == 0) {
       /* number of planetary moon */
-      strncpy(sastno, argv[i] + 3, AS_MAXCH - 1);
-      sastno[AS_MAXCH-1] = '\0';
+      strncpy(spmoon, argv[i] + 3, AS_MAXCH - 1);
+      spmoon[AS_MAXCH-1] = '\0';
     } else if (strncmp(argv[i], "-xf", 3) == 0) {
       /* name or number of fixed star */
       strncpy(star, argv[i] + 3, AS_MAXCH - 1);
@@ -1618,7 +1618,7 @@ int main(int argc, char *argv[])
         else if (*psp == 's') // asteroid
           ipl = atoi(sastno) + 10000;
         else if (*psp == 'v') // planetary moon
-          ipl = atoi(sastno);
+          ipl = atoi(spmoon);
         else if (*psp == 'z') // fictitious object
           ipl = atoi(shyp) + SE_FICT_OFFSET_1;
         if (iflag & SEFLG_HELCTR) {
@@ -1750,7 +1750,7 @@ int main(int argc, char *argv[])
 	  }
         }
         /* equator position */
-        if (strpbrk(fmt, "aADdQmz") != NULL) {
+        if (strpbrk(fmt, "aADdQmzx") != NULL) {
           iflag2 = iflag | SEFLG_EQUATORIAL;
           if (ipl == SE_FIXSTAR) {
             iflgret = call_swe_fixstar(star, te, iflag2, xequ, serr);
@@ -1821,10 +1821,13 @@ int main(int argc, char *argv[])
         /* ecliptic cartesian position */
         if (strpbrk(fmt, "XU") != NULL) {
           iflag2 = iflag | SEFLG_XYZ;
-          if (ipl == SE_FIXSTAR)
+          if (ipl == SE_FIXSTAR) {
             iflgret = call_swe_fixstar(star, te, iflag2, xcart, serr);
-          else
+	  } else if (do_planeto_centric) {
+	    iflgret = swe_calc_pctr(te, ipl, iplctr, iflag2, xcart, serr);
+          } else {
             iflgret = swe_calc(te, ipl, iflag2, xcart, serr);
+	  }
           if (diff_mode) {
             iflgret = swe_calc(te, ipldiff, iflag2, x2, serr);
 	    if (diff_mode == DIFF_DIFF || diff_mode == DIFF_GEOHEL) {
@@ -1840,10 +1843,13 @@ int main(int argc, char *argv[])
         /* equator cartesian position */
         if (strpbrk(fmt, "xu") != NULL) {
           iflag2 = iflag | SEFLG_XYZ | SEFLG_EQUATORIAL;
-          if (ipl == SE_FIXSTAR)
+          if (ipl == SE_FIXSTAR) {
             iflgret = call_swe_fixstar(star, te, iflag2, xcartq, serr);
-          else
+	  } else if (do_planeto_centric) {
+	    iflgret = swe_calc_pctr(te, ipl, iplctr, iflag2, xcartq, serr);
+          } else {
             iflgret = swe_calc(te, ipl, iflag2, xcartq, serr);
+	  }
           if (diff_mode) {
             iflgret = swe_calc(te, ipldiff, iflag2, x2, serr);
 	    if (diff_mode == DIFF_DIFF || diff_mode == DIFF_GEOHEL) {

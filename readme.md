@@ -1,6 +1,6 @@
 readme.md  created 5-oct-2017 by Alois Treindl
 
-last update 1-apr-2025
+last update 14-apr-2026
 
 ## About the Swiss Ephemeris:
 
@@ -19,6 +19,9 @@ astronomical standard books up to the last printed digit.
 
 Detailed information is available at https://www.astro.com/swisseph
 or in the documentation files included here (folder doc).
+
+# Update to JPL Ephemeris DE441
+As of 14 April 2026, all .se1 data files for planets and for asteroids have been rebuilt with JL Ephemeris DE441. These files remain compatible with all older SE versons back to release 1.77 of January 2011.
 
 # Download location of files:
 

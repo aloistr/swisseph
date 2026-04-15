@@ -21,7 +21,11 @@ Detailed information is available at https://www.astro.com/swisseph
 or in the documentation files included here (folder doc).
 
 ## Update to JPL Ephemeris DE441
-As of 14 April 2026, all .se1 data files for planets and for asteroids have been rebuilt with JL Ephemeris DE441. These files remain compatible with all older SE versons back to release 1.77 of January 2011.
+As of 14 April 2026, all .se1 data files for planets and for asteroids have been rebuilt
+with JL Ephemeris DE441.
+
+These files remain compatible with all older SE versions at least back
+to release 1.67 of March 2005.
 
 # Download location of files:
 

@@ -1655,17 +1655,27 @@ int main(int argc, char *argv[])
 	  if (iflgret != ERR && strpbrk(fmt, "+-*/=") != NULL)
 	    iflgret = swe_pheno(te, ipl, iflag, attr, serr);
 	  swe_get_planet_name(ipl, se_pname);
-	  if (show_file_limit && ipl > SE_AST_OFFSET) {
+	  if (show_file_limit) { //  && ipl > SE_AST_OFFSET) {
 	    const char *fnam;
 	    char sbeg[40], send[40];
 	    double tfstart, tfend;
             int denum;
-	    fnam = swe_get_current_file_data(3, &tfstart, &tfend, &denum);
+	    int ifno = 3;
+	    if (ipl == SE_SUN || (ipl >= SE_MERCURY && ipl < SE_CHIRON)) {
+	      ifno = 0;
+	    } else if (ipl == SE_MOON) {
+	      ifno = 1;
+	    } else if (ipl <= SE_VESTA) {
+	      ifno = 2;
+	    }
+	    fnam = swe_get_current_file_data(ifno, &tfstart, &tfend, &denum);
 	    if (fnam != NULL) {
-	      swe_revjul(tfstart, gregflag, &jyear, &jmon, &jday, &jut);
-	      sprintf(sbeg, "%d.%02d.%04d", jday, jmon, jyear);
-	      swe_revjul(tfend, gregflag, &jyear, &jmon, &jday, &jut);
-	      sprintf(send, "%d.%02d.%04d", jday, jmon, jyear);
+	      int jy, jm, jd;
+	      double jt;
+	      swe_revjul(tfstart, gregflag, &jy, &jm, &jd, &jt);
+	      sprintf(sbeg, "%d.%02d.%04d", jd, jm, jy);
+	      swe_revjul(tfend, gregflag, &jy, &jm, &jd, &jt);
+	      sprintf(send, "%d.%02d.%04d", jd, jm, jy);
 	      printf("range %s: %.1lf = %s to %.1lf = %s de=%d\n", fnam, tfstart, sbeg, tfend, send, denum);
 	      show_file_limit = FALSE;
 	    }
@@ -1712,6 +1722,7 @@ int main(int argc, char *argv[])
                 || ipl == SE_MEAN_NODE || ipl == SE_TRUE_NODE
                 || ipl == SE_CERES || ipl == SE_PALLAS || ipl == SE_JUNO || ipl == SE_VESTA 
                 || ipl == SE_CHIRON || ipl == SE_PHOLUS || ipl == SE_CUPIDO 
+		|| (ipl > SE_FICT_OFFSET_1 && ipl <= SE_FICT_MAX)
 		|| ipl >= SE_PLMOON_OFFSET
                 || ipl >= SE_AST_OFFSET || ipl == SE_FIXSTAR
 		|| *psp == 'y')) {
@@ -2782,7 +2793,7 @@ static int32 orbital_elements(double tjd_et, int32 ipl, int32 iflag, char *serr)
   int32 retval;
   double dret[20], jut;
   int32 jyear, jmon, jday;
-  char sdateperi[20];
+  char sdateperi[40];
   retval = swe_get_orbital_elements(tjd_et, ipl, iflag, dret, serr);
   if (retval == ERR) {
     printf("%s\n", serr);

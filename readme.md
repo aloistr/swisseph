@@ -185,7 +185,7 @@ also applies for the Java version, besides any additional requirements
 which may be defined by Thomas Mack.
 
 ## PHP-Version
-found on Github https://github.com/cyjoelchen/php-sweph
+found on Github https://github.com/kevindecapite/php-sweph
 
 ## Perl-Version
 found on Github https://github.com/aloistr/perl-sweph

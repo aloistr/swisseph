@@ -173,6 +173,10 @@ Please email to swisseph@groups.io
 If you want your feedback distributed to all members of the swisseph
 mailing list, please subscribe to https://groups.io/g/swisseph
 
+## Python-Version:
+
+An uptodate fork of oPyswisseph by Sailorfe https://github.com/sailorfe/pysweph
+
 ## Java-Version:
 
 Thomas Mack has ported the Swiss Ephemeris library to Java.

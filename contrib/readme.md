@@ -15,6 +15,9 @@ you use in your development.
 
 List of contributions:
 
+Python-Version:
+An uptodate fork of oPyswisseph by Sailorfe https://github.com/sailorfe/pysweph
+
 rp_source_0_9.zip
 source: http://radixpro.org/download/rp_source_0_9.zip
 c# source code for an astrological application, by Jan Kampherbeek.

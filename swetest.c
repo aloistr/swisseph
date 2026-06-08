@@ -720,6 +720,7 @@ static char *zod_nam[] = {"ar", "ta", "ge", "cn", "le", "vi",
 
 static char star[AS_MAXCH] = "algol", star2[AS_MAXCH];
 static char sastno[AS_MAXCH] = "433";
+static char spmoon[AS_MAXCH] = "9501";	// Jupiter Moon Io
 static char shyp[AS_MAXCH] = "1";
 static char *dms(double x, int32 iflag);
 static int make_ephemeris_path(char *argv0, char *ephepath);

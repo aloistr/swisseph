@@ -1,0 +1,74 @@
+name: Build (Windows)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build library and sample programs
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          # Locate and load the MSVC dev environment ourselves (vswhere + vcvarsall.bat
+          # both ship with Visual Studio on the runner image) instead of pulling in a
+          # third-party action just to set a few env vars.
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * `
+            -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+            -property installationPath
+          if (-not $vsInstallPath) { throw "no Visual Studio installation with the VC++ toolset was found" }
+
+          $vcvarsall = Join-Path $vsInstallPath "VC\Auxiliary\Build\vcvarsall.bat"
+          cmd.exe /c "`"$vcvarsall`" x64 && set" | ForEach-Object {
+            if ($_ -match "^([^=]+)=(.*)$") {
+              [System.Environment]::SetEnvironmentVariable($matches[1], $matches[2])
+            }
+          }
+          if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) { throw "cl.exe not found on PATH after vcvarsall" }
+
+          $defines = @("WIN32", "NDEBUG", "_CRT_SECURE_NO_WARNINGS", "_CRT_NONSTDC_NO_DEPRECATE")
+          $cflags = @("/nologo", "/O2", "/MT", "/W3", "/c") + ($defines | ForEach-Object { "/D$_" })
+
+          $libSources = @(
+            "swedate.c", "swehouse.c", "swejpl.c", "swemmoon.c",
+            "swemplan.c", "sweph.c", "swephlib.c", "swecl.c", "swehel.c"
+          )
+
+          Write-Host "== Compiling library sources =="
+          cl.exe @cflags $libSources
+          if ($LASTEXITCODE -ne 0) { throw "compiling library sources failed" }
+
+          $libObjects = $libSources | ForEach-Object { $_ -replace '\.c$', '.obj' }
+          Write-Host "== Creating swe.lib =="
+          lib.exe /nologo /OUT:swe.lib $libObjects
+          if ($LASTEXITCODE -ne 0) { throw "creating swe.lib failed" }
+
+          foreach ($prog in @("swetest", "swevents", "swemini")) {
+            Write-Host "== Building $prog.exe =="
+            cl.exe @cflags "$prog.c"
+            if ($LASTEXITCODE -ne 0) { throw "compiling $prog.c failed" }
+            link.exe /nologo /OUT:"$prog.exe" "$prog.obj" swe.lib
+            if ($LASTEXITCODE -ne 0) { throw "linking $prog.exe failed" }
+          }
+
+      - name: Smoke test - Moshier ephemeris (no data files required)
+        shell: pwsh
+        run: |
+          .\swetest.exe -b1.1.2000 -p0 -emos -fPl
+          if ($LASTEXITCODE -ne 0) { throw "swetest.exe (Moshier) exited with code $LASTEXITCODE" }
+
+      - name: Smoke test - Swiss Ephemeris data files
+        shell: pwsh
+        run: |
+          .\swetest.exe -b1.1.2000 -p0123 -edir./ephe -fPl
+          if ($LASTEXITCODE -ne 0) { throw "swetest.exe (Swiss Ephemeris) exited with code $LASTEXITCODE" }

@@ -1,0 +1,27 @@
+name: Build (macOS)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-26   # Apple Silicon
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Build library and sample programs
+        run: make all
+
+      - name: Build shared library
+        run: make libswe.dylib
+
+      - name: Smoke test - Moshier ephemeris (no data files required)
+        run: ./swetest -b1.1.2000 -p0 -emos -fPl
+
+      - name: Smoke test - Swiss Ephemeris data files
+        run: ./swetest -b1.1.2000 -p0123 -edir./ephe -fPl

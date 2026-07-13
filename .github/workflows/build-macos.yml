@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  make:
     runs-on: macos-26   # Apple Silicon
 
     steps:
@@ -25,3 +25,22 @@ jobs:
 
       - name: Smoke test - Swiss Ephemeris data files
         run: ./swetest -b1.1.2000 -p0123 -edir./ephe -fPl
+
+  cmake:
+    runs-on: macos-26   # Apple Silicon
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Configure
+        run: cmake -S . -B build
+
+      - name: Build library and sample programs
+        run: cmake --build build -j
+
+      - name: Smoke test - Moshier ephemeris (no data files required)
+        run: ./build/swetest -b1.1.2000 -p0 -emos -fPl
+
+      - name: Smoke test - Swiss Ephemeris data files
+        run: ./build/swetest -b1.1.2000 -p0123 -edir./ephe -fPl

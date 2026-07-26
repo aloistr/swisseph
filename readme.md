@@ -90,25 +90,18 @@ or from https://ephe.scryr.io/jpl/  which is a web space provided by  Phillip Mc
 
 ## Asteroid files for all available numbered asteroids (more than 760'000)
 
-Each file covers 600 years, from 1500 - 2099. They are organized in folders of 1000 files each, 
+Asteroids are organized in folders of 1000 asteroids each, 
 available in Alois' public Dropbox area in folder 'all_ast' with this link:
+The 'short' files with fele names like sXXXs.se1 or seXXXs.se1 (suffix s.se1) cover each 600 years, from 1500 CE to 2100 CE.
+Named asteroids have 'long file' with suffix .se1; they cover each 6000 years from 3000 BCE to 3000 CE.
+
+Since an update in April 2026, long and short files are the same directories.
 
 https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
 
-or from https://ephe.scryr.io/ the web space provided by Phillip McCabe
+or from https://ephe.scryr.io/ephe , the web space provided by Phillip McCabe.
 
 The total volume was 29 Gb in September 2023.
-
-## Asteroid files for all available named asteroids (more than 25'000)
-
-Each file covers the long range of 6000 years, from 3000 BCE to 2999 CE. 
-available in Alois' public Dropbox area in folder 'long_ast' with this link
-
-https://www.dropbox.com/scl/fo/y3naz62gy6f6qfrhquu7u/h?rlkey=ejltdhb262zglm7eo6yfj2940&dl=0
-
-or from https://ephe.scryr.io/ephe2 the web space provided by Phillip McCabe
-
-The total volume was 11 Gb in September 2023.
 
 ## How to organize Ephemeris files so that SwissEph finds them
 Swissephe code uses an internal swed.ephepath for the directory names where it looks

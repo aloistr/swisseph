@@ -1280,9 +1280,11 @@ int main(int argc, char *argv[])
   }
   // if (! with_header && ! has_n)
   //  with_header = TRUE;
+#ifndef _WINDOWS
   gethostname (hostname, 80);
   if (strstr(hostname, "as80") != NULL) 
     line_limit = 2 * 36525;
+#endif
 #if MSDOS
   SetConsoleOutputCP(65001);	// set console to utf-8,
   				// works only from Windows Vista upwards, not on XP.

@@ -96,6 +96,8 @@
 #ifdef _WIN32		/* Microsoft VC 5.0 does not define MSDOS anymore */
 # undef MSDOS
 # define MSDOS MY_TRUE
+# undef _WINDOWS
+# define _WINDOWS
 #include <wtypes.h>
 #include <objbase.h>
 #include <wincon.h>

@@ -97,7 +97,7 @@ static double deltat_stephenson_etc_2016(double tjd, double tid_acc);
 static double deltat_longterm_morrison_stephenson(double tjd);
 static double deltat_stephenson_morrison_2004_1600(double tjd, double tid_acc);
 static double deltat_stephenson_morrison_1997_1600(double tjd, double tid_acc);
-static double deltat_aa(double tjd, double tid_acc);
+static double deltat_aa(double tjd, double tid_acc, char *serr);
 
 #define SEFLG_EPHMASK   (SEFLG_JPLEPH|SEFLG_SWIEPH|SEFLG_MOSEPH)
 
@@ -2494,6 +2494,371 @@ static TLS double dt[TABSIZ_SPACE] = {
                                      69.10,   69.00,   68.90,   68.80,   68.80,
 };
 
+/*
+ * Delta-T samples are dated at 0h on 1 January and therefore are not
+ * equidistant in Julian days.  Keep the interpolation local and
+ * shape-preserving with the nonuniform PCHIP slopes of Fritsch and Butland.
+ * This exactly reproduces every tabulated epoch and avoids polynomial
+ * overshoot in the coarse/noisy historical part of the table.
+ */
+static TLS double dt_node_jd[TABSIZ_SPACE];
+static TLS double dt_node_slope[TABSIZ_SPACE];
+static TLS int dt_interpolation_size = 0;
+
+static double dt_endpoint_slope(double h0, double h1, double del0, double del1)
+{
+  double slope = ((2.0 * h0 + h1) * del0 - h0 * del1) / (h0 + h1);
+  if (slope * del0 <= 0.0)
+    return 0.0;
+  if (del0 * del1 < 0.0 && fabs(slope) > fabs(3.0 * del0))
+    return 3.0 * del0;
+  return slope;
+}
+
+static void init_dt_interpolation(int tabsiz)
+{
+  double h[TABSIZ_SPACE - 1];
+  double del[TABSIZ_SPACE - 1];
+  int i;
+  if (dt_interpolation_size == tabsiz)
+    return;
+  if (tabsiz < 2) {
+    dt_interpolation_size = tabsiz;
+    return;
+  }
+  for (i = 0; i < tabsiz; i++)
+    dt_node_jd[i] = swe_julday(TABSTART + i, 1, 1, 0.0, SE_GREG_CAL);
+  for (i = 0; i < tabsiz - 1; i++) {
+    h[i] = dt_node_jd[i + 1] - dt_node_jd[i];
+    del[i] = (dt[i + 1] - dt[i]) / h[i];
+  }
+  if (tabsiz == 2) {
+    dt_node_slope[0] = del[0];
+    dt_node_slope[1] = del[0];
+  } else {
+    dt_node_slope[0] = dt_endpoint_slope(h[0], h[1], del[0], del[1]);
+    for (i = 1; i < tabsiz - 1; i++) {
+      if (del[i - 1] == 0.0 || del[i] == 0.0 || del[i - 1] * del[i] < 0.0) {
+        dt_node_slope[i] = 0.0;
+      } else {
+        double w1 = 2.0 * h[i] + h[i - 1];
+        double w2 = h[i] + 2.0 * h[i - 1];
+        dt_node_slope[i] = (w1 + w2) / (w1 / del[i - 1] + w2 / del[i]);
+      }
+    }
+    dt_node_slope[tabsiz - 1] =
+        dt_endpoint_slope(h[tabsiz - 2], h[tabsiz - 3],
+                          del[tabsiz - 2], del[tabsiz - 3]);
+  }
+  dt_interpolation_size = tabsiz;
+}
+
+static double decimal_gregorian_year(double tjd)
+{
+  int year, month, day;
+  double hour;
+  double jd0, jd1;
+  swe_revjul(tjd, SE_GREG_CAL, &year, &month, &day, &hour);
+  jd0 = swe_julday(year, 1, 1, 0.0, SE_GREG_CAL);
+  jd1 = swe_julday(year + 1, 1, 1, 0.0, SE_GREG_CAL);
+  return year + (tjd - jd0) / (jd1 - jd0);
+}
+
+static double interpolate_dt_nonuniform(double tjd, int tabsiz, double *decimal_year)
+{
+  int lo = 0, hi = tabsiz - 1;
+  double h, t, t2, t3;
+  if (tjd <= dt_node_jd[0]) {
+    *decimal_year = TABSTART;
+    return dt[0];
+  }
+  if (tjd >= dt_node_jd[tabsiz - 1]) {
+    *decimal_year = TABSTART + tabsiz - 1;
+    return dt[tabsiz - 1];
+  }
+  while (hi - lo > 1) {
+    int mid = lo + (hi - lo) / 2;
+    if (tjd < dt_node_jd[mid])
+      hi = mid;
+    else
+      lo = mid;
+  }
+  h = dt_node_jd[hi] - dt_node_jd[lo];
+  t = (tjd - dt_node_jd[lo]) / h;
+  *decimal_year = TABSTART + lo + t;
+  if (t == 0.0)
+    return dt[lo];
+  if (t == 1.0)
+    return dt[hi];
+  t2 = t * t;
+  t3 = t2 * t;
+  return (2.0 * t3 - 3.0 * t2 + 1.0) * dt[lo]
+       + (t3 - 2.0 * t2 + t) * h * dt_node_slope[lo]
+       + (-2.0 * t3 + 3.0 * t2) * dt[hi]
+       + (t3 - t2) * h * dt_node_slope[hi];
+}
+
+#define DELTAT_EXT_FILE "swe_deltat_ext.txt"
+#define DELTAT_EXT_MAX_RECORDS 100000
+
+static void append_deltat_ext_error(char *serr, const char *message)
+{
+  size_t used;
+  if (serr == NULL || message == NULL || *message == '\0')
+    return;
+  used = strlen(serr);
+  if (used != 0 && used < AS_MAXCH - 2) {
+    strncat(serr, "; ", AS_MAXCH - used - 1);
+    used = strlen(serr);
+  }
+  if (used < AS_MAXCH - 1)
+    strncat(serr, message, AS_MAXCH - used - 1);
+}
+
+static double deltat_ext_secant(const struct deltat_ext_record *records, int i)
+{
+  return (records[i + 1].delta_t_seconds - records[i].delta_t_seconds) /
+         (records[i + 1].tjd - records[i].tjd);
+}
+
+static void init_deltat_ext_slopes(struct deltat_ext_record *records, int count)
+{
+  int i;
+  if (count == 2) {
+    records[0].pchip_slope = deltat_ext_secant(records, 0);
+    records[1].pchip_slope = records[0].pchip_slope;
+    return;
+  }
+  {
+    double h0 = records[1].tjd - records[0].tjd;
+    double h1 = records[2].tjd - records[1].tjd;
+    double d0 = deltat_ext_secant(records, 0);
+    double d1 = deltat_ext_secant(records, 1);
+    records[0].pchip_slope = dt_endpoint_slope(h0, h1, d0, d1);
+  }
+  for (i = 1; i < count - 1; i++) {
+    double hprev = records[i].tjd - records[i - 1].tjd;
+    double hnext = records[i + 1].tjd - records[i].tjd;
+    double dprev = deltat_ext_secant(records, i - 1);
+    double dnext = deltat_ext_secant(records, i);
+    if (dprev == 0.0 || dnext == 0.0 || dprev * dnext < 0.0) {
+      records[i].pchip_slope = 0.0;
+    } else {
+      double w1 = 2.0 * hnext + hprev;
+      double w2 = hnext + 2.0 * hprev;
+      records[i].pchip_slope =
+          (w1 + w2) / (w1 / dprev + w2 / dnext);
+    }
+  }
+  {
+    double hlast = records[count - 1].tjd - records[count - 2].tjd;
+    double hprev = records[count - 2].tjd - records[count - 3].tjd;
+    double dlast = deltat_ext_secant(records, count - 2);
+    double dprev = deltat_ext_secant(records, count - 3);
+    records[count - 1].pchip_slope =
+        dt_endpoint_slope(hlast, hprev, dlast, dprev);
+  }
+}
+
+static int init_deltat_ext(char *serr)
+{
+  FILE *fp = NULL;
+  struct deltat_ext_record *records = NULL;
+  int count = 0, capacity = 0, line_number = 0;
+  int magic_seen = FALSE, prediction_seen = FALSE;
+  char s[AS_MAXCH], reason[AS_MAXCH];
+
+  if (swed.deltat_ext_init_done) {
+    if (!swed.deltat_ext_valid && swed.deltat_ext_error[0] != '\0')
+      append_deltat_ext_error(serr, swed.deltat_ext_error);
+    return swed.deltat_ext_valid;
+  }
+  swed.deltat_ext_init_done = TRUE;
+  swed.deltat_ext_error[0] = '\0';
+  fp = swi_fopen(-1, DELTAT_EXT_FILE, swed.ephepath, NULL);
+  if (fp == NULL)
+    return FALSE;
+
+  while (fgets(s, AS_MAXCH, fp) != NULL) {
+    char *sp = s;
+    char source_class, extra;
+    double mjd, delta_t, uncertainty, lod, lod_uncertainty;
+    int consumed = 0, parsed;
+    line_number++;
+    if (strchr(s, '\n') == NULL && !feof(fp)) {
+      strcpy(reason, "line exceeds parser limit");
+      goto invalid;
+    }
+    while (*sp != '\0' && isspace((unsigned char) *sp))
+      sp++;
+    if (*sp == '\0' || *sp == '#')
+      continue;
+    if (!magic_seen) {
+      char *end = sp + strlen(sp);
+      while (end > sp && isspace((unsigned char) end[-1]))
+        *--end = '\0';
+      if (strcmp(sp, "SWE_DELTAT_EXT 1") != 0) {
+        strcpy(reason, "missing or unsupported SWE_DELTAT_EXT header");
+        goto invalid;
+      }
+      magic_seen = TRUE;
+      continue;
+    }
+    parsed = sscanf(sp, " %c %lf %lf %lf %lf %lf %n",
+                    &source_class, &mjd, &delta_t, &uncertainty,
+                    &lod, &lod_uncertainty, &consumed);
+    if (parsed != 6) {
+      strcpy(reason, "record does not contain six fields");
+      goto invalid;
+    }
+    while (sp[consumed] != '\0' && isspace((unsigned char) sp[consumed]))
+      consumed++;
+    if (sscanf(sp + consumed, "%c", &extra) == 1) {
+      strcpy(reason, "unexpected trailing record data");
+      goto invalid;
+    }
+    if ((source_class != 'O' && source_class != 'P') ||
+        !isfinite(mjd) || !isfinite(delta_t) || !isfinite(uncertainty) ||
+        uncertainty < 0.0) {
+      strcpy(reason, "invalid class, epoch, value, or uncertainty");
+      goto invalid;
+    }
+    if (source_class == 'O') {
+      if (prediction_seen || !isfinite(lod) || !isfinite(lod_uncertainty) ||
+          lod_uncertainty < 0.0) {
+        strcpy(reason, "invalid or out-of-order observed record");
+        goto invalid;
+      }
+    } else {
+      prediction_seen = TRUE;
+      if (!isnan(lod) || !isnan(lod_uncertainty)) {
+        strcpy(reason, "prediction record must use nan for LOD fields");
+        goto invalid;
+      }
+    }
+    if (count > 0 && mjd + 2400000.5 <= records[count - 1].tjd) {
+      strcpy(reason, "epochs are not strictly increasing");
+      goto invalid;
+    }
+    if (count >= DELTAT_EXT_MAX_RECORDS) {
+      strcpy(reason, "record count exceeds safety limit");
+      goto invalid;
+    }
+    if (count == capacity) {
+      int next_capacity = capacity == 0 ? 1024 : capacity * 2;
+      struct deltat_ext_record *grown;
+      if (next_capacity > DELTAT_EXT_MAX_RECORDS)
+        next_capacity = DELTAT_EXT_MAX_RECORDS;
+      grown = (struct deltat_ext_record *) realloc(
+          records, (size_t) next_capacity * sizeof(struct deltat_ext_record));
+      if (grown == NULL) {
+        strcpy(reason, "memory allocation failed");
+        goto invalid;
+      }
+      records = grown;
+      capacity = next_capacity;
+    }
+    records[count].tjd = mjd + 2400000.5;
+    records[count].delta_t_seconds = delta_t;
+    records[count].uncertainty_seconds = uncertainty;
+    records[count].lod_seconds = lod;
+    records[count].lod_uncertainty_seconds = lod_uncertainty;
+    records[count].pchip_slope = 0.0;
+    records[count].source_class = source_class;
+    count++;
+  }
+  fclose(fp);
+  fp = NULL;
+  if (!magic_seen || count < 2 || records[0].source_class != 'O') {
+    strcpy(reason, "snapshot requires a header and at least two observed-first records");
+    goto invalid;
+  }
+  init_deltat_ext_slopes(records, count);
+  swed.deltat_ext = records;
+  swed.deltat_ext_count = count;
+  swed.deltat_ext_valid = TRUE;
+  return TRUE;
+
+invalid:
+  if (fp != NULL)
+    fclose(fp);
+  if (records != NULL)
+    free((void *) records);
+  sprintf(swed.deltat_ext_error, "invalid %s at line %d: %.170s",
+          DELTAT_EXT_FILE, line_number, reason);
+  append_deltat_ext_error(serr, swed.deltat_ext_error);
+  return FALSE;
+}
+
+static double interpolate_deltat_hermite(double tjd, double x0, double x1,
+                                         double y0, double y1,
+                                         double slope0, double slope1)
+{
+  double h = x1 - x0;
+  double t = (tjd - x0) / h;
+  double t2 = t * t;
+  double t3 = t2 * t;
+  if (t <= 0.0)
+    return y0;
+  if (t >= 1.0)
+    return y1;
+  return (2.0 * t3 - 3.0 * t2 + 1.0) * y0
+       + (t3 - 2.0 * t2 + t) * h * slope0
+       + (-2.0 * t3 + 3.0 * t2) * y1
+       + (t3 - t2) * h * slope1;
+}
+
+static double interpolate_deltat_ext(double tjd)
+{
+  int lo = 0, hi = swed.deltat_ext_count - 1;
+  struct deltat_ext_record *records = swed.deltat_ext;
+  double slope0, slope1;
+  if (tjd <= records[0].tjd)
+    return records[0].delta_t_seconds;
+  if (tjd >= records[hi].tjd)
+    return records[hi].delta_t_seconds;
+  while (hi - lo > 1) {
+    int mid = lo + (hi - lo) / 2;
+    if (tjd < records[mid].tjd)
+      hi = mid;
+    else
+      lo = mid;
+  }
+  slope0 = records[lo].source_class == 'O'
+      ? records[lo].lod_seconds : records[lo].pchip_slope;
+  slope1 = records[hi].source_class == 'O'
+      ? records[hi].lod_seconds : records[hi].pchip_slope;
+  return interpolate_deltat_hermite(
+      tjd, records[lo].tjd, records[hi].tjd,
+      records[lo].delta_t_seconds, records[hi].delta_t_seconds,
+      slope0, slope1);
+}
+
+static double deltat_smh2016_future_base(double decimal_year)
+{
+  double B = decimal_year - 2000.0;
+  if (decimal_year < 2500.0)
+    return B * B * B * 121.0 / 30000000.0 + B * B / 1250.0
+         + B * 521.0 / 3000.0 + 64.0;
+  B *= 0.01;
+  return B * B * 32.5 + 42.5;
+}
+
+static double deltat_future_from_ext(double tjd)
+{
+  struct deltat_ext_record *last =
+      &swed.deltat_ext[swed.deltat_ext_count - 1];
+  double year = decimal_gregorian_year(tjd);
+  double anchor_year = decimal_gregorian_year(last->tjd);
+  double value = deltat_smh2016_future_base(year);
+  if (year <= anchor_year + 100.0) {
+    double anchor_model = deltat_smh2016_future_base(anchor_year);
+    double mismatch = anchor_model - last->delta_t_seconds;
+    value += mismatch * (year - (anchor_year + 100.0)) / 100.0;
+  }
+  return value;
+}
+
 #define TAB2_SIZ	27
 #define TAB2_START	(-1000)
 #define TAB2_END	1600
@@ -2673,7 +3038,7 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
    * (http://maia.usno.navy.mil/ser7/deltat.data).
    */
   if (Y >= TABSTART) {
-    *deltat = deltat_aa(tjd, tid_acc);
+    *deltat = deltat_aa(tjd, tid_acc, serr);
     return iflag;
   }
 #ifdef TRACE
@@ -2715,87 +3080,55 @@ double CALL_CONV swe_deltat(double tjd)
   return swe_deltat_ex(tjd, iflag, NULL); /* with default tidal acceleration/default ephemeris */
 }
 
-/* The tabulated values of deltaT, in hundredths of a second,
+/* The tabulated values of deltaT, in seconds,
  * were taken from The Astronomical Almanac 1997etc., pp. K8-K9.  
  * Some more recent values are taken from IERS
  * http://maia.usno.navy.mil/ser7/deltat.data .
- * Bessel's interpolation formula is implemented to obtain fourth 
- * order interpolated values at intermediate times.
+ * A shape-preserving cubic Hermite interpolator on the actual Gregorian
+ * Jan-1 Julian-day nodes is used at intermediate times.
  * The values are adjusted depending on the ephemeris used
  * and its inherent value of secular tidal acceleration ndot.
- * Note by Dieter Jan. 2017:
- * Bessel interpolation assumes equidistant sampling points. However the
- * sampling points are not equidistant, because they are for first January of
- * every year and years can have either 365 or 366 days. The interpolation uses
- * a step width of 365.25 days. As a consequence, in three out of four years
- * the interpolation does not reproduce the exact values of the sampling points
- * on the days they refer to.  */
-static double deltat_aa(double tjd, double tid_acc)
+ * This preserves the exact table values at their stated epochs despite the
+ * 365/366-day Gregorian intervals. */
+static double deltat_aa(double tjd, double tid_acc, char *serr)
 {
   double ans = 0, ans2 = 0, ans3;
-  double p, B, B2, Y, dd;
-  double d[6];
-  int i, iy, k;
+  double B, B2, Y, dd;
+  int i;
   /* read additional values from swedelta.txt */
   int tabsiz = init_dt();
   int tabend = TABSTART + tabsiz - 1;
   int deltat_model = swed.astro_models[SE_MODEL_DELTAT];
   if (deltat_model == 0) deltat_model = SEMOD_DELTAT_DEFAULT;
-  Y = 2000.0 + (tjd - 2451544.5)/365.25;
-  if (Y <= tabend) {
-    /* Index into the table.
-     */
-    p = floor(Y);
-    iy = (int) (p - TABSTART);
-    /* Zeroth order estimate is value at start of year */
-    ans = dt[iy];
-    k = iy + 1;
-    if( k >= tabsiz )
-      goto done; /* No data, can't go on. */
-    /* The fraction of tabulation interval */
-    p = Y - p;
-    /* First order interpolated value */
-    ans += p*(dt[k] - dt[iy]);
-    if( (iy-1 < 0) || (iy+2 >= tabsiz) )
-      goto done; /* can't do second differences */
-    /* Make table of first differences */
-    k = iy - 2;
-    for( i=0; i<5; i++ ) {
-      if( (k < 0) || (k+1 >= tabsiz) ) 
-	d[i] = 0;
-      else
-	d[i] = dt[k+1] - dt[k];
-      k += 1;
+  init_dt_interpolation(tabsiz);
+  Y = decimal_gregorian_year(tjd);
+  if (deltat_model == SEMOD_DELTAT_STEPHENSON_ETC_2016 &&
+      init_deltat_ext(serr)) {
+    struct deltat_ext_record *first = &swed.deltat_ext[0];
+    struct deltat_ext_record *last =
+        &swed.deltat_ext[swed.deltat_ext_count - 1];
+    if (tjd >= first->tjd && tjd <= last->tjd)
+      return interpolate_deltat_ext(tjd) / 86400.0;
+    if (tjd > last->tjd)
+      return deltat_future_from_ext(tjd) / 86400.0;
+    /* Join the final annual-table interval to the first observed C04 value.
+     * This removes the millisecond-scale jump caused by rounded annual data. */
+    for (i = tabsiz - 1; i >= 0; i--) {
+      if (dt_node_jd[i] < first->tjd) {
+        if (tjd >= dt_node_jd[i]) {
+          double first_slope = first->source_class == 'O'
+              ? first->lod_seconds : first->pchip_slope;
+          ans = interpolate_deltat_hermite(
+              tjd, dt_node_jd[i], first->tjd, dt[i],
+              first->delta_t_seconds, dt_node_slope[i], first_slope);
+          return ans / 86400.0;
+        }
+        break;
+      }
     }
-    /* Compute second differences */
-    for( i=0; i<4; i++ )
-      d[i] = d[i+1] - d[i];
-    B = 0.25*p*(p-1.0);
-    ans += B*(d[1] + d[2]);
-#if DEMO
-    printf( "B %.4lf, ans %.4lf\n", B, ans );
-#endif
-    if( iy+2 >= tabsiz )
-      goto done;
-    /* Compute third differences */
-    for( i=0; i<3; i++ )
-      d[i] = d[i+1] - d[i];
-    B = 2.0*B/3.0;
-    ans += (p-0.5)*B*d[1];
-#if DEMO
-    printf( "B %.4lf, ans %.4lf\n", B*(p-0.5), ans );
-#endif
-    if( (iy-2 < 0) || (iy+3 > tabsiz) )
-      goto done;
-    /* Compute fourth differences */
-    for( i=0; i<2; i++ )
-      d[i] = d[i+1] - d[i];
-    B = 0.125*B*(p+1.0)*(p-2.0);
-    ans += B*(d[0] + d[1]);
-#if DEMO
-    printf( "B %.4lf, ans %.4lf\n", B, ans );
-#endif
-    done:
+  }
+  if (tjd <= dt_node_jd[tabsiz - 1]) {
+    ans = interpolate_dt_nonuniform(tjd, tabsiz, &Y);
     ans = adjust_for_tidacc(ans, Y, tid_acc, SE_TIDAL_26, FALSE);
     return ans / 86400.0;
   }

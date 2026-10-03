@@ -62,7 +62,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.10.03" 
+#define SE_VERSION      "2.10.03-panjika-dt2"
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -787,6 +787,16 @@ struct interpol {
   double nut_deps0, nut_deps1, nut_deps2;
 };
 
+struct deltat_ext_record {
+  double tjd;
+  double delta_t_seconds;
+  double uncertainty_seconds;
+  double lod_seconds;
+  double lod_uncertainty_seconds;
+  double pchip_slope;
+  char source_class;
+};
+
 /* if this is changed, then also update initialisation in sweph.c */
 struct swe_data {
   AS_BOOL ephe_path_is_set;
@@ -844,6 +854,11 @@ struct swe_data {
   AS_BOOL n_fixstars_named;  // number of fixed stars with tradtional name
   AS_BOOL n_fixstars_records;// number of fixed stars records in fixed_stars
   struct fixed_star *fixed_stars;
+  AS_BOOL deltat_ext_init_done;
+  AS_BOOL deltat_ext_valid;
+  int32 deltat_ext_count;
+  char deltat_ext_error[AS_MAXCH];
+  struct deltat_ext_record *deltat_ext;
 };
 
 extern TLS struct swe_data swed;

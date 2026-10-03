@@ -1176,6 +1176,18 @@ static void free_planets(void)
   }
 }
 
+static void free_deltat_ext(void)
+{
+  if (swed.deltat_ext != NULL) {
+    free((void *) swed.deltat_ext);
+    swed.deltat_ext = NULL;
+  }
+  swed.deltat_ext_count = 0;
+  swed.deltat_ext_valid = FALSE;
+  swed.deltat_ext_init_done = FALSE;
+  swed.deltat_ext_error[0] = '\0';
+}
+
 /* Function initialises swed structure. 
  * Returns 1 if initialisation is done, otherwise 0 */
 int32 swi_init_swed_if_start(void)
@@ -1205,6 +1217,7 @@ static void swi_close_keep_topo_etc(void)
     memset((void *) &swed.fidat[i], 0, sizeof(struct file_data));
   }
   free_planets();
+  free_deltat_ext();
   memset((void *) &swed.oec, 0, sizeof(struct epsilon));
   memset((void *) &swed.oec2000, 0, sizeof(struct epsilon));
   memset((void *) &swed.nut, 0, sizeof(struct nut));
@@ -1240,6 +1253,7 @@ void CALL_CONV swe_close(void)
     memset((void *) &swed.fidat[i], 0, sizeof(struct file_data));
   }
   free_planets();
+  free_deltat_ext();
   memset((void *) &swed.oec, 0, sizeof(struct epsilon));
   memset((void *) &swed.oec2000, 0, sizeof(struct epsilon));
   memset((void *) &swed.nut, 0, sizeof(struct nut));

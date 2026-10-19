@@ -580,6 +580,8 @@ int main(int argc, char *argv[])
     if (strlen(cmdline) + strlen(argv[i]) < sizeof(cmdline) - 2)
       sprintf(cmdline + strlen(cmdline), "%s ", argv[i]);
   }
+  swe_calc(tjd, SE_SUN, 0, x, serr);
+  sprintf(cmdline + strlen(cmdline), " based on JPL DE%d ", swe_get_denum());
   swe_version(sout);
 #if PRINTMOD
   if (pmodel != PMODEL_SCREEN) {
@@ -1160,6 +1162,14 @@ int main(int argc, char *argv[])
 	  strcpy(sout, "min. declination.");
 	}
 	print_item(sout, t2, x[0] * RADTODEG, HUGE, xd[1] * RADTODEG);
+      }
+      if (sign_change(xd1[1] ,xd2[1])) {	// declination sign change?
+	if ((nzer = find_zero(xd0[1], xd1[1], xd2[1], tstep, &dt, &dt2)) > 0) {
+	  t2 = te + dt;
+	  iflgret = swe_calc(t2, (int) ipl, iflag, x, serr);
+	  strcpy(sout, "zero declination");
+	  print_item(sout, t2, x[0] * RADTODEG, HUGE, HUGE);
+	}
       }
       l_nodecl:;
       if (!(do_flag & DO_NODE))

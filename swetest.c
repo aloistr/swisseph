@@ -830,10 +830,8 @@ int main(int argc, char *argv[])
   char s1[AS_MAXCH], s2[AS_MAXCH];
   char *sp, *sp2;
   char *spno;
-  char *plsel = PLSEL_D;
-#if HPUNIX
+  char plsel[AS_MAXCH];
   char hostname[80];
-#endif
   int i, j, n, iflag_f = -1, iflgt;
   int line_count, line_limit = 36525; // days in a century
   double daya;
@@ -864,6 +862,7 @@ int main(int argc, char *argv[])
   double tid_acc = 0;
   double orb = 0.5;
   double astpos = -1;
+  strcpy(plsel, PLSEL_D);
   datm[0] = 1013.25; datm[1] = 15; datm[2] = 40; datm[3] = 0;
   dobs[0] = 0; dobs[1] = 0;
   dobs[2] = 0; dobs[3] = 0; dobs[4] = 0; dobs[5] = 0;
@@ -1018,7 +1017,7 @@ int main(int argc, char *argv[])
         begindate = "j2450482.5";
       fmt = "PADRu";
       universal_time = FALSE;
-      plsel="3";
+      strcpy(plsel, "3");
     } else if (strncmp(argv[i], "-lmt", 4) == 0) {
       universal_time = TRUE;
       time_flag |= BIT_TIME_LMT;
@@ -1137,16 +1136,27 @@ int main(int argc, char *argv[])
     } else if (strncmp(argv[i], "-p", 2) == 0) {
       spno = argv[i]+2;
       switch (*spno) {
-      case 'd':
-      /*
-      case '\0':
-      case ' ':  
-      */
-	plsel = PLSEL_D; break;
-      case 'p':  plsel = PLSEL_P; break;
-      case 'h':  plsel = PLSEL_H; break;
-      case 'a':  plsel = PLSEL_A; break;
-      default:   plsel = spno;
+	case 'd': strcpy(plsel, PLSEL_D); 
+	  if (strchr(spno, 'e') != NULL)
+	    strcat(plsel, "e");	// re-append e for predefinded set 
+	  break;
+	case 'p': strcpy(plsel, PLSEL_P);
+	  if (strchr(spno, 'e') != NULL)
+	    strcat(plsel, "e");	// re-append e for predefinded set 
+	  break;
+	case 'h': strcpy(plsel, PLSEL_H);
+	  if (strchr(spno, 'e') != NULL)
+	    strcat(plsel, "e");	// re-append e for predefinded set 
+	  break;
+	case 'a': strcpy(plsel, PLSEL_A);
+	  if (strchr(spno, 'e') != NULL)
+	    strcat(plsel, "e");	// re-append e for predefinded set 
+	  break;
+	default:   
+		if (strlen(spno) >= AS_MAXCH) 
+		  *(spno + AS_MAXCH - 1) = '\0';	// cut off overlength planet list
+		strcpy(plsel,spno);
+		break;
       }
     } else if (strncmp(argv[i], "-xs", 3) == 0) {
       /* number of asteroid */

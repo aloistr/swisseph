@@ -2212,7 +2212,7 @@ static int32 heliacal_ut_arc_vis(double JDNDaysUTStart, double *dgeo, double *da
 {
   double x[6];
   double xin[2];
-  double xaz[2];
+  double xaz[3];
   double dang[3];
   double objectmagn = 0, maxlength, DayStep;
   double JDNDaysUT, JDNDaysUTfinal, JDNDaysUTstep, JDNDaysUTstepoud, JDNarcvisUT, tjd_tt, tret, OudeDatum, JDNDaysUTinp = JDNDaysUTStart, JDNDaysUTtijd;

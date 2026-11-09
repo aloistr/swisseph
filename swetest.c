@@ -1610,7 +1610,7 @@ int main(int argc, char *argv[])
       if (with_header && !with_header_always)
         with_header = FALSE;
       if (astpos >= 0) {
-	print_asteroids(tjd, astpos, orb);
+	print_asteroids(te, astpos, orb);
 	swe_close();
 	return OK;
       }

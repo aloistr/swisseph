@@ -83,7 +83,7 @@
  * Sun Studio C/C++, IBM XL C/C++, GNU C and Intel C/C++ (Linux systems) -> __thread
  * Borland, VC++ -> __declspec(thread)
  */
-#if !defined(TLSOFF) && !defined( __APPLE__ ) && !defined(WIN32) && !defined(DOS32)
+#if !defined(TLSOFF) && !defined(WIN32) && !defined(DOS32)
 #if defined( __GNUC__ ) || defined( __CYGWIN__ ) 
 #define TLS     __thread
 #else

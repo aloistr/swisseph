@@ -1683,13 +1683,25 @@ int main(int argc, char *argv[])
           strcpy(se_pname, star);
         } else if (do_planeto_centric) {
 	  iflgret = swe_calc_pctr(te, ipl, iplctr, iflag, x, serr);
-	  swe_get_planet_name(ipl, se_pname);
+	  /* the name is printed only with format P or Q, in horizontal lists and
+	   * in difference modes; for an asteroid file with a provisional
+	   * designation, swe_get_planet_name() searches seasnam.txt */
+	  if (strpbrk(fmt, "PQ") != NULL || list_hor || diff_mode != 0)
+	    swe_get_planet_name(ipl, se_pname);
+	  else
+	    *se_pname = '\0';
         } else {
           iflgret = swe_calc(te, ipl, iflag, x, serr);
 	  /* phase, magnitude, etc. */
 	  if (iflgret != ERR && strpbrk(fmt, "+-*/=") != NULL)
 	    iflgret = swe_pheno(te, ipl, iflag, attr, serr);
-	  swe_get_planet_name(ipl, se_pname);
+	  /* the name is printed only with format P or Q, in horizontal lists and
+	   * in difference modes; for an asteroid file with a provisional
+	   * designation, swe_get_planet_name() searches seasnam.txt */
+	  if (strpbrk(fmt, "PQ") != NULL || list_hor || diff_mode != 0)
+	    swe_get_planet_name(ipl, se_pname);
+	  else
+	    *se_pname = '\0';
 	  if (show_file_limit) { //  && ipl > SE_AST_OFFSET) {
 	    const char *fnam;
 	    char sbeg[40], send[40];

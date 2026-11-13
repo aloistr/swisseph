@@ -1,5 +1,5 @@
     # Orbital elements of ficticious planets
-    # 27 Jan. 2000
+    # update 11-nov-2026
     #
     # This file is part of the Swiss Ephemeris, from Version 1.52 on.
     #
@@ -35,12 +35,11 @@ J1900, J1900,  55.8983, 77.25568, 0.00000,   0.0000,   0.0000, 0.0000, Vulcanus 
 J1900, J1900, 165.5163, 83.66907, 0.00000,   0.0000,   0.0000, 0.0000, Poseidon # 8
     #
     # Isis-Transpluto; elements from "Die Sterne" 3/1952, p. 70ff. 
-    # Strubell does not give an equinox. 1945 is taken in order to 
-    # reproduce the as best as ASTRON ephemeris. (This is a strange 
-    # choice, though.)
-    # The epoch according to Strubell is 1772.76. 
-    # 1772 is a leap year!
-    # The fraction is counted from 1 Jan. 1772
+    # Strubell does not give an equinox. The unusual equinox year 1945 was chosen
+    # in order to reproduce the printed ephemeris of Isis by ASTRON-Verlag, Hamburg,
+    # Germany 1988, as precisely as possible. 
+    # The epoch, according to Strubell, is 1772.76. 
+    # 1772 is a leap year! The fraction is counted from 1 Jan. 1772.
 2368547.66, 2431456.5, 0.0, 77.775, 0.3, 0.7, 0, 0, Isis-Transpluto             # 9
     # Nibiru, elements from Christian Woeltge, Hannover
 1856113.380954, 1856113.380954, 0.0, 234.8921, 0.981092, 103.966, -44.567, 158.708, Nibiru # 10

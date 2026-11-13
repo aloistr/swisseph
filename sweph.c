@@ -6949,6 +6949,55 @@ int32 CALL_CONV swe_fixstar2_mag(char *star, double *mag, char *serr)
   return retc;
 }
 
+/* catalog number at the start of a seasnam.txt line, or -1 for comment
+ * and empty lines (the number may be in brackets) */
+static int seasnam_line_number(char *s)
+{
+  char *sp = s;
+  while (*sp == ' ' || *sp == '\t' || *sp == '(' || *sp == '[' || *sp == '{')
+    sp++;
+  if (!isdigit((int) *sp))
+    return -1;
+  return atoi(sp);
+}
+
+/* seasnam.txt is normally sorted by catalog number (mpc2seasnam.pl writes
+ * it in MPCORB order, 895910 lines in 2026). Binary search over the file
+ * positions; afterwards fp is at the start of a line not later than the
+ * line of asteroid ipli, in a sorted file within a few kB of it. */
+static void seasnam_seek(FILE *fp, int ipli)
+{
+  char si[AS_MAXCH];
+  long lo = 0, hi, mid, pos;
+  int n;
+  if (fseek(fp, 0L, SEEK_END) != 0 || (hi = ftell(fp)) <= 0) {
+    fseek(fp, 0L, SEEK_SET);
+    return;
+  }
+  /* the line of ipli starts in [lo, hi]; lo is always a line start */
+  while (hi - lo > 4096) {
+    mid = lo + (hi - lo) / 2;
+    fseek(fp, mid, SEEK_SET);
+    n = -1;
+    pos = hi;
+    if (fgets(si, AS_MAXCH, fp) != NULL) {	/* skip rest of a line */
+      pos = ftell(fp);
+      while (pos < hi && fgets(si, AS_MAXCH, fp) != NULL) {
+	if ((n = seasnam_line_number(si)) >= 0)
+	  break;
+	pos = ftell(fp);
+      }
+    }
+    if (n < 0 || pos >= hi)
+      hi = mid;
+    else if (n < ipli)
+      lo = pos;
+    else
+      hi = pos;
+  }
+  fseek(fp, lo, SEEK_SET);
+}
+
 char *CALL_CONV swe_get_planet_name(int ipl, char *s) 
 {
   int i;
@@ -7086,6 +7135,15 @@ char *CALL_CONV swe_get_planet_name(int ipl, char *s)
           FILE *fp;
           char si[AS_MAXCH], *sp, *sp2;
           if ((fp = swi_fopen(-1, SE_ASTNAMFILE, swed.ephepath, NULL)) != NULL) {
+           /* pass 0: binary search (sorted file); pass 1, only if the
+            * number was not found: whole file, as before (unsorted file) */
+           int pass, found = FALSE;
+           for (pass = 0; pass < 2 && !found; pass++) {
+            if (pass == 0)
+              seasnam_seek(fp, ipli);
+            else
+              fseek(fp, 0L, SEEK_SET);
+            iplf = 0;
             while(ipli != iplf && (sp = fgets(si, AS_MAXCH, fp)) != NULL) {
               while (*sp == ' ' || *sp == '\t' 
                      || *sp == '(' || *sp == '[' || *sp == '{')
@@ -7094,8 +7152,11 @@ char *CALL_CONV swe_get_planet_name(int ipl, char *s)
                 continue;
               /* catalog number of body of current line */
               iplf = atoi(sp);
+              if (pass == 0 && iplf > ipli)
+                break;	/* sorted file: ipli is not in it */
               if (ipli != iplf)
                 continue;
+              found = TRUE;
               /* set pointer after catalog number */
               sp = strpbrk(sp, " \t");
               if (sp == NULL)
@@ -7110,6 +7171,7 @@ char *CALL_CONV swe_get_planet_name(int ipl, char *s)
               swi_right_trim(sp);
               strcpy(s, sp);
             }
+           }
             fclose(fp);
           }
         }

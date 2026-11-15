@@ -734,16 +734,31 @@ static void ssypl_frame(double tjde, double eps, double *nutlo, double *dvpx, do
  * wrong here, because these modes compute the houses on another plane and
  * their cusps are not the tropical ones shifted by the ayanamsa.
  * The rates are central differences over 0.2 day, with obliquity and
- * nutation of the neighbouring dates computed as in swe_houses_ex2(). armc
- * (ascmc[2]) is armcx in these modes and gets ARMCS - d(dvpx)/dt; 0 Aries
- * cusps ('N') stand still. Before 2026-11-13 these modes returned the
+ * nutation of the neighbouring dates computed as in swe_houses_ex2(). In the
+ * ECL_T0 mode dvpxe changes sign at t0 (see ecl_t0_frame()), and with
+ * nutation the cusps jump there (by about 25 arcsec for SE_SIDM_J2000 at
+ * lat 47.4); within 0.1 day of t0 the difference is therefore taken on the
+ * side of tjde, the side whose positions sidereal_houses_ecl_t0() returns.
+ * armc (ascmc[2]) is armcx in these modes and gets ARMCS - d(dvpx)/dt;
+ * 0 Aries cusps ('N') stand still. Before 2026-11-13 these modes returned the
  * speeds without the frame terms, about 4e-5 degrees per day too large. */
 static void sidereal_frame_speeds(int ssypl, double tjde, int32 iflag, int hsys, int ito, double *cusp_speed, double *ascmc_speed)
 {
   int i, k;
-  double t, epsm, nut[2], dvpx[2], epsx, dvpxe[2], ddvpx, ddvpxe, fac;
+  double t, t1 = tjde - 0.1, t2 = tjde + 0.1;
+  double epsm, nut[2], dvpx[2], epsx, dvpxe[2], ddvpx, ddvpxe, fac;
+  struct sid_data *sip = &swed.sidd;
+  if (!ssypl) {
+    if (tjde >= sip->t0 && t1 < sip->t0) {
+      t1 = tjde;
+      t2 = tjde + 0.2;
+    } else if (tjde < sip->t0 && t2 >= sip->t0) {
+      t1 = tjde - 0.2;
+      t2 = tjde;
+    }
+  }
   for (k = 0; k < 2; k++) {
-    t = tjde + ((k == 0) ? -0.1 : 0.1);
+    t = (k == 0) ? t1 : t2;
     epsm = swi_epsiln(t, 0) * RADTODEG;
     swi_nutation(t, 0, nut);
     for (i = 0; i < 2; i++)
@@ -755,8 +770,8 @@ static void sidereal_frame_speeds(int ssypl, double tjde, int32 iflag, int hsys,
     else
       ecl_t0_frame(t, epsm + nut[1], nut, &dvpx[k], &epsx, &dvpxe[k]);
   }
-  ddvpx = swe_difdeg2n(dvpx[1], dvpx[0]) / 0.2;	/* degrees per day */
-  ddvpxe = swe_difdeg2n(dvpxe[1], dvpxe[0]) / 0.2;
+  ddvpx = swe_difdeg2n(dvpx[1], dvpx[0]) / (t2 - t1);	/* degrees per day */
+  ddvpxe = swe_difdeg2n(dvpxe[1], dvpxe[0]) / (t2 - t1);
   fac = 1 - ddvpx / ARMCS;
   if (cusp_speed != NULL && hsys != 'N')
     for (i = 1; i <= ito; i++)

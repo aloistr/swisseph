@@ -280,23 +280,6 @@ int CALL_CONV swe_houses(double tjd_ut,
     }
     ascmc[9] = xp[1];	// declination in ascmc[9];
   }
-#ifdef TRACE
-  swi_open_trace(NULL);
-  if (swi_trace_count <= TRACE_COUNT_MAX) {
-    if (swi_fp_trace_c != NULL) {
-      fputs("\n/*SWE_HOUSES*/\n", swi_fp_trace_c);
-      fprintf(swi_fp_trace_c, "#if 0\n");
-      fprintf(swi_fp_trace_c, "  tjd = %.9f;", tjd_ut);
-      fprintf(swi_fp_trace_c, " geolon = %.9f;", geolon);
-      fprintf(swi_fp_trace_c, " geolat = %.9f;", geolat);
-      fprintf(swi_fp_trace_c, " hsys = %d;\n", hsys);
-      fprintf(swi_fp_trace_c, "  retc = swe_houses(tjd, geolat, geolon, hsys, cusp, ascmc);\n");
-      fprintf(swi_fp_trace_c, "  /* swe_houses calls swe_houses_armc as follows: */\n");
-      fprintf(swi_fp_trace_c, "#endif\n");
-      fflush(swi_fp_trace_c);
-    }
-  }
-#endif
   retc = swe_houses_armc_ex2(armc, geolat, eps + nutlo[1], hsys, cusp, ascmc, NULL, NULL, NULL);
   return retc;
 }
@@ -363,24 +346,6 @@ int CALL_CONV swe_houses_ex2(double tjd_ut,
     for (i = 0; i < 2; i++)
       nutlo[i] = 0;
   }
-#ifdef TRACE
-  swi_open_trace(NULL);
-  if (swi_trace_count <= TRACE_COUNT_MAX) {
-    if (swi_fp_trace_c != NULL) {
-      fputs("\n/*SWE_HOUSES_EX*/\n", swi_fp_trace_c);
-      fprintf(swi_fp_trace_c, "#if 0\n");
-      fprintf(swi_fp_trace_c, "  tjd = %.9f;", tjd_ut);
-      fprintf(swi_fp_trace_c, " iflag = %d;\n", iflag);
-      fprintf(swi_fp_trace_c, " geolon = %.9f;", geolon);
-      fprintf(swi_fp_trace_c, " geolat = %.9f;", geolat);
-      fprintf(swi_fp_trace_c, " hsys = %d;\n", hsys);
-      fprintf(swi_fp_trace_c, "  retc = swe_houses_ex(tjd, iflag, geolat, geolon, hsys, cusp, ascmc);\n");
-      fprintf(swi_fp_trace_c, "  /* swe_houses calls swe_houses_armc as follows: */\n");
-      fprintf(swi_fp_trace_c, "#endif\n");
-      fflush(swi_fp_trace_c);
-    }
-  }
-#endif
     /*houses_to_sidereal(tjde, geolat, hsys, eps, cusp, ascmc, iflag);*/
   armc = swe_degnorm(swe_sidtime0(tjd_ut, eps_mean + nutlo[1], nutlo[0]) * 15 + geolon);
 //fprintf(stderr, "armc=%f, iflag=%d\n", armc, iflag);
@@ -1097,46 +1062,6 @@ int CALL_CONV swe_houses_armc_ex2(
       }
     }
   }
-#ifdef TRACE
-  swi_open_trace(NULL);
-  if (swi_trace_count <= TRACE_COUNT_MAX) {
-    if (swi_fp_trace_c != NULL) {
-      fputs("\n/*SWE_HOUSES_ARMC_EX2*/\n", swi_fp_trace_c);
-      fprintf(swi_fp_trace_c, "  armc = %.9f;", armc);
-      fprintf(swi_fp_trace_c, " geolat = %.9f;", geolat);
-      fprintf(swi_fp_trace_c, " eps = %.9f;", eps);
-      fprintf(swi_fp_trace_c, " hsys = %d;\n", hsys);
-      fprintf(swi_fp_trace_c, "  retc = swe_houses_armc_ex2(armc, geolat, eps, hsys, cusp, ascmc, cusp_speed, ascmc_speed, serr);\n");
-      fputs("  printf(\"swe_houses_armc_ex2: %f\\t%f\\t%f\\t%c\\t\\n\", ", swi_fp_trace_c);
-      fputs("  armc, geolat, eps, hsys);\n", swi_fp_trace_c);
-      fputs("  printf(\"retc = %d\\n\", retc);\n", swi_fp_trace_c);
-      fputs("  printf(\"cusp:\\n\");\n", swi_fp_trace_c);
-      fputs("  for (i = 1; i <= 12; i++)\n", swi_fp_trace_c);
-      fputs("    printf(\"  %d\\t%f\\n\", i, cusp[i]);\n", swi_fp_trace_c);
-      fputs("  printf(\"ascmc:\\n\");\n", swi_fp_trace_c);
-      fputs("  for (i = 0; i < 10; i++)\n", swi_fp_trace_c);
-      fputs("    printf(\"  %d\\t%f\\n\", i, ascmc[i]);\n", swi_fp_trace_c);
-      fputs("  printf(\"cusp_speed:\\n\");\n", swi_fp_trace_c);
-      fputs("  for (i = 1; i <= 12; i++)\n", swi_fp_trace_c);
-      fputs("    printf(\"  %d\\t%f\\n\", i, cusp_speed[i]);\n", swi_fp_trace_c);
-      fputs("  printf(\"ascmc_speed:\\n\");\n", swi_fp_trace_c);
-      fputs("  for (i = 0; i < 10; i++)\n", swi_fp_trace_c);
-      fputs("    printf(\"  %d\\t%f\\n\", i, ascmc_speed[i]);\n", swi_fp_trace_c);
-      fflush(swi_fp_trace_c);
-    }
-    if (swi_fp_trace_out != NULL) {
-      fprintf(swi_fp_trace_out, "swe_houses_armc_ex2: %f\t%f\t%f\t%c\t\n", armc, geolat, eps, hsys);
-      fprintf(swi_fp_trace_out, "retc = %d\n", retc);
-      fputs("cusp:\n", swi_fp_trace_out);
-      for (i = 1; i <= 12; i++)
-	fprintf(swi_fp_trace_out, "  %d\t%f\n", i, cusp[i]);
-      fputs("ascmc:\n", swi_fp_trace_out);
-      for (i = 0; i < 10; i++)
-	fprintf(swi_fp_trace_out, "  %d\t%f\n", i, ascmc[i]);
-      fflush(swi_fp_trace_out);
-    }
-  }
-#endif
 #if 0 
 /* for test of swe_house_pos(). 
  * 1st house will be 0, second 30, etc. */

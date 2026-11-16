@@ -4389,6 +4389,12 @@ static int get_new_segment(double tjd, int ipli, int ifno, char *serr)
   iseg = (int32) ((tjd - pdp->tfstart) / pdp->dseg);
   /*if (tjd - pdp->tfstart < 0)
       return(NOT_AVAILABLE);*/
+  /* tjd == tfend passes the range check, but gives iseg == nndx, i.e. the
+   * index entry after the last segment, and garbage coefficients (an
+   * asteroid file at its upper limit gave r = 38 au instead of 3.5 au).
+   * Use the last segment, which ends at tfend. (fixed 2026-11-16) */
+  if (iseg >= pdp->nndx && pdp->nndx > 0)
+    iseg = pdp->nndx - 1;
   pdp->tseg0 = pdp->tfstart + iseg * pdp->dseg;
   pdp->tseg1 = pdp->tseg0 + pdp->dseg;
   /* get file position of coefficients from file */

@@ -1279,6 +1279,7 @@ void CALL_CONV swe_close(void)
     free(swed.deps);
     swed.deps = NULL;
   }
+  swed.eop_dpsi_loaded = 0;
   if (swed.n_fixstars_records > 0) {
     free(swed.fixed_stars);
     swed.fixed_stars = NULL;

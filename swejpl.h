@@ -65,8 +65,8 @@
 
 #include "sweodef.h"
 
-#define J_MERCURY	0	/* jpl body indices, modified by Alois */
-#define J_VENUS		1	/* now they start at 0 and not at 1 */
+#define J_MERCURY	0	// jpl body indices, modified by Alois 
+#define J_VENUS		1	// they start at 0 and not at 1 
 #define J_EARTH		2
 #define J_MARS		3
 #define J_JUPITER	4

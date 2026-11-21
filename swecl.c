@@ -766,7 +766,7 @@ iter_where:
     retc |= SE_ECL_CENTRAL;
   } else if (r0 <= de * cosf1 + fabs(d0) / 2) {
     retc |= SE_ECL_NONCENTRAL;
-  } else if (r0 <= de * cosf2 + D0 / 2) {
+  } else if (r0 <= de * cosf2 + D0 / 2 ) {
     retc |= (SE_ECL_PARTIAL | SE_ECL_NONCENTRAL);
   } else {
     if (serr != NULL)
@@ -777,7 +777,7 @@ iter_where:
     retc = 0;
     d = 0;
     no_eclipse = TRUE;
-    /*return retc;*/
+    // return retc; 
   } 
   /* distance of shadow point from fundamental plane */
   d = s0 * s0 + de * de - dm * dm;

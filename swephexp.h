@@ -383,9 +383,8 @@ extern "C" {
 #define SE_FNAME_DE406  "de406.eph"
 #define SE_FNAME_DE431  "de431.eph"
 #define SE_FNAME_DE441  "de441.eph"
-#define SE_FNAME_DFT    SE_FNAME_DE431
-#define SE_FNAME_DFT3   SE_FNAME_DE441
-#define SE_FNAME_DFT2   SE_FNAME_DE406
+#define SE_FNAME_DFT    SE_FNAME_DE441
+#define SE_FNAME_DFT3    SE_FNAME_DE441
 #define SE_STARFILE_OLD "fixstars.cat"
 #define SE_STARFILE     "sefstars.txt"
 #define SE_ASTNAMFILE   "seasnam.txt"
@@ -490,7 +489,8 @@ extern "C" {
 #define SE_TIDAL_DE441          (-25.936)   /* from an email by Jon Giorgini to DK on 11 Apr 2021 */
 #define SE_TIDAL_26             (-26.0)
 #define SE_TIDAL_STEPHENSON_2016             (-25.85)
-#define SE_TIDAL_DEFAULT        SE_TIDAL_DE431
+#define SE_TIDAL_STEPHENSON_2020           (-25.82) /* mail from Jon Giorgini to DK on 8-Oct-2026 */
+#define SE_TIDAL_DEFAULT        SE_TIDAL_DE441
 #define SE_TIDAL_AUTOMATIC             999999
 #define SE_TIDAL_MOSEPH                SE_TIDAL_DE404
 #define SE_TIDAL_SWIEPH                SE_TIDAL_DEFAULT
@@ -599,14 +599,15 @@ extern "C" {
  * Horizons over its whole time range.
  */
 
-#define SEMOD_NDELTAT		5
+#define SEMOD_NDELTAT		6
 #define SEMOD_DELTAT_STEPHENSON_MORRISON_1984   1
 #define SEMOD_DELTAT_STEPHENSON_1997   2
 #define SEMOD_DELTAT_STEPHENSON_MORRISON_2004   3
 #define SEMOD_DELTAT_ESPENAK_MEEUS_2006   4
 #define SEMOD_DELTAT_STEPHENSON_ETC_2016   5
+#define SEMOD_DELTAT_STEPHENSON_ETC_2020   6
 //#define SEMOD_DELTAT_DEFAULT   SEMOD_DELTAT_ESPENAK_MEEUS_2006
-#define SEMOD_DELTAT_DEFAULT   SEMOD_DELTAT_STEPHENSON_ETC_2016
+#define SEMOD_DELTAT_DEFAULT   SEMOD_DELTAT_STEPHENSON_ETC_2020
 
 /**************************************************************
  * here follow some ugly definitions which are only required

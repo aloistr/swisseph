@@ -736,6 +736,7 @@ static int do_special_event(double tjd, int32 ipl, char *star, int32 special_eve
 static int32 orbital_elements(double tjd_et, int32 ipl, int32 iflag, char *serr);
 static char *hms_from_tjd(double x);
 static void do_printf(char *info);
+static char *jd_and_date(double tjd, char *s);
 static char *hms(double x, int32 iflag);
 static void remove_whitespace(char *s);
 #if MSDOS
@@ -823,6 +824,33 @@ static AS_BOOL show_file_limit = FALSE;
 # define ECL_SOL_PARTIAL        4
 # define ECL_SOL_ANNULAR        5
 # define ECL_SOL_TOTAL          6
+
+/* "JD 1940207.5 = 01.01.0600j" for -lim: Julian day and date as -fT
+ * prints it, with Julian or Gregorian calendar for each date (before or
+ * from 15.10.1582), time only if not 0h; s needs at least 60 bytes
+ * (added 2026-11-19) */
+static char *jd_and_date(double tjd, char *s)
+{
+  int iyear, imon, iday;
+  int32 ih, im, isec, isgn;
+  int gflag = SE_GREG_CAL;
+  double hour, dsecfr;
+  if (fabs(tjd * 10 - floor(tjd * 10 + 0.5)) < 1e-6)
+    sprintf(s, "JD %.1f = ", tjd);
+  else
+    sprintf(s, "JD %.6f = ", tjd);
+  if (tjd < 2299160.5)
+    gflag = SE_JUL_CAL;
+  swe_revjul(tjd, gflag, &iyear, &imon, &iday, &hour);
+  sprintf(s + strlen(s), "%02d.%02d.%04d", iday, imon, iyear);
+  if (gflag == SE_JUL_CAL)
+    strcat(s, "j");
+  if (hour != 0) {
+    swe_split_deg(hour, SE_SPLIT_DEG_ROUND_SEC, &ih, &im, &isec, &dsecfr, &isgn);
+    sprintf(s + strlen(s), " %d:%02d:%02d TT", ih, im, isec);
+  }
+  return s;
+}
 
 int main(int argc, char *argv[])
 {
@@ -1704,7 +1732,7 @@ int main(int argc, char *argv[])
 	    *se_pname = '\0';
 	  if (show_file_limit) { //  && ipl > SE_AST_OFFSET) {
 	    const char *fnam;
-	    char sbeg[40], send[40];
+	    char sbeg[80], send[80];
 	    double tfstart, tfend;
             int denum;
 	    int ifno = 3;
@@ -1717,13 +1745,8 @@ int main(int argc, char *argv[])
 	    }
 	    fnam = swe_get_current_file_data(ifno, &tfstart, &tfend, &denum);
 	    if (fnam != NULL) {
-	      int jy, jm, jd;
-	      double jt;
-	      swe_revjul(tfstart, gregflag, &jy, &jm, &jd, &jt);
-	      sprintf(sbeg, "%d.%02d.%04d", jd, jm, jy);
-	      swe_revjul(tfend, gregflag, &jy, &jm, &jd, &jt);
-	      sprintf(send, "%d.%02d.%04d", jd, jm, jy);
-	      printf("range %s: %.1lf = %s to %.1lf = %s de=%d\n", fnam, tfstart, sbeg, tfend, send, denum);
+	      /* dates as with -fT, calendar for each date (2026-11-19) */
+	      printf("range %s: %s to %s de=%d\n", fnam, jd_and_date(tfstart, sbeg), jd_and_date(tfend, send), denum);
 	      show_file_limit = FALSE;
 	    }
 	  }
@@ -1767,6 +1790,7 @@ int main(int argc, char *argv[])
           if (strcmp(serr, serr_save) != 0 
             && (ipl == SE_SUN || ipl == SE_MOON || ipl <= SE_PLUTO
                 || ipl == SE_MEAN_NODE || ipl == SE_TRUE_NODE
+                || ipl == SE_INTP_APOG || ipl == SE_INTP_PERG
                 || ipl == SE_CERES || ipl == SE_PALLAS || ipl == SE_JUNO || ipl == SE_VESTA 
                 || ipl == SE_CHIRON || ipl == SE_PHOLUS || ipl == SE_CUPIDO 
 		|| (ipl > SE_FICT_OFFSET_1 && ipl <= SE_FICT_MAX)

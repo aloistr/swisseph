@@ -93,6 +93,7 @@ static void init_crc32(void);
 static int init_dt(void);
 static double adjust_for_tidacc(double ans, double Y, double tid_acc, double tid_acc0, AS_BOOL adjust_after_1955);
 static double deltat_espenak_meeus_1620(double tjd, double tid_acc);
+static double deltat_stephenson_etc_2020(double tjd, double tid_acc);
 static double deltat_stephenson_etc_2016(double tjd, double tid_acc);
 static double deltat_longterm_morrison_stephenson(double tjd);
 static double deltat_stephenson_morrison_2004_1600(double tjd, double tid_acc);
@@ -2394,6 +2395,11 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
  * Earth's Rotation: 720 BC to AD 2015", Royal Society Proceedings A 
  * 7 Dec 2016,
  * http://rspa.royalsocietypublishing.org/lookup/doi/10.1098/rspa.2016.0404
+ *
+ * Morrison, L.V., Stephenson, F.R, Hohenkerk, C.Y., Zawilski, M., 
+ * "Addendum 2020 to ‘Measurement of the Earth’s rotation: 720 BC to AD 2015’",
+ * 17 Feb. 2021,
+ * https://royalsocietypublishing.org/rspa/article/477/2246/20200776/82346/Addendum-2020-to-Measurement-of-the-Earth-s
  * 
  * Table from AA for 1620 through today
  * Note, Stephenson and Morrison's table starts at the year 1630.
@@ -2419,12 +2425,12 @@ void swi_icrs2fk5(double *x, int32 iflag, AS_BOOL backward)
  * behind (on 3 feb 2009); and predictions:
  * http://maia.usno.navy.mil/ser7/deltat.preds
  *
- * Last update of table dt[]: Dieter Koch, 18 dec 2013.
+ * Last update of table dt[]: Dieter Koch, 18 Oct 2026.
  * ATTENTION: Whenever updating this table, do not forget to adjust
  * the macros TABEND and TABSIZ !
  */
 #define TABSTART 	1620
-#define TABEND 		2028
+#define TABEND 		2033
 #define TABSIZ 		(TABEND-TABSTART+1) 
 /* we make the table greater for additional values read from external file */
 #define TABSIZ_SPACE 	(TABSIZ+100)
@@ -2485,13 +2491,16 @@ static TLS double dt[TABSIZ_SPACE] = {
 56.8553, 57.5653, 58.3092, 59.1218, 59.9845, 60.7854, 61.6287, 62.2951, 62.9659, 63.4673,
 /* 2000.0 - 2009.0 */
 63.8285, 64.0908, 64.2998, 64.4734, 64.5736, 64.6876, 64.8452, 65.1464, 65.4574, 65.7768,
-/* 2010.0 - 2018.0 */
+/* 2010.0 - 2019.0 */
 66.0699, 66.3246, 66.6030, 66.9069, 67.2810, 67.6439, 68.1024, 68.5927, 68.9676, 69.2202,
-/* 2020.0 - 2023.0        */
-69.3612, 69.3593, 69.2945, 69.1833, 
-/* Extrapolated values: 
- * 2024 - 2028 */
-                                     69.10,   69.00,   68.90,   68.80,   68.80,
+/* recent values (from https://maia.usno.navy.mil/ser7/deltat.data): */
+/* 2020.0 - 2025.0        */
+69.3612, 69.3594, 69.2945, 69.2093, 69.1752, 69.1377, 
+/* extrapolated values, preliminary (from https://maia.usno.navy.mil/ser7/deltat.preds): 
+ * 2026.0 - 2029.0 */
+                                                       69.05,   69.14,   69.34,  69.63,
+/* 2030.0 - 2033.0 */
+69.97,   70.32,   70.62,   70.98,
 };
 
 #define TAB2_SIZ	27
@@ -2575,18 +2584,35 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
   iflag = otherflag | retc;
   Y = 2000.0 + (tjd - J2000)/365.25;
   Ygreg = 2000.0 + (tjd - J2000)/365.2425;
-  /* Model for epochs before 1955, currently default in Swiss Ephemeris:
+  /* Model for epochs before 1962, currently default in Swiss Ephemeris:
+   * Morrison/Stephenson/Hohenkerk/Zawilski 2021. 
+   * (we switch over to Astronomical Almanac K8-K9 and IERS at 1 Jan. 1962. 
+   * To make the curve continuous we apply some linear term over 
+   * 1000 days before this date.)
+   * These data of Delta T are based on ancient, medieval, and modern observations 
+   * of eclipses and occultations.
+   * For more recent data we use the data provided by IERS 
+   * (or Astronomical Almanac K8-K9).
+   */
+  if (deltat_model == SEMOD_DELTAT_STEPHENSON_ETC_2020 && tjd < 2437665.5) { // 1 Jan. 1962
+    *deltat = deltat_stephenson_etc_2020(tjd, tid_acc);
+    if (1 && tjd >= 2436665.5) {
+      *deltat += (1.0 - (2437665.5 - tjd) / 1000.0) * 0.379071 / 86400.0;
+    }
+    return iflag;
+  }
+  /* Model for epochs before 1955:
    * Stephenson/Morrison/Hohenkerk 2016 
    * (we switch over to Astronomical Almanac K8-K9 and IERS at 1 Jan. 1955. 
    * To make the curve continuous we apply some linear term over 
    * 1000 days before this date.)
-   * Delta T according to Stephenson/Morrison/Hohenkerk 2016 is based on
-   * ancient, medieval, and modern observations of eclipses and occultations.
+   * These data of Delta T are based on ancient, medieval, and modern 
+   * observations of eclipses and occultations.
    * Values of Deltat T before 1955 depend on this kind of observations.
-   * For more recent data we want to use the data provided by IERS 
+   * For more recent data we use the data provided by IERS 
    * (or Astronomical Almanac K8-K9).
    */
-  if (deltat_model == SEMOD_DELTAT_STEPHENSON_ETC_2016 && tjd < 2435108.5) { // tjd < 2432521.453645833) {
+  if (deltat_model == SEMOD_DELTAT_STEPHENSON_ETC_2016 && tjd < 2435108.5) { // 1 Jan. 1955
     *deltat = deltat_stephenson_etc_2016(tjd, tid_acc);
     if (tjd >= 2434108.5) {
       *deltat += (1.0 - (2435108.5 - tjd) / 1000.0) * 0.6610218 / 86400.0;
@@ -2698,6 +2724,7 @@ static int32 calc_deltat(double tjd, int32 iflag, double *deltat, char *serr)
   return iflag;
 }
 
+/* tjd is UT */
 double CALL_CONV swe_deltat_ex(double tjd, int32 iflag, char *serr)
 {
   double deltat;
@@ -2709,6 +2736,7 @@ double CALL_CONV swe_deltat_ex(double tjd, int32 iflag, char *serr)
   return deltat;
 }
 
+/* tjd is UT */
 double CALL_CONV swe_deltat(double tjd)
 {
   int32 iflag = swi_guess_ephe_flag();
@@ -2804,7 +2832,8 @@ static double deltat_aa(double tjd, double tid_acc)
    * Stephenson/Morrison/Hohenkerk 2016 here:
    * http://astro.ukho.gov.uk/nao/lvm/
    */
-  if (deltat_model == SEMOD_DELTAT_STEPHENSON_ETC_2016) {
+  if (deltat_model == SEMOD_DELTAT_STEPHENSON_ETC_2016 
+   || deltat_model == SEMOD_DELTAT_STEPHENSON_ETC_2020) {
     B = (Y - 2000);
     if (Y < 2500) {
       ans = B * B * B * 121.0 / 30000000.0 + B * B / 1250.0 + B * 521.0 / 3000.0 + 64.0;
@@ -2930,6 +2959,135 @@ static double deltat_stephenson_morrison_2004_1600(double tjd, double tid_acc)
   }
   ans /= 86400.0;
   return ans;
+}
+
+/* 
+ * These coefficients represent the spline approximation discussed in the
+ * paper "Addendum 2020 to ‘Measurement of the Earth’s rotation: 720 BC to AD 2015’",
+ * Morrison, Zawilski, Hohenkerk and Stephenson
+ * Royal Society Proceedings A and available from their website at
+ * https://royalsocietypublishing.org/rspa/article/477/2246/20200776/82346/Addendum-2020-to-Measurement-of-the-Earth-s
+ * According to Jon Giorgini (mail to DK on 8 Oct. 2026):
+ * Year numbers are to be understood as UT GMT/mean solar time 
+ * and in the Julian calendar before 1582, in the Gregorian calendar after that.
+ * Year numbers have been replaced by Julian day numbers by D. Koch.
+ * The data below are based on a lunar tidal acceleration value of -25.82 (DE430). 
+ * JPL uses a tidal acceleration value of -25.937.
+ * This is compensated by a call to the function 
+ * adjust_for_tidacc(... SE_TIDAL_STEPHENSON_2020 ...);
+ */
+#define NDTCF20 58 
+double dtcf20[NDTCF20][6] =
+{
+#if 1
+/*1*/ {1458077.5, 1684532.5, 20371.848, -9999.586, 776.247, 409.160}, /* years -720 to -100 */
+/*2*/ {1684532.5, 1867157.5, 11557.668, -5822.270, 1303.151, -503.433}, /* years -100 to 400 */
+/*3*/ {1867157.5, 2086307.5, 6535.116, -5671.519, -298.291, 1085.087}, /* years 400 to 1000 */
+/*4*/ {2086307.5, 2141095.5, 1650.393, -753.210, 184.811, -25.346}, /* years 1000 to 1150 */
+/*5*/ {2141095.5, 2195882.5, 1056.647, -459.628, 108.771, -24.641}, /* years 1150 to 1300 */
+/*6*/ {2195882.5, 2268932.5, 681.149, -421.345, 61.953, -29.414}, /* years 1300 to 1500 */
+/*7*/ {2268932.5, 2305447.5, 292.343, -192.841, -6.572, 16.197}, /* years 1500 to 1600 */
+/*8*/ {2305447.5, 2323710.5, 109.127, -78.697, 10.505, 3.018}, /* years 1600 to 1650 */
+/*9*/ {2323710.5, 2349276.5, 43.952, -68.089, 38.333, -2.127}, /* years 1650 to 1720 */
+/*10*/ {2349276.5, 2378496.5, 12.068, 2.507, 41.731, -37.939}, /* years 1720 to 1800 */
+/*11*/ {2378496.5, 2382148.5, 18.367, -3.481, -1.126, 1.918}, /* years 1800 to 1810 */
+/*12*/ {2382148.5, 2385800.5, 15.678, 0.021, 4.629, -3.812}, /* years 1810 to 1820 */
+/*13*/ {2385800.5, 2389453.5, 16.516, -2.157, -6.806, 3.250}, /* years 1820 to 1830 */
+/*14*/ {2389453.5, 2393105.5, 10.804, -6.018, 2.944, -0.096}, /* years 1830 to 1840 */
+/*15*/ {2393105.5, 2396758.5, 7.634, -0.416, 2.658, -0.539}, /* years 1840 to 1850 */
+/*16*/ {2396758.5, 2398584.5, 9.338, 1.642, 0.261, -0.883}, /* years 1850 to 1855 */
+/*17*/ {2398584.5, 2400410.5, 10.357, -0.486, -2.389, 1.558}, /* years 1855 to 1860 */
+/*18*/ {2400410.5, 2402237.5, 9.040, -0.591, 2.284, -2.477}, /* years 1860 to 1865 */
+/*19*/ {2402237.5, 2404063.5, 8.255, -3.456, -5.148, 2.720}, /* years 1865 to 1870 */
+/*20*/ {2404063.5, 2405889.5, 2.371, -5.593, 3.011, -0.914}, /* years 1870 to 1875 */
+/*21*/ {2405889.5, 2407715.5, -1.126, -2.314, 0.269, -0.039}, /* years 1875 to 1880 */
+/*22*/ {2407715.5, 2409542.5, -3.210, -1.893, 0.152, 0.563}, /* years 1880 to 1885 */
+/*23*/ {2409542.5, 2411368.5, -4.388, 0.101, 1.842, -1.438}, /* years 1885 to 1890 */
+/*24*/ {2411368.5, 2413194.5, -3.884, -0.531, -2.474, 1.871}, /* years 1890 to 1895 */
+/*25*/ {2413194.5, 2415020.5, -5.017, 0.134, 3.138, -0.232}, /* years 1895 to 1900 */
+/*26*/ {2415020.5, 2416846.5, -1.977, 5.715, 2.443, -1.257}, /* years 1900 to 1905 */
+/*27*/ {2416846.5, 2418672.5, 4.923, 6.828, -1.329, 0.720}, /* years 1905 to 1910 */
+/*28*/ {2418672.5, 2420498.5, 11.142, 6.330, 0.831, -0.825}, /* years 1910 to 1915 */
+/*29*/ {2420498.5, 2422324.5, 17.479, 5.518, -1.643, 0.262}, /* years 1915 to 1920 */
+/*30*/ {2422324.5, 2424151.5, 21.617, 3.020, -0.856, 0.008}, /* years 1920 to 1925 */
+/*31*/ {2424151.5, 2425977.5, 23.789, 1.333, -0.831, 0.127}, /* years 1925 to 1930 */
+/*32*/ {2425977.5, 2427803.5, 24.418, 0.052, -0.449, 0.142}, /* years 1930 to 1935 */
+/*33*/ {2427803.5, 2429629.5, 24.164, -0.419, -0.022, 0.702}, /* years 1935 to 1940 */
+/*34*/ {2429629.5, 2431456.5, 24.426, 1.645, 2.086, -1.106}, /* years 1940 to 1945 */
+/*35*/ {2431456.5, 2433282.5, 27.050, 2.499, -1.232, 0.614}, /* years 1945 to 1950 */
+/*36*/ {2433282.5, 2434378.5, 28.932, 1.127, 0.220, -0.277}, /* years 1950 to 1953 */
+/*37*/ {2434378.5, 2435473.5, 30.002, 0.737, -0.610, 0.631}, /* years 1953 to 1956 */
+/*38*/ {2435473.5, 2436569.5, 30.760, 1.409, 1.282, -0.799}, /* years 1956 to 1959 */
+/*39*/ {2436569.5, 2437665.5, 32.652, 1.577, -1.115, 0.507}, /* years 1959 to 1962 */
+/*40*/ {2437665.5, 2438761.5, 33.621, 0.868, 0.406, 0.199}, /* years 1962 to 1965 */
+/*41*/ {2438761.5, 2439856.5, 35.093, 2.275, 1.002, -0.414}, /* years 1965 to 1968 */
+/*42*/ {2439856.5, 2440952.5, 37.956, 3.035, -0.242, 0.202}, /* years 1968 to 1971 */
+/*43*/ {2440952.5, 2442048.5, 40.951, 3.157, 0.364, -0.229}, /* years 1971 to 1974 */
+/*44*/ {2442048.5, 2443144.5, 44.244, 3.199, -0.323, 0.172}, /* years 1974 to 1977 */
+/*45*/ {2443144.5, 2444239.5, 47.291, 3.069, 0.193, -0.192}, /* years 1977 to 1980 */
+/*46*/ {2444239.5, 2445335.5, 50.361, 2.878, -0.384, 0.081}, /* years 1980 to 1983 */
+/*47*/ {2445335.5, 2446431.5, 52.936, 2.354, -0.140, -0.165}, /* years 1983 to 1986 */
+/*48*/ {2446431.5, 2447527.5, 54.984, 1.577, -0.637, 0.448}, /* years 1986 to 1989 */
+/*49*/ {2447527.5, 2448622.5, 56.373, 1.648, 0.708, -0.276}, /* years 1989 to 1992 */
+/*50*/ {2448622.5, 2449718.5, 58.453, 2.235, -0.121, 0.110}, /* years 1992 to 1995 */
+/*51*/ {2449718.5, 2450814.5, 60.678, 2.324, 0.210, -0.313}, /* years 1995 to 1998 */
+/*52*/ {2450814.5, 2451910.5, 62.898, 1.804, -0.729, 0.109}, /* years 1998 to 2001 */
+/*53*/ {2451910.5, 2453005.5, 64.083, 0.674, -0.402, 0.199}, /* years 2001 to 2004 */
+/*54*/ {2453005.5, 2454101.5, 64.553, 0.466, 0.194, -0.017}, /* years 2004 to 2007 */
+/*55*/ {2454101.5, 2455197.5, 65.197, 0.804, 0.144, -0.084}, /* years 2007 to 2010 */
+/*56*/ {2455197.5, 2456293.5, 66.061, 0.839, -0.109, 0.128}, /* years 2010 to 2013 */
+/*57*/ {2456293.5, 2457388.5, 66.920, 1.007, 0.277, -0.095}, /* years 2013 to 2016 */
+/*58*/ {2457388.5, 2458484.5, 68.109, 1.277, -0.007, -0.139}, /* years 2016 to 2019 */
+#else
+#endif
+};
+static double deltat_stephenson_etc_2020(double tjd, double tid_acc)
+{
+  double t, dt, dyear;
+  int i, irec = -1, iyear, imon, iday; double dhut;
+  int gregflag = SE_GREG_CAL;
+  if (tjd < 2299160.5)
+    gregflag = SE_JUL_CAL;
+  swe_revjul(tjd, gregflag, &iyear, &imon, &iday, &dhut);
+  dyear = 2000.0 + (tjd - J2000)/365.25;
+  // after the year -720 get value from spline curve
+  for (i = 0; i < NDTCF20; i++) {
+    if (tjd < dtcf20[i][0]) break;
+    if (tjd < dtcf20[i][1]) {
+      irec = i;
+      break;
+    }
+  }
+  if (irec >= 0) {
+    t = (tjd - dtcf20[irec][0]) / (dtcf20[irec][1] - dtcf20[irec][0]);
+    dt = dtcf20[irec][2] + dtcf20[irec][3] * t + dtcf20[irec][4] * t * t + dtcf20[irec][5] * t * t * t;
+#if 0 // can be used to find the correction to make curve continuous in 720
+    double t2 = (dyear - 1825) / 100.0;
+    double dt2 = 65 + 31.351922682 * t2 * t2;
+    printf("dt2-dt= %.7f - %.7f = %.7f\n", dt2, dt, dt2-dt);
+#endif
+  // for earlier epochs, use long term parabola
+  } else if (iyear < -720) {
+    t = (dyear - 1825) / 100.0;
+    // formula used by horizons according to Horizons manual: 
+    // https://ssd.jpl.nasa.gov/horizons/manual.html#frames
+    dt = 65 + 31.351922682 * t * t; 
+    dt += 0.6754326; // to make curve continous on 1 Jan -720 (D. Koch)
+  // future
+  // we never come into this bracket; future is handled in function deltat_aa().
+  } else {
+    t = (dyear - 1825) / 100.0;
+    dt = -320 + 32.5 * t * t; // from Stephenson & alii 2016
+    //dt += 269.4790417; // to make curve continous on 1 Jan 2019 (D. Koch)
+  }
+  /* The parameter adjust_after_1955 must be TRUE here, because the 
+   * Stephenson 2020 curve is based on occultation data alone, 
+   * not on IERS data.
+   * Note, however, the current function deltat_stephenson_etc_2020()
+   * is called only for dates before 1 Jan 1962. */
+  dt = adjust_for_tidacc(dt, dyear, tid_acc, SE_TIDAL_STEPHENSON_2020, TRUE);
+  dt /= 86400.0;
+  return dt;
 }
 
 /* 
@@ -3136,17 +3294,40 @@ return tabsiz;
  *     -0.000091 (ndot + 26)(year-1955)^2  seconds
  * to entries prior to 1955 (AA page K8), where ndot is the secular
  * tidal term in the mean motion of the Moon.
- *
  * Entries after 1955 are referred to atomic time standards and
  * are not affected by errors in Lunar or planetary theory.
+ *
+ * Dieter: 22-mar-2026 updated according to:
+ * https://webspace.science.uu.nl/~gent0113/deltat/deltat_modern.htm
+ * "Note that the values before the mid 1950’s are mainly based on observations
+ * of stellar occultations by the Moon that were reduced with Brown’s lunar
+ * theory with an adopted lunar acceleration parameter (n') of –26.0''/cy/cy.
+ * For other values of the lunar acceleration parameter, the values listed
+ * above before 1955.5 should be corrected by: 
+ *  
+ * ΔT (s) = ΔT (table) – 0.91072 * (n' + 26.0) u2
+ * with u = (year – 1955.5)/100, or the time measured in centuries since 1 July 1955
+ *
+ * Values after 1955.5 remain unchanged as they were obtained from observations
+ * that were compared directly against International Atomic Time (TAI)."
  */
 static double adjust_for_tidacc(double ans, double Y, double tid_acc, double tid_acc0, AS_BOOL adjust_after_1955)
 {
   double B;
+#if 0 
+  // simplified AA version, up to SE 2.10.3
   if( Y < 1955.0 || adjust_after_1955) {
     B = (Y - 1955.0);
     ans += -0.000091 * (tid_acc - tid_acc0) * B * B;
   }
+#else 
+  // correct version, from SE 3.0 and SE 2.10.4 on, according to
+  // https://webspace.science.uu.nl/~gent0113/deltat/deltat_modern.htm
+  if (Y < 1955.5 || adjust_after_1955) {
+    B = (Y - 1955.5);
+    ans += -0.000091072 * (tid_acc - tid_acc0) * B * B;
+  }
+#endif
   return ans;
 }
 
@@ -3934,8 +4115,8 @@ char *CALL_CONV swe_cs2degstr(CSEC t, char *a)
  * output:
  * ideg 	degrees, 
  * imin 	minutes, (zero if rounding to degree)
- * isec 	seconds, (zero if rounding to minute)
- * dsecfr	fraction of seconds (zero if rounding used) 
+ * isec 	seconds, (zero if rounding to minute) 
+ * dsecfr	fraction of seconds (zero if rounding used)
  * inak	nakshatra number; 
  ******************************************************************/
 static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32 *imin, int32 *isec, double *dsecfr, int32 *inak)
@@ -3979,9 +4160,9 @@ static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32
   } else {
     *dsecfr = 0;
   }
-  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG)) 
+  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG))
     *imin = 0;
-  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN)) 
+  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN))
     *isec = 0;
 }  /* end split_deg_nakshtra */
 
@@ -4009,7 +4190,7 @@ static void split_deg_nakshatra(double ddeg, int32 roundflag, int32 *ideg, int32
  *  ideg 	degrees, 
  *  imin 	minutes, (zero if rounding to degree)
  *  isec 	seconds, (zero if rounding to minute or degree)
- *  dsecfr	fraction of seconds (zero if rounding used) 
+ *  dsecfr	fraction of seconds (zero if rounding used)
  *  isgn	zodiac sign number; 
  *              or +/- sign
  *  
@@ -4056,9 +4237,9 @@ void CALL_CONV swe_split_deg(double ddeg, int32 roundflag, int32 *ideg, int32 *i
   } else {
     *dsecfr = 0;
   }
-  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG)) 
+  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG))
     *imin = 0;
-  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN)) 
+  if (roundflag & (SE_SPLIT_DEG_ROUND_DEG | SE_SPLIT_DEG_ROUND_MIN))
     *isec = 0;
 }  /* end split_deg */
 
@@ -4150,6 +4331,7 @@ D2 SEMOD_DELTAT_STEPHENSON_1997
 D3 SEMOD_DELTAT_STEPHENSON_MORRISON_2004
 D4 SEMOD_DELTAT_ESPENAK_MEEUS_2006
 D5 SEMOD_DELTAT_STEPHENSON_ETC_2016
+D6 SEMOD_DELTAT_STEPHENSON_ETC_2020
 
 P1 SEMOD_PREC_IAU_1976
 P2 SEMOD_PREC_LASKAR_1986
@@ -4188,6 +4370,7 @@ S4 SEMOD_SIDT_LONGTERM
 # define AMODELS_SE_1_80    "4,9,9,4,3,0,0,1"  /* note sid. time (S)! */
 # define AMODELS_SE_2_00    "4,9,9,4,3,0,0,4"
 # define AMODELS_SE_2_06    "5,9,9,4,3,0,0,4"
+# define AMODELS_SE_2_1004  "6,9,9,4,3,0,0,4"
 void CALL_CONV swe_set_astro_models(char *samod, int32 iflag)
 {
   double dversion;
@@ -4198,14 +4381,18 @@ void CALL_CONV swe_set_astro_models(char *samod, int32 iflag)
   } else if (*samod == '\0' || strncmp(samod, "SE", 2) == 0) {
     strncpy(s, samod, 20);
     s[20] = '\0';
+    if (*s == '\0')
+      sprintf(s, "SE%s", SE_VERSION);
     if ((sp = strchr(s + 5, '.')) != NULL)  // remove second '.' in "SE2.05.01"
       swi_strcpy(sp, sp+1);
     if ((sp = strchr(s + 5, 'b')) != NULL)  // remove 'b' in "SE2.05.02b04"
       swi_strcpy(sp, sp+1);
     dversion = atof(s + 2);
-    if (dversion == 0)
-      dversion = atof(SE_VERSION);
-    if (dversion >= 2.06) {
+//    if (dversion == 0)
+//      dversion = atof(SE_VERSION);
+    if (dversion >= 2.1004) {
+      set_astro_models(AMODELS_SE_2_1004);
+    } else if (dversion >= 2.06) {
       set_astro_models(AMODELS_SE_2_06);
     } else if (dversion >= 2.01) {
       set_astro_models(AMODELS_SE_2_00);
@@ -4312,6 +4499,9 @@ static void get_deltat_model(int dtmod, char *s)
     break;
     case SEMOD_DELTAT_STEPHENSON_ETC_2016:  
     strcpy(s, "Stephenson/Morrison/Hohenkerk 2016 (before 1955)");
+    break;
+    case SEMOD_DELTAT_STEPHENSON_ETC_2020:  
+    strcpy(s, "Morrison/Stephenson/Hohenkerk/Zawilski 2020 (before 1962)");
     break;
   }
 }

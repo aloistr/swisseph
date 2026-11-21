@@ -62,7 +62,7 @@
  * move over from swephexp.h
  */
 
-#define SE_VERSION      "2.10.03" 
+#define SE_VERSION      "2.10.04" 
 
 #define J2000           2451545.0  	/* 2000 January 1.5 */
 #define B1950           2433282.42345905  	/* 1950 January 0.923 */
@@ -190,6 +190,7 @@
 #define SEI_FILE_EFPOSBEGIN      500
 
 #define SE_FILE_SUFFIX	"se1"
+#define SE3_FILE_SUFFIX	"se3"
 
 #define SEI_NEPHFILES   7
 #define SEI_CURR_FPOS   -1

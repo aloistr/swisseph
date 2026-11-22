@@ -43,7 +43,7 @@ void run( test_context* ctx ) {
     if (ctx->out && ctx->out != stdout) fclose(ctx->out);
   }
   void open_exp_or_fix_reader() {
-    char file[SETEST_MAX_SYMBOL_SIZE];
+    char file[AS_MAXCH];
     strcpy(file,ctx->test_collection);
     strcat(file,ctx->testmode ? ".exp" : ".fix" );
     if (is_empty(ctx->prepare_fixture_command)) {
@@ -59,7 +59,7 @@ void run( test_context* ctx ) {
     ); 
   }
   void open_output_stream() {
-    char file[SETEST_MAX_SYMBOL_SIZE];
+    char file[AS_MAXCH];
     if (!ctx->testmode) {
       strcpy(file,ctx->test_collection);
       strcat(file,".exp");
@@ -88,7 +88,7 @@ void run( test_context* ctx ) {
     printf(".\n");
     }
   void check_file_existence( ) {
-    char file[SETEST_MAX_SYMBOL_SIZE];
+    char file[AS_MAXCH];
     sprintf(file,"%s.fix",ctx->test_collection);
     if (ctx->testmode) {
 // Test mode: Need expectations file
@@ -157,7 +157,14 @@ void evaluate_cmdline_options(int argc, char** argv, test_context *ctx) {
         ctx->parameters = get_param_reader(optarg);
         break;
       case 'P':
-        strcpy(ctx->prepare_fixture_command,optarg);
+// If the command is too long for the buffer, shorten it with a warning
+        if (strlen(optarg) > SETEST_MAX_COMMAND_LENGTH - 1) {
+          fprintf(stderr,
+                  "Warning: -P command too long, shortened to %d characters: '%s'\n",
+                  SETEST_MAX_COMMAND_LENGTH - 1, optarg);
+        }
+        strncpy(ctx->prepare_fixture_command,optarg,SETEST_MAX_COMMAND_LENGTH - 1);
+        ctx->prepare_fixture_command[SETEST_MAX_COMMAND_LENGTH - 1] = '\0';
         break;
       case 's':
         parse_select(optarg,&ctx->selected);
@@ -178,8 +185,15 @@ void evaluate_cmdline_options(int argc, char** argv, test_context *ctx) {
      for (int i = 0; i < argc - optind; i++ ) {
        switch (i) {
          case 0:
-// The remaining argument is the test collection name
-           strcpy(ctx->test_collection,argv[optind]);
+// The remaining argument is the test collection name.
+// If it is too long for the buffer, shorten it with a warning
+           if (strlen(argv[optind]) > SETEST_MAX_COLLECTION_NAME) {
+             fprintf(stderr,
+                     "Warning: test collection name too long, shortened to %d characters: '%s'\n",
+                     SETEST_MAX_COLLECTION_NAME, argv[optind]);
+           }
+           strncpy(ctx->test_collection,argv[optind],SETEST_MAX_COLLECTION_NAME);
+           ctx->test_collection[SETEST_MAX_COLLECTION_NAME] = '\0';
 // Strip off file extension if given
            if (ends_with(ctx->test_collection,".fix") ||
                ends_with(ctx->test_collection,".exp")) {

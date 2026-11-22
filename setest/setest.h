@@ -8,7 +8,9 @@
 
 #define SETEST_MAX_FAILURE_ROWS 100
 #define SETEST_MAX_SYMBOL_SIZE 50
-#define SETEST_MAX_COMMAND_LENGTH 100
+#define SETEST_MAX_COMMAND_LENGTH (2 * AS_MAXCH)
+// test collection name: room for ".fix"/".exp" and '\0' in a file name buffer of AS_MAXCH
+#define SETEST_MAX_COLLECTION_NAME (AS_MAXCH - 5)
 
 #include "globals.h"
 #include "reader.h"
@@ -66,7 +68,7 @@ typedef struct {
       failures failures;
       } iteration;
     t_section section;
-    char file[SETEST_MAX_SYMBOL_SIZE];
+    char file[AS_MAXCH];
   } current;
 
 // For restriction to a single test case or test suite:
@@ -74,7 +76,7 @@ typedef struct {
 
 // Name of the test collection. 
 // 'test' will be expanded to 'test.fix'/'test.exp'    
-    char test_collection[SETEST_MAX_SYMBOL_SIZE];
+    char test_collection[AS_MAXCH];
 
 // In gen mode: pointer to output file
     FILE *out;

@@ -316,7 +316,7 @@ char *CALL_CONV swe_get_library_path(char *s)
  * for the Moon this gave errors of up to 13 mas (2026-11-22). */
 static TLS double tjd_calc = 0;
 static TLS AS_BOOL have_tjd_calc = FALSE;
-static int32 swe_calc_1(double tjd, int ipl, int32 iflag, double *xx, char *serr);
+static int32 swecalc_1(double tjd, int ipl, int32 iflag, double *xx, char *serr);
 
 int32 CALL_CONV swe_calc(double tjd, int ipl, int32 iflag, 
 	double *xx, char *serr) 
@@ -326,13 +326,13 @@ int32 CALL_CONV swe_calc(double tjd, int ipl, int32 iflag,
   AS_BOOL have_tjd_calc_sv = have_tjd_calc;
   tjd_calc = tjd;
   have_tjd_calc = TRUE;
-  retc = swe_calc_1(tjd, ipl, iflag, xx, serr);
+  retc = swecalc_1(tjd, ipl, iflag, xx, serr);
   tjd_calc = tjd_calc_sv;
   have_tjd_calc = have_tjd_calc_sv;
   return retc;
 }
 
-static int32 swe_calc_1(double tjd, int ipl, int32 iflag, 
+static int32 swecalc_1(double tjd, int ipl, int32 iflag, 
 	double *xx, char *serr) 
 {
   int i, j;

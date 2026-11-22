@@ -2,11 +2,13 @@
 
 TESTSUITE(7,"Apsides and orbital elements functions")
 
-double jd, xxnasc[6],xxndsc[6],xxperi[6],xxaphe[6], xxdret[20];
-int iflag, iephe; // Keep ephemeris selector separate from other flags
-char serr[255];
-int rc;
-swe_set_ephe_path(NULL);
+static double jd, xxnasc[6],xxndsc[6],xxperi[6],xxaphe[6], xxdret[20];
+static int iflag, iephe; // Keep ephemeris selector separate from other flags
+static char serr[255];
+static int rc;
+SUITE_INIT {
+  swe_set_ephe_path(NULL);
+}
 
 SETUP {
   iflag = GET_I(iflag);

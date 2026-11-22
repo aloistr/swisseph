@@ -121,12 +121,12 @@ void initialize_test_context( test_context *ctx );
 void evaluate_cmdline_options(int argc, char** argv, test_context *ctx);
 void run( test_context* ctx ) ;
 void cleanup(test_context* ctx);
-void print_help();
+void print_help(void);
 
-void print_header_data();
-void print_version();
-void print_library_info();
-void print_date_time_user( );
+void print_header_data(test_context *ctx);
+void print_version(test_context *ctx);
+void print_library_info(test_context *ctx);
+void print_date_time_user(test_context *ctx);
 void sha1_from_file(const char *name, SHA1HASH* hash);
 
 void open_testsuite(int id, char* description, test_context *ctx);

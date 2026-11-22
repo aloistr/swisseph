@@ -2,12 +2,14 @@
 
 TESTSUITE(6,"Houses functions")
 
-double cusps[37],ascmc[10], jd_ut, geolat, geolon, armc,xx[6];
-double cusp_speed[37], ascmc_speed[10];
-char serr[255], *sp;
-int rc, ihsy;
-swe_close();
-swe_set_ephe_path(NULL);
+static double cusps[37],ascmc[10], jd_ut, geolat, geolon, armc,xx[6];
+static double cusp_speed[37], ascmc_speed[10];
+static char serr[255], *sp;
+static int rc, ihsy;
+SUITE_INIT {
+  swe_close();
+  swe_set_ephe_path(NULL);
+}
 
 SETUP {
   *serr = '\0';

@@ -18,7 +18,12 @@ define(`TEST_NUMERIC',
 `errprint(__file__:__line__:` $2
 ')m4exit(1)')')dnl
 
-¢ TESTSUITE - generates a wrapping function for test cases
+¢ TESTSUITE - starts a test suite
+¢ Since 2026-11-22 a suite is no longer wrapped in one function with nested
+¢ functions (a gcc extension, not supported by clang): each suite_*.c file
+¢ becomes its own C file gen_suite_*.c with static variables and static
+¢ functions, and END_TESTSUITE writes the function testsuite_N().
+¢ run_tests(), which calls all suites, is made by testsuite_runner.m4.
 define(`TESTSUITE',`dnl
 ifdef(`SUITE_ID_'$1`',`errprint(__file__:__line__:` Error: suite id $1 already used
 ')m4exit(1)')dnl
@@ -28,23 +33,23 @@ define(`SUITE_NO',`$1')dnl
 define(`SUITE_DESCR',$2)dnl
 define(`HAS_SETUP',`0')dnl
 define(`HAS_TEARDOWN',`0')dnl
-void testsuite_$1(test_context *ctx) {divert(1)
+define(`HAS_INIT',`0')dnl
+divert(1)
   open_testsuite(SUITE_NO,patsubst(`regexp(`$*',`\(".*"\)',`\1')',`,',`, '),ctx);
-divert(2)dnl
-  if (is_suite_selected(SUITE_NO,ctx)) {
-    strcpy(ctx->current.file,"__file__");
-    testsuite_`'SUITE_NO`'(ctx);
-    close_testsuite(ctx);
-  }  
 divert(0)')
 
-¢ We need macro END_TESTSUITE to explicitly finish the testsuite
-define(`END_TESTSUITE',`undivert(3)undivert(1)
+¢ We need macro END_TESTSUITE to explicitly finish the testsuite:
+¢ testsuite_N() runs SUITE_INIT once, then the test cases
+define(`END_TESTSUITE',`void testsuite_`'SUITE_NO`'(test_context *ctx) {
+ifelse(HAS_INIT,`1',`  suite_init_`'SUITE_NO`'(ctx);
+')undivert(1)
 }')
 
-¢ SETUP and TEARDOWN are optional
-define(`SETUP',`define(`HAS_SETUP',`1')divert(3)void setup_`'SUITE_NO`'()')
-define(`TEARDOWN',`define(`HAS_TEARDOWN',`1')divert(3)void teardown_`'SUITE_NO`'()')
+¢ SUITE_INIT, SETUP and TEARDOWN are optional
+¢ SUITE_INIT holds the statements that run once before the test cases
+define(`SUITE_INIT',`define(`HAS_INIT',`1')static void suite_init_`'SUITE_NO`'(test_context *ctx)')
+define(`SETUP',`define(`HAS_SETUP',`1')static void setup_`'SUITE_NO`'(test_context *ctx)')
+define(`TEARDOWN',`define(`HAS_TEARDOWN',`1')static void teardown_`'SUITE_NO`'(test_context *ctx)')
 
 ¢ TESTCASE - a single test function
 ¢   - writes its own call in stream divert(1)
@@ -60,15 +65,15 @@ TEST_NUMERIC($1,` Error: testcase id $1 in suite 'SUITE_NO` is not a positive in
       ctx->current.iteration.id++;
       open_iteration( ctx->current.iteration.id, ctx );
       if (is_iteration_selected(ctx)) {
-        ifelse(HAS_SETUP,`1',`setup_`'SUITE_NO`'();')
+        ifelse(HAS_SETUP,`1',`setup_`'SUITE_NO`'(ctx);')
         testcase_`'SUITE_NO`'_$1(ctx);
-        ifelse(HAS_TEARDOWN,`1',`teardown_`'SUITE_NO`'();')
+        ifelse(HAS_TEARDOWN,`1',`teardown_`'SUITE_NO`'(ctx);')
         close_iteration(ctx);
       }
-    } while (has_more_iterations(ctx)); 
+    } while (has_more_iterations(ctx));
     close_testcase(ctx);
   }
-divert(0)void testcase_`'SUITE_NO`'_$1(test_context *ctx)')
+divert(0)static void testcase_`'SUITE_NO`'_$1(test_context *ctx)')
 
 ¢ CHECK_xx macro family
 ¢   - macro is necessary, since the symbol is needed twice: As a string "$1", 

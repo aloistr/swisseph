@@ -1,8 +1,10 @@
 #include "testsuite_facade.h"
 TESTSUITE(4, "Some computations in sidereal mode")
-swe_set_ephe_path(NULL);
+SUITE_INIT {
+  swe_set_ephe_path(NULL);
+}
 
-    void set_sid_mode() {
+    static void set_sid_mode(test_context *ctx) {
       double t0 = GET_D(t0),
              ayan_t0 = GET_D(ayan_t0);
       int    sid_mode = GET_I(sid_mode);
@@ -12,7 +14,7 @@ swe_set_ephe_path(NULL);
     TESTCASE(1, "swe_set_aynamsa( ) - Calc planet using a specific Ayanamsa") {
 
     // Set specified sidereal mode
-       set_sid_mode( );
+       set_sid_mode(ctx);
 
     // swe_calc
       double jd = GET_D(jd);
@@ -33,7 +35,7 @@ swe_set_ephe_path(NULL);
       char serr_ex_ut[255], serr_ex[255];
       *serr_ex_ut = *serr_ex = '\0';
 
-      set_sid_mode( );
+      set_sid_mode(ctx);
 
       double jd = GET_D(jd);
       int iephe = GET_I(iephe);
@@ -55,7 +57,7 @@ swe_set_ephe_path(NULL);
 
     TESTCASE(3, "swe_get_aynamsa and swe_get_ayanamsa_ut") {
 
-      set_sid_mode( );
+      set_sid_mode(ctx);
 
       double jd = GET_D(jd);
 
@@ -72,7 +74,7 @@ swe_set_ephe_path(NULL);
     TESTCASE(4, "Initialization problem with swe_set_sid_mode") {
 
       // Set sidereal mode as given in fixture file
-      set_sid_mode( );
+      set_sid_mode(ctx);
 
       // Get ayanamsa...
       double jd = GET_D(jd);

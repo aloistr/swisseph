@@ -2,9 +2,11 @@
 
 TESTSUITE(5,"Date and time functions")
 
-  char serr[255];
-  int rc;
-swe_set_ephe_path(NULL);
+  static char serr[255];
+  static int rc;
+SUITE_INIT {
+  swe_set_ephe_path(NULL);
+}
 
   SETUP {
     *serr = '\0';

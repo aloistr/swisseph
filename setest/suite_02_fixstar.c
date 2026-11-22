@@ -2,13 +2,15 @@
 
 TESTSUITE(2,"Fixed stars")
 
-double xx[6],jd;
-int rc, iflag, ipl;
-char serr[255], star[100];
+static double xx[6],jd;
+static int rc, iflag, ipl;
+static char serr[255], star[100];
 
 // swe_fixstar doesn't read env.var. SE_EPHE_PATH
 // swe_calc does. So for this suite, we have to read it explicitly
-swe_set_ephe_path(NULL);
+SUITE_INIT {
+  swe_set_ephe_path(NULL);
+}
 
 
 TESTCASE(1,"Fixed stars with Ephemeris Time") {

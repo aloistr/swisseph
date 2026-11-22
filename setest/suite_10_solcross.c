@@ -3,12 +3,14 @@
 
 TESTSUITE(10,"Various swe_*cross calls ")
 
-double xx[6],jd;
-int iflag, iephe; // Keep ephemeris selector separate from other flags
-char serr[255];
+static double xx[6],jd;
+static int iflag, iephe; // Keep ephemeris selector separate from other flags
+static char serr[255];
 
-swe_set_ephe_path(NULL);
-swe_set_jpl_file("de441.eph");
+SUITE_INIT {
+  swe_set_ephe_path(NULL);
+  swe_set_jpl_file("de441.eph");
+}
 
 SETUP {
   iephe = GET_I(iephe);

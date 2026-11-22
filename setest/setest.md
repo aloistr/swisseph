@@ -81,6 +81,22 @@ version, with the header; every difference gives a warning on stderr,
 and the tests continue. Files of other centuries are not checked.
 
 
+# Writing a suite (since 2026-11-22)
+
+Each suite_*.c file is turned into its own C file gen_suite_*.c by
+testsuite.m4; run_tests() is made by testsuite_runner.m4. The suite code
+is at file scope, so that setest builds with gcc and clang:
+
+- declare variables at suite level as `static`
+- put statements that run once before the test cases into
+  `SUITE_INIT { ... }`, e.g. `swe_set_ephe_path(NULL);`
+- a helper function at suite level is `static` and gets `ctx` as a
+  parameter if it uses GET_x macros (see set_sid_mode in suite 4)
+- SETUP, TEARDOWN and TESTCASE work as before
+
+The suites run in the order of their file names.
+
+
 # History
 ---------------
 ## 25-jan-21 Dieter

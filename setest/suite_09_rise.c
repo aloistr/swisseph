@@ -2,12 +2,14 @@
 
 TESTSUITE(9,"risings, heliacal risings")
 
-double jd, xxtret[10];
-double geolat, geolon, altitude, tret;
-double atpress, attemp, athumid, atktot, obsage, obsSN;
-char serr[255], star[100], object[100];
-int rc, ipl;
-swe_set_ephe_path(NULL);
+static double jd, xxtret[10];
+static double geolat, geolon, altitude, tret;
+static double atpress, attemp, athumid, atktot, obsage, obsSN;
+static char serr[255], star[100], object[100];
+static int rc, ipl;
+SUITE_INIT {
+  swe_set_ephe_path(NULL);
+}
 
 SETUP {
   *serr = '\0';

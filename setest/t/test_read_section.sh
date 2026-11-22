@@ -4,11 +4,13 @@ echo "When choosing a test of the 2nd suite, the reader must get the correct sec
 
 cd ..
 
-TESTCASE_2_1=$( grep -n -m 1 testcase_2_1 generated_tests.c | sed -r 's/([0-9]+).*/\1/')
+# Since 2026-11-22 each suite has its own generated file (before: generated_tests.c)
+GENFILE=gen_suite_02_fixstar.c
+TESTCASE_2_1=$( grep -n -m 1 testcase_2_1 ${GENFILE} | sed -r 's/([0-9]+).*/\1/')
 
 cat <<EOF >cmd.gdb
 file setest
-b generated_tests.c:${TESTCASE_2_1} if ctx->current.iteration.id == 1
+b ${GENFILE}:${TESTCASE_2_1} if ctx->current.iteration.id == 1
 r t/mytest -s 2.1.1
 p *ctx->reader->block[1].entry[0].value
 EOF

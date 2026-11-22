@@ -4,11 +4,13 @@
 #define TESTSUITE_FACADE_H
 #include "setest.h"
 
-#define TESTSUITE(suiteno,suitedescription) void testsuite_ ## suiteno(test_context* ctx) {
-#define END_TESTSUITE }
-#define TESTCASE(testno,description) void testcase_ ## testno(test_context* ctx)
-#define SETUP void setup(test_context *ctx)
-#define TEARDOWN void teardown(test_context *ctx)
+// Since 2026-11-22 the suite code is at file scope (no nested functions)
+#define TESTSUITE(suiteno,suitedescription)
+#define END_TESTSUITE
+#define SUITE_INIT static void suite_init(test_context *ctx)
+#define TESTCASE(testno,description) static void testcase_ ## testno(test_context* ctx)
+#define SETUP static void setup(test_context *ctx)
+#define TEARDOWN static void teardown(test_context *ctx)
 
 // Will never print anything (only for compiler)
 #define CHECK_DD(symbol,length) printf( "%s: %p\n", #symbol, (void *)symbol);
@@ -31,7 +33,7 @@
 
 
 
-#include "globals_suite.c"
+#include "globals_suite.h"
 
 #endif
 

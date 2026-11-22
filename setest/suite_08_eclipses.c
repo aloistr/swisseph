@@ -2,11 +2,13 @@
 
 TESTSUITE(8,"Eclipses")
 
-double jd, xxtret[10], xxgeopos[3], xxattr[20];
-double geolat, geolon, altitude;
-char serr[255], star[100];;
-int rc, ipl;
-swe_set_ephe_path(NULL);
+static double jd, xxtret[10], xxgeopos[3], xxattr[20];
+static double geolat, geolon, altitude;
+static char serr[255], star[100];
+static int rc, ipl;
+SUITE_INIT {
+  swe_set_ephe_path(NULL);
+}
 
 SETUP {
   *serr = '\0';

@@ -243,8 +243,13 @@ void open_testsuite(int id, char* description, test_context *ctx) {
 
 void prepare_precisions( test_context *ctx ) {
   const char *prec_all = NULL;
+// Start from the default in every test case: a precision of an earlier test case does not carry over
+  ctx->precisions.all = DEFAULT_PRECISION;
+  for (int i=0;i<6;i++) ctx->precisions.xx[i] = DEFAULT_PRECISION;
+  ctx->precisions.from_parameters = false;
   if (ctx->parameters.source) {
     prec_all = read_value(&ctx->parameters, "precision",GENERAL,GENERAL);
+    if (prec_all) ctx->precisions.from_parameters = true;
   }
   if (!prec_all) {
     prec_all = read_value(&ctx->reader, "precision",TESTCASE,GENERAL);
@@ -265,6 +270,7 @@ void prepare_precisions( test_context *ctx ) {
   const char* prec_xx = NULL;
   if (ctx->parameters.source) {
     prec_xx = read_value(&ctx->parameters, "precision-xx",GENERAL,GENERAL);
+    if (prec_xx) ctx->precisions.from_parameters = true;
   }
   if (!prec_xx) {
     prec_xx = read_value(&ctx->reader, "precision-xx",TESTCASE,GENERAL);

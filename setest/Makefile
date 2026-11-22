@@ -9,7 +9,8 @@ OBJECTS := setest.o \
            testdata.o \
            multivalues.o \
            reader.o \
-           globals.o
+           globals.o \
+           tolerances.o
 
 all: $(TARGETS)
 
@@ -63,5 +64,6 @@ checkpoints.o: checkpoints.c checkpoints.h setest.h
 testdata.o: testdata.c testdata.h globals.h multivalues.h setest.h
 multivalues.o: testdata.h globals.h multivalues.h setest.h
 reader.o: reader.h globals.h
+tolerances.o: tolerances.c setest.h
 
 .PHONY: all clean test

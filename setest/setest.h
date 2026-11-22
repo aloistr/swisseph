@@ -94,6 +94,7 @@ typedef struct {
     struct st_precisions {
         double all;
         double xx[6];
+        bool from_parameters;   // precision given with -p: used for all values instead of tolerances.c
     } precisions;
 
 // Preprocess command
@@ -150,6 +151,7 @@ int get_disabled(const t_section section,test_context *ctx);
 #include "checkpoints.h"
 
 entry get_entry( const char *name, const st_type type, const test_context *ctx);
+double tolerance_for(const char *name, const double exp, test_context *ctx);
 
 double get_d( const char* name, const test_context *ctx);
 int get_i( const char* name, const test_context *ctx);

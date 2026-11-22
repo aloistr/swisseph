@@ -127,7 +127,13 @@ void check_equals_d(const double act, const double exp, const char* name, test_c
 }
 
 void check_equals_d_internal(const double act, const double exp, const char* name, const double precision, test_context *ctx) {
-  if (isnan(act) || isnan(exp) || fabs(exp - act) > precision ) {
+  double tol = precision;
+// Tolerance per kind of quantity (tolerances.c), unless a precision was given with -p
+  if (!ctx->precisions.from_parameters) {
+    double t = tolerance_for(name, exp, ctx);
+    if (t >= 0) tol = t;
+  }
+  if (isnan(act) || isnan(exp) || fabs(exp - act) > tol ) {
     failure f = {
       .class = WRONG_VALUE,
       .exp   = { .value.d = exp, .type = D },

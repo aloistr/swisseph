@@ -44,6 +44,31 @@ Notes:
   first (see the history of 25-jan-21).
 
 
+# Tolerances
+
+Since 2026-11-22 every compared floating-point value has a tolerance
+according to its kind of quantity (tolerances.c), in the units of the
+value:
+
+    angles (positions, cusps, ayanamsa, azimuth, altitude)  3e-8 deg = 0.1 mas
+                                       (radians with SEFLG_RADIANS)
+    position at a found crossing time (suite 10)     1 mas
+    distances                                        1e-10 AU = 15 m
+    diameter of the core shadow                      0.015 km
+    speeds (per day)                                 1e-9
+    times                                            1e-8 day = about 1 ms
+    magnitudes, fractions, eccentricity, saros       1e-7
+    house and sector positions                       1e-9
+
+For large values the tolerance is at least 1e-14 of the expected value.
+Integers and strings must be equal.
+
+`precision` and `precision-xx` in t.fix are used only for values that
+tolerances.c does not know; they now apply only to their own test case
+(before, they carried over to all later test cases). With
+`setest -p "precision:X" t` one tolerance X is used for all values.
+
+
 # History
 ---------------
 ## 25-jan-21 Dieter

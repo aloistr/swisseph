@@ -8,7 +8,7 @@ int iflag, iephe; // Keep ephemeris selector separate from other flags
 char serr[255];
 
 swe_set_ephe_path(NULL);
-swe_set_jpl_file("de431.eph");
+swe_set_jpl_file("de441.eph");
 
 SETUP {
   iephe = GET_I(iephe);

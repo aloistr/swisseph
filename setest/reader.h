@@ -65,6 +65,7 @@ t_section read_block(
 t_section section_line(const char* line, const char** section_keywords);
 void push_row(t_entry entry, t_rawtab *rawtab);
 void clear_table(t_rawtab *rawtab);
+void strip_comment(char *value);
 
 
 #endif

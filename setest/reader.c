@@ -108,6 +108,25 @@ char* find_value(const char *name, const t_rawtab *table) {
 
 }
 
+// Strip a trailing comment from a value: a '#' at the start of the value
+// or after a blank begins it, e.g. "44 # ','" as written by setest -g.
+// Until 2026-11-22 the comment was part of the value, so "44 # ','" was
+// taken as a list because of the comma ("Could not parse multivalue
+// expression"), and "625000.0 # 2.2.-3001" as a range because of the '-'.
+void strip_comment(char *value) {
+  for (char *p = value; *p != '\0'; p++) {
+    if (*p == '#' && (p == value || p[-1] == ' ' || p[-1] == '\t')) {
+      *p = '\0';
+      break;
+    }
+  }
+  // remove the blanks before the comment
+  size_t len = strlen(value);
+  while (len > 0 && (value[len-1] == ' ' || value[len-1] == '\t')) {
+    value[--len] = '\0';
+  }
+}
+
 t_section read_block(
   FILE* source, 
   t_rawtab *table, 
@@ -137,6 +156,7 @@ t_section read_block(
       case 1:
         e.value[0] = '\0';  // ... and continue with case 2:
       case 2:
+        strip_comment(e.value);
         push_row(e,table);
         break;
       case 0:

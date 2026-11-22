@@ -308,7 +308,31 @@ char *CALL_CONV swe_get_library_path(char *s)
  * program tests only.
  * -> If no speed flag has been specified, no speed will be returned.
  */
+/* date of the current swe_calc() call. sweph() chooses the ephemeris file
+ * by this date also for the other positions computed in the same call,
+ * e.g. the light-time corrected ones, which are computed for slightly
+ * earlier dates. Otherwise, near the start of a file, a true position and
+ * its light-time corrected position could come from two different files;
+ * for the Moon this gave errors of up to 13 mas (2026-11-22). */
+static TLS double tjd_calc = 0;
+static TLS AS_BOOL have_tjd_calc = FALSE;
+static int32 swe_calc_1(double tjd, int ipl, int32 iflag, double *xx, char *serr);
+
 int32 CALL_CONV swe_calc(double tjd, int ipl, int32 iflag, 
+	double *xx, char *serr) 
+{
+  int32 retc;
+  double tjd_calc_sv = tjd_calc;
+  AS_BOOL have_tjd_calc_sv = have_tjd_calc;
+  tjd_calc = tjd;
+  have_tjd_calc = TRUE;
+  retc = swe_calc_1(tjd, ipl, iflag, xx, serr);
+  tjd_calc = tjd_calc_sv;
+  have_tjd_calc = have_tjd_calc_sv;
+  return retc;
+}
+
+static int32 swe_calc_1(double tjd, int ipl, int32 iflag, 
 	double *xx, char *serr) 
 {
   int i, j;
@@ -2255,6 +2279,7 @@ static int sweph(double tjd, int ipli, int ifno, int32 iflag, double *xsunb, AS_
   int i, ipl, retc, subdirlen;
   char s[2 * AS_MAXCH], subdirnam[AS_MAXCH], fname[AS_MAXCH], *sp;
   double t, tsv;       
+  double tsel = tjd;    /* date by which the file is chosen, see below */
   double tjd_nom = tjd; /* a date in the nominal range of the file opened */
   double tnom1_prev = 0; /* end of that range if the previous file was opened */
   double xemb[6], xx[6], *xp;
@@ -2291,14 +2316,21 @@ static int sweph(double tjd, int ipli, int ifno, int32 iflag, double *xsunb, AS_
   /****************************** 
    * get correct ephemeris file * 
    ******************************/
+  /* the file is chosen by the date tsel: the date of the current swe_calc()
+   * call, if tjd is near it (light-time corrected positions of this call),
+   * otherwise tjd itself */
+  if (have_tjd_calc && fabs(tjd - tjd_calc) <= 1)
+    tsel = tjd_calc;
+  tjd_nom = tsel;
+reselect:
   if (fdp->fptr != NULL) {
     /* if tjd is beyond file range, close old file.
      * if new asteroid, close old file.
-     * if tjd is beyond the file's nominal range (in the overlap with the
+     * if tsel is beyond the file's nominal range (in the overlap with the
      * neighbouring file), close it too: otherwise the file used in the
      * overlap would depend on the order of earlier calls. */
     if (tjd < fdp->tfstart || tjd > fdp->tfend
-      || tjd < fdp->tnom0 || tjd >= fdp->tnom1
+      || tsel < fdp->tnom0 || tsel >= fdp->tnom1
       || (ipl == SEI_ANYBODY && ipli != pdp->ibdy)) { 	
       fclose(fdp->fptr);
       fdp->fptr = NULL;
@@ -2312,7 +2344,7 @@ static int sweph(double tjd, int ipli, int ifno, int32 iflag, double *xsunb, AS_
   }
   /* if sweph file not open, find and open it */
   if (fdp->fptr == NULL) {
-    swi_gen_filename(tjd, ipli, fname); 
+    swi_gen_filename(tsel, ipli, fname); 
     strcpy(subdirnam, fname);
     sp = strrchr(subdirnam, (int) *DIR_GLUE);
     if (sp != NULL) {
@@ -2368,10 +2400,10 @@ again:
     // file); without this check, read_const() was called with fptr == NULL
     // and crashed. swi_fopen() with ifno -1, so that a failed search does
     // not change fdp->fnam.
-      if (1 && retc == OK && tjd < swed.fidat[ifno].tfstart + 1) {
+      if (1 && retc == OK && tsel < swed.fidat[ifno].tfstart + 1) {
         char fname2[AS_MAXCH];
         FILE *fptest;
-        swi_gen_filename(tjd - 1000, ipli, fname2);
+        swi_gen_filename(tsel - 1000, ipli, fname2);
         if (strcmp(fname2, fname) != 0
           && (fptest = swi_fopen(-1, fname2, swed.ephepath, NULL)) != NULL) {
           fclose(fptest);
@@ -2383,7 +2415,7 @@ again:
           if (fdp->fptr == NULL)
             return(NOT_AVAILABLE);
           retc = read_const(ifno, serr);
-          tjd_nom = tjd - 1000;
+          tjd_nom = tsel - 1000;
         }
       }
     // tjd too close to file end => use next file (not necessary)
@@ -2420,6 +2452,15 @@ again:
   /* if first ephemeris file (J-3000), it might start a mars period
    * after -3000. if last ephemeris file (J3000), it might end a
    * 4000-day-period before 3000. */
+  if ((tjd < fdp->tfstart || tjd > fdp->tfend) && tsel != tjd) {
+    /* the file chosen by the date of the swe_calc() call does not contain
+     * tjd: choose the file by tjd itself */
+    fclose(fdp->fptr);
+    fdp->fptr = NULL;
+    tsel = tjd;
+    tjd_nom = tjd;
+    goto reselect;
+  }
   if (tjd < fdp->tfstart || tjd > fdp->tfend) {
     char sd1[60], sd2[60];
     if (serr != NULL) {

@@ -97,6 +97,28 @@ is at file scope, so that setest builds with gcc and clang:
 The suites run in the order of their file names.
 
 
+# Differences between two releases (since 2026-11-22)
+
+setest_diff_report.pl groups the failures of a setest run by cause and
+test case. To compare SE3 with SE2, run the SE3 setest against the SE2
+t.exp (both made from the same t.fix) and give the report both files:
+
+    cd /home/swe3home/setest
+    ./setest /home/swehome/setest/t > se2_se3.out
+    perl setest_diff_report.pl /home/swehome/setest/t.exp se2_se3.out
+
+Each failing iteration goes into the first class that fits: SEFLG_MOSEPH
+(Moshier in SE2, Swiss Ephemeris in SE3), ayanamshas 9-15 (t0 before
+year 0), date before -1500, date after 2900, other. Per test case the
+report gives the failing iterations, the largest difference per quantity,
+and the dates, bodies and ayanamshas. The classes are what the failing
+iterations have in common, not verified causes.
+
+Result on 2026-11-22 (SE3 e5e0f1f against SE2.10.04 d9bce31): 1595
+failures in 659 of 18919 iterations, all in the first four classes;
+report in /home/dieter/sweph3/se2_se3_diffs.txt.
+
+
 # History
 ---------------
 ## 25-jan-21 Dieter

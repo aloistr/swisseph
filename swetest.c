@@ -4023,11 +4023,7 @@ static char *hms(double x, int32 iflag)
 
 static void do_printf(char *info)
 {
-#ifdef _WINDOWS
-  fprintf(fp, info);
-#else
   fputs(info,stdout);
-#endif
 }
 
 /* make_ephemeris_path().

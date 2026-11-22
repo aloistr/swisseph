@@ -100,7 +100,7 @@ TESTCASE(8,"swe_lun_eclipse_when( ) ") {
 TESTCASE(9,"swe_lun_eclipse_when_loc( ) ") {
   jd = GET_D(jd);
   double geopos[3] = {geolon, geolat, altitude};
-  rc = swe_sol_eclipse_when_loc(jd, GET_I(iephe), geopos, xxtret, xxattr, GET_I(backward), serr);
+  rc = swe_lun_eclipse_when_loc(jd, GET_I(iephe), geopos, xxtret, xxattr, GET_I(backward), serr);
   CHECK_I(rc);
   CHECK_DD(xxtret,10);
   CHECK_DD(xxattr,11);

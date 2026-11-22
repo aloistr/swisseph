@@ -9,13 +9,39 @@ The test procedure with git is:
 
 - branch 'devel' is a branch with correctes or additions to the source code
 
-- checkout master branch, command: make text.exp
+- checkout master branch, command: make test.exp
 
   It builds setest/setest, statically linked with SE
 
   It  creates expectations values setest/t.exp
 
 - checkout branch devel, command: make test
+
+
+# How to make a new t.exp
+
+t.exp holds the expected values. setest writes it itself (`setest -g t`)
+from the fixture file t.fix, with the library setest is linked with and
+the data files found in the ephemeris path. Generate it again whenever
+the library or the data files change (e.g. new *.se1 files); otherwise
+`setest t` reports failures.
+
+From the top directory of the repository:
+
+    make libswe.a              # static library from the current sources
+    (cd setest && make clean)  # make does not relink setest after a library change
+    make test.exp              # builds setest, runs ./setest -g t, writes setest/t.exp
+    make test                  # runs ./setest t, should report 0 failures
+
+Notes:
+
+- Keep a copy of the old t.exp if you want to compare.
+- Inside setest/, `make t.exp` does nothing if t.exp exists (the rule
+  has no prerequisites); use `./setest -g t` instead.
+- Inside setest/, `make test` runs the self-tests of setest (t/test.sh),
+  not the Swiss Ephemeris tests.
+- If constants in swephexp.h have changed, run generate_prepare_fix_m4.pl
+  first (see the history of 25-jan-21).
 
 
 # History

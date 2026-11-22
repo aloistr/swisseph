@@ -69,6 +69,18 @@ tolerances.c does not know; they now apply only to their own test case
 `setest -p "precision:X" t` one tolerance X is used for all values.
 
 
+# Environment in the header of t.exp
+
+Since 2026-11-22 `setest -g` writes the data files the library uses into
+the header of the .exp file (environment.c): for planets, Moon, main
+asteroids and Eros the file used for J2000 with its DE number and SHA1,
+for the JPL file name, size and date, and whether the EOP files for the
+JPL Horizons mode exist (env-eop-files). Comment lines give the full paths.
+In test mode setest computes the same and compares it, and the library
+version, with the header; every difference gives a warning on stderr,
+and the tests continue. Files of other centuries are not checked.
+
+
 # History
 ---------------
 ## 25-jan-21 Dieter

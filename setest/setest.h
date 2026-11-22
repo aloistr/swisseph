@@ -152,6 +152,8 @@ int get_disabled(const t_section section,test_context *ctx);
 
 entry get_entry( const char *name, const st_type type, const test_context *ctx);
 double tolerance_for(const char *name, const double exp, test_context *ctx);
+void print_environment(test_context *ctx);
+void check_environment(test_context *ctx);
 
 double get_d( const char* name, const test_context *ctx);
 int get_i( const char* name, const test_context *ctx);

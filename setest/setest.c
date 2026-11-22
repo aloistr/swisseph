@@ -22,93 +22,101 @@ int main(int argc, char** argv) {
 }
 
 #if 1
-void run( test_context* ctx ) {
-  auto void general_setup(), general_cleanup(), print_stats( ), open_exp_or_fix_reader(), open_output_stream(), check_file_existence( ) ;
-  general_setup( );
-  read_next_block( & ctx->reader, GENERAL );
-  if (ctx->parameters.source) read_next_block( & ctx->parameters, GENERAL );
-  run_tests( ctx );
-  print_stats( );
-  general_cleanup( );
-// --- Done. Details follow
-  void general_setup() {
-    check_file_existence( );
-    open_exp_or_fix_reader( );
-    open_output_stream( );
-    if (!ctx->testmode) print_header_data( ctx );
+// Helper functions of run(); until 2026-11-22 they were nested functions
+// inside run() (a gcc extension that clang does not support)
+static void check_file_existence( test_context* ctx ) {
+  char file[AS_MAXCH];
+  sprintf(file,"%s.fix",ctx->test_collection);
+  if (ctx->testmode) {
+// Test mode: Need expectations file
+    sprintf(file,"%s.exp",ctx->test_collection);
+    if (access(file,F_OK)==-1) {
+      fprintf(stderr,
+          "Cannot read expectations '%s'.\nGenerate it with 'setest -g %s\n",
+          file,ctx->test_collection);
+      exit(EXIT_FAILURE);
+    }
+  } else {
+// Gen mode: Need fixture file
+    if (access(file,F_OK)==-1) {
+      fprintf(stderr,
+          "There is no fixture file '%s'.\nYou may generate it with 'make %s'.\n",
+          file,file);
+      exit(EXIT_FAILURE);
+    }
   }
-  void general_cleanup() {
-    close_reader( & ctx->reader );
-    close_reader( & ctx->parameters );
-    if (ctx->out && ctx->out != stdout) fclose(ctx->out);
+}
+
+static void open_exp_or_fix_reader( test_context* ctx ) {
+  char file[AS_MAXCH];
+  strcpy(file,ctx->test_collection);
+  strcat(file,ctx->testmode ? ".exp" : ".fix" );
+  if (is_empty(ctx->prepare_fixture_command)) {
+    sprintf(ctx->prepare_fixture_command,
+      "%s %s",
+      PREPARE_FIXTURE_COMMAND,
+      file);
   }
-  void open_exp_or_fix_reader() {
-    char file[AS_MAXCH];
+  ctx->reader = open_reader(
+    file,
+    ctx->testmode ? NULL :  ctx->prepare_fixture_command,
+    SECTION_KEYWORDS
+  );
+}
+
+static void open_output_stream( test_context* ctx ) {
+  char file[AS_MAXCH];
+  if (!ctx->testmode) {
     strcpy(file,ctx->test_collection);
-    strcat(file,ctx->testmode ? ".exp" : ".fix" );
-    if (is_empty(ctx->prepare_fixture_command)) {
-      sprintf(ctx->prepare_fixture_command,
-        "%s %s",
-        PREPARE_FIXTURE_COMMAND,
-        file);
-    }
-    ctx->reader = open_reader( 
-      file,
-      ctx->testmode ? NULL :  ctx->prepare_fixture_command,
-      SECTION_KEYWORDS
-    ); 
-  }
-  void open_output_stream() {
-    char file[AS_MAXCH];
-    if (!ctx->testmode) {
-      strcpy(file,ctx->test_collection);
-      strcat(file,".exp");
-      ctx->out = fopen(file,"w");
-      if (!ctx->out) {
-        fprintf(stderr,
-                "Can't open file '%s' for output... using stdout\n"
-                ,file);
-        ctx->out = stdout;
-      }  
-    }
-    else {
+    strcat(file,".exp");
+    ctx->out = fopen(file,"w");
+    if (!ctx->out) {
+      fprintf(stderr,
+              "Can't open file '%s' for output... using stdout\n"
+              ,file);
       ctx->out = stdout;
     }
   }
-  void print_stats( ) {
-    printf( "%s '%s': Total %d/%d/%d", 
-      ctx->testmode ? "Testmode" : "gen-mode",
-      ctx->test_collection,
-      ctx->count.testsuite,
-      ctx->count.testcase,
-      ctx->count.iteration);
-    if (ctx->testmode) {
-      printf( " ... %d failures in %d iterations",ctx->count.failures, ctx->count.failed_iterations );
-    }
-    printf(".\n");
-    }
-  void check_file_existence( ) {
-    char file[AS_MAXCH];
-    sprintf(file,"%s.fix",ctx->test_collection);
-    if (ctx->testmode) {
-// Test mode: Need expectations file
-      sprintf(file,"%s.exp",ctx->test_collection);
-      if (access(file,F_OK)==-1) {
-        fprintf(stderr,
-            "Cannot read expectations '%s'.\nGenerate it with 'setest -g %s\n",
-            file,ctx->test_collection);
-        exit(EXIT_FAILURE);
-      }
-    } else {
-// Gen mode: Need fixture file
-      if (access(file,F_OK)==-1) {
-        fprintf(stderr,
-            "There is no fixture file '%s'.\nYou may generate it with 'make %s'.\n",
-            file,file);
-        exit(EXIT_FAILURE);
-      }
-    }
+  else {
+    ctx->out = stdout;
   }
+}
+
+static void general_setup( test_context* ctx ) {
+  check_file_existence( ctx );
+  open_exp_or_fix_reader( ctx );
+  open_output_stream( ctx );
+  if (!ctx->testmode) print_header_data( ctx );
+}
+
+static void general_cleanup( test_context* ctx ) {
+  close_reader( & ctx->reader );
+  close_reader( & ctx->parameters );
+  if (ctx->out && ctx->out != stdout) fclose(ctx->out);
+}
+
+static void print_stats( test_context* ctx ) {
+  printf( "%s '%s': Total %d/%d/%d",
+    ctx->testmode ? "Testmode" : "gen-mode",
+    ctx->test_collection,
+    ctx->count.testsuite,
+    ctx->count.testcase,
+    ctx->count.iteration);
+  if (ctx->testmode) {
+    printf( " ... %d failures in %d iterations",ctx->count.failures, ctx->count.failed_iterations );
+  }
+  printf(".\n");
+}
+
+void run( test_context* ctx ) {
+  general_setup( ctx );
+  read_next_block( & ctx->reader, GENERAL );
+  if (ctx->parameters.source) read_next_block( & ctx->parameters, GENERAL );
+// Test mode: warn if the data files differ from those recorded in the .exp file
+  if (ctx->testmode) check_environment( ctx );
+  run_tests( ctx );
+  print_stats( ctx );
+  general_cleanup( ctx );
 }
 
 void initialize_test_context( test_context *ctx ) {
@@ -130,9 +138,19 @@ void initialize_test_context( test_context *ctx ) {
   strcpy(ctx->test_collection, DEFAULT_TEST_COLLECTION );
 }
 
+// Option -s suite.testcase.iteration; until 2026-11-22 a nested function
+static void parse_select(const char *optarg,test_key *selected) {
+  int n = sscanf(optarg,"%d.%d.%d",
+                 &selected->testsuite,
+                 &selected->testcase,
+                 &selected->iteration);
+  if (n == 0) {
+    printf("Don't understand argument '%s' - ignored.\n",optarg);
+  }
+}
+
 void evaluate_cmdline_options(int argc, char** argv, test_context *ctx) {
   int c;
-  auto void parse_select(const char *optarg,test_key *selected);
   struct option long_options[] = {
     { "gen",        no_argument,       0, 'g' },
     { "verbose",    no_argument,       0, 'v' },
@@ -205,15 +223,6 @@ void evaluate_cmdline_options(int argc, char** argv, test_context *ctx) {
        }
      }
   }
-  void parse_select(const char *optarg,test_key *selected) {
-    int n = sscanf(optarg,"%d.%d.%d",
-                   &selected->testsuite,
-                   &selected->testcase,
-                   &selected->iteration);
-    if (n == 0) {
-      printf("Don't understand argument '%s' - ignored.\n",optarg);
-    }
-  }   
 }
 #endif
 
@@ -415,6 +424,7 @@ void print_header_data(test_context *ctx) {
   print_date_time_user(ctx);
   print_version(ctx);
   print_library_info(ctx);
+  print_environment(ctx);
 }
 
 void print_date_time_user(test_context *ctx) {

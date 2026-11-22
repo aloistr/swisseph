@@ -15,9 +15,16 @@ int multivalues_get_index(const char* name,mvalues_tab* multivalues) {
   return -1;
 }
 
-const typed_value* multivalues_get_next( int n, mvalues_tab* multivalues) {
+// Check if all the previous multivalues just had a cycle finished
+// (until 2026-11-22 a nested function in multivalues_get_next())
+static bool previous_finished( int n, mvalues_tab* multivalues ) {
+  for (int j=0; j<n; j++) {
+    if (!multivalues->mv[j].carry) return false;
+  }
+  return true;
+}
 
-  auto bool previous_finished( );
+const typed_value* multivalues_get_next( int n, mvalues_tab* multivalues) {
 
   mvalues* mv = & multivalues->mv[n];
 
@@ -34,14 +41,6 @@ const typed_value* multivalues_get_next( int n, mvalues_tab* multivalues) {
 
 // Return ref to next (or current) value
   return & mv->mvalue_entries[mv->i];
-
-// Check if all the previous multivalues just had a cycle finished
-  bool previous_finished() {
-    for (int j=0; j<n; j++) {
-      if (!multivalues->mv[j].carry) return false;
-    }
-    return true;
-  }
 
 }
 

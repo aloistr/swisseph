@@ -1,8 +1,19 @@
-localtime: 22.11.2026 14:29:21
+localtime: 22.11.2026 14:38:56
 user: alois
 swisseph-version: 2.10.04
 shared-lib-fname: ./setest
-shared-lib-sha1: 0D8A67E04480416E22A642CE08C4C44CF4A5F9A2
+shared-lib-sha1: 975BEC3E1A35AC1231698B76C27E1E573E2B02F3
+# env-planet-file: /home/ephe/sepl_18.se1
+env-planet-file: sepl_18.se1 DE441 SHA1:6C0EEFA547E74C27A8E6492B33C9B2A8E0C7E96B
+# env-moon-file: /home/ephe/semo_18.se1
+env-moon-file: semo_18.se1 DE441 SHA1:3C21B0657BF073F76BB7D7E40F96992D77DFEA5A
+# env-asteroid-file: /home/ephe/seas_18.se1
+env-asteroid-file: seas_18.se1 DE441 SHA1:C47434C95F404D52E9878F794DEA8D72433D6DBD
+# env-eros-file: /home/ephe/ast0/se00433.se1
+env-eros-file: se00433.se1 DE441 SHA1:12D5FF6CA6F6290DB45169648E49AD60409C1ABE
+# env-jpl-file: /home/ephe/de441.eph
+env-jpl-file: de441.eph size:2788676624 mtime:2023-07-25
+env-eop-files: present
 TESTSUITE
   section-id: 1
   section-descr: Various swe_calc calls in different modes

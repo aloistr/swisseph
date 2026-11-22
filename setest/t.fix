@@ -298,6 +298,12 @@
           jd:2451550
           ipl:SE_OSCU_APOG
           iflag:eval(SEFLG_SPEED+SEFLG_SIDEREAL)
+        ITERATION
+          # added 2026-11-22: all 47 predefined ayanamshas (12, 13, 39, 40 have no SE_SIDM_ constant)
+          sid_mode:0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46
+          jd:2451545.0,2415020.5
+          iflag:eval(SEFLG_SPEED+SEFLG_SIDEREAL)
+          ipl:SE_SUN,SE_MOON
     TESTCASE
       #precision:1e-5
       precision:1e-8
@@ -307,6 +313,11 @@
           sid_mode:SE_SIDM_ALDEBARAN_15TAU
           jd:2314654
           iephe:SEFLG_SWIEPH,eval(SEFLG_SWIEPH+SEFLG_NONUT)
+        ITERATION
+          # added 2026-11-22: all 47 predefined ayanamshas (12, 13, 39, 40 have no SE_SIDM_ constant)
+          sid_mode:0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46
+          jd:625000.0,1721057.5,2415020.5,2451545.0,2816787.5
+          iephe:SEFLG_SWIEPH,SEFLG_JPLEPH
     TESTCASE
       #precision:1e-5
       precision:1e-8
@@ -316,6 +327,10 @@
           sid_mode:SE_SIDM_ALDEBARAN_15TAU
           jd:2314654   
           iephe:SEFLG_SWIEPH,eval(SEFLG_SWIEPH+SEFLG_NONUT)
+        ITERATION
+          # added 2026-11-22: all 47 predefined ayanamshas (12, 13, 39, 40 have no SE_SIDM_ constant)
+          sid_mode:0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46
+          jd:625000.0,1721057.5,2415020.5,2451545.0,2816787.5
           
     TESTCASE
       section-id:4
@@ -478,6 +493,12 @@ TESTSUITE
         ITERATION
 	   ihsy:'O','R','C','E','V','W','X','H','T','B','M','U','G','Y'
 	   geolat:89.9,60,50,0,-60,-89.9
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   ihsy:'A','D','F','I','i','J','L','N','Q','S'
+	   geolat:89.9,60,50,0,-60,-89.9
+	   ut:0,6,12,18
+	   geolon:0
     TESTCASE
       section-id:2
       section-descr: swe_houses_ex() - degrees and radians
@@ -491,6 +512,20 @@ TESTSUITE
 	   ihsy:'P','W'
 	   # not in polar circle
            geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   iflag: 0
+	   ihsy:'K','O','R','C','E','V','X','H','T','B','M','U','G','Y','A','D','F','I','i','J','L','N','Q','S'
+	   geolat:66.5,50,0,-30,-66.5
+	   ut:0,6,12,18
+	   geolon:0
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   iflag: SEFLG_RADIANS
+	   ihsy:'K','O','R','C','E','V','X','H','T','B','M','U','G','Y','A','D','F','I','i','J','L','N','Q','S'
+	   geolat:66.5,50,0,-30,-66.5
+	   ut:0,6,12,18
+	   geolon:0
     TESTCASE
       section-id:3
       section-descr: swe_houses_ex() - sidereal
@@ -500,6 +535,22 @@ TESTSUITE
 	   ihsy:'P','W'
 	   # not in polar circle
            geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   isid:SE_SIDM_LAHIRI
+	   iflag: SEFLG_SIDEREAL
+	   ihsy:'K','O','R','C','E','V','X','H','T','B','M','U','G','Y','A','D','F','I','i','J','L','N','Q','S'
+	   geolat:66.5,50,0,-30,-66.5
+	   ut:0,6,12,18
+	   geolon:0
+        ITERATION
+	   # added 2026-11-22: more ayanamshas
+	   isid:SE_SIDM_LAHIRI,SE_SIDM_RAMAN,SE_SIDM_KRISHNAMURTI
+	   iflag: SEFLG_SIDEREAL
+	   ihsy:'P','W'
+	   geolat:66.5,50,0,-30,-66.5
+	   ut:0,6,12,18
+	   geolon:0
     TESTCASE
       section-id:4
       section-descr: swe_houses_armc() 
@@ -510,6 +561,12 @@ TESTSUITE
         ITERATION
 	   ihsy:'O','R','C','E','V','W','X','H','T','B','M','U','G','Y'
 	   geolat:89.9,60,50,0,-60,-89.9
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   ihsy:'A','D','F','I','i','J','L','N','Q','S'
+	   geolat:89.9,60,50,0,-60,-89.9
+	   ut:0,6,12,18
+	   geolon:0
     TESTCASE
       section-id:5
       section-descr: swe_house_name() 
@@ -517,7 +574,7 @@ TESTSUITE
 	   ut:0
 	   geolat:50
 	   geolon:0
-	   ihsy:'P','K','E','O','R','C','E','V','W','X','H','T','B','M','U','G','Y'
+	   ihsy:'P','K','O','R','C','E','V','W','X','H','T','B','M','U','G','Y','A','D','F','I','i','J','L','N','Q','S'
     TESTCASE
       section-id:6
       section-descr: swe_house_pos() 
@@ -526,6 +583,12 @@ TESTSUITE
 	   geolat:50,0.0001,0,-75
 #	   geolat:0.001,0
 	   geolon:0,47
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   ihsy:'A','D','F','I','i','J','L','N','Q','S'
+	   geolat:50,0.0001,0,-75
+	   ut:0,6,12,18
+	   geolon:0
     TESTCASE
       section-id:7
       section-descr: swe_gauquelin_sector
@@ -549,6 +612,20 @@ TESTSUITE
 	   ihsy:'P','W'
 	   # not in polar circle
            geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   iflag: 0
+	   ihsy:'K','O','R','C','E','V','X','H','T','B','M','U','G','Y','A','D','F','I','i','J','L','N','Q','S'
+	   geolat:66.5,50,0,-30,-66.5
+	   ut:0,6,12,18
+	   geolon:0
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   iflag: SEFLG_RADIANS
+	   ihsy:'K','O','R','C','E','V','X','H','T','B','M','U','G','Y','A','D','F','I','i','J','L','N','Q','S'
+	   geolat:66.5,50,0,-30,-66.5
+	   ut:0,6,12,18
+	   geolon:0
     TESTCASE
       section-id:9
       section-descr: swe_houses_armc_ex2() 
@@ -556,6 +633,12 @@ TESTSUITE
 	   ihsy:'P','K'
 	   # not in polar circle
            geolat:66.5,50,0,-30,-66.5 
+        ITERATION
+	   # added 2026-11-22: house systems not tested before; reduced grid
+	   ihsy:'O','R','C','E','V','W','X','H','T','B','M','U','G','Y','A','D','F','I','i','J','L','N','Q','S'
+	   geolat:66.5,50,0,-30,-66.5
+	   ut:0,6,12,18
+	   geolon:0
 
   TESTSUITE
     section-id:7

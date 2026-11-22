@@ -100,7 +100,12 @@ void parse_int_range( const char* value, mvalues* mval) {
   do {
     int n = sscanf(p0,"%d - %d : %d", &i0, &i1, &istep);
     if (n == 0 && *p0 == '\'') {
-      n = sscanf(p0 + 1,"%c", (char *) &i0);	// try 'P','C' ..
+      // try 'P','C' ..; until 2026-11-22 the character was written into the
+      // low byte of the uninitialized int i0, so i0 was e.g. 0x7F00 + 'P' and
+      // every house system in a list was computed as Placidus
+      char c0;
+      n = sscanf(p0 + 1,"%c", &c0);
+      if (n == 1) i0 = c0;
     }
     switch (n) {
       case 1:

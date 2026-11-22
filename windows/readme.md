@@ -16,7 +16,11 @@ which packages Swiss Ephemeris for Windows
 
 file swephzip.txt 	containing an overview of content of the sweph.zip package
 
-folder programs/	compiled binary samples, for Windows command line
+folder programs/	compiled binary samples, for Windows command line,
+and the DLLs swedll32.dll (32 bit) and swedll64.dll (64 bit) of version 2.10.04
+(22 Nov 2026, for testing), built with clang-cl/LLVM from the sources of this
+repository, with the settings of the official Visual Studio projects. They
+export the same functions as the DLLs in sweph.zip, plus swe_get_denum().
 
 folder swewin/	compiled (and outdated) Windows sample programs
 

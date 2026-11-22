@@ -76,6 +76,12 @@ static quantity kind_eclipse_attr(int tcase, int idx) {
   return Q_DIMLESS;                                       // fractions, magnitudes, saros numbers
 }
 
+// swe_pheno(), attr[0..4] (swephprg.md): phase angle, phase, elongation, apparent diameter, magnitude
+static quantity kind_pheno(int idx) {
+  if (idx == 0 || idx == 2 || idx == 3) return Q_ANGLE_DEG;
+  return Q_DIMLESS;
+}
+
 static quantity kind_of(int suite, int tcase, const char *base, int idx, int iflag) {
   if (suite == 10 && (is(base, "xcross") || is(base, "xx"))) return Q_SEARCH;
   if (is(base, "xx")) return (suite == 6) ? Q_ANGLE_DEG : kind_position(idx, iflag);
@@ -100,6 +106,16 @@ static quantity kind_of(int suite, int tcase, const char *base, int idx, int ifl
   if (is(base, "cusp_speed") || is(base, "ascmc_speed")) return Q_SPEED;
   if (is(base, "armc") || is(base, "xlon") || is(base, "xlat")) return Q_ANGLE_DEG;
   if (is(base, "hp") || is(base, "gp")) return Q_HOUSEPOS;
+  // suite 11 (2026-11-22)
+  if (is(base, "xpheno")) return kind_pheno(idx);
+  if (is(base, "xaz") || is(base, "alt") || is(base, "xrefr")) return Q_ANGLE_DEG;
+  if (is(base, "xpn") || is(base, "xback")) {
+    // swe_cotrans(_sp)(): longitude, latitude, distance and their speeds, in degrees;
+    // swe_azalt_rev(): longitude and latitude or right ascension and declination
+    if (idx <= 1) return Q_ANGLE_DEG;
+    if (idx == 2) return Q_DIST;
+    return Q_SPEED;
+  }
   return Q_UNKNOWN;
 }
 

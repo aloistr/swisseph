@@ -799,3 +799,85 @@ TESTSUITE
         xcross:30,359
 	dir: 1,-1
         ipl:SE_JUPITER,SE_SATURN,SE_MERCURY,SE_VENUS,SE_MARS,SE_URANUS,SE_NEPTUNE,SE_PLUTO
+
+  TESTSUITE
+    section-id:11
+    section-descr: Phenomena, horizon coordinates, refraction, coordinate transformation (added 2026-11-22)
+    initialize: 0
+    TESTCASE
+      section-id:1
+      section-descr: swe_pheno( )
+      ITERATION
+        jd: 2455334.5,2410858.0,2816788.0,625000.0
+        iephe: SEFLG_SWIEPH,SEFLG_JPLEPH
+        iflag: 0,SEFLG_TRUEPOS,SEFLG_HELCTR
+        ipl: SE_SUN,SE_MOON,SE_MERCURY,SE_VENUS,SE_MARS,SE_JUPITER,SE_SATURN,SE_URANUS,SE_NEPTUNE,SE_PLUTO,SE_CERES
+    TESTCASE
+      section-id:2
+      section-descr: swe_pheno_ut( )
+      ITERATION
+        jd: 2455334.5,2410858.0,2816788.0,625000.0
+        iephe: SEFLG_SWIEPH,SEFLG_JPLEPH
+        iflag: 0,SEFLG_TRUEPOS,SEFLG_HELCTR
+        ipl: SE_SUN,SE_MOON,SE_MERCURY,SE_VENUS,SE_MARS,SE_JUPITER,SE_SATURN,SE_URANUS,SE_NEPTUNE,SE_PLUTO,SE_CERES
+    TESTCASE
+      section-id:3
+      section-descr: swe_azalt( ) and swe_azalt_rev( ), ecliptic coordinates
+      ITERATION
+        jd: 2455334.5,2410858.0
+        geolon: 8.55
+        geolat: 47.37,-33.9,0,66.5
+        geoalt: 0,1500
+        atpress: 1013.25,0
+        attemp: 15
+        lon: 10.5,123.4,250
+        lat: 0,5.1,-60
+    TESTCASE
+      section-id:4
+      section-descr: swe_azalt( ) and swe_azalt_rev( ), equatorial coordinates
+      ITERATION
+        jd: 2455334.5,2410858.0
+        geolon: 8.55
+        geolat: 47.37,-33.9,0,66.5
+        geoalt: 0,1500
+        atpress: 1013.25,0
+        attemp: 15
+        ra: 10.5,123.4,250
+        decl: 0,5.1,-60
+    TESTCASE
+      section-id:5
+      section-descr: swe_refrac( )
+      ITERATION
+        inalt: -1,-0.5,0,0.2,0.5,1,2,5,10,45,89
+        atpress: 1013.25,700,0
+        attemp: 15,-20
+        calc_flag: SE_TRUE_TO_APP,SE_APP_TO_TRUE
+    TESTCASE
+      section-id:6
+      section-descr: swe_refrac_extended( )
+      ITERATION
+        inalt: -2,-1,-0.3,0,0.5,2,10,45
+        geoalt: 0,1000,3000
+        atpress: 1013.25,0
+        attemp: 15,-20
+        lapse_rate: 0.0065
+        calc_flag: SE_TRUE_TO_APP,SE_APP_TO_TRUE
+    TESTCASE
+      section-id:7
+      section-descr: swe_cotrans( )
+      ITERATION
+        lon: 0.5,100.3,200,359.5
+        lat: 0,23.4,-80,89.5
+        dist: 1,0.0026
+        eps: -23.4392911,23.4392911
+    TESTCASE
+      section-id:8
+      section-descr: swe_cotrans_sp( )
+      ITERATION
+        lon: 0.5,100.3,200,359.5
+        lat: 0,23.4,-80,89.5
+        dist: 1,0.0026
+        lonspeed: 1.0,-0.5
+        latspeed: 0.1
+        distspeed: 0.0001
+        eps: -23.4392911,23.4392911

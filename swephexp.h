@@ -374,7 +374,7 @@ extern "C" {
  * only used for experimenting with various JPL ephemeris files
  * which are available at Astrodienst's internal network
  */
-#define SE_DE_NUMBER    431
+#define SE_DE_NUMBER    441
 #define SE3_DE_NUMBER   441
 #define SE_FNAME_DE200  "de200.eph"
 #define SE_FNAME_DE403  "de403.eph"

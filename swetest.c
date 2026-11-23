@@ -758,6 +758,11 @@ static char spnam[AS_MAXCH], spnam2[AS_MAXCH], serr[AS_MAXCH];
 static char serr_save[AS_MAXCH], serr_warn[AS_MAXCH];
 static int gregflag = SE_GREG_CAL;
 static AS_BOOL gregflag_auto = TRUE;
+#ifdef USE_DLL
+/* ephemeris path given to swe_set_ephe_path(), for swe_get_named_ast_list();
+ * the DLL does not export swed.ephepath */
+static char ephepath_dll[AS_MAXCH] = SE_EPHE_PATH;
+#endif
 static int diff_mode = 0;
 static AS_BOOL use_dms = FALSE;
 static AS_BOOL has_n = FALSE;
@@ -1359,8 +1364,12 @@ int main(int argc, char *argv[])
       whicheph = SEFLG_MOSEPH;
     }
   }
-  if (whicheph != SEFLG_MOSEPH) 
+  if (whicheph != SEFLG_MOSEPH) {
     swe_set_ephe_path(ephepath);
+#ifdef USE_DLL
+    strcpy(ephepath_dll, ephepath);
+#endif
+  }
   if (whicheph & SEFLG_JPLEPH)
     swe_set_jpl_file(fname);
   /* the following is only a test feature */
@@ -4187,7 +4196,34 @@ static char *our_strcpy(char *to, char *from)
 int swe_get_named_ast_list(int amax, int *iarr, char*serr) 
 {
   char si[AS_MAXCH], *sp;
+#ifdef USE_DLL
+  /* the DLL does not export swi_fopen() and swed: search the path
+   * as swe_set_ephe_path() and swi_fopen() do; environment variable
+   * SE_EPHE_PATH has priority */
+  FILE *fp = NULL;
+  char path[AS_MAXCH], s[2 * AS_MAXCH], *dir;
+  char *env = getenv("SE_EPHE_PATH");
+  if (env != NULL && *env != '\0' && strlen(env) < AS_MAXCH)
+    strcpy(path, env);
+  else if (*ephepath_dll != '\0')
+    strcpy(path, ephepath_dll);
+  else
+    strcpy(path, SE_EPHE_PATH);
+  for (dir = strtok(path, PATH_SEPARATOR); dir != NULL && fp == NULL; dir = strtok(NULL, PATH_SEPARATOR)) {
+    if (strcmp(dir, ".") == 0)
+      *s = '\0';
+    else if (*dir != '\0' && dir[strlen(dir) - 1] != *DIR_GLUE)
+      sprintf(s, "%s%s", dir, DIR_GLUE);
+    else
+      strcpy(s, dir);
+    strcat(s, SE_ASTNAMFILE);
+    fp = fopen(s, "r");
+  }
+  if (fp == NULL && serr != NULL)
+    sprintf(serr, "file %s not found in path %.200s", SE_ASTNAMFILE, ephepath_dll);
+#else
   FILE *fp = swi_fopen(-1, SE_ASTNAMFILE, swed.ephepath, serr);
+#endif
   int nast = 0;
   if (fp == NULL) return ERR;
   while (fgets(si, AS_MAXCH, fp) != NULL) {

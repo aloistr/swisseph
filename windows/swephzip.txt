@@ -3,7 +3,7 @@ Archive:  /home/spc/sweph/sweph.zip
 --------  ------  ------- ---- ---------- ----- --------  ----
     2371  Defl:N     1071  55% 04-21-2021 11:26 0e6caf96  sweph/src/LICENSE
   150999  Defl:N    36291  76% 11-23-2026 21:08 ec4e9adb  sweph/src/swetest.c
-  303025  Defl:N    69932  77% 11-22-2026 22:26 6aa0d5ea  sweph/src/sweph.c
+  303242  Defl:N    69989  77% 11-24-2026 13:42 c88d899e  sweph/src/sweph.c
   175612  Defl:N    52228  70% 11-20-2026 18:43 4fb092d0  sweph/src/swephlib.c
    33613  Defl:N    10183  70% 05-23-2024 17:41 3bd888de  sweph/src/swejpl.c
    61411  Defl:N    19581  68% 04-24-2023 08:29 df81c9c3  sweph/src/swemmoon.c
@@ -22,7 +22,7 @@ Archive:  /home/spc/sweph/sweph.zip
     3702  Defl:N     1488  60% 08-06-2021 14:29 e3606055  sweph/src/swehouse.h
    68486  Defl:N    12837  81% 08-06-2021 14:29 e46bf9cb  sweph/src/swenut2000a.h
    17785  Defl:N     3934  78% 12-11-2021 17:28 8ca11b3c  sweph/src/swedll.h
-16371713  Defl:N  5157777  69% 08-29-2026 17:24 adfa50e0  sweph/src/seasnam.txt
+16371827  Defl:N  5157387  69% 11-24-2026 07:53 df6aae61  sweph/src/seasnam.txt
     6119  Defl:N     2792  54% 11-13-2026 11:16 8f14d876  sweph/src/seorbel.txt
   136618  Defl:N    51384  62% 03-23-2025 22:53 60e44a5f  sweph/src/sefstars.txt
      282  Defl:N      178  37% 08-27-2022 23:39 fad21251  sweph/src/seleapsec.txt
@@ -31,14 +31,14 @@ Archive:  /home/spc/sweph/sweph.zip
     2984  Defl:N      689  77% 02-02-2016 14:00 e7f30b84  sweph/src/swewin/resource.h
    44156  Defl:N    10521  76% 08-04-2021 18:53 993be563  sweph/src/swewin/swewin.c
   131584  Defl:N    68710  48% 11-23-2026 21:14 9f6d4834  sweph/bin/swewin32.exe
- 1008640  Defl:N   466768  54% 11-22-2026 23:17 01ce01ad  sweph/bin/swetest.exe
-  939008  Defl:N   457639  51% 11-22-2026 23:18 3e876426  sweph/bin/swetest64.exe
+ 1008640  Defl:N   466917  54% 11-24-2026 13:51 90673968  sweph/bin/swetest.exe
+  939520  Defl:N   457828  51% 11-24-2026 13:51 a2bfe3fb  sweph/bin/swetest64.exe
   248832  Defl:N   120925  51% 11-23-2026 21:08 6aa4172e  sweph/bin/swete32.exe
   266240  Defl:N   129288  51% 11-23-2026 21:08 d95e734c  sweph/bin/swete64.exe
-  922624  Defl:N   430127  53% 11-22-2026 23:13 7a675b82  sweph/bin/swedll32.dll
-   25034  Defl:N     3585  86% 11-22-2026 23:13 0d8edff5  sweph/bin/swedll32.lib
-  855040  Defl:N   419487  51% 11-22-2026 23:13 4213c234  sweph/bin/swedll64.dll
-   23050  Defl:N     3403  85% 11-22-2026 23:13 0d252cfe  sweph/bin/swedll64.lib
+  922624  Defl:N   430265  53% 11-24-2026 13:51 afeac822  sweph/bin/swedll32.dll
+   25034  Defl:N     3585  86% 11-24-2026 13:51 0d8edff5  sweph/bin/swedll32.lib
+  855552  Defl:N   419668  51% 11-24-2026 13:51 66bd4942  sweph/bin/swedll64.dll
+   23050  Defl:N     3403  85% 11-24-2026 13:51 0d252cfe  sweph/bin/swedll64.lib
    21587  Defl:N     1858  91% 06-11-2019 13:57 284a35ca  sweph/src/projects/swedll32.vcxproj
    21915  Defl:N     1915  91% 06-11-2019 14:28 fddb23e4  sweph/src/projects/swedll64.vcxproj
    20229  Defl:N     1759  91% 06-11-2019 15:30 511a0233  sweph/src/projects/swedlltrm32.vcxproj
@@ -61,7 +61,7 @@ Archive:  /home/spc/sweph/sweph.zip
   308736  Defl:N    98708  68% 06-07-2018 10:55 9151f930  sweph/vb/orbit.xls
    39440  Defl:N     5756  85% 08-12-2021 09:05 d147fe56  sweph/vb/swedecl64.txt
    43332  Defl:N     6005  86% 08-12-2021 09:10 f9de44ff  sweph/vb/swedecl.txt
-   25034  Defl:N     3585  86% 11-22-2026 23:13 0d8edff5  sweph/vb/swedll32.lib
+   25034  Defl:N     3585  86% 11-24-2026 13:51 0d8edff5  sweph/vb/swedll32.lib
   319130  Stored   319130   0% 10-16-2021 09:14 0d5a06d2  sweph/vb/Sweph32_For_Excel_VBA_and_VB.zip
    42141  Defl:N     6378  85% 08-04-2021 18:29 17c881de  sweph/vb/sweph_vb7_64.bas
   988214  Defl:N   147880  85% 11-23-2026 16:23 f0ffb9ab  sweph/doc/swisseph.htm
@@ -73,4 +73,4 @@ Archive:  /home/spc/sweph/sweph.zip
    15280  Defl:N     7592  50% 09-30-1997 14:25 09268855  sweph/doc/sweph.cdr
    15528  Defl:N     7239  53% 09-30-1997 14:24 9e01c14f  sweph/doc/swephin.cdr
 --------          -------  ---                            -------
-31162362         13027553  58%                            71 files
+31163717         13027877  58%                            71 files

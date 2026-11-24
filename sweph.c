@@ -2822,6 +2822,10 @@ static int app_pos_etc_plan(int ipli, int iplmoon, int32 iflag, char *serr)
       for (i = 0; i <= 2; i++) {	/* rough apparent position at t*/
 	//xx[i] = pdp->x[i] - dt * pdp->x[i+3];
 	xx[i] = xx0[i] - dt * xx0[i+3];
+	/* xx0[] is barycentric: heliocentric distance for the next pass */
+	if ((iflag & SEFLG_HELCTR)
+	  && (pdp->iephe == SEFLG_JPLEPH || pdp->iephe == SEFLG_SWIEPH))
+	  xx[i] -= swed.pldat[SEI_SUNBARY].x[i];
       }
     }
     /* part of daily motion resulting from change of dt */
@@ -3686,7 +3690,8 @@ static int app_pos_etc_plan_osc(int ipl, int ipli, int32 iflag, char *serr)
     for (j = 0; j <= niter; j++) {
       for (i = 0; i <= 2; i++) {
 	dx[i] = xx[i];
-	if (!(iflag & SEFLG_HELCTR) && !(iflag & SEFLG_BARYCTR))
+	/* heliocentric: xobs[] is the Sun */
+	if (!(iflag & SEFLG_BARYCTR))
 	  dx[i] -= xobs[i];
       }
       /* new dt */

@@ -64,13 +64,13 @@ Archive:  /home/spc/sweph/sweph.zip
    25034  Defl:N     3585  86% 11-24-2026 13:51 0d8edff5  sweph/vb/swedll32.lib
   319130  Stored   319130   0% 10-16-2021 09:14 0d5a06d2  sweph/vb/Sweph32_For_Excel_VBA_and_VB.zip
    42141  Defl:N     6378  85% 08-04-2021 18:29 17c881de  sweph/vb/sweph_vb7_64.bas
-  988214  Defl:N   147880  85% 11-23-2026 16:23 f0ffb9ab  sweph/doc/swisseph.htm
+  989672  Defl:N   148417  85% 11-24-2026 16:47 ae658601  sweph/doc/swisseph.htm
  1324802  Defl:N   152910  89% 11-23-2026 20:54 71c2f16f  sweph/doc/swephprg.htm
- 2492783  Defl:N  2360510   5% 11-23-2026 20:51 1ad1f5da  sweph/doc/swisseph.pdf
+ 2528509  Defl:N  2367313   6% 11-24-2026 16:46 4d8b2554  sweph/doc/swisseph.pdf
  2230114  Defl:N  1995501  11% 11-23-2026 20:53 d597052c  sweph/doc/swephprg.pdf
     6149  Defl:N     5697   7% 09-09-1997 15:14 f6c4c592  sweph/doc/sweph.gif
     9552  Defl:N     9453   1% 09-09-1997 15:14 eb7b1d85  sweph/doc/swephin.gif
    15280  Defl:N     7592  50% 09-30-1997 14:25 09268855  sweph/doc/sweph.cdr
    15528  Defl:N     7239  53% 09-30-1997 14:24 9e01c14f  sweph/doc/swephin.cdr
 --------          -------  ---                            -------
-31163717         13027877  58%                            71 files
+31200901         13035217  58%                            71 files

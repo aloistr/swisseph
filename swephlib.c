@@ -3068,11 +3068,13 @@ static double deltat_stephenson_etc_2020(double tjd, double tid_acc)
 #endif
   // for earlier epochs, use long term parabola
   } else if (iyear < -720) {
-    t = (dyear - 1825) / 100.0;
     // formula used by horizons according to Horizons manual: 
     // https://ssd.jpl.nasa.gov/horizons/manual.html#frames
-    dt = 65 + 31.351922682 * t * t; 
-    dt += 0.6754326; // to make curve continous on 1 Jan -720 (D. Koch)
+    // T = Julian centuries since 1825 Jan 1.0 (JD 2387627.5), as in Horizons;
+    // agrees with Horizons within 0.001 s and meets the curve above at -720
+    // within 0.001 s (A. Treindl, D. Koch, 25 Nov 2026)
+    t = (tjd - 2387627.5) / 36525.0;
+    dt = 65.62 + 31.351922682 * t * t;
   // future
   // we never come into this bracket; future is handled in function deltat_aa().
   } else {

@@ -1,16 +1,14 @@
-# makefile used at Astrodienst to create pdf out of md file
-htms:	swisseph.md swephprg.md
-	# pandoc  --toc  --self-contained -f markdown -t html  swisseph.md > swisseph.htm
-	pandoc --toc  --template template.htm  --self-contained -f markdown -t html  swisseph.md > swisseph.htm
-	pandoc --toc  --template template.htm  --self-contained -f markdown -t html  swephprg.md > swephprg.htm
-	cp -p sw*.htm /wwd/design
+# makefile to create the PDF documentation out of the .md files
+# tools: perl, pandoc, weasyprint, fonts DejaVu Sans / DejaVu Sans Mono
+# images of swisseph.md are in media/
+# The .md files are maintained at Astrodienst outside git; do not edit them here.
 
-pdfs: 	swisseph.md swephprg.md
-	pandoc --toc -V documentclass=report -V geometry:margin=25mm -f markdown -t pdf --pdf-engine=xelatex swisseph.md > swisseph.pdf
-	pandoc --toc -V documentclass=report -V geometry:margin=25mm -f markdown -t pdf --pdf-engine=xelatex swephprg.md > swephprg.pdf
-	cp -p sw*.pdf /wwd/design
+pdf:	swisseph.pdf swephprg.pdf
 
-pdfx: 	swisseph.md swephprg.md
-	pandoc --toc -V documentclass=report -V geometry:margin=25mm -f markdown -t pdf --pdf-engine=lualatex  swisseph.md > swissephx.pdf
-	cp -p swissephx.pdf /wwd/design
+swisseph.pdf:	swisseph.md mk_pdf.pl media/*
+	perl mk_pdf.pl swisseph.md
 
+swephprg.pdf:	swephprg.md mk_pdf.pl
+	perl mk_pdf.pl swephprg.md
+
+.PHONY:	pdf

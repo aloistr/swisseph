@@ -1,11 +1,15 @@
 ## Please note:
 The official Swiss Ephemeris documentation is found at https://www.astro.com/ftp/swisseph/doc/
 
-The documentation on Github is in an experimental stage.
+Since release 2.10.04, the documentation is maintained in Markdown:
 
-We are in process of moving from MS-Word files to Markdown files for easier maintenance 
-of the documentation, but the transition is far from complete.
+- swisseph.md   general documentation of the Swiss Ephemeris
+- swephprg.md   programming interface
+- media/        images used in swisseph.md
 
-The PDF and HTM files you find in this directory have been automatically created
-out of the .md files. See makefile for details of this process.
+The PDF and HTM files are created out of the .md files with the Perl script
+mk_pdf.pl (pandoc and weasyprint), see makefile:
 
+    make pdf      swisseph.pdf, swephprg.pdf
+
+secont_e_2609.pdf is the license contract for the Swiss Ephemeris Professional Edition.

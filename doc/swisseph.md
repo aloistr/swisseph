@@ -70,109 +70,59 @@ Each Swiss Ephemeris file covers a period of 600 years; there are 51 planetary f
 
 The file names are as follows:
 
-**Planetary file Moon file Main asteroid file Time range**
-
-seplm132.se1 semom132.se1 10 Aug 13000 BCE - 12602 BCE
-
-seplm126.se1 semom126.se1 12601 BCE - 12002 BCE
-
-seplm120.se1 semom120.se1 12001 BCE - 11402 BCE
-
-seplm114.se1 semom114.se1 11401 BCE - 10802 BCE
-
-seplm108.se1 semom108.se1 10801 BCE - 10202 BCE
-
-seplm102.se1 semom102.se1 10201 BCE - 9602 BCE
-
-seplm96.se1 semom96.se1 9601 BCE - 9002 BCE
-
-seplm90.se1 semom90.se1 9001 BCE - 8402 BCE
-
-seplm84.se1 semom84.se1 seasm84.se1 8401 BCE - 7802 BCE (main asteroids from 7 Mar 8000 BCE)
-
-seplm78.se1 semom78.se1 seasm78.se1 7801 BCE - 7202 BCE
-
-seplm72.se1 semom72.se1 seasm72.se1 7201 BCE - 6602 BCE
-
-seplm66.se1 semom66.se1 seasm66.se1 6601 BCE - 6002 BCE
-
-seplm60.se1 semom60.se1 seasm60.se1 6001 BCE - 5402 BCE
-
-seplm54.se1 semom54.se1 seasm54.se1 5401 BCE - 4802 BCE
-
-seplm48.se1 semom48.se1 seasm48.se1 4801 BCE - 4202 BCE
-
-seplm42.se1 semom42.se1 seasm42.se1 4201 BCE - 3602 BCE
-
-seplm36.se1 semom36.se1 seasm36.se1 3601 BCE - 3002 BCE
-
-seplm30.se1 semom30.se1 seasm30.se1 3001 BCE - 2402 BCE
-
-seplm24.se1 semom24.se1 seasm24.se1 2401 BCE - 1802 BCE
-
-seplm18.se1 semom18.se1 seasm18.se1 1801 BCE - 1202 BCE
-
-seplm12.se1 semom12.se1 seasm12.se1 1201 BCE - 602 BCE
-
-seplm06.se1 semom06.se1 seasm06.se1 601 BCE - 2 BCE
-
-sepl_00.se1 semo_00.se1 seas_00.se1 1 BCE - 599 CE
-
-sepl_06.se1 semo_06.se1 seas_06.se1 600 CE - 1199 CE
-
-sepl_12.se1 semo_12.se1 seas_12.se1 1200 CE - 1799 CE
-
-sepl_18.se1 semo_18.se1 seas_18.se1 1800 CE - 2399 CE
-
-sepl_24.se1 semo_24.se1 seas_24.se1 2400 CE - 2999 CE
-
-sepl_30.se1 semo_30.se1 seas_30.se1 3000 CE - 3599 CE
-
-sepl_36.se1 semo_36.se1 seas_36.se1 3600 CE - 4199 CE
-
-sepl_42.se1 semo_42.se1 seas_42.se1 4200 CE - 4799 CE
-
-sepl_48.se1 semo_48.se1 seas_48.se1 4800 CE - 5399 CE
-
-sepl_54.se1 semo_54.se1 seas_54.se1 5400 CE - 5999 CE
-
-sepl_60.se1 semo_60.se1 seas_60.se1 6000 CE - 6599 CE
-
-sepl_66.se1 semo_66.se1 seas_66.se1 6600 CE - 7199 CE
-
-sepl_72.se1 semo_72.se1 seas_72.se1 7200 CE - 7799 CE
-
-sepl_78.se1 semo_78.se1 seas_78.se1 7800 CE - 8399 CE
-
-sepl_84.se1 semo_84.se1 seas_84.se1 8400 CE - 8999 CE (main asteroids until 8 Aug 8999 CE)
-
-sepl_90.se1 semo_90.se1 9000 CE - 9599 CE
-
-sepl_96.se1 semo_96.se1 9600 CE - 10199 CE
-
-sepl_102.se1 semo_102.se1 10200 CE - 10799 CE
-
-sepl_108.se1 semo_108.se1 10800 CE - 11399 CE
-
-sepl_114.se1 semo_114.se1 11400 CE - 11999 CE
-
-sepl_120.se1 semo_120.se1 12000 CE - 12599 CE
-
-sepl_126.se1 semo_126.se1 12600 CE - 13199 CE
-
-sepl_132.se1 semo_132.se1 13200 CE - 13799 CE
-
-sepl_138.se1 semo_138.se1 13800 CE - 14399 CE
-
-sepl_144.se1 semo_144.se1 14400 CE - 14999 CE
-
-sepl_150.se1 semo_150.se1 15000 CE - 15599 CE
-
-sepl_156.se1 semo_156.se1 15600 CE - 16199 CE
-
-sepl_162.se1 semo_162.se1 16200 CE - 16799 CE
-
-sepl_168.se1 semo_168.se1 16800 CE - 16 Feb 16997 CE
+| Planetary file | Moon file | Main asteroid file | Time range |
+|--------------|--------------|------------------|------------------------------------------|
+| [seplm132.se1]{.file} | [semom132.se1]{.file} |  | 10 Aug 13000 BCE - 12602 BCE |
+| [seplm126.se1]{.file} | [semom126.se1]{.file} |  | 12601 BCE - 12002 BCE |
+| [seplm120.se1]{.file} | [semom120.se1]{.file} |  | 12001 BCE - 11402 BCE |
+| [seplm114.se1]{.file} | [semom114.se1]{.file} |  | 11401 BCE - 10802 BCE |
+| [seplm108.se1]{.file} | [semom108.se1]{.file} |  | 10801 BCE - 10202 BCE |
+| [seplm102.se1]{.file} | [semom102.se1]{.file} |  | 10201 BCE - 9602 BCE |
+| [seplm96.se1]{.file} | [semom96.se1]{.file} |  | 9601 BCE - 9002 BCE |
+| [seplm90.se1]{.file} | [semom90.se1]{.file} |  | 9001 BCE - 8402 BCE |
+| [seplm84.se1]{.file} | [semom84.se1]{.file} | [seasm84.se1]{.file} | 8401 BCE - 7802 BCE (main asteroids from 7 Mar 8000 BCE) |
+| [seplm78.se1]{.file} | [semom78.se1]{.file} | [seasm78.se1]{.file} | 7801 BCE - 7202 BCE |
+| [seplm72.se1]{.file} | [semom72.se1]{.file} | [seasm72.se1]{.file} | 7201 BCE - 6602 BCE |
+| [seplm66.se1]{.file} | [semom66.se1]{.file} | [seasm66.se1]{.file} | 6601 BCE - 6002 BCE |
+| [seplm60.se1]{.file} | [semom60.se1]{.file} | [seasm60.se1]{.file} | 6001 BCE - 5402 BCE |
+| [seplm54.se1]{.file} | [semom54.se1]{.file} | [seasm54.se1]{.file} | 5401 BCE - 4802 BCE |
+| [seplm48.se1]{.file} | [semom48.se1]{.file} | [seasm48.se1]{.file} | 4801 BCE - 4202 BCE |
+| [seplm42.se1]{.file} | [semom42.se1]{.file} | [seasm42.se1]{.file} | 4201 BCE - 3602 BCE |
+| [seplm36.se1]{.file} | [semom36.se1]{.file} | [seasm36.se1]{.file} | 3601 BCE - 3002 BCE |
+| [seplm30.se1]{.file} | [semom30.se1]{.file} | [seasm30.se1]{.file} | 3001 BCE - 2402 BCE |
+| [seplm24.se1]{.file} | [semom24.se1]{.file} | [seasm24.se1]{.file} | 2401 BCE - 1802 BCE |
+| [seplm18.se1]{.file} | [semom18.se1]{.file} | [seasm18.se1]{.file} | 1801 BCE - 1202 BCE |
+| [seplm12.se1]{.file} | [semom12.se1]{.file} | [seasm12.se1]{.file} | 1201 BCE - 602 BCE |
+| [seplm06.se1]{.file} | [semom06.se1]{.file} | [seasm06.se1]{.file} | 601 BCE - 2 BCE |
+| [sepl_00.se1]{.file} | [semo_00.se1]{.file} | [seas_00.se1]{.file} | 1 BCE - 599 CE |
+| [sepl_06.se1]{.file} | [semo_06.se1]{.file} | [seas_06.se1]{.file} | 600 CE - 1199 CE |
+| [sepl_12.se1]{.file} | [semo_12.se1]{.file} | [seas_12.se1]{.file} | 1200 CE - 1799 CE |
+| [sepl_18.se1]{.file} | [semo_18.se1]{.file} | [seas_18.se1]{.file} | 1800 CE - 2399 CE |
+| [sepl_24.se1]{.file} | [semo_24.se1]{.file} | [seas_24.se1]{.file} | 2400 CE - 2999 CE |
+| [sepl_30.se1]{.file} | [semo_30.se1]{.file} | [seas_30.se1]{.file} | 3000 CE - 3599 CE |
+| [sepl_36.se1]{.file} | [semo_36.se1]{.file} | [seas_36.se1]{.file} | 3600 CE - 4199 CE |
+| [sepl_42.se1]{.file} | [semo_42.se1]{.file} | [seas_42.se1]{.file} | 4200 CE - 4799 CE |
+| [sepl_48.se1]{.file} | [semo_48.se1]{.file} | [seas_48.se1]{.file} | 4800 CE - 5399 CE |
+| [sepl_54.se1]{.file} | [semo_54.se1]{.file} | [seas_54.se1]{.file} | 5400 CE - 5999 CE |
+| [sepl_60.se1]{.file} | [semo_60.se1]{.file} | [seas_60.se1]{.file} | 6000 CE - 6599 CE |
+| [sepl_66.se1]{.file} | [semo_66.se1]{.file} | [seas_66.se1]{.file} | 6600 CE - 7199 CE |
+| [sepl_72.se1]{.file} | [semo_72.se1]{.file} | [seas_72.se1]{.file} | 7200 CE - 7799 CE |
+| [sepl_78.se1]{.file} | [semo_78.se1]{.file} | [seas_78.se1]{.file} | 7800 CE - 8399 CE |
+| [sepl_84.se1]{.file} | [semo_84.se1]{.file} | [seas_84.se1]{.file} | 8400 CE - 8999 CE (main asteroids until 8 Aug 8999 CE) |
+| [sepl_90.se1]{.file} | [semo_90.se1]{.file} |  | 9000 CE - 9599 CE |
+| [sepl_96.se1]{.file} | [semo_96.se1]{.file} |  | 9600 CE - 10199 CE |
+| [sepl_102.se1]{.file} | [semo_102.se1]{.file} |  | 10200 CE - 10799 CE |
+| [sepl_108.se1]{.file} | [semo_108.se1]{.file} |  | 10800 CE - 11399 CE |
+| [sepl_114.se1]{.file} | [semo_114.se1]{.file} |  | 11400 CE - 11999 CE |
+| [sepl_120.se1]{.file} | [semo_120.se1]{.file} |  | 12000 CE - 12599 CE |
+| [sepl_126.se1]{.file} | [semo_126.se1]{.file} |  | 12600 CE - 13199 CE |
+| [sepl_132.se1]{.file} | [semo_132.se1]{.file} |  | 13200 CE - 13799 CE |
+| [sepl_138.se1]{.file} | [semo_138.se1]{.file} |  | 13800 CE - 14399 CE |
+| [sepl_144.se1]{.file} | [semo_144.se1]{.file} |  | 14400 CE - 14999 CE |
+| [sepl_150.se1]{.file} | [semo_150.se1]{.file} |  | 15000 CE - 15599 CE |
+| [sepl_156.se1]{.file} | [semo_156.se1]{.file} |  | 15600 CE - 16199 CE |
+| [sepl_162.se1]{.file} | [semo_162.se1]{.file} |  | 16200 CE - 16799 CE |
+| [sepl_168.se1]{.file} | [semo_168.se1]{.file} |  | 16800 CE - 16 Feb 16997 CE |
 
 All Swiss Ephemeris files have the file suffix .se1. A planetary file is about 0.9 MB (sepl_18.se1: 865 kB), a lunar file 1.3 MB, a main-asteroid file 0.24 MB. All 51 planetary files together have 47.5 MB, the 51 Moon files 70.2 MB, the 29 main-asteroid files 6.9 MB. Swiss Ephemeris files are available for download from the directory ephe of the Swiss Ephemeris repository on GitHub: https://github.com/aloistr/swisseph/tree/master/ephe.
 

@@ -11,5 +11,6 @@ The PDF and HTM files are created out of the .md files with the Perl script
 mk_pdf.pl (pandoc and weasyprint), see makefile:
 
     make pdf      swisseph.pdf, swephprg.pdf
+    make htm      swisseph.htm, swephprg.htm (one file each, images embedded)
 
 secont_e_2609.pdf is the license contract for the Swiss Ephemeris Professional Edition.

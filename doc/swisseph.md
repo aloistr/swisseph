@@ -2086,7 +2086,7 @@ There are predefined sidereal modes for these standard equinoxes:
 
 20\) B1950
 
-Moreover, it is possible to compute precession-corrected transits or synastries with very high precision. An astrological transit is defined as the passage of a planet over the position in your birth chart. Usually, astrologers assume that tropical positions on the ecliptic of the transit time has to be compared with the positions on the tropical ecliptic of the birth date. But it has been argued by some people that a transit would have to be referred to the ecliptic of the birth date. With the new Swiss Ephemeris algorithm (method no. 3) it is possible to compute the positions of the transit planets referred to the ecliptic of the birth date, i.e. the so-called precession-corrected transits. This is more precise than just correcting for the precession in longitude (see details in the programmer\'s documentation swephprg.doc, Ch. 8.1).
+Moreover, it is possible to compute precession-corrected transits or synastries with very high precision. An astrological transit is defined as the passage of a planet over the position in your birth chart. Usually, astrologers assume that tropical positions on the ecliptic of the transit time has to be compared with the positions on the tropical ecliptic of the birth date. But it has been argued by some people that a transit would have to be referred to the ecliptic of the birth date. With the new Swiss Ephemeris algorithm (method no. 3) it is possible to compute the positions of the transit planets referred to the ecliptic of the birth date, i.e. the so-called precession-corrected transits. This is more precise than just correcting for the precession in longitude (see details in the programmer\'s documentation swephprg.pdf, chapter 11 "Sidereal mode functions").
 
 # Apparent versus true planetary positions
 
@@ -2792,7 +2792,7 @@ To build the DLLs, we use in version 2.10.04:
 
 ## Swiss Ephemeris API
 
-We give a short overview of the most important functions contained in the Swiss Ephemeris DLL. The detailed description of the programming interface is contained in the document swephprg.doc which is distributed together with the file you are reading.
+We give a short overview of the most important functions contained in the Swiss Ephemeris DLL. The detailed description of the programming interface is contained in the document swephprg.pdf which is distributed together with the file you are reading.
 
 ### Calculation of planets and stars
 

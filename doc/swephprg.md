@@ -686,7 +686,7 @@ To compute sidereal positions, set bit `SEFLG_SIDEREAL` and use the function [sw
 
 #### JPL Horizons positions
 
-For apparent positions of the planets, JPL Horizons follows a different approach from Astronomical Almanac and from the IERS Conventions 2003 and 2010. It uses the old precession models IAU 1976 (Lieske) and nutation IAU 1980 (Wahr) and corrects the resulting positions by adding daily-measured celestial pole offsets (`delta_psi` and `delta_epsilon`) to nutation. (IERS Conventions 1996, p. 22) While this approach is more accurate in some respect, it is not referred to the same reference frame. For more details see the general documentation of the Swiss Ephemeris in swisseph.doc or <http://www.astro.com/swisseph/swisseph.htm>, ch. 2.1.2.2.
+For apparent positions of the planets, JPL Horizons follows a different approach from Astronomical Almanac and from the IERS Conventions 2003 and 2010. It uses the old precession models IAU 1976 (Lieske) and nutation IAU 1980 (Wahr) and corrects the resulting positions by adding daily-measured celestial pole offsets (`delta_psi` and `delta_epsilon`) to nutation. (IERS Conventions 1996, p. 22) While this approach is more accurate in some respect, it is not referred to the same reference frame. For more details see the general documentation of the Swiss Ephemeris in swisseph.pdf, chapter 2.1.2.2.
 
 Apparent positions of JPL Horizons can be reproduced with about 0.001 arcsec precision using the flag `SEFLG_JPLHOR`. For best accuracy, the daily Earth orientation parameters (EOP) `delta_psi` and `delta_eps` relative to the IAU 1980 precession/nutation model must be downloaded and saved in the ephemeris path defined by [swe_set_ephe_path()]{.fn}. The EOP files are found on the IERS website:
 
@@ -1172,7 +1172,7 @@ Osculating nodes and apsides are calculated for all bodies.
 #define SE_NODBIT_OSCU_BAR 4
 ```
 
-Osculating nodes and apsides are calculated for all bodies. With planets beyond Jupiter, the nodes and apsides are calculated from *barycentric* positions and speed. Cf. the explanations in swisseph.doc.
+Osculating nodes and apsides are calculated for all bodies. With planets beyond Jupiter, the nodes and apsides are calculated from *barycentric* positions and speed. Cf. the explanations in swisseph.pdf.
 
 If this bit is combined with `SE_NODBIT_MEAN`, mean values are given for the planets Mercury - Neptune.
 
@@ -2985,7 +2985,7 @@ namely:
 "Lahiri ICRC", 46 SE_SIDM_LAHIRI_ICRC
 ```
 
-For information about the sidereal modes, please read the chapter on sidereal calculations in swisseph.doc.
+For information about the sidereal modes, please read the chapter on sidereal calculations in swisseph.pdf.
 
 To define your own sidereal mode, use `SE_SIDM_USER` (=255) and set the reference date **(**`t0`**)** and the initial value of the ayanamsha (`ayan_t0`).
 
@@ -3504,7 +3504,7 @@ This function requires TROPICAL positions in `xpin`. SIDEREAL house positions ar
 
 ## Calculating the Gauquelin sector position of a planet with swe_house_pos() or swe_gauquelin_sector()
 
-For general information on Gauquelin sectors, read chapter 6.5 in documentation file swisseph.doc.
+For general information on Gauquelin sectors, read chapters 6.2.12 and 6.6 in the documentation file swisseph.pdf.
 
 There are two functions that can be used to calculate Gauquelin sectors:
 
@@ -4853,13 +4853,9 @@ The following files are in the directory \\sweph\\doc:
 
 > swephin.gif
 
-> swephprg.doc Documentation for programming, a MS Word-97 file
+> swephprg.pdf Documentation for programming
 
-> swephprg.rtf
-
-> swisseph.doc General information on Swiss Ephemeris
-
-> swisseph.rtf
+> swisseph.pdf General information on Swiss Ephemeris
 
 The files with suffix .CDR are Corel Draw 7.0 documents with the Swiss Ephemeris icons.
 
@@ -6075,17 +6071,17 @@ All relevant IAU resolutions up to 2005 have been implemented. These include:
 
 -   constants in sweph.h updated
 
-For more info, see the documentation swisseph.doc, chapters 2.1.2.1-3.
+For more info, see the documentation swisseph.pdf, chapters 2.1.2.1-3.
 
 New features:
 
 -   Ephemerides of \"interpolated lunar apogee and perigee\", as published by Dieter Koch in 2000 (swetest -pcg).
 
-For more info, see the documentation swisseph.doc, chapter 2.2.4.
+For more info, see the documentation swisseph.pdf, chapter 2.2.4.
 
 -   House system according to Bogdan Krusinski (character 'U').
 
-For more info, see the documentation swisseph.doc, chapter 6.1.13.
+For more info, see the documentation swisseph.pdf, chapter 6.2.13.
 
 Bug fixes:
 
@@ -6259,7 +6255,7 @@ In the JPL mode and the Moshier mode the time range remains unchanged at 3000 BC
 
 **IMPORTANT**
 
-Chiron's ephemeris is now restricted to the time range **650 CE -- 4650 CE**; for explanations, see swisseph.doc.
+Chiron's ephemeris is now restricted to the time range **650 CE -- 4650 CE**; for explanations, see swisseph.pdf.
 
 Outside this time range, Swiss Ephemeris returns an error code and a position value 0. You must handle this situation in your application. There is a similar restriction with Pholus (as with some other asteroids).
 
@@ -6317,7 +6313,7 @@ New:
 
 -   A flag bit `SEFLG_TOPOCTR` allows to compute topocentric planet positions. Before calling [swe_calc()]{.fn}, call [swe_set_topo](#Hlk477841944).
 
--   [swe_house_pos](#Hlk477862955) for computation of the house position of a given planet. See description in SWISSEPH.DOC, Chapter 3.1 "Geocentric and topocentric positions". A bug has been fixed that has sometimes turned up, when the JPL ephemeris was closed. (An error in memory allocation and freeing.)
+-   [swe_house_pos](#Hlk477862955) for computation of the house position of a given planet. See description in swisseph.pdf, chapter 4 "Geocentric, topocentric, heliocentric, barycentric, and planetocentric positions". A bug has been fixed that has sometimes turned up, when the JPL ephemeris was closed. (An error in memory allocation and freeing.)
 
 -   Bug fix: [swe_cotrans()]{.fn} did not work in former versions.
 
@@ -6547,4 +6543,4 @@ There are some important limits in regard to what you can expect from an ephemer
 | [swe_difdeg2n](#Hlk478111928)     | distance in degrees                                        |
 | [swe_difdegn](#Hlk478111884)      | distance in degrees                                        |
 
-**End of SWEPHPRG.DOC**
+**End of swephprg.pdf**

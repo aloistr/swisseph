@@ -9,7 +9,7 @@
 # extracted from the .docx of the same name into <work>/media:
 #   pandoc <name>.docx --extract-media=<work> -t markdown -o /dev/null
 # usage: mk_pdf.pl <name>.md|<chapter dir> [-htm] [-w<workdir>] [-o<out>] [-k]   (-k keeps the html)
-# -htm: web page <name>.htm instead of the PDF, images in <name>.fld/ next to it,
+# -htm: web page <name>.htm instead of the PDF, images embedded (one file, no image folder),
 #       icon "up to contents" at every chapter (h1) and section (h2) heading
 # 2026-11-24
 use strict;
@@ -17,6 +17,19 @@ use warnings;
 use File::Basename;
 use File::Temp qw(tempdir);
 use Cwd qw(abs_path);
+use MIME::Base64 qw(encode_base64);
+# image file -> data: URI for embedding in the .htm
+sub data_uri {
+  my $f = shift;
+  my %type = (png => 'image/png', jpg => 'image/jpeg', jpeg => 'image/jpeg', gif => 'image/gif', svg => 'image/svg+xml');
+  my ($ext) = $f =~ /\.(\w+)$/;
+  my $t = $type{lc($ext // '')} or die "$f: unknown image type\n";
+  open(my $fh, '<:raw', $f) or die "$f: $!\n";
+  local $/;
+  my $d = <$fh>;
+  close($fh);
+  return "data:$t;base64," . encode_base64($d, '');
+}
 my ($md, $work, $out, $keep, $htm);
 for my $a (@ARGV) {
   if ($a eq '-htm') {
@@ -195,14 +208,9 @@ nav#toc a.toc2 { padding-left: 12pt; }
 nav#toc a.toc3 { padding-left: 24pt; font-size: 9.5pt; }
 CSS
 if ($htm) {
-  # web page: images into <name>.fld/, icon "up to contents" at every h1 and h2
-  my $odir = dirname($out);
-  my $fld = "$name.fld";
-  mkdir "$odir/$fld" if !-d "$odir/$fld";
-  while ($body =~ /src="(?:\.\/)?media\/([^"]+)"/g) {
-    system('cp', '-p', "$work/media/$1", "$odir/$fld/$1") == 0 or die "cp $1 failed\n";
-  }
-  $body =~ s/src="(?:\.\/)?media\//src="$fld\//g;
+  # web page: images embedded as data: URIs (one self-contained file, no image folder),
+  # icon "up to contents" at every h1 and h2
+  $body =~ s#src="(?:\./)?media/([^"]+)"#'src="' . data_uri("$work/media/$1") . '"'#ge;
   (my $up = $icon) =~ s/width="20" height="18"/width="24" height="22"/;
   my $uplink = "<a class=\"up\" href=\"#toc\" title=\"up to contents\">$up</a>";
   $body =~ s/(<h[12]\b[^>]*\bid="[^"]+"[^>]*>)/$1$uplink/g;

@@ -434,9 +434,8 @@ Pluto 0.088 arcsec (jd 2437372.5)
 
 If you prefer using COB rather than barycenters, you should understand that:
 
-\- The performance is not as good for COB as for barycenters. With transit calculations you could run into troubles.
-
-\- The ephemerides are limited to the time range 1900 to 2047.
+-   The performance is not as good for COB as for barycenters. With transit calculations you could run into troubles.
+-   The ephemerides are limited to the time range 1900 to 2047.
 
 ### Fictitious planets
 
@@ -2237,7 +2236,7 @@ Function returns:
 
     -   the true altitude resulting from the input apparent altitude, if this value is a plausible apparent altitude, i.e. if it is a position above the ideal horizon;
 
-    -   the input altitude; otherwise in addition the array dret\[\] returns the following values:
+    -   the input altitude; otherwise in addition the array `dret[]` returns the following values:
 
         -   `dret[0]` true altitude, if possible; otherwise input value;
 
@@ -2270,25 +2269,19 @@ Function returns `OK` or `ERR`.
 
 Details for `dgeo[]` (array of doubles):
 
-> `dgeo[0]`: geographic longitude;
-
-> `dgeo[1]`: geographic latitude;
-
-> `dgeo[2]`: geographic altitude (eye height) in meters.
+-   `dgeo[0]`: geographic longitude;
+-   `dgeo[1]`: geographic latitude;
+-   `dgeo[2]`: geographic altitude (eye height) in meters.
 
 Details for `datm[]` (array of doubles):
 
-> `datm[0]`: atmospheric pressure in mbar (hPa) ;
-
-> `datm[1]`: atmospheric temperature in degrees Celsius;
-
-> `datm[2]`: relative humidity in %;
-
-> `datm[3]`: if `datm[3]`\>=1, then it is Meteorological Range \[km\] ;
-
-> if 1>`datm[3]`\>0, then it is the total atmospheric coefficient (ktot) ;
-
-> `datm[3]`=0, then the other atmospheric parameters determine the total atmospheric coefficient (ktot)
+-   `datm[0]`: atmospheric pressure in mbar (hPa) ;
+-   `datm[1]`: atmospheric temperature in degrees Celsius;
+-   `datm[2]`: relative humidity in %;
+-   `datm[3]`:
+    -   if `datm[3]`\>=1, then it is Meteorological Range \[km\] ;
+    -   if 1>`datm[3]`\>0, then it is the total atmospheric coefficient (ktot) ;
+    -   `datm[3]`=0, then the other atmospheric parameters determine the total atmospheric coefficient (ktot)
 
 Default values:
 
@@ -2300,29 +2293,22 @@ If the extinction coefficient (meteorological range) `datm[3]` is 0, the softwar
 
 Details for `dobs[]` (array of six doubles):
 
-> `dobs[0]`: age of observer in years (default = 36)
-
-> `dobs[1]`: Snellen ratio of observers eyes (default = 1 = normal)
+-   `dobs[0]`: age of observer in years (default = 36)
+-   `dobs[1]`: Snellen ratio of observers eyes (default = 1 = normal)
 
 The following parameters are only relevant if the flag `SE_HELFLAG_OPTICAL_PARAMS` is set:
 
-> `dobs[2]`: 0 = monocular, 1 = binocular (actually a boolean)
-
-> `dobs[3]`: telescope magnification: 0 = default to naked eye (binocular), 1 = naked eye
-
-> `dobs[4]`: optical aperture (telescope diameter) in mm
-
-> `dobs[5]`: optical transmission
+-   `dobs[2]`: 0 = monocular, 1 = binocular (actually a boolean)
+-   `dobs[3]`: telescope magnification: 0 = default to naked eye (binocular), 1 = naked eye
+-   `dobs[4]`: optical aperture (telescope diameter) in mm
+-   `dobs[5]`: optical transmission
 
 Details for `event_type`:
 
-> `event_type` = `SE_HELIACAL_RISING` (1): morning first (exists for all visible planets and stars);
-
-> `event_type` = `SE_HELIACAL_SETTING` (2): evening last (exists for all visible planets and stars);
-
-> `event_type` = `SE_EVENING_FIRST` (3): evening first (exists for Mercury, Venus, and the Moon);
-
-> `event_type` = `SE_MORNING_LAST` (4): morning last (exists for Mercury, Venus, and the Moon).
+-   `event_type` = `SE_HELIACAL_RISING` (1): morning first (exists for all visible planets and stars);
+-   `event_type` = `SE_HELIACAL_SETTING` (2): evening last (exists for all visible planets and stars);
+-   `event_type` = `SE_EVENING_FIRST` (3): evening first (exists for Mercury, Venus, and the Moon);
+-   `event_type` = `SE_MORNING_LAST` (4): morning last (exists for Mercury, Venus, and the Moon).
 
 Details for `helflag`:
 
@@ -2342,11 +2328,9 @@ Some other `SE_HELFLAG`\_ bits found in [swephexp.h]{.file} were made for mere t
 
 Details for return array `dret[]` (array of doubles):
 
-> `dret[0]`: start visibility (Julian day number);
-
-> `dret[1]`: optimum visibility (Julian day number), zero if `helflag` \>= `SE_HELFLAG_AV`;
-
-> `dret[2]`: end of visibility (Julian day number), zero if `helflag` \>= `SE_HELFLAG_AV`.
+-   `dret[0]`: start visibility (Julian day number);
+-   `dret[1]`: optimum visibility (Julian day number), zero if `helflag` \>= `SE_HELFLAG_AV`;
+-   `dret[2]`: end of visibility (Julian day number), zero if `helflag` \>= `SE_HELFLAG_AV`.
 
 Strange phenomena:
 
@@ -2406,21 +2390,14 @@ Details for arrays `dgeo`\[\], datm\[\], dobs\[\] and the other parameters are g
 
 Details for return array `dret[]` (array of doubles):
 
-> `dret[0]`: limiting visual magnitude (if `dret[0]` \> magnitude of object, then the object is visible);
-
-> `dret[1]`: altitude of object;
-
-> `dret[2]`: azimuth of object;
-
-> `dret[3]`: altitude of sun;
-
-> `dret[4]`: azimuth of sun;
-
-> `dret[5]`: altitude of moon;
-
-> `dret[6]`: azimuth of moon;
-
-> `dret[7]`: magnitude of object.
+-   `dret[0]`: limiting visual magnitude (if `dret[0]` \> magnitude of object, then the object is visible);
+-   `dret[1]`: altitude of object;
+-   `dret[2]`: azimuth of object;
+-   `dret[3]`: altitude of sun;
+-   `dret[4]`: azimuth of sun;
+-   `dret[5]`: altitude of moon;
+-   `dret[6]`: azimuth of moon;
+-   `dret[7]`: magnitude of object.
 
 ## Heliacal details: swe_heliacal_pheno_ut()
 
@@ -3354,9 +3331,8 @@ The first array element **`cusps[0]`** is always 0, the twelve houses follow **i
 
 > []{#Hlk477862529 .anchor}`cusps[0]` = 0
 
-> `cusps[1]` = house 1
-
-> `cusps[2]` = house 2
+-   `cusps[1]` = house 1
+-   `cusps[2]` = house 2
 
 etc.
 
@@ -3364,19 +3340,13 @@ In the array **`ascmc`**, the function returns the following values:
 
 > []{#Hlk477862569 .anchor}`ascmc[0]` = Ascendant
 
-> `ascmc[1]` = MC
-
-> `ascmc[2]` = ARMC
-
-> `ascmc[3]` = Vertex
-
-> `ascmc[4]` = \"equatorial ascendant\"
-
-> `ascmc[5]` = \"co-ascendant\" (Walter Koch)
-
-> `ascmc[6]` = \"co-ascendant\" (Michael Munkasey)
-
-> `ascmc[7]` = \"polar ascendant\" (M. Munkasey)
+-   `ascmc[1]` = MC
+-   `ascmc[2]` = ARMC
+-   `ascmc[3]` = Vertex
+-   `ascmc[4]` = \"equatorial ascendant\"
+-   `ascmc[5]` = \"co-ascendant\" (Walter Koch)
+-   `ascmc[6]` = \"co-ascendant\" (Michael Munkasey)
+-   `ascmc[7]` = \"polar ascendant\" (M. Munkasey)
 
 The following defines can be used to find these values:
 
@@ -5189,13 +5159,10 @@ New functions were added, to find crossings of planets over fixed positions:
 
 New features:
 
-\- ephemerides of center of body (COB) of planets
-
-\- ephemerides of some planetary moons
-
-\- planetocentric ephemerides using the function [swe_calc_pctr()]{.fn}
-
-\- function [swe_get_current_file_data()]{.fn} for time range of \*.se1 ephemeris files.
+-   ephemerides of center of body (COB) of planets
+-   ephemerides of some planetary moons
+-   planetocentric ephemerides using the function [swe_calc_pctr()]{.fn}
+-   function [swe_get_current_file_data()]{.fn} for time range of \*.se1 ephemeris files.
 
 ## Changes from version 2.09.02 to 2.09.03
 
@@ -5231,11 +5198,9 @@ A lot of work has been done for more correct calculation of ayanamshas.
 
 4\. Improved general documentation:
 
-\- theory of ayanamsha in general
-
-\- about Lahiri ayanamsha
-
-\- about ayanamsha data in IAE, IENA, RP
+-   theory of ayanamsha in general
+-   about Lahiri ayanamsha
+-   about ayanamsha data in IAE, IENA, RP
 
 > These parts of the documentation have been improved considerably. Important contributions were made by D. Senthilathiban and A.K. Kaul.
 
@@ -5257,7 +5222,7 @@ ayanamsha correction prec. model
 
 > 6\. Additional, very small, corrections were made with the follwoing ayanamshas:
 
-\- Fagan/Bradley (0): Initial date is Besselian, i.e. 2433282.42346 instead of 2433282.5.
+-   Fagan/Bradley (0): Initial date is Besselian, i.e. 2433282.42346 instead of 2433282.5.
 
 > \- Lahiri (1): Correction for nutation on initial date was slightly improved in agreement with IAE 1985, namely nutation Wahr (1980) instead of nutation IAU2000B.
 
@@ -5265,13 +5230,10 @@ ayanamsha correction prec. model
 
 7\. New ayanamshas:
 
-\- Krishnamurti/Senthilathiban, `SE_SIDM_KRISHNAMURTI_VP291` 45
-
-\- Lahiri 1940, `SE_SIDM_LAHIRI_1940` 43
-
-\- Lahiri 1980, `SE_SIDM_LAHIRI_VP285` 44
-
-\- Lahiri ICRC `SE_SIDM_LAHIRI_ICRC` 46
+-   Krishnamurti/Senthilathiban, `SE_SIDM_KRISHNAMURTI_VP291` 45
+-   Lahiri 1940, `SE_SIDM_LAHIRI_1940` 43
+-   Lahiri 1980, `SE_SIDM_LAHIRI_VP285` 44
+-   Lahiri ICRC `SE_SIDM_LAHIRI_ICRC` 46
 
 > The three additional Lahiri ayanamshas are not really important. They were needed for testing and understanding the history of this aynamasha, and for the same reason they should also be kept. Our hitherto Lahiri ayanamsha (`SE_SIDM_LAHIRI` = 1) is still the official Lahiri ayanamsha as used in Indian Astronomical Ephemeris (IAE) since 1985.
 
@@ -5945,7 +5907,7 @@ Fixed stars:
 
 -   solar and lunar eclipse functions provide additional data:
 
-    attr\[8\] magnitude, attr\[9\] saros series number, attr\[10\] saros series member number
+    `attr[8]` magnitude, `attr[9]` saros series number, `attr[10]` saros series member number
 
 ## Changes from version 1.75 to 1.76
 
@@ -6322,7 +6284,7 @@ New:
 No bug fix, but two minor improvements:
 
 -   A change of the ephemeris bits in parameter `iflag` of function [swe_calc()]{.fn} usually forces an implicit [swe_close()]{.fn} operation. Inside a loop, e.g. for drawing a graphical ephemeris, this can slow down a program. Before this release, two calls with `iflag` = 0 and `iflag` = `SEFLG_SWIEPH` where considered different, though in fact the same ephemeris is used. Now these two calls are considered identical, and [swe_close()]{.fn} is not performed implicitly.\
-    For calls with the pseudo-planet-number ipl = SE_ECL_NUT, whose result does not depend on the chosen ephemeris, the ephemeris bits are ignored completely and swe_close() is never performed implicitly.
+    For calls with the pseudo-planet-number `ipl` = `SE_ECL_NUT`, whose result does not depend on the chosen ephemeris, the ephemeris bits are ignored completely and [swe_close()]{.fn} is never performed implicitly.
 
 -   In former versions, calls of the Moshier ephemeris with speed and without speed flag have returned a very small difference in position (0.01 arc second). The reason was that, for precise speed, [swe_calc()]{.fn} had to do an additional iteration in the light-time calculation. The two calls now return identical position data.
 
@@ -6397,11 +6359,9 @@ int swe_houses(
 
 **Note** also, that the indices of the cusps have changed:
 
-> `cusp[0]` = 0 (before: `cusp[0]` = house 1)
-
-> `cusp[1]` = house 1 (before: `cusp[1]` = house 2)
-
-> `cusp[2]` = house 2 (etc.)
+-   `cusp[0]` = 0 (before: `cusp[0]` = house 1)
+-   `cusp[1]` = house 1 (before: `cusp[1]` = house 2)
+-   `cusp[2]` = house 2 (etc.)
 
 etc.
 

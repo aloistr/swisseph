@@ -5026,7 +5026,7 @@ For further explanations, see 21.1.
 | 1.25 | 4-jun-1998 | sample for Borland Delphi-2 added |
 | 1.26 | 29-nov-1998 | full source code made available, Placalc API documented |
 | 1.27 | 2-dec-1998 | changes to `SE_EPHE_PATH` and [swe_set_ephe_path()]{.fn} |
-| 1.30 | 17-dec-1998 | time range extended to 10'800 years |
+| 1.30 | 17-dec-1998 | time range extended to 10800 years |
 | 1.31 | 12-jan-1999 | **new**: Eclipse functions added |
 | 1.40 | 19-apr-1999 | **new**: planetary phenomena added; bug fix in swe_sol_ecl_when_glob(); |
 | 1.50 | 27-jul-1999 | **new**: SIDEREAL planetary positions and houses; new fixstars.cat |

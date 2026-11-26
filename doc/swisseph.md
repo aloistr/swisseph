@@ -20,7 +20,7 @@ The Swiss Ephemeris package consists of source code in C, a DLL, a collection of
 
 Full C source code is included with the Swiss Ephemeris, so that non-Windows programmers can create a linkable or shared library in their environment and use it with their applications.
 
-Before release 2.10.04 these basis was JPL Ephemeris DE431. Not all data below were updated after the transition to DE441, as Swiss Ephemeris 2 will soon be replaced by Swiss Ephemeris 3, with new documentation.
+Before release 2.10.04 the basis was JPL Ephemeris DE431. Not all data below were updated after the transition to DE441, as Swiss Ephemeris 2 will soon be replaced by Swiss Ephemeris 3, with new documentation.
 
 ## Licensing
 
@@ -869,7 +869,7 @@ An ephemeris can only be as good as the orbit it starts from. An orbit is determ
 
 -   Near-Earth asteroids and other special cases: for about 2700 asteroids our files are made from positions computed by JPL Horizons. These are:
 
-    -   2,293 asteroids that cross the orbit of the Earth (94 named, 2,199 unnamed);
+    -   2293 asteroids that cross the orbit of the Earth (94 named, 2199 unnamed);
 
     -   239 asteroids that do not cross the Earth\'s orbit but come closer than 0.05 AU (7.5 million km) to Mercury, Venus or Mars between 1900 and 2100;
 

@@ -363,7 +363,8 @@ Rigil Kentaurus,alCen,ICRS,14,39,36.204,-60,50,08.23,-3608,686,-22.3,742,-0.1,-6
 Rigel Kentaurus,alCen,ICRS,14,39,36.204,-60,50,08.23,-3608,686,-22.3,742,-0.1,-60, 5483
 Toliman      ,alCen,ICRS,14,39,36.204,-60,50,08.23,-3608,686,-22.3,742,-0.1,-60, 5483
 Bungula      ,alCen,ICRS,14,39,36.204,-60,50,08.23,-3608,686,-22.3,742,-0.1,-60, 5483
-Proxima Centauri,alCen,ICRS,14,39,36.204,-60,50,08.23,-3608,686,-22.3,742,-0.1,-60, 5483
+# not Proxima: the data of alpha Centauri; Proxima Centauri = V645 Cen below (27-nov-2026)
+#Proxima Centauri,alCen,ICRS,14,39,36.204,-60,50,08.23,-3608,686,-22.3,742,-0.1,-60, 5483
 Hadar        ,beCen,ICRS,14,03,49.40535,-60,22,22.9266,-33.27,-23.16,5.9,8.32,0.6,-59, 5365
 Agena        ,beCen,ICRS,14,03,49.40535,-60,22,22.9266,-33.27,-23.16,5.9,8.32,0.6,-59, 5365
 Muhlifain    ,gaCen,ICRS,12,41,31.04008,-48,57,35.5375,-185.72,5.79,-5.5,25.06,2.17,-48, 7597
@@ -1542,8 +1543,9 @@ Ril Alauva   ,muVir,ICRS,14,43,03.62282,-05,39,29.5327,103.28,-318.63,5.1,54.73,
              ,psVir,ICRS,12,54,21.16342,-09,32,20.3783,-18.08,-19.52,17.6,5.99,4.8,-08, 3449
              ,109Vir,ICRS,14,46,14.92536,+01,53,34.3845,-114.03,-22.13,-6.1,24.25,3.73,0, 0
 Lich         ,PSRB1257+12,ICRS,13,00,03.1075,+12,40,55.155,46.44,-84.87,0,1.41,999.99, 0,0
-# Virgo Cluster, according to NED (Nasa Extragalactic Database)
-Virgo Cluster,VC,2000,12,26,32.1,12,43,24,0.000,   0.00,  0.0,0.0000,999.99,  0,    0
+# Virgo Cluster, according to NED (Nasa Extragalactic Database): old record,
+# replaced by the record of 17 June 2021 above (27-nov-2026)
+#Virgo Cluster,VC,2000,12,26,32.1,12,43,24,0.000,   0.00,  0.0,0.0000,999.99,  0,    0
 # Messier 87 galaxis, M87 or M-87, containing supermassive black hole, called
 # Super Galactic Cluster by Philipp Sedwick
 Messier 87 ,M87,ICRS,12,30,49.4233823,12,23,28.0438581,-8.029,10.734,1256,0.000061,8.63,  0,    0

@@ -6465,6 +6465,7 @@ static int32 save_star_in_struct(int nrecs, struct fixed_star *fstp, char *serr)
   }
   ftarget = swed.fixed_stars + (nrecs - 1);
   memcpy((void *) ftarget, (void *) fstp, sizestru);
+  ftarget->recno = nrecs;
   return OK;
 }
 
@@ -6473,7 +6474,13 @@ static int CMP_CALL_CONV fixedstar_name_compare(const void *star1, const void *s
 {
   const struct fixed_star *fs1 = (const struct fixed_star *) star1;
   const struct fixed_star *fs2 = (const struct fixed_star *) star2;
-  return strcmp(fs1->skey, fs2->skey);
+  int r = strcmp(fs1->skey, fs2->skey);
+  /* one key for several records (e.g. a name used for two stars): keep the
+   * order of the star file; qsort() and bsearch() leave the order and the
+   * element found among equal keys unspecified (until 27-nov-2026) */
+  if (r == 0)
+    r = fs1->recno - fs2->recno;
+  return r;
 }
 
 /* help function for finding a fixed star with bsearch() */
@@ -7020,6 +7027,9 @@ static int32 search_star_in_list(char *sstar, struct fixed_star *stardata, char 
 	sprintf(serr, "error, swe_fixstar(): could not find star name %s", sstar);
       return ERR;
     }
+    /* several records with this key: the first one of the star file */
+    while (stardatap > stardatabegp && strcmp((stardatap - 1)->skey, searchkey) == 0)
+      stardatap--;
     *stardata = *stardatap;
     //printf("name search: %s, %s, %s, %f\n", stardata.skey, stardata.starname, stardata.starbayer, stardata.mag);
     return OK;

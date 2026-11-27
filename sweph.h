@@ -779,6 +779,7 @@ struct fixed_star {
   char starbayer[SWI_STAR_LENGTH + 1];
   char starno[10];
   double epoch, ra, de, ramot, demot, radvel, parall, mag;
+  int recno;   // number of the record in the star file: the first of equal keys is found
 };
 
 /* dpsi and deps loaded for 100 years after 1962 */

@@ -1151,7 +1151,7 @@ int32 swe_nod_aps(
   char *serr);
 ```
 
-The parameter `iflag` allows the same specifications as with the function [swe_calc_ut()]{.fn}. I.e., it contains the Ephemeris flag, the heliocentric, topocentric, speed, nutation flags etc. etc.
+The parameter `iflag` allows the same specifications as with the function [swe_calc_ut()]{.fn}. I.e., it contains the Ephemeris flag, the heliocentric, topocentric, speed, nutation flags etc. etc. With `SEFLG_J2000` the nodes are those on the ecliptic of date, given in J2000 coordinates (their latitude is not 0). For the node on the J2000 ecliptic use [swe_get_orbital_elements()]{.fn}.
 
 The parameter []{#Hlk477836150 .anchor}method tells the function what kind of nodes or apsides are required:
 
@@ -2821,7 +2821,7 @@ double altitude); * northern latitude is positive,
 * southern latitude is negative */
 ```
 
-This function must be called before topocentric planet positions for a certain birth place can be computed. It tells Swiss Ephemeris, what geographic position is to be used. Geographic longitude `geolon` and latitude `geolat` must be in degrees, the altitude above sea must be in meters. Neglecting the altitude can result in an error of about 2 arc seconds with the Moon and at an altitude 3000 m. After calling [swe_set_topo()]{.fn}, add `SEFLG_TOPOCTR` to `iflag` and call [swe_calc()]{.fn} as with an ordinary computation. E.g.:
+This function must be called before topocentric planet positions for a certain birth place can be computed. It tells Swiss Ephemeris, what geographic position is to be used. Geographic longitude `geolon` and latitude `geolat` must be in degrees, the altitude above sea must be in meters. Polar motion is not applied: the observer's place can be off by some meters (1 January 2025: 3 m in latitude, 7 m in longitude at 47 N), the topocentric Moon by a few mas. Neglecting the altitude can result in an error of about 2 arc seconds with the Moon and at an altitude 3000 m. After calling [swe_set_topo()]{.fn}, add `SEFLG_TOPOCTR` to `iflag` and call [swe_calc()]{.fn} as with an ordinary computation. E.g.:
 
 ```
 swe_set_topo(geo_lon, geo_lat, altitude_above_sea);
@@ -2834,6 +2834,8 @@ printf("%f\n", xp[0]);
 ```
 
 The parameters set by [swe_set_topo()]{.fn} survive **[swe_close()]{.fn}.**
+
+**Functions that change the geographic position.** The following functions call [swe_set_topo()]{.fn} themselves with the place given to them and do not restore the previous one: [swe_sol_eclipse_when_loc()]{.fn}, [swe_sol_eclipse_how()]{.fn}, [swe_lun_occult_when_loc()]{.fn}, [swe_lun_eclipse_when_loc()]{.fn}, [swe_lun_eclipse_how()]{.fn} (if `geopos` is not NULL), [swe_rise_trans()]{.fn} and [swe_rise_trans_true_hor()]{.fn} (except with `SE_BIT_GEOCTR_NO_ECL_LAT`), [swe_gauquelin_sector()]{.fn} with methods 2 - 5, [swe_heliacal_ut()]{.fn}, [swe_heliacal_pheno_ut()]{.fn} and [swe_vis_limit_mag()]{.fn}. [swe_sol_eclipse_where()]{.fn}, [swe_lun_occult_where()]{.fn} and [swe_sol_eclipse_when_glob()]{.fn} set the place where the eclipse or occultation is greatest at the time they compute. After such a call, topocentric positions refer to that place. If it is not your place, call [swe_set_topo()]{.fn} again.
 
 # Sidereal mode functions
 

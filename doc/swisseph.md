@@ -344,6 +344,8 @@ Our tests of November 2026 (Swiss Ephemeris 2.10.04, Horizons API, details in Ap
 
 -   Topocentric positions depend also on the rotation of the Earth, i.e. on Delta T. Horizons uses 64.184 s for TT-UT on 1 Jan 2000, the Swiss Ephemeris 63.829 s; for future dates Horizons keeps its last value (69.18 s), whereas the Swiss Ephemeris uses a prediction (75.5 s in 2050, 93.0 s in 2099). For the topocentric Moon this gives differences of up to 0.16\" between 1900 and 2024, 1.3\" in 2049 and 5\" in 2099. For the planets the effect is much smaller (Venus at Jerusalem in 2015: 0.9 mas).
 
+-   The JPL ephemerides are defined in TDB; the Swiss Ephemeris evaluates them with TT (TDB - TT is below 2 ms). This causes differences from JPL Horizons of less than 1 mas for the Moon and less than 0.1 mas for the planets.
+
 For best agreement with Horizons, current data files with Earth orientation parameters (EOP) must be downloaded from the IERS website and put into the ephemeris path. If they are not available, the Swiss Ephemeris uses an approximation which reproduces Horizons still with an accuracy of about 2 mas between 1962 and present.
 
 It must be noted that correct values for Earth orientation delta_psi and delta_epsilon are only available between 1962 and present. For all calculations before that, Horizons uses the *first* values of the EOP data, and for all calculations in the future, it uses the *last* values of the existing data. The resulting positions before 1962 thus do not have the same precision, but the ephemeris is at least continuous.
